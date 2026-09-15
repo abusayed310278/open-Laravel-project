@@ -1,0 +1,11 @@
+---
+paths:
+  - 'app/Models/*.php,app/Services/*.php'
+---
+
+# Models Services
+
+## Never cache raw Eloquent models/collections via the database cache driver
+Discovered a real environment-level bug while adding category-tree caching: an Eloquent `Collection` (or even a single `Model`) written to the `database` cache store via `Cache::put()`/`Cache::rememberForever()` comes back as `__PHP_Incomplete_Class` — or throws "must ensure the class definition ... was loaded before unserialize()" — the moment it's read back in a **different PHP process** (a fresh `php artisan tinker` invocation, a separate HTTP request under `php artisan serve`, etc.). Confirmed with a minimal repro: `Cache::put('x', User::all(), 60)` then reading `x` back in a new process returns the incomplete-class object every time. This is unrelated to any specific model, relation, or closure — it reproduces with the plainest possible Eloquent collection. Root cause not fully diagnosed (likely a PHP 8.5 + this Windows/git-bash setup interaction with `serialize()`/`unserialize()` and Composer's autoloader), but the workaround is reliable: never cache Eloquent objects directly.
+
+Pattern used for `Category::cachedTree()` (the fix): cache plain `$model->getAttributes()` arrays (recursively for any loaded relations) instead of the model/collection itself, then rehydrate on every read via `(new Model)->newFromBuilder($attributesArray)` (note: `newFromBuilder()` is an *instance* method, not static — `Model::newFromBuilder(...)` fatals) and `->setRelation()` to reattach any nested relation collections. Plain arrays round-trip through `serialize()`/`unserialize()` with no class-loading dependency, so they're immune to this bug. Apply the same pattern to any future cache of Eloquent data — caching `->toArray()`/attribute arrays and rehydrating is now the house style here, not caching models directly. Tests are unaffected (`phpunit.xml` sets `CACHE_STORE=array`, which stays in-process and never round-trips), so this bug only shows up in real dev/production runs against the `database` driver — always verify caching code via live `php artisan serve` + curl across multiple separate requests, not just tinker-in-one-process or the test suite.

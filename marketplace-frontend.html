@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OpenBox – Premium Electronics Marketplace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+* { font-family: 'Inter', sans-serif; }
+
+/* announcement bar */
+.ann-bar { background: #f59e0b; }
+
+/* Product card hover */
+.prod-card { transition: box-shadow .2s, transform .2s; }
+.prod-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,.1); transform: translateY(-2px); }
+
+/* Grading badges */
+.grade-a { background:#16a34a; }
+.grade-b { background:#2563eb; }
+.grade-c { background:#dc2626; }
+
+/* CTA gradient */
+.cta-grad { background: linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%); }
+
+/* Star yellow */
+.star { color: #f59e0b; }
+
+/* Badge NEW */
+.badge-new { background:#ef4444; }
+.badge-ref { background:#0ea5e9; }
+
+/* Scrollbar hide */
+.no-scroll::-webkit-scrollbar { display:none; }
+</style>
+</head>
+<body class="bg-white text-gray-800">
+
+<!-- Announcement Bar -->
+<div class="ann-bar text-center py-2 text-xs font-semibold text-white">
+  🎁 3 Days Flash Sale Now Starts — Up to 40% OFF on Refurbished Electronics!
+</div>
+
+<!-- Top utility bar -->
+<div class="bg-gray-900 text-gray-300 text-xs py-1.5 px-8 flex items-center justify-between">
+  <div class="flex items-center gap-5">
+    <span>📧 info@openbox.qa</span>
+    <span>📞 +974 5555-0000</span>
+  </div>
+  <div class="flex items-center gap-5">
+    <span>Mon–Sat 9:00–18:00</span>
+    <span class="font-semibold text-amber-400">🔥 Flash Sale Now!</span>
+  </div>
+</div>
+
+<!-- Main Header -->
+<header class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
+    <!-- Logo -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="w-8 h-8 bg-gray-900 rounded flex items-center justify-center">
+        <span class="text-white font-black text-xs">OB</span>
+      </div>
+      <span class="font-bold text-gray-900 text-lg tracking-tight">OpenBox</span>
+    </div>
+
+    <!-- Nav links -->
+    <nav class="hidden md:flex items-center gap-5 text-sm text-gray-600 font-medium">
+      <a href="#" class="hover:text-gray-900">Marketplace</a>
+      <a href="#" class="hover:text-gray-900">Phones</a>
+      <a href="#" class="hover:text-gray-900">Laptops</a>
+      <a href="#" class="hover:text-gray-900">Accessories</a>
+      <a href="#" class="hover:text-gray-900">Gaming</a>
+      <a href="#" class="hover:text-gray-900">Refurbished Deals</a>
+      <a href="#" class="text-amber-500 font-semibold">Garage Sale</a>
+    </nav>
+
+    <!-- Search -->
+    <div class="flex-1 flex items-center">
+      <div class="relative w-full max-w-sm">
+        <input type="text" placeholder="Search for phones, laptops..." class="w-full border border-gray-200 rounded-lg pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"/>
+        <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+
+    <!-- Icons -->
+    <div class="flex items-center gap-4">
+      <button class="relative text-gray-600 hover:text-gray-900">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+      </button>
+      <button class="relative text-gray-600 hover:text-gray-900">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span class="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">3</span>
+      </button>
+      <button class="text-gray-600 hover:text-gray-900">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </button>
+      <a href="#" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Start Selling</a>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="bg-gradient-to-br from-gray-50 to-blue-50 py-16">
+  <div class="max-w-7xl mx-auto px-6 text-center">
+    <p class="text-amber-500 font-semibold text-sm mb-3 uppercase tracking-wide">Qatar's #1 for Electronics</p>
+    <h1 class="text-5xl font-black text-gray-900 leading-tight mb-4">Premium Electronics<br/><span class="text-amber-500">Marketplace</span></h1>
+    <p class="text-gray-500 text-lg mb-8 max-w-xl mx-auto">Buy and sell new, used, and certified refurbished electronics from verified sellers. Laptop, drones, phones, and more.</p>
+    <div class="flex items-center justify-center gap-3 max-w-lg mx-auto">
+      <input type="text" placeholder="Search for laptops, phones, AirPods..." class="flex-1 border border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-sm"/>
+      <button class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors text-sm">Search</button>
+    </div>
+    <div class="flex items-center justify-center gap-6 mt-5 text-xs text-gray-400">
+      <span>Popular: <a href="#" class="text-blue-500 hover:underline">iPhone 15</a></span>
+      <span><a href="#" class="text-blue-500 hover:underline">MacBook Pro</a></span>
+      <span><a href="#" class="text-blue-500 hover:underline">Apple Watch</a></span>
+      <span><a href="#" class="text-blue-500 hover:underline">AirPods</a></span>
+      <span><a href="#" class="text-blue-500 hover:underline">PS5</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- Browse Categories -->
+<section class="py-10 max-w-7xl mx-auto px-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-900">Browse Categories</h2>
+    <a href="#" class="text-sm text-blue-500 hover:underline font-medium">View All →</a>
+  </div>
+  <div class="grid grid-cols-8 gap-3">
+    <!-- category items -->
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 text-xl">📱</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Phones</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-500 text-xl">💻</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Laptops</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-500 text-xl">⌚</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Smart Watches</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-500 text-xl">🎧</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Headphones</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 text-xl">🎮</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Gaming</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center text-sky-500 text-xl">📷</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Cameras</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 text-xl">🖥️</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Monitors</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-500 text-xl">🔌</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Accessories</span>
+    </div>
+  </div>
+  <!-- Row 2 -->
+  <div class="grid grid-cols-8 gap-3 mt-3">
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center text-xl">🎵</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Audio</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-xl">🖱️</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Peripherals</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-cyan-50 rounded-xl flex items-center justify-center text-xl">📡</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Networking</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center text-xl">🔋</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Smartwatch Bands</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-xl">🤖</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Components</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-fuchsia-50 rounded-xl flex items-center justify-center text-xl">🖨️</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Printers</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-lime-50 rounded-xl flex items-center justify-center text-xl">📟</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Smart Home</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 rounded-xl border border-gray-100 hover:border-amber-300 cursor-pointer group transition-all">
+      <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-xl">🔦</div>
+      <span class="text-xs text-gray-600 font-medium text-center">Electronics Parts</span>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-8 max-w-7xl mx-auto px-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-900">Featured Products</h2>
+    <a href="#" class="text-sm text-blue-500 hover:underline font-medium">View All →</a>
+  </div>
+  <div class="grid grid-cols-5 gap-4">
+    <!-- Card 1 -->
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-40 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-6xl">📱</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400 mb-1">Apple</p>
+        <p class="text-sm font-semibold text-gray-800 leading-snug">iPhone 15 Pro Max 256GB</p>
+        <p class="text-xs text-gray-400 mt-1 mb-2">Available Colors: 3</p>
+        <div class="flex items-center justify-between">
+          <p class="text-base font-bold text-gray-900">4,299 QAR</p>
+          <div class="flex items-center gap-0.5">
+            <span class="star text-xs">★★★★★</span>
+          </div>
+        </div>
+        <button class="mt-3 w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Card 2 -->
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-40 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-6xl">📱</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400 mb-1">Samsung</p>
+        <p class="text-sm font-semibold text-gray-800 leading-snug">Samsung Galaxy S24 Ultra</p>
+        <p class="text-xs text-gray-400 mt-1 mb-2">Available Colors: 4</p>
+        <div class="flex items-center justify-between">
+          <p class="text-base font-bold text-gray-900">3,809 QAR</p>
+          <div class="flex items-center gap-0.5">
+            <span class="star text-xs">★★★★☆</span>
+          </div>
+        </div>
+        <button class="mt-3 w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Card 3 -->
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-40 flex items-center justify-center">
+        <span class="text-6xl">💻</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400 mb-1">Apple</p>
+        <p class="text-sm font-semibold text-gray-800 leading-snug">MacBook Pro M3 Pro</p>
+        <p class="text-xs text-gray-400 mt-1 mb-2">14-inch · Space Black</p>
+        <div class="flex items-center justify-between">
+          <p class="text-base font-bold text-gray-900">9,499 QAR</p>
+          <div class="flex items-center gap-0.5">
+            <span class="star text-xs">★★★★★</span>
+          </div>
+        </div>
+        <button class="mt-3 w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Card 4 -->
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-40 flex items-center justify-center">
+        <span class="text-6xl">⌚</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400 mb-1">Apple</p>
+        <p class="text-sm font-semibold text-gray-800 leading-snug">iPad Pro M2 256GB</p>
+        <p class="text-xs text-gray-400 mt-1 mb-2">11-inch · WiFi</p>
+        <div class="flex items-center justify-between">
+          <p class="text-base font-bold text-gray-900">3,199 QAR</p>
+          <div class="flex items-center gap-0.5">
+            <span class="star text-xs">★★★★☆</span>
+          </div>
+        </div>
+        <button class="mt-3 w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+      </div>
+    </div>
+    <!-- Card 5 -->
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-40 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-6xl">🎧</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400 mb-1">Apple</p>
+        <p class="text-sm font-semibold text-gray-800 leading-snug">AirPods Pro 2nd Gen</p>
+        <p class="text-xs text-gray-400 mt-1 mb-2">USB-C · White</p>
+        <div class="flex items-center justify-between">
+          <p class="text-base font-bold text-gray-900">899 QAR</p>
+          <div class="flex items-center gap-0.5">
+            <span class="star text-xs">★★★★★</span>
+          </div>
+        </div>
+        <button class="mt-3 w-full bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Refurbished Deals -->
+<section class="py-8 bg-blue-50 mt-4">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <p class="text-xs text-blue-500 font-semibold uppercase tracking-wide mb-1">Certified Refurbished</p>
+        <h2 class="text-xl font-bold text-gray-900">Refurbished Deals</h2>
+      </div>
+      <a href="#" class="text-sm text-blue-500 hover:underline font-medium">All Deals →</a>
+    </div>
+    <div class="grid grid-cols-4 gap-4">
+      <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+        <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+          <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+          <span class="text-5xl">📱</span>
+        </div>
+        <div class="p-4">
+          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">Grade A</span>
+          <p class="text-sm font-semibold text-gray-800 mt-2">iPhone 14 Pro – Refurbished</p>
+          <div class="flex items-center gap-2 mt-2">
+            <p class="text-base font-bold text-gray-900">2,299 QAR</p>
+            <p class="text-xs text-gray-400 line-through">3,199 QAR</p>
+          </div>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="star text-xs">★★★★☆</span>
+            <span class="text-xs text-gray-400">(142)</span>
+          </div>
+          <button class="mt-3 w-full border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+        </div>
+      </div>
+      <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+        <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+          <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+          <span class="text-5xl">💻</span>
+        </div>
+        <div class="p-4">
+          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">Grade B</span>
+          <p class="text-sm font-semibold text-gray-800 mt-2">Dell XPS 15 – Refurbished</p>
+          <div class="flex items-center gap-2 mt-2">
+            <p class="text-base font-bold text-gray-900">2,099 QAR</p>
+            <p class="text-xs text-gray-400 line-through">3,500 QAR</p>
+          </div>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="star text-xs">★★★★☆</span>
+            <span class="text-xs text-gray-400">(87)</span>
+          </div>
+          <button class="mt-3 w-full border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+        </div>
+      </div>
+      <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+        <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+          <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+          <span class="text-5xl">⌚</span>
+        </div>
+        <div class="p-4">
+          <span class="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded">Grade A</span>
+          <p class="text-sm font-semibold text-gray-800 mt-2">Apple Watch Series 8</p>
+          <div class="flex items-center gap-2 mt-2">
+            <p class="text-base font-bold text-gray-900">1,390 QAR</p>
+            <p class="text-xs text-gray-400 line-through">1,799 QAR</p>
+          </div>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="star text-xs">★★★★★</span>
+            <span class="text-xs text-gray-400">(203)</span>
+          </div>
+          <button class="mt-3 w-full border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+        </div>
+      </div>
+      <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+        <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+          <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+          <span class="text-5xl">⌚</span>
+        </div>
+        <div class="p-4">
+          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">Grade B</span>
+          <p class="text-sm font-semibold text-gray-800 mt-2">Samsung Galaxy Watch 5 Pro</p>
+          <div class="flex items-center gap-2 mt-2">
+            <p class="text-base font-bold text-gray-900">899 QAR</p>
+            <p class="text-xs text-gray-400 line-through">1,299 QAR</p>
+          </div>
+          <div class="flex items-center gap-1 mt-1">
+            <span class="star text-xs">★★★★☆</span>
+            <span class="text-xs text-gray-400">(64)</span>
+          </div>
+          <button class="mt-3 w-full border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold py-2 rounded-lg transition-colors">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Buy on OpenBox -->
+<section class="py-14 max-w-7xl mx-auto px-6">
+  <h2 class="text-2xl font-bold text-gray-900 text-center mb-10">Why Buy on Aether?</h2>
+  <div class="grid grid-cols-4 gap-6">
+    <div class="text-center">
+      <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">✅</div>
+      <h3 class="font-semibold text-gray-800 mb-2">Verified Sellers</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Every seller is ID-verified and rated by real buyers before they can list products.</p>
+    </div>
+    <div class="text-center">
+      <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🛡️</div>
+      <h3 class="font-semibold text-gray-800 mb-2">Condition Grading</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Standardized A/B/C grading so you always know exactly what you're getting.</p>
+    </div>
+    <div class="text-center">
+      <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🔄</div>
+      <h3 class="font-semibold text-gray-800 mb-2">Easy Returns</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">7-day no-questions-asked returns. Hassle-free process for every order.</p>
+    </div>
+    <div class="text-center">
+      <div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4">🚚</div>
+      <h3 class="font-semibold text-gray-800 mb-2">Safe Delivery</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Insured shipping across Qatar and the GCC with real-time tracking on every parcel.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Grading System -->
+<section class="py-12 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-900">Understanding Our Grading System</h2>
+      <p class="text-gray-500 text-sm mt-2">We use standardized grades so every product condition is transparent</p>
+    </div>
+    <div class="grid grid-cols-3 gap-6">
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <span class="inline-block grade-a text-white font-bold text-sm px-3 py-1 rounded-full mb-4">Grade A</span>
+        <h3 class="font-bold text-gray-800 mb-2">Like New</h3>
+        <p class="text-sm text-gray-500">Minimal to no signs of use. Full functionality. May include original accessories. Cosmetically near-perfect with only micro-scratches invisible to naked eye.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <span class="inline-block grade-b text-white font-bold text-sm px-3 py-1 rounded-full mb-4">Grade B</span>
+        <h3 class="font-bold text-gray-800 mb-2">Good Condition</h3>
+        <p class="text-sm text-gray-500">Light visible wear — minor scratches or scuffs. Fully functional. May not include original box. Perfect for budget-conscious buyers who don't mind cosmetic imperfections.</p>
+      </div>
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <span class="inline-block grade-c text-white font-bold text-sm px-3 py-1 rounded-full mb-4">Grade C</span>
+        <h3 class="font-bold text-gray-800 mb-2">Fair Condition</h3>
+        <p class="text-sm text-gray-500">Moderate signs of use — visible scratches, dents, or marks. Fully functional. Ideal for buyers who prioritize performance over aesthetics at a great price.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Best Deals -->
+<section class="py-8 max-w-7xl mx-auto px-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-900">Best Deals</h2>
+    <a href="#" class="text-sm text-blue-500 hover:underline font-medium">View All →</a>
+  </div>
+  <div class="grid grid-cols-4 gap-4">
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">SALE</span>
+        <span class="text-5xl">📱</span>
+      </div>
+      <div class="p-4">
+        <p class="text-sm font-semibold text-gray-800">iPhone 15 Pro – Refurbished</p>
+        <p class="text-xs text-gray-400 mb-2">Grade A</p>
+        <div class="flex items-center gap-2">
+          <p class="text-base font-bold text-gray-900">2,100 QAR</p>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">-18%</span>
+        </div>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(94)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">SALE</span>
+        <span class="text-5xl">📱</span>
+      </div>
+      <div class="p-4">
+        <p class="text-sm font-semibold text-gray-800">Samsung Galaxy S21 – Used</p>
+        <p class="text-xs text-gray-400 mb-2">Grade B</p>
+        <div class="flex items-center gap-2">
+          <p class="text-base font-bold text-gray-900">799 QAR</p>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">-22%</span>
+        </div>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★☆</span>
+          <span class="text-xs text-gray-400">(56)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">SALE</span>
+        <span class="text-5xl">💻</span>
+      </div>
+      <div class="p-4">
+        <p class="text-sm font-semibold text-gray-800">Dell XPS 13 – Refurbished</p>
+        <p class="text-xs text-gray-400 mb-2">Grade A</p>
+        <div class="flex items-center gap-2">
+          <p class="text-base font-bold text-gray-900">1,890 QAR</p>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">-15%</span>
+        </div>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★☆</span>
+          <span class="text-xs text-gray-400">(71)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">SALE</span>
+        <span class="text-5xl">⌚</span>
+      </div>
+      <div class="p-4">
+        <p class="text-sm font-semibold text-gray-800">Apple Watch Series 9 Pro</p>
+        <p class="text-xs text-gray-400 mb-2">Grade A · Titanium</p>
+        <div class="flex items-center gap-2">
+          <p class="text-base font-bold text-gray-900">1,199 QAR</p>
+          <span class="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded">-20%</span>
+        </div>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(128)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trusted Vendors -->
+<section class="py-10 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-bold text-gray-900">Trusted Vendors</h2>
+      <a href="#" class="text-sm text-blue-500 hover:underline font-medium">All Vendors →</a>
+    </div>
+    <div class="grid grid-cols-6 gap-4">
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">🏪</div>
+        <p class="text-sm font-semibold text-gray-800">SecureTech Electronics</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.9 · 234 Sales</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">💼</div>
+        <p class="text-sm font-semibold text-gray-800">Smart Shop</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.8 · 187 Sales</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">🔧</div>
+        <p class="text-sm font-semibold text-gray-800">Alpha's Future</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.7 · 156 Sales</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">📦</div>
+        <p class="text-sm font-semibold text-gray-800">Nano Store</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.9 · 312 Sales</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">💻</div>
+        <p class="text-sm font-semibold text-gray-800">Laptop Dock</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.6 · 98 Sales</p>
+      </div>
+      <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-amber-300 cursor-pointer transition-all">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-xl mx-auto mb-3">🔌</div>
+        <p class="text-sm font-semibold text-gray-800">HiQ Elec.</p>
+        <p class="text-xs text-gray-400 mt-1">⭐ 4.8 · 143 Sales</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Start Selling CTA -->
+<section class="cta-grad py-16">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-3xl font-black text-white mb-3">Start Selling Your Electronics</h2>
+    <p class="text-gray-400 mb-8 text-sm">Join thousands of sellers earning on OpenBox. List your items in minutes, reach buyers across Qatar and the GCC.</p>
+    <div class="flex items-center justify-center gap-4">
+      <a href="#" class="bg-amber-500 hover:bg-amber-400 text-white font-semibold px-8 py-3.5 rounded-xl transition-colors text-sm">Start Selling Free</a>
+      <a href="#" class="text-gray-300 hover:text-white font-medium text-sm flex items-center gap-2">Learn More →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Arrivals -->
+<section class="py-10 max-w-7xl mx-auto px-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-bold text-gray-900">Latest Arrivals</h2>
+    <a href="#" class="text-sm text-blue-500 hover:underline font-medium">View All →</a>
+  </div>
+  <div class="grid grid-cols-4 gap-4">
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-blue-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-5xl">🖥️</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Apple</p>
+        <p class="text-sm font-semibold text-gray-800">iMac 24" Blue – New</p>
+        <p class="text-base font-bold text-gray-900 mt-2">5,999 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(18)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-orange-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-5xl">⌚</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Apple</p>
+        <p class="text-sm font-semibold text-gray-800">Apple Watch Ultra 2</p>
+        <p class="text-base font-bold text-gray-900 mt-2">2,499 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(42)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="text-5xl">📷</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Sony</p>
+        <p class="text-sm font-semibold text-gray-800">Sony Alpha A7 IV</p>
+        <p class="text-base font-bold text-gray-900 mt-2">7,699 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★☆</span>
+          <span class="text-xs text-gray-400">(29)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="text-5xl">🖱️</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">DJI</p>
+        <p class="text-sm font-semibold text-gray-800">DJI Mini 4 Pro Drone</p>
+        <p class="text-base font-bold text-gray-900 mt-2">4,299 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(61)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Row 2 -->
+  <div class="grid grid-cols-4 gap-4 mt-4">
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+        <span class="text-5xl">💻</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Asus</p>
+        <p class="text-sm font-semibold text-gray-800">VivoBook S15 M3 · Refurbished</p>
+        <p class="text-base font-bold text-gray-900 mt-2">1,899 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★☆</span>
+          <span class="text-xs text-gray-400">(33)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-ref absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">REF</span>
+        <span class="text-5xl">🎮</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Sony</p>
+        <p class="text-sm font-semibold text-gray-800">PlayStation 5 · Used</p>
+        <p class="text-base font-bold text-gray-900 mt-2">1,699 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(77)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="text-5xl">📷</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">Nikon</p>
+        <p class="text-sm font-semibold text-gray-800">Nikon Coolpix B600</p>
+        <p class="text-base font-bold text-gray-900 mt-2">1,299 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★☆</span>
+          <span class="text-xs text-gray-400">(22)</span>
+        </div>
+      </div>
+    </div>
+    <div class="prod-card bg-white border border-gray-100 rounded-2xl overflow-hidden cursor-pointer">
+      <div class="relative bg-gray-50 p-4 h-36 flex items-center justify-center">
+        <span class="badge-new absolute top-2 left-2 text-white text-xs font-bold px-2 py-0.5 rounded">NEW</span>
+        <span class="text-5xl">🎧</span>
+      </div>
+      <div class="p-4">
+        <p class="text-xs text-gray-400">DJI</p>
+        <p class="text-sm font-semibold text-gray-800">DJI Mic 2 – New</p>
+        <p class="text-base font-bold text-gray-900 mt-2">1,299 QAR</p>
+        <div class="flex items-center gap-1 mt-1">
+          <span class="star text-xs">★★★★★</span>
+          <span class="text-xs text-gray-400">(14)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Community Reviews -->
+<section class="py-12 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">What Our Community Says</h2>
+    <div class="grid grid-cols-4 gap-5">
+      <div class="bg-white rounded-2xl p-5 border border-gray-100">
+        <div class="flex items-center gap-1 mb-3"><span class="star text-sm">★★★★★</span></div>
+        <p class="text-sm text-gray-600 leading-relaxed">"Bought a refurbished iPhone and it looked brand new. Delivery was next day. Really impressed with the quality."</p>
+        <div class="flex items-center gap-3 mt-4">
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-bold text-blue-600">AK</div>
+          <div>
+            <p class="text-xs font-semibold text-gray-800">Ahmed K.</p>
+            <p class="text-xs text-gray-400">Doha, Qatar</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-gray-100">
+        <div class="flex items-center gap-1 mb-3"><span class="star text-sm">★★★★★</span></div>
+        <p class="text-sm text-gray-600 leading-relaxed">"The grading system is clear and accurate. Grade B MacBook had minor scratches, exactly as described. Happy!"</p>
+        <div class="flex items-center gap-3 mt-4">
+          <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs font-bold text-green-600">SM</div>
+          <div>
+            <p class="text-xs font-semibold text-gray-800">Sara M.</p>
+            <p class="text-xs text-gray-400">Al Wakra, Qatar</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-gray-100">
+        <div class="flex items-center gap-1 mb-3"><span class="star text-sm">★★★★☆</span></div>
+        <p class="text-sm text-gray-600 leading-relaxed">"Seller was responsive and the device was exactly what was listed. Easy process. Will shop here again for sure."</p>
+        <div class="flex items-center gap-3 mt-4">
+          <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-xs font-bold text-orange-600">OH</div>
+          <div>
+            <p class="text-xs font-semibold text-gray-800">Omar H.</p>
+            <p class="text-xs text-gray-400">Lusail, Qatar</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 border border-gray-100">
+        <div class="flex items-center gap-1 mb-3"><span class="star text-sm">★★★★★</span></div>
+        <p class="text-sm text-gray-600 leading-relaxed">"Saved a ton of money on a Galaxy S24. The return policy gave me confidence to buy. Highly recommend!"</p>
+        <div class="flex items-center gap-3 mt-4">
+          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-xs font-bold text-purple-600">NR</div>
+          <div>
+            <p class="text-xs font-semibold text-gray-800">Nour R.</p>
+            <p class="text-xs text-gray-400">Al Rayyan, Qatar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Popular Brands -->
+<section class="py-12 max-w-7xl mx-auto px-6">
+  <h2 class="text-xl font-bold text-gray-900 text-center mb-8">Popular Brands</h2>
+  <div class="flex flex-wrap items-center justify-center gap-6">
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Apple</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Samsung</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Sony</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Dell</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Asus</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">DJI</span>
+    </div>
+    <div class="bg-gray-50 hover:bg-gray-100 rounded-xl px-8 py-5 cursor-pointer transition-colors">
+      <span class="text-xl font-black text-gray-700">Nikon</span>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="py-14 bg-amber-500">
+  <div class="max-w-xl mx-auto px-6 text-center">
+    <h2 class="text-2xl font-black text-white mb-2">Stay Updated</h2>
+    <p class="text-amber-100 text-sm mb-6">Get flash sale alerts and new arrivals straight to your inbox.</p>
+    <div class="flex items-center gap-3">
+      <input type="email" placeholder="Your email address" class="flex-1 bg-white rounded-xl px-4 py-3 text-sm focus:outline-none shadow-sm"/>
+      <button class="bg-gray-900 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors flex-shrink-0">Subscribe</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-400 py-12">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-4 gap-8 mb-10">
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-7 h-7 bg-amber-500 rounded flex items-center justify-center">
+            <span class="text-white font-black text-xs">OB</span>
+          </div>
+          <span class="font-bold text-white text-base">OpenBox</span>
+        </div>
+        <p class="text-xs leading-relaxed">Qatar's trusted marketplace for new, used, and certified refurbished electronics.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Marketplace</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#" class="hover:text-white">Browse Products</a></li>
+          <li><a href="#" class="hover:text-white">Refurbished Deals</a></li>
+          <li><a href="#" class="hover:text-white">Best Deals</a></li>
+          <li><a href="#" class="hover:text-white">Latest Arrivals</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Sell</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#" class="hover:text-white">Start Selling</a></li>
+          <li><a href="#" class="hover:text-white">Vendor Dashboard</a></li>
+          <li><a href="#" class="hover:text-white">Seller Guidelines</a></li>
+          <li><a href="#" class="hover:text-white">Grading System</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Support</h4>
+        <ul class="space-y-2 text-xs">
+          <li><a href="#" class="hover:text-white">Help Center</a></li>
+          <li><a href="#" class="hover:text-white">Returns Policy</a></li>
+          <li><a href="#" class="hover:text-white">Contact Us</a></li>
+          <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 pt-6 flex items-center justify-between">
+      <p class="text-xs">© 2026 OpenBox · All rights reserved</p>
+      <p class="text-xs">Made in 🇶🇦 Qatar</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
