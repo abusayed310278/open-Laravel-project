@@ -21,4 +21,16 @@ class UserManagementService
 
         return $user;
     }
+
+    public function updateUser(User $user, array $data): User
+    {
+        $user->update($data);
+
+        return $user;
+    }
+
+    public function deleteUser(User $user): bool
+    {
+        return (bool) $user->delete();
+    }
 }

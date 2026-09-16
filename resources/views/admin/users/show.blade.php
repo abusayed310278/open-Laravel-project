@@ -55,7 +55,7 @@
                             type="submit"
                             :variant="$status === $user->status ? 'primary' : 'secondary'"
                             class="w-full justify-center"
-                            @disabled($status === $user->status)
+                            :disabled="$status === $user->status"
                         >
                             {{ $status->label() }}
                         </x-button>

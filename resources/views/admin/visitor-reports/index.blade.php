@@ -259,14 +259,15 @@
                 </div>
 
                 {{-- In-card Search Filter --}}
-                <div class="relative mt-4 mb-2">
+                <div class="flex items-center gap-2 mt-4 mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                         type="text"
                         id="pageFilterInput"
                         placeholder="Search URLs..."
-                        class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
+                        style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
                     >
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
 
                 <div id="pagesListContainer" class="divide-y divide-slate-100 mt-2">
@@ -312,14 +313,15 @@
                 </div>
 
                 {{-- In-card Search Filter --}}
-                <div class="relative mt-4 mb-2">
+                <div class="flex items-center gap-2 mt-4 mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                         type="text"
                         id="referrerFilterInput"
                         placeholder="Search referrers..."
-                        class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
+                        style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
                     >
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
 
                 <div id="referrersListContainer" class="divide-y divide-slate-100 mt-2">
@@ -510,14 +512,15 @@
 
             {{-- Live Terminal Search Input --}}
             <div class="flex items-center gap-3">
-                <div class="relative w-full sm:w-64">
+                <div class="flex items-center gap-2 w-full sm:w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                         type="text"
                         id="liveLogsFilterInput"
                         placeholder="Filter live stream..."
-                        class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all placeholder:text-slate-400"
+                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
+                        style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
                     >
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200/60 shadow-2xs whitespace-nowrap">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>

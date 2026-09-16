@@ -233,6 +233,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::patch('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.status');
         Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])->name('users.role');
 

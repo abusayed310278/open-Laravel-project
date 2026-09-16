@@ -44,6 +44,18 @@
    - **Font**: Visual Google Font selector cards (Montserrat, Inter, Roboto, Poppins, Outfit, Plus Jakarta Sans, etc.) with real-time typography playground.
    - **Color**: One-click curated presets + hex picker with real-time interactive component sandbox and dynamic shade palette generation.
    - **Cache Clear**: One-click "Clear All Caches" (`optimize:clear`) and granular controls (`cache:clear`, `view:clear`, `route:clear`, `config:clear`, `storage:link`).
+10. **Visitor Reports Search Input & Icon Alignment**:
+    - Fixed icon and placeholder text collision on search filters in `resources/views/admin/visitor-reports/index.blade.php` (Top Visited Pages, Inbound Referrers, Live Logs).
+    - Restructured input wrappers with flexbox containers (`flex items-center gap-2 px-3 py-2`) and transparent zero-padding inner inputs to prevent CSS reset overrides and ensure reliable layout.
+11. **Admin User Management Enhancements**:
+    - Converted user status controls (`Pending`, `Active`, `Suspended`, `Blocked`) into an interactive inline `<select>` dropdown with status-specific colored badge styling in `resources/views/admin/users/index.blade.php`.
+    - Added dedicated action icons for each user: **View** (eye icon), **Edit** (pencil icon opening dynamic edit modal), and **Delete** (trash icon with confirmation).
+    - Added `PATCH /admin/users/{user}` and `DELETE /admin/users/{user}` in `routes/web.php` and `UserController.php` with self-deletion protection.
+    - Streamlined the search toolbar by removing the redundant "All Roles" and "All Statuses" dropdown filters.
+    - Removed manual Search button and enabled real-time instant keystroke filtering on typing (`input` event) across name, email, phone, role, and status with dynamic clear `(x)` button and real-time empty state handling.
+    - Fixed Blade syntax error on User Details view (`resources/views/admin/users/show.blade.php`) by updating `@disabled` directive to `:disabled` property binding.
+    - Added explicit padding (`padding: 10px 14px !important;`) on all Edit User modal input and select fields to eliminate text touching the left border.
+    - Upgraded user avatar circles with a deterministic, curated 8-color pastel palette (Indigo, Emerald, Sky, Purple, Rose, Teal, Slate, Amber) with high-contrast text and photo upload fallback.
 
 ---
 
