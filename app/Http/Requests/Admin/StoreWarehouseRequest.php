@@ -26,7 +26,7 @@ class StoreWarehouseRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
             'storage_capacity' => ['nullable', 'integer', 'min:0'],
-            'is_active' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

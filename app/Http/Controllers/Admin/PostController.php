@@ -19,7 +19,7 @@ class PostController extends Controller
     public function index(): View
     {
         return view('admin.posts.index', [
-            'posts' => Post::query()->with(['category', 'author'])->latest()->paginate(20),
+            'posts' => Post::query()->with(['category', 'author', 'tags'])->latest()->simplePaginate(15),
         ]);
     }
 
@@ -63,6 +63,22 @@ class PostController extends Controller
         );
 
         return redirect()->route('admin.blog.index')->with('status', 'Post updated.');
+    }
+
+    public function toggleStatus(Post $post): RedirectResponse
+    {
+        $newStatus = $post->status === ContentStatus::Published
+            ? ContentStatus::Draft
+            : ContentStatus::Published;
+
+        $post->update([
+            'status' => $newStatus,
+            'published_at' => $newStatus === ContentStatus::Published ? ($post->published_at ?? now()) : $post->published_at,
+        ]);
+
+        $statusLabel = $newStatus->label();
+
+        return back()->with('status', "Post status updated to {$statusLabel}.");
     }
 
     public function destroy(Post $post): RedirectResponse

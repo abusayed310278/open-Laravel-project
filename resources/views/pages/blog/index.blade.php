@@ -21,8 +21,8 @@
                 <div class="grid sm:grid-cols-2 gap-6">
                     @forelse ($posts as $post)
                         <a href="{{ route('blog.show', $post) }}" class="block bg-white border border-gray-100 rounded-md overflow-hidden hover:shadow-sm transition-shadow">
-                            @if ($post->featured_image)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($post->featured_image) }}" class="w-full h-40 object-cover" alt="">
+                            @if ($post->featured_image_url)
+                                <img src="{{ $post->featured_image_url }}" class="w-full h-40 object-cover" alt="{{ $post->title }}" onerror="this.style.display='none'">
                             @endif
                             <div class="p-4">
                                 @if ($post->category)

@@ -16,7 +16,7 @@ class CommissionRuleController extends Controller
     public function index(): View
     {
         return view('admin.commission-rules.index', [
-            'rules' => CommissionRule::query()->orderByDesc('priority')->latest()->get(),
+            'rules' => CommissionRule::query()->orderByDesc('priority')->latest()->simplePaginate(15),
             'types' => CommissionRuleType::cases(),
             'commissionTypes' => CommissionType::cases(),
         ]);
@@ -46,6 +46,17 @@ class CommissionRuleController extends Controller
         ActivityLog::record('commission-rule.updated', $commissionRule);
 
         return back()->with('status', 'Commission rule updated.');
+    }
+
+    public function toggleActive(CommissionRule $commissionRule): RedirectResponse
+    {
+        $commissionRule->update(['is_active' => ! $commissionRule->is_active]);
+
+        $status = $commissionRule->is_active ? 'activated' : 'deactivated';
+
+        ActivityLog::record('commission-rule.updated', $commissionRule);
+
+        return back()->with('status', "Commission rule {$status}.");
     }
 
     public function destroy(CommissionRule $commissionRule): RedirectResponse

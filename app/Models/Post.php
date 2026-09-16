@@ -60,4 +60,22 @@ class Post extends Model
         return $query->where('status', ContentStatus::Published)
             ->where(fn ($q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
+
+    public function featuredImageUrl(): ?string
+    {
+        if (! $this->featured_image) {
+            return null;
+        }
+
+        if (str_starts_with($this->featured_image, 'http://') || str_starts_with($this->featured_image, 'https://')) {
+            return $this->featured_image;
+        }
+
+        return asset('storage/'.ltrim($this->featured_image, '/'));
+    }
+
+    public function getFeaturedImageUrlAttribute(): ?string
+    {
+        return $this->featuredImageUrl();
+    }
 }

@@ -366,6 +366,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/warehouses', [AdminWarehouseController::class, 'store'])->name('warehouses.store');
         Route::get('/warehouses/{warehouse}', [AdminWarehouseController::class, 'show'])->name('warehouses.show');
         Route::put('/warehouses/{warehouse}', [AdminWarehouseController::class, 'update'])->name('warehouses.update');
+        Route::patch('/warehouses/{warehouse}/toggle-active', [AdminWarehouseController::class, 'toggleActive'])->name('warehouses.toggle-active');
         Route::delete('/warehouses/{warehouse}', [AdminWarehouseController::class, 'destroy'])->name('warehouses.destroy');
         Route::post('/warehouses/{warehouse}/locations', [WarehouseLocationController::class, 'store'])->name('warehouses.locations.store');
         Route::delete('/warehouses/{warehouse}/locations/{location}', [WarehouseLocationController::class, 'destroy'])->name('warehouses.locations.destroy');
@@ -378,6 +379,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/subscriptions/plans', [SubscriptionPlanController::class, 'index'])->name('subscriptions.plans.index');
         Route::post('/subscriptions/plans', [SubscriptionPlanController::class, 'store'])->name('subscriptions.plans.store');
         Route::put('/subscriptions/plans/{subscriptionPlan}', [SubscriptionPlanController::class, 'update'])->name('subscriptions.plans.update');
+        Route::patch('/subscriptions/plans/{subscriptionPlan}/toggle-active', [SubscriptionPlanController::class, 'toggleActive'])->name('subscriptions.plans.toggle-active');
         Route::delete('/subscriptions/plans/{subscriptionPlan}', [SubscriptionPlanController::class, 'destroy'])->name('subscriptions.plans.destroy');
 
         Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
@@ -393,13 +395,17 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/refunds/{refund}/reject', [AdminRefundController::class, 'reject'])->name('refunds.reject');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::delete('/orders/bulk-delete', [AdminOrderController::class, 'bulkDestroy'])->name('orders.bulk-delete');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
 
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{invoice}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
         Route::get('/invoices/{invoice}/download', [AdminInvoiceController::class, 'download'])->name('invoices.download');
 
         Route::get('/reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+        Route::put('/reviews/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
+        Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
         Route::post('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
         Route::post('/reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
 
@@ -419,6 +425,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/commission-rules', [CommissionRuleController::class, 'index'])->name('commission-rules.index');
         Route::post('/commission-rules', [CommissionRuleController::class, 'store'])->name('commission-rules.store');
         Route::put('/commission-rules/{commissionRule}', [CommissionRuleController::class, 'update'])->name('commission-rules.update');
+        Route::patch('/commission-rules/{commissionRule}/toggle-active', [CommissionRuleController::class, 'toggleActive'])->name('commission-rules.toggle-active');
         Route::delete('/commission-rules/{commissionRule}', [CommissionRuleController::class, 'destroy'])->name('commission-rules.destroy');
 
         Route::get('/payouts', [AdminPayoutController::class, 'index'])->name('payouts.index');
@@ -434,6 +441,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/blog', [AdminPostController::class, 'index'])->name('blog.index');
         Route::get('/blog/create', [AdminPostController::class, 'create'])->name('blog.create');
         Route::post('/blog', [AdminPostController::class, 'store'])->name('blog.store');
+        Route::patch('/blog/{post}/toggle-status', [AdminPostController::class, 'toggleStatus'])->name('blog.toggle-status');
         Route::get('/blog/{post}/edit', [AdminPostController::class, 'edit'])->name('blog.edit');
         Route::put('/blog/{post}', [AdminPostController::class, 'update'])->name('blog.update');
         Route::delete('/blog/{post}', [AdminPostController::class, 'destroy'])->name('blog.destroy');

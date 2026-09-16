@@ -217,6 +217,46 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
   - Added dedicated Edit Checklist modals (`#edit-checklist-modal-{id}`) with category selectors, requirement checkboxes, and description textareas.
   - Added routes `PUT /admin/verification-checklists/{verificationChecklist}` and `PATCH /admin/verification-checklists/{verificationChecklist}/toggle-required` (`admin.verification-checklists.toggle-required`).
   - Upgraded table actions to modern SVG action icons (Requirement toggle, Edit pencil, and Delete trash) and integrated simple pagination (`simplePaginate(15)`).
+- **Admin Warehouses Management Modal & Actions (`resources/views/admin/warehouses/index.blade.php`, `show.blade.php`, `WarehouseController.php`, `routes/web.php`)**:
+  - Converted static on-page "Add Warehouse" form into a header button (`+ Add Warehouse`) triggering an interactive pop-up modal (`#add-warehouse-modal`).
+  - Added Edit Warehouse modals (`#edit-warehouse-modal-{id}`) for updating warehouse details, manager assignment, storage capacity, and status.
+  - Added `PATCH /admin/warehouses/{warehouse}/toggle-active` (`admin.warehouses.toggle-active`) and controller method `WarehouseController::toggleActive`.
+  - Upgraded warehouse index and show slot tables with modern SVG action icons (Manage slots, Status toggle active/inactive, Edit pencil, and Delete trash) and integrated simple pagination (`simplePaginate(15)`).
+  - Converted Add Storage Slot in warehouse show view into a pop-up modal (`#add-slot-modal`).
+- **Admin Subscription Plans Management Modal & Actions (`resources/views/admin/subscription-plans/index.blade.php`, `SubscriptionPlanController.php`, `routes/web.php`)**:
+  - Converted static on-page "Add Plan" form into a header button (`+ Add Plan`) triggering an interactive pop-up modal (`#add-plan-modal`).
+  - Added full Edit Plan modals (`#edit-plan-modal-{id}`) for updating Individual Seller plans and Business Recurring plans.
+  - Added route `PATCH /admin/subscriptions/plans/{subscriptionPlan}/toggle-active` (`admin.subscriptions.plans.toggle-active`) and controller method `SubscriptionPlanController::toggleActive`.
+  - Upgraded both Seller and Business plan tables with modern SVG action icons (Status toggle active/inactive, Edit pencil, and Delete trash).
+- **Admin Orders Table Action Icons & Bulk Deletion (`resources/views/admin/orders/index.blade.php`, `OrderController.php`, `routes/web.php`)**:
+  - Converted text "View" link into a modern SVG eye action icon (`<svg>`) linking directly to order details.
+  - Added SVG trash delete icon with confirmation prompt via `DELETE /admin/orders/{order}` (`OrderController::destroy`).
+  - Implemented multi-select row checkboxes and a "Select All" table header checkbox.
+  - Added a dynamic **"Delete Selected (X)"** button in the header action bar next to the Status filter that appears only when 1 or more rows are selected.
+  - Added `DELETE /admin/orders/bulk-delete` route and `OrderController::bulkDestroy` handling batch order deletion with confirmation prompt and flash feedback.
+  - Added explicit `'Actions'` column header and configured simple pagination (`simplePaginate(15)`).
+- **Admin Commission Rules Modal & Actions (`resources/views/admin/commission-rules/index.blade.php`, `CommissionRuleController.php`, `routes/web.php`)**:
+  - Converted static on-page "Add Rule" form into a header button (`+ Add Rule`) triggering an interactive modal popup (`#add-rule-modal`).
+  - Added dedicated Edit Rule modals (`#edit-rule-modal-{id}`) for updating rule type, reference ID, percentage/fixed value, priority, and status.
+  - Added `PATCH /admin/commission-rules/{commissionRule}/toggle-active` (`admin.commission-rules.toggle-active`) and controller method `CommissionRuleController::toggleActive`.
+  - Upgraded table actions to modern SVG action icons (Status toggle active/inactive, Edit pencil, and Delete trash) and integrated simple pagination (`simplePaginate(15)`).
+- **Admin Reviews Management Action Icons & Simple Pagination (`resources/views/admin/reviews/index.blade.php`, `ReviewController.php`, `routes/web.php`)**:
+  - Simplified rating display to clean numerical text (e.g. `4/5`).
+  - Truncated review details content snippet to concise 5 words (`Str::words($review->body, 5)`).
+  - Added **View** action icon (`<svg>` eye icon) opening a full review inspection modal (`#view-review-modal-{id}`) with reviewer profile, star breakdown, full body text, and attached photos gallery.
+  - Added **Edit** action icon (`<svg>` pencil icon) opening an Edit modal (`#edit-review-modal-{id}`) via `PUT /admin/reviews/{review}`.
+  - Added quick **Approve** (checkmark icon) and **Reject** (X icon) action buttons for review moderation.
+  - Added **Delete** action icon (`<svg>` trash icon) with confirmation prompt via `DELETE /admin/reviews/{review}` (`ReviewController::destroy`).
+  - Added explicit `'Actions'` column header and configured simple pagination (`simplePaginate(10)`).
+- **Admin Blog Posts Management Action Icons & Status Toggle (`resources/views/admin/posts/index.blade.php`, `PostController.php`, `routes/web.php`)**:
+  - Upgraded table actions to modern SVG action icons:
+    - **View**: SVG eye action icon triggering a detailed post inspection modal (`#view-post-modal-{id}`) with title, slug, author, category, published date, featured image preview, tags, excerpt, and content preview.
+    - **Toggle Status**: Status toggle icon (emerald checkmark for `Published` / circle-slash for `Draft`) via `PATCH /admin/blog/{post}/toggle-status` (`AdminPostController::toggleStatus`).
+    - **Edit**: SVG pencil action icon linking directly to `admin.blog.edit`.
+    - **Delete**: SVG trash action icon with permanent deletion confirmation prompt via `DELETE /admin/blog/{post}` (`AdminPostController::destroy`).
+  - Added robust image URL resolver (`Post::featuredImageUrl()` / `$post->featured_image_url`) handling both seeded full URLs (`http://`, `https://`) and public disk storage paths (`blog/...`), plus graceful `onerror` placeholder fallback icons.
+  - Added explicit `'Actions'` column header and simple pagination (`simplePaginate(15)`) via `<x-pagination>`.
+
 
 
 

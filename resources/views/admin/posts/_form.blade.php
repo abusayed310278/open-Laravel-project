@@ -59,8 +59,8 @@
         </x-card>
 
         <x-card title="Featured Image">
-            @if ($post->featured_image)
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($post->featured_image) }}" class="w-full rounded-md mb-3" alt="">
+            @if ($post->featured_image_url)
+                <img src="{{ $post->featured_image_url }}" class="w-full rounded-md mb-3 max-h-56 object-cover border border-gray-100" alt="" onerror="this.style.display='none'">
             @endif
             <input type="file" name="featured_image" accept="image/*" class="text-sm">
         </x-card>

@@ -28,7 +28,7 @@ class StoreSubscriptionPlanRequest extends FormRequest
             'listing_credits' => ['nullable', 'integer', 'min:1'],
             'duration_days' => ['nullable', 'integer', 'min:1'],
             'max_products' => ['nullable', 'integer', 'min:1'],
-            'is_active' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

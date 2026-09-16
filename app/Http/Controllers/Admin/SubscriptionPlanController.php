@@ -21,19 +21,34 @@ class SubscriptionPlanController extends Controller
 
     public function store(StoreSubscriptionPlanRequest $request): RedirectResponse
     {
-        SubscriptionPlan::query()->create([
-            ...$request->validated(),
-            'sort_order' => SubscriptionPlan::query()->max('sort_order') + 1,
-        ]);
+        $data = $request->validated();
+        $data['is_active'] = $request->boolean('is_active', true);
+        $data['sort_order'] = (SubscriptionPlan::query()->max('sort_order') ?? 0) + 1;
+
+        SubscriptionPlan::query()->create($data);
 
         return back()->with('status', 'Plan created.');
     }
 
     public function update(StoreSubscriptionPlanRequest $request, SubscriptionPlan $subscriptionPlan): RedirectResponse
     {
-        $subscriptionPlan->update($request->validated());
+        $data = $request->validated();
+        if ($request->has('is_active')) {
+            $data['is_active'] = $request->boolean('is_active');
+        }
+
+        $subscriptionPlan->update($data);
 
         return back()->with('status', 'Plan updated.');
+    }
+
+    public function toggleActive(SubscriptionPlan $subscriptionPlan): RedirectResponse
+    {
+        $subscriptionPlan->update(['is_active' => ! $subscriptionPlan->is_active]);
+
+        $status = $subscriptionPlan->is_active ? 'activated' : 'deactivated';
+
+        return back()->with('status', "Plan {$status}.");
     }
 
     public function destroy(SubscriptionPlan $subscriptionPlan): RedirectResponse

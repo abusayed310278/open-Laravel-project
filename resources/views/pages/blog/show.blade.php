@@ -13,8 +13,8 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-3">{{ $post->title }}</h1>
         <p class="text-sm text-gray-400 mb-6">{{ $post->author->name }} · {{ $post->published_at?->format('F j, Y') }}</p>
 
-        @if ($post->featured_image)
-            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($post->featured_image) }}" class="w-full rounded-md mb-8" alt="">
+        @if ($post->featured_image_url)
+            <img src="{{ $post->featured_image_url }}" class="w-full rounded-md mb-8 max-h-96 object-cover" alt="{{ $post->title }}" onerror="this.style.display='none'">
         @endif
 
         <div class="prose max-w-none text-gray-700 leading-relaxed">{!! $post->content !!}</div>

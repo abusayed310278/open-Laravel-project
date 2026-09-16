@@ -26,7 +26,7 @@ class StoreCommissionRuleRequest extends FormRequest
             'commission_type' => ['required', Rule::enum(CommissionType::class)],
             'value' => ['required', 'numeric', 'min:0'],
             'priority' => ['nullable', 'integer'],
-            'is_active' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

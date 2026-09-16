@@ -15,7 +15,7 @@ class WarehouseController extends Controller
     public function index(): View
     {
         return view('admin.warehouses.index', [
-            'warehouses' => Warehouse::query()->withCount('warehouseProducts')->with('manager')->orderBy('name')->get(),
+            'warehouses' => Warehouse::query()->withCount('warehouseProducts')->with('manager')->orderBy('name')->simplePaginate(15),
             'admins' => User::query()->where('role', UserRole::Admin)->orderBy('name')->get(),
         ]);
     }
@@ -39,6 +39,15 @@ class WarehouseController extends Controller
         $warehouse->update($request->validated());
 
         return back()->with('status', 'Warehouse updated.');
+    }
+
+    public function toggleActive(Warehouse $warehouse): RedirectResponse
+    {
+        $warehouse->update(['is_active' => ! $warehouse->is_active]);
+
+        $status = $warehouse->is_active ? 'activated' : 'deactivated';
+
+        return back()->with('status', "Warehouse {$status}.");
     }
 
     public function destroy(Warehouse $warehouse): RedirectResponse
