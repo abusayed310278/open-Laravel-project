@@ -13,7 +13,7 @@ class VerificationLocationController extends Controller
     public function index(): View
     {
         return view('admin.verification-locations.index', [
-            'locations' => VerificationLocation::query()->withCount('verifiers')->orderBy('name')->get(),
+            'locations' => VerificationLocation::query()->withCount('verifiers')->orderBy('name')->simplePaginate(15),
         ]);
     }
 
@@ -29,6 +29,15 @@ class VerificationLocationController extends Controller
         $verificationLocation->update($request->validated());
 
         return back()->with('status', 'Location updated.');
+    }
+
+    public function toggleActive(VerificationLocation $verificationLocation): RedirectResponse
+    {
+        $verificationLocation->update(['is_active' => ! $verificationLocation->is_active]);
+
+        $status = $verificationLocation->is_active ? 'activated' : 'deactivated';
+
+        return back()->with('status', "Location {$status}.");
     }
 
     public function destroy(VerificationLocation $verificationLocation): RedirectResponse

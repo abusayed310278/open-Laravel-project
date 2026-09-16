@@ -23,7 +23,7 @@
             </select>
         </form>
 
-        <x-table :headers="['Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', '']" id="products-table">
+        <x-table :headers="['Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', 'Actions']" id="products-table">
             @forelse ($products as $product)
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 font-medium text-gray-900">{{ $product->title }}</td>

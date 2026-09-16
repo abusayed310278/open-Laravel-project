@@ -183,11 +183,40 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
   - Removed the manual Search button and form submission overhead.
   - Implemented live instant client-side search filtering on each keystroke (`input` event) across name, email, phone, role, and status.
   - Added an interactive dynamic clear `(x)` button and a real-time "No matching users found" feedback state.
-- **Dynamic Curated Avatar Palette (`resources/views/admin/users/index.blade.php`)**:
-  - Replaced uniform pale-yellow circles with a deterministic 8-color modern pastel palette (Indigo, Emerald, Sky, Purple, Rose, Teal, Slate, Amber) with high-contrast text and subtle border.
-  - Added native support to render actual user profile photos (`$user->profile->avatar`) when uploaded.
-
-
+- **Standard Unified Pagination Alignment (`resources/views/components/pagination.blade.php`)**:
+  - Re-aligned `<x-pagination>` to use the standard, clean Laravel paginator (`{{ $paginator->links() }}`) with `hasPages()` check.
+  - Standardized across **Users** (`admin/users/index.blade.php`), **Products** (`admin/products/index.blade.php`), **Inventory** (`admin/inventory/index.blade.php` & `seller/inventory/index.blade.php`), and **Attributes** (`admin/attributes/index.blade.php`) for consistent layout, record counts, and page controls.
+- **Admin Products Table Actions Header (`resources/views/admin/products/index.blade.php`)**:
+  - Added explicit `'Actions'` column header to the products table to match action icon controls (Publish/Unpublish, Preview, Edit, Delete).
+- **Admin Category Actions Icon Updates (`resources/views/admin/categories/builder/categories.blade.php`, `resources/views/admin/categories/index.blade.php`)**:
+  - Replaced plain text "Edit" and "Delete" buttons with sleek SVG icons with hover feedback and tooltips in Category Builder Workspace and Category Index.
+- **Category Builder Quick Add Category Modal (`resources/views/admin/categories/builder/categories.blade.php`, `_tabs.blade.php`)**:
+  - Moved Quick Add Category into a single top button directly under Classic Categories in the Category Builder header.
+  - Converted the static side-column form into an interactive pop-up modal (`#add-category-modal`) allowing full-width presentation of the Category Hierarchy tree.
+  - Applied generous button padding (`px-4 py-2`), `whitespace-nowrap`, and `shrink-0` to guarantee button text fits on all viewports without wrapping.
+- **Modal Popups for Creating Attributes & Attribute Groups (`attributes/index.blade.php`, `attribute-groups/index.blade.php`)**:
+- **Admin Brands Table Actions, Status Toggle & Simple Pagination (`resources/views/admin/brands/index.blade.php`, `BrandController.php`, `routes/web.php`)**:
+  - Added route `PATCH /admin/brands/{brand}/toggle-status` (`admin.brands.toggle-status`) and controller method `BrandController::toggleStatus` to toggle brand status between `PublishStatus::Active` and `PublishStatus::Inactive`.
+  - Added one-click status toggle icon in the Actions column: emerald checkmark icon (`Active (Click to Deactivate)`) and gray/emerald circle-slash icon (`Inactive (Click to Activate)`).
+  - Upgraded Edit and Delete buttons to modern SVG action icons (pencil and trash) with tooltips and confirmation modals.
+  - Added explicit `'Actions'` column header to the Brands table.
+  - Enabled simple pagination (`simplePaginate(10)`) in `BrandController::index` with clean Next/Previous page links via `<x-pagination>`.
+- **Admin Verification Locations Modal & Actions (`resources/views/admin/verification-locations/index.blade.php`, `VerificationLocationController.php`, `routes/web.php`)**:
+  - Converted the static on-page Add Location form into a pop-up modal (`#add-location-modal`) triggered by a clean `+ Add Location` button in the card header.
+  - Added edit modal (`#edit-location-modal-{id}`) with pre-filled inputs for updating verification hubs.
+  - Added route `PATCH /admin/verification-locations/{verificationLocation}/toggle-active` (`admin.verification-locations.toggle-active`) and controller method `VerificationLocationController::toggleActive`.
+  - Upgraded table actions to modern SVG action icons (Status toggle active/inactive, Edit pencil, and Delete trash).
+  - Added simple pagination (`simplePaginate(15)`) via `<x-pagination>`.
+- **Admin Verifiers Management Modal & Actions (`resources/views/admin/verifiers/index.blade.php`, `VerifierController.php`, `routes/web.php`)**:
+  - Converted static on-page "Add Verifier" form into a header button (`+ Add Verifier`) triggering an interactive pop-up modal (`#add-verifier-modal`).
+  - Added full Edit Verifier modal (`#edit-verifier-modal-{id}`) supporting name, email, employee ID, location assignment, status, and optional password reset.
+  - Added `PUT /admin/verifiers/{user}`, `PATCH /admin/verifiers/{user}/toggle-status`, and `DELETE /admin/verifiers/{user}` in `routes/web.php` and `VerifierController.php`.
+  - Upgraded table actions to modern SVG action icons (Status toggle active/suspend, Edit pencil, and Delete trash) and integrated simple pagination.
+- **Admin Verification Checklists Modal & Actions (`resources/views/admin/verification-checklists/index.blade.php`, `VerificationChecklistController.php`, `routes/web.php`)**:
+  - Converted the static on-page "Add Checklist Item" form into a header button (`+ Add Checklist Item`) opening an interactive pop-up modal (`#add-checklist-modal`).
+  - Added dedicated Edit Checklist modals (`#edit-checklist-modal-{id}`) with category selectors, requirement checkboxes, and description textareas.
+  - Added routes `PUT /admin/verification-checklists/{verificationChecklist}` and `PATCH /admin/verification-checklists/{verificationChecklist}/toggle-required` (`admin.verification-checklists.toggle-required`).
+  - Upgraded table actions to modern SVG action icons (Requirement toggle, Edit pencil, and Delete trash) and integrated simple pagination (`simplePaginate(15)`).
 
 
 

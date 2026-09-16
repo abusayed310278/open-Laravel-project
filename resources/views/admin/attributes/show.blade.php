@@ -26,12 +26,12 @@
                           :options="collect(\App\Enums\AttributeType::cases())->mapWithKeys(fn ($t) => [$t->value => $t->label()])"
                           :selected="old('type', $attribute->type->value)" />
 
-                <div class="grid grid-cols-2 gap-3">
-                    <x-input label="Unit (optional)" name="unit" type="text" :value="old('unit', $attribute->unit)" placeholder="GB, kg, in" />
-                    <x-input label="Sort Order" name="sort_order" type="number" :value="old('sort_order', $attribute->sort_order)" min="0" />
-                </div>
+                <x-textarea label="Unit (Optional)" name="unit" rows="2" placeholder="e.g. GB, TB, GHz, kg, cm, in, mAh, Watts (or specifications note)">{{ old('unit', $attribute->unit) }}</x-textarea>
 
-                <x-input label="Placeholder" name="placeholder" type="text" :value="old('placeholder', $attribute->placeholder)" placeholder="e.g. Select color..." />
+                <div class="grid grid-cols-2 gap-3">
+                    <x-input label="Sort Order" name="sort_order" type="number" :value="old('sort_order', $attribute->sort_order)" min="0" />
+                    <x-input label="Placeholder" name="placeholder" type="text" :value="old('placeholder', $attribute->placeholder)" placeholder="e.g. Select color..." />
+                </div>
 
                 <div class="space-y-2 pt-2 border-t border-gray-100 text-sm text-gray-700">
                     <label class="flex items-center gap-2">

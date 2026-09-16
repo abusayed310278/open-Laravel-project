@@ -314,6 +314,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
         Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
         Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+        Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
         Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
         // Attribute Groups
@@ -345,14 +346,20 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/verification-locations', [VerificationLocationController::class, 'index'])->name('verification-locations.index');
         Route::post('/verification-locations', [VerificationLocationController::class, 'store'])->name('verification-locations.store');
         Route::put('/verification-locations/{verificationLocation}', [VerificationLocationController::class, 'update'])->name('verification-locations.update');
+        Route::patch('/verification-locations/{verificationLocation}/toggle-active', [VerificationLocationController::class, 'toggleActive'])->name('verification-locations.toggle-active');
         Route::delete('/verification-locations/{verificationLocation}', [VerificationLocationController::class, 'destroy'])->name('verification-locations.destroy');
 
         Route::get('/verifiers', [VerifierController::class, 'index'])->name('verifiers.index');
         Route::post('/verifiers', [VerifierController::class, 'store'])->name('verifiers.store');
+        Route::put('/verifiers/{user}', [VerifierController::class, 'update'])->name('verifiers.update');
+        Route::patch('/verifiers/{user}/toggle-status', [VerifierController::class, 'toggleStatus'])->name('verifiers.toggle-status');
+        Route::delete('/verifiers/{user}', [VerifierController::class, 'destroy'])->name('verifiers.destroy');
         Route::patch('/verifiers/{verifierProfile}/location', [VerifierController::class, 'assignLocation'])->name('verifiers.assign-location');
 
         Route::get('/verification-checklists', [VerificationChecklistController::class, 'index'])->name('verification-checklists.index');
         Route::post('/verification-checklists', [VerificationChecklistController::class, 'store'])->name('verification-checklists.store');
+        Route::put('/verification-checklists/{verificationChecklist}', [VerificationChecklistController::class, 'update'])->name('verification-checklists.update');
+        Route::patch('/verification-checklists/{verificationChecklist}/toggle-required', [VerificationChecklistController::class, 'toggleRequired'])->name('verification-checklists.toggle-required');
         Route::delete('/verification-checklists/{verificationChecklist}', [VerificationChecklistController::class, 'destroy'])->name('verification-checklists.destroy');
 
         Route::get('/warehouses', [AdminWarehouseController::class, 'index'])->name('warehouses.index');

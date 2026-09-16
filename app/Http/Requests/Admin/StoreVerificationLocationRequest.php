@@ -24,7 +24,7 @@ class StoreVerificationLocationRequest extends FormRequest
             'country' => ['required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
             'email' => ['nullable', 'email', 'max:255'],
-            'is_active' => ['boolean'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -13,13 +13,21 @@
             <h1 class="text-xl font-bold text-gray-900">Category & Specification Builder</h1>
             <p class="text-sm text-gray-500 mt-0.5">A unified workspace to configure categories, specification groups, attributes, and category assignments.</p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('admin.categories.index') }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50 transition">
-                Classic Categories
-            </a>
-            <a href="{{ route('admin.attributes.index') }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50 transition">
-                Classic Attributes
-            </a>
+        <div class="flex flex-col sm:items-end gap-2.5 shrink-0">
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <a href="{{ route('admin.categories.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
+                    Classic Categories
+                </a>
+                <a href="{{ route('admin.attributes.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
+                    Classic Attributes
+                </a>
+            </div>
+            @if (($active ?? '') === 'categories')
+                <button type="button" data-modal-open="add-category-modal" class="whitespace-nowrap inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 shadow-2xs transition cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span class="whitespace-nowrap">Quick Add Category</span>
+                </button>
+            @endif
         </div>
     </div>
 

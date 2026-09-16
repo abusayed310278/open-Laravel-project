@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBrandRequest;
 use App\Models\Brand;
@@ -14,7 +15,7 @@ class BrandController extends Controller
     public function index(): View
     {
         return view('admin.brands.index', [
-            'brands' => Brand::query()->orderBy('name')->paginate(20),
+            'brands' => Brand::query()->orderBy('name')->simplePaginate(10),
         ]);
     }
 
@@ -67,5 +68,18 @@ class BrandController extends Controller
         $brand->delete();
 
         return redirect()->route('admin.brands.index')->with('status', 'Brand deleted.');
+    }
+
+    public function toggleStatus(Brand $brand): RedirectResponse
+    {
+        $newStatus = $brand->status === PublishStatus::Active
+            ? PublishStatus::Inactive
+            : PublishStatus::Active;
+
+        $brand->update(['status' => $newStatus]);
+
+        $statusLabel = $newStatus->label();
+
+        return back()->with('status', "Brand status updated to {$statusLabel}.");
     }
 }

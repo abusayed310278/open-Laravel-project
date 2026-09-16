@@ -21,7 +21,7 @@ class StoreVerificationChecklistRequest extends FormRequest
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'item_name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
-            'is_required' => ['boolean'],
+            'is_required' => ['sometimes', 'boolean'],
         ];
     }
 }

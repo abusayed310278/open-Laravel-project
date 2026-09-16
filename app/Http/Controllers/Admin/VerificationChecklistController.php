@@ -14,19 +14,39 @@ class VerificationChecklistController extends Controller
     public function index(): View
     {
         return view('admin.verification-checklists.index', [
-            'items' => VerificationChecklist::query()->with('category')->orderBy('sort_order')->get(),
+            'items' => VerificationChecklist::query()->with('category')->orderBy('sort_order')->simplePaginate(15),
             'categories' => Category::query()->active()->orderBy('name')->get(),
         ]);
     }
 
     public function store(StoreVerificationChecklistRequest $request): RedirectResponse
     {
-        VerificationChecklist::query()->create([
-            ...$request->validated(),
-            'sort_order' => VerificationChecklist::query()->max('sort_order') + 1,
-        ]);
+        $data = $request->validated();
+        $data['is_required'] = $request->boolean('is_required');
+        $data['sort_order'] = (VerificationChecklist::query()->max('sort_order') ?? 0) + 1;
+
+        VerificationChecklist::query()->create($data);
 
         return back()->with('status', 'Checklist item added.');
+    }
+
+    public function update(StoreVerificationChecklistRequest $request, VerificationChecklist $verificationChecklist): RedirectResponse
+    {
+        $data = $request->validated();
+        $data['is_required'] = $request->boolean('is_required');
+
+        $verificationChecklist->update($data);
+
+        return back()->with('status', 'Checklist item updated.');
+    }
+
+    public function toggleRequired(VerificationChecklist $verificationChecklist): RedirectResponse
+    {
+        $verificationChecklist->update(['is_required' => ! $verificationChecklist->is_required]);
+
+        $status = $verificationChecklist->is_required ? 'marked as required' : 'marked as optional';
+
+        return back()->with('status', "Checklist item {$status}.");
     }
 
     public function destroy(VerificationChecklist $verificationChecklist): RedirectResponse

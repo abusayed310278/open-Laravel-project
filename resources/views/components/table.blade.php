@@ -6,7 +6,7 @@
             <thead>
                 <tr class="border-b border-gray-100">
                     @foreach ($headers as $header)
-                        <th class="text-left text-xs font-semibold text-gray-500 px-4 py-3 bg-gray-50">{{ $header }}</th>
+                        <th class="{{ in_array(strtolower($header), ['actions', 'action']) ? 'text-right' : 'text-left' }} text-xs font-semibold text-gray-500 px-4 py-3 bg-gray-50">{{ $header }}</th>
                     @endforeach
                 </tr>
             </thead>
