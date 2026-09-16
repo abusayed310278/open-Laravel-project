@@ -256,9 +256,61 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
     - **Delete**: SVG trash action icon with permanent deletion confirmation prompt via `DELETE /admin/blog/{post}` (`AdminPostController::destroy`).
   - Added robust image URL resolver (`Post::featuredImageUrl()` / `$post->featured_image_url`) handling both seeded full URLs (`http://`, `https://`) and public disk storage paths (`blog/...`), plus graceful `onerror` placeholder fallback icons.
   - Added explicit `'Actions'` column header and simple pagination (`simplePaginate(15)`) via `<x-pagination>`.
-
-
-
-
-
-
+- **Admin Banners Management Action Icons, Image Resolver & Modals (`resources/views/admin/banners/index.blade.php`, `BannerController.php`, `routes/web.php`, `Banner.php`)**:
+  - Added robust image URL resolver (`Banner::imageUrl()` / `$banner->image_url`) handling both seeded full external URLs (`https://...`) and public storage paths (`banners/...`), plus graceful `onerror` placeholder fallback icons.
+  - Converted the static on-page Add Banner form into a clean `+ Add Banner` header button opening an interactive pop-up modal (`#add-banner-modal`).
+  - Added **View** action icon (`<svg>` eye icon) opening a detailed inspection modal (`#view-banner-modal-{id}`) displaying full banner graphic, target link preview, position, status, schedule dates, and sort order.
+  - Added **Toggle Status** icon (emerald checkmark for `Active` / gray circle-slash for `Inactive`) via `PATCH /admin/banners/{banner}/toggle-active` (`AdminBannerController::toggleActive`).
+  - Added **Edit** action icon (`<svg>` pencil icon) opening a dedicated Edit Banner modal (`#edit-banner-modal-{id}`) with prefilled fields and current image preview (`PUT /admin/banners/{banner}`).
+  - Added **Delete** action icon (`<svg>` trash icon) with confirmation prompt via `DELETE /admin/banners/{banner}` (`AdminBannerController::destroy`).
+- **Dashboard Sidebar Brand Logo Integration (`resources/views/components/dashboard-sidebar.blade.php`)**:
+  - Replaced the plain `OB` yellow box placeholder in the top-left sidebar header with the project's official logo icon (`asset('icon.png')`) and dynamic support for uploaded custom brand logos (`setting('brand_logo')` / `setting('site_icon')`).
+- **Dashboard Sidebar Shrink & Expand Toggle (`resources/views/components/dashboard-topbar.blade.php`, `dashboard-sidebar.blade.php`, `head.blade.php`)**:
+  - Implemented desktop sidebar collapse toggle button (`#desktop-sidebar-toggle`) in the dashboard topbar with SVG icon.
+  - Added mini icon-only sidebar mode (shrinking width from `224px` to `72px`, centering icons, hiding labels/headings, and dynamically adjusting the main content margin).
+  - Added HTML tooltips on all nav items in collapsed mode so navigation is clear.
+  - Implemented `localStorage` state persistence with head pre-check script to prevent layout shift on navigation across all dashboard portals (Admin, Business, Seller, Verifier, Customer).
+- **Role Terminology Alignment (`resources/views/auth/register.blade.php`, `UserRole.php`, `dashboard-topbar.blade.php`, `subscription-plans/index.blade.php`)**:
+  - Aligned user role display text across the application without modifying backend values:
+    - **`Buyer` / `Customer`** → **`User`**
+    - **`Business`** → **`Store Owner`**
+    - **`Individual Seller` / `Saler`** → **`Seller`**
+- **E-Commerce Product Card Redesign (`resources/views/components/product-card.blade.php`, `home.blade.php`, `shop.blade.php`, `store.blade.php`, `product.blade.php`, `wishlist/index.blade.php`, `HomeController.php`)**:
+  - Redesigned product cards to match the clean minimalist e-commerce design:
+    - **Centered Layout**: Clean white card with rounded borders (`rounded-2xl border-gray-100 shadow-2xs hover:shadow-md`).
+    - **Centered Product Image**: Contained image ratio (`object-contain`) with smooth hover zoom effect and fallback placeholder icon.
+    - **Bold Category / Brand Heading**: Centered bold headline (e.g. `Laptop`, `Feature Phone`, `Split AC`, `STARLINK`, `Wi-Fi Camera`, `Smartwatch`).
+    - **Centered Product Title**: Clean description clamped to 2 lines (`line-clamp-2 leading-relaxed`).
+    - **Bold Price Display**: Prominent bold price with `Tk` currency format (e.g., `Tk 85,900`, `Tk 2,350`).
+    - **Special Offer / Savings**: Clean purple offer tag (`Save Extra Tk {amount} on various offer`) when compare price exceeds selling price.
+    - Removed bulky gray spec boxes, wishlist overlay buttons, seller author labels, and redundant view buttons from the cards.
+  - Updated all product listings across the homepage (`featuredProducts`, `refurbishedDeals`, `mobileTechProducts`, `latestProducts`), shop catalog, store storefront, product detail page related products, and wishlist views.
+- **Popular Searches Button Style (`resources/views/pages/home.blade.php`)**:
+  - Replaced the full-curve pill styling (`rounded-full`) on all Popular Searches tag buttons with modern rounded rectangles (`rounded-lg border-gray-200 bg-white shadow-2xs`).
+  - Increased inner horizontal padding to `px-5 py-2` to provide comfortable left and right spacing around button text.
+- **Start Selling CTA Banner Contrast Fix (`resources/views/pages/home.blade.php`)**:
+  - Replaced ambiguous Tailwind gradient classes with an explicit dark gradient background (`linear-gradient(135deg, #090d16 0%, #111827 50%, #451a03 100%)`).
+  - Set explicit high-contrast white and light gray text colors so heading, description, and action buttons are clearly visible.
+- **Browse Categories Hover Color (`resources/views/pages/home.blade.php`)**:
+  - Changed category card hover styling from yellow/amber to clean black border (`hover:border-gray-900`), black icon container (`group-hover:bg-gray-900 group-hover:text-white`), and crisp dark typography (`group-hover:text-gray-950`).
+- **Hero Section Top Spacing & Popular Keyword Tags (`resources/views/pages/home.blade.php`)**:
+  - Increased top padding from `pt-10` to `pt-14 sm:pt-20` so the top pill badge has plenty of breathing room from the category menu bar.
+  - Converted the congested popular keyword list into individual, well-spaced rounded rectangle tag chips with `px-5 py-2` padding, comfortable gaps (`gap-2.5 sm:gap-3`), and clean hover states.
+- **View All Links & Star Ratings Color (`resources/views/pages/home.blade.php`)**:
+  - Changed all section "View All →" links to solid black font (`text-gray-950 hover:text-black font-bold`) across Browse Categories, Featured Products, Refurbished Deals, Mobile & Tech, Top Rated Vendors, and Latest Drops.
+  - Changed star rating icons in Top Rated Vendors and Community Reviews to solid black (`text-gray-950`).
+- **The Openbox Guarantee Cards Unified Styling (`resources/views/pages/home.blade.php`)**:
+  - Removed multiple conflicting colors (green, amber, blue) and unified all 3 cards with simple, clean, consistent neutral styling: solid gray pill tags (`bg-gray-50 text-gray-900 border-gray-200`) with generous `px-5 py-2` horizontal spacing, dark card hover borders (`hover:border-gray-900`), and black checkmark icons.
+- **Why Buy on Openbox & Vendor Avatar Clean Styling (`resources/views/pages/home.blade.php`)**:
+  - Replaced the amber icon tints (`bg-amber-50 text-amber-600`) with clean, simple neutral styling (`bg-gray-50 border border-gray-100 text-gray-900`) and dark card hover borders (`hover:border-gray-900`).
+- **Start Selling CTA Banner Light Minimalist Theme (`resources/views/pages/home.blade.php`)**:
+  - Replaced the dark background with a clean, simple neutral light card (`bg-gray-50 border border-gray-100 rounded-3xl`) with high-contrast black typography (`text-gray-950`), gray description text (`text-gray-600`), and clean action buttons.
+- **Header Search Bar & Start Selling Button Curve (`resources/views/layouts/partials/public-header.blade.php`)**:
+  - Reduced excessive curve by replacing `rounded-full` with modern `rounded-lg` on both the search bar input and the "Start Selling" button.
+- **Certified Refurbished Heading & Save Badge (`resources/views/pages/home.blade.php`)**:
+  - Changed heading text color to solid black (`text-gray-950 font-bold`) and reduced the curve on the "Save up to 40%" badge from pill `rounded-full` to a clean rounded rectangle (`rounded-md border border-gray-200 bg-gray-50 text-gray-900`).
+- **Categories Listing Initial Badges & Card Hover (`resources/views/pages/categories.blade.php`, `category.blade.php`)**:
+  - Replaced the amber initial badges (`bg-brand-50 text-brand-500`) with clean neutral styling (`bg-gray-50 border border-gray-200 text-gray-900 font-bold`) and updated card hover borders to crisp black (`hover:border-gray-900`).
+- **Business/Seller Onboarding Profile ValueError Fix (`OnboardingController.php`)**:
+  - Fixed `ValueError: Path must not be empty` when onboarding without a logo/photo file by ensuring `$file->isValid()`, `filled($file->getRealPath())`, and `file_exists()` before invoking Flysystem `store()`.
+  - Added auto-creation fallback for missing business/seller profiles so onboarding completes smoothly without errors.

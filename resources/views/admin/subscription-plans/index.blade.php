@@ -30,7 +30,7 @@
                 <span class="p-1 rounded bg-amber-50 text-amber-600">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                 </span>
-                <span>Individual Seller Plans (Credits Based)</span>
+                <span>Seller Plans (Credits Based)</span>
             </div>
         </x-slot:title>
 
@@ -63,13 +63,13 @@
                                 @endif
                             </form>
 
-                            {{-- Edit Icon --}}
+                            {{-- Edit Icon Modal Trigger --}}
                             <button type="button" data-modal-open="edit-plan-modal-{{ $plan->id }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Edit plan">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </button>
 
                             {{-- Delete Icon --}}
-                            <form method="POST" action="{{ route('admin.subscriptions.plans.destroy', $plan) }}" data-confirm="Remove this plan?" class="inline-block m-0">
+                            <form method="POST" action="{{ route('admin.subscriptions.plans.destroy', $plan) }}" data-confirm="Delete this plan permanently?" class="inline-block m-0">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete plan">
@@ -94,7 +94,7 @@
                 <span class="p-1 rounded bg-blue-50 text-blue-600">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 </span>
-                <span>Business Store Plans (Recurring Subscriptions)</span>
+                <span>Store Owner Plans (Recurring Subscriptions)</span>
             </div>
         </x-slot:title>
 

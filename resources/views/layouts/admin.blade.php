@@ -84,7 +84,7 @@
 
     <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Admin" />
 
-    <div class="lg:ml-56 flex flex-col min-h-screen">
+    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
         <main class="flex-1 px-6 lg:px-8 py-6 space-y-6">

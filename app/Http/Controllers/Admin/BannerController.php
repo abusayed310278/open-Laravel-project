@@ -13,7 +13,7 @@ class BannerController extends Controller
     public function index(): View
     {
         return view('admin.banners.index', [
-            'banners' => Banner::query()->orderBy('position')->orderBy('sort_order')->get(),
+            'banners' => Banner::query()->orderBy('position')->orderBy('sort_order')->simplePaginate(15),
         ]);
     }
 
@@ -44,6 +44,15 @@ class BannerController extends Controller
         $banner->update($data);
 
         return back()->with('status', 'Banner updated.');
+    }
+
+    public function toggleActive(Banner $banner): RedirectResponse
+    {
+        $banner->update(['is_active' => ! $banner->is_active]);
+
+        $status = $banner->is_active ? 'activated' : 'deactivated';
+
+        return back()->with('status', "Banner {$status}.");
     }
 
     public function destroy(Banner $banner): RedirectResponse

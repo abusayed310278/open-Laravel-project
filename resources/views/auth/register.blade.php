@@ -11,12 +11,12 @@
 
 @section('content')
     <h1 class="text-xl font-bold text-gray-900 mb-1">Create your account</h1>
-    <p class="text-sm text-gray-500 mb-6">Buy on Openbox, or start selling as a business or individual seller.</p>
+    <p class="text-sm text-gray-500 mb-6">Buy on Openbox, or start selling as a store owner or seller.</p>
 
     <div class="grid grid-cols-3 gap-2 mb-6">
-        <button type="button" data-tab="customer" data-account-tab class="border-b-2 {{ $activeTab === 'customer' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Buyer</button>
-        <button type="button" data-tab="business" data-account-tab class="border-b-2 {{ $activeTab === 'business' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Business</button>
-        <button type="button" data-tab="saler" data-account-tab class="border-b-2 {{ $activeTab === 'saler' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Individual Seller</button>
+        <button type="button" data-tab="customer" data-account-tab class="border-b-2 {{ $activeTab === 'customer' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">User</button>
+        <button type="button" data-tab="business" data-account-tab class="border-b-2 {{ $activeTab === 'business' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Store Owner</button>
+        <button type="button" data-tab="saler" data-account-tab class="border-b-2 {{ $activeTab === 'saler' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Seller</button>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4" id="register-form">

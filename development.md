@@ -74,6 +74,20 @@
     - Upgraded Commission Rules Management (`resources/views/admin/commission-rules/index.blade.php`) with `+ Add Rule` pop-up modal, Edit Rule modal (`PUT /admin/commission-rules/{commissionRule}`), Status toggle action icons (`PATCH /admin/commission-rules/{commissionRule}/toggle-active`), Delete action icons, and simple pagination.
     - Upgraded Admin Reviews (`resources/views/admin/reviews/index.blade.php`) with simplified `X/5` rating text, 5-word preview snippets (`Str::words($review->body, 5)`), View modal popup (`#view-review-modal-{id}`) showing full details and photos, Edit Review modal (`PUT /admin/reviews/{review}`), quick Approve/Reject status icons, Delete trash icon (`DELETE /admin/reviews/{review}`), explicit `'Actions'` column header, and simple pagination (`simplePaginate(10)`).
     - Upgraded Admin Blog Posts (`resources/views/admin/posts/index.blade.php`) with View eye modal trigger (`#view-post-modal-{id}`) displaying post summary, category, author, excerpt, featured image, tags, and content; active/deactive status toggle action icons (`PATCH /admin/blog/{post}/toggle-status`); Edit pencil action icons; Delete trash action icons; explicit `'Actions'` column header; robust image URL resolver (`featured_image_url`) supporting both full URLs and local storage paths with fallback icons; and simple pagination (`simplePaginate(15)`).
+    - Upgraded Admin Banners (`resources/views/admin/banners/index.blade.php`) with `+ Add Banner` pop-up modal (`#add-banner-modal`), View eye modal trigger (`#view-banner-modal-{id}`), dedicated Edit Banner modals (`#edit-banner-modal-{id}`), Active/Inactive toggle action icons (`PATCH /admin/banners/{banner}/toggle-active`), Delete trash action icons with confirmation prompt, robust image URL resolver (`Banner::imageUrl()`), explicit `'Actions'` column header, and simple pagination (`simplePaginate(15)`).
+    - Upgraded Dashboard Sidebar (`resources/views/components/dashboard-sidebar.blade.php`) by replacing the `OB` placeholder box with the project's official Openbox logo icon (`icon.png`) and dynamic custom logo support.
+    - Added Dashboard Sidebar Shrink & Expand Toggle (`#desktop-sidebar-toggle`) in `dashboard-topbar.blade.php` and `dashboard-sidebar.blade.php` supporting mini icon-only collapsed mode (`72px`) and full expanded mode (`224px`), with `localStorage` state persistence and zero layout flicker across Admin, Business, Seller, Verifier, and Customer portals.
+    - Added Dashboard Sidebar Scroll Position Persistence & Active Item Auto-Focus (`sessionStorage.getItem('sidebar_nav_scroll_top')` and `scrollIntoView({ block: 'center' })`) so clicking any menu item keeps your exact scroll position and keeps the selected item in view on page loads instead of jumping back to top.
+    - Updated Role Terminology throughout the UI while preserving all backend data and business logic: `Buyer` → **`User`**, `Business` → **`Store Owner`**, and `Individual Seller` → **`Seller`** across registration tabs, UserRole labels, user tables, and dashboard topbars.
+18. **Product Card Redesign (`resources/views/components/product-card.blade.php`)**:
+    - Redesigned product cards to match the reference e-commerce aesthetic:
+      - Centered product photo with `object-contain` and smooth hover scale.
+      - Prominent bold category headline (e.g. `Laptop`, `Feature Phone`, `Split AC`, `Smartwatch`).
+      - Centered product title clamped to 2 lines for balanced alignment.
+      - Bold price formatted in `Tk` currency.
+      - Purple special offer text (`Save Extra Tk {amount} on various offer`) when compare price exceeds selling price.
+      - Streamlined card by removing bulky gray spec blocks, author names, wishlist overlays, and duplicate view buttons.
+      - Fully integrated across homepage, shop catalog, store page, product page related lists, and wishlist views.
 
 ---
 

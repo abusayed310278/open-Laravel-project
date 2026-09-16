@@ -37,7 +37,7 @@
         {{-- Center: Search Bar --}}
         <div class="flex-1 max-w-xl lg:max-w-2xl mx-2 sm:mx-4">
             <form action="{{ Route::has('search') ? route('search') : '#' }}" method="GET" class="w-full">
-                <div class="flex items-center w-full h-11 bg-[#f8fafc] hover:bg-gray-100/80 focus-within:bg-white border border-gray-200 hover:border-gray-300 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/40 rounded-full transition-all shadow-2xs px-4">
+                <div class="flex items-center w-full h-11 bg-[#f8fafc] hover:bg-gray-100/80 focus-within:bg-white border border-gray-200 hover:border-gray-300 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/40 rounded-lg transition-all shadow-2xs px-4">
                     {{-- Search Icon --}}
                     <div class="flex items-center justify-center text-gray-400 flex-shrink-0 mr-2.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@
             @endauth
 
             {{-- Start Selling Button --}}
-            <a href="{{ route('register', ['type' => 'saler']) }}" class="bg-amber-400 hover:bg-amber-500 text-gray-950 text-xs sm:text-sm font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
+            <a href="{{ route('register', ['type' => 'saler']) }}" class="bg-amber-400 hover:bg-amber-500 text-gray-950 text-xs sm:text-sm font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
                 <span class="whitespace-nowrap">Start Selling</span>
             </a>
         </div>

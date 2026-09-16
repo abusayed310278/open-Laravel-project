@@ -460,6 +460,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
 
         Route::get('/banners', [AdminBannerController::class, 'index'])->name('banners.index');
         Route::post('/banners', [AdminBannerController::class, 'store'])->name('banners.store');
+        Route::patch('/banners/{banner}/toggle-active', [AdminBannerController::class, 'toggleActive'])->name('banners.toggle-active');
         Route::put('/banners/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [AdminBannerController::class, 'destroy'])->name('banners.destroy');
 

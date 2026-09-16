@@ -17,10 +17,10 @@
 
     $roleLabel = match($user?->role?->value) {
         'admin' => 'Admin',
-        'business' => 'Business',
+        'business' => 'Store Owner',
         'saler' => 'Seller',
         'verifier' => 'Verifier',
-        default => 'Customer',
+        default => 'User',
     };
 
     $settingsUrl = match($user?->role?->value) {
@@ -33,10 +33,19 @@
 @endphp
 
 <header class="bg-white border-b border-gray-100 flex items-center justify-between px-6 lg:px-8 py-3 sticky top-0 z-40 shadow-xs">
-    <div class="flex items-center gap-3">
-        <button id="sidebar-open" type="button" onclick="toggleDashboardSidebar(true)" class="lg:hidden text-gray-500 hover:text-gray-800 p-1.5 rounded-lg hover:bg-gray-100 transition-colors" aria-label="Open Sidebar">
+    <div class="flex items-center gap-2.5 sm:gap-3">
+        {{-- Mobile Hamburger (screens < lg) --}}
+        <button id="sidebar-open" type="button" onclick="toggleDashboardSidebar(true)" class="lg:hidden text-gray-500 hover:text-gray-800 p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Open Sidebar">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
+
+        {{-- Desktop Sidebar Shrink / Expand Toggle Button (screens >= lg) --}}
+        <button id="desktop-sidebar-toggle" type="button" onclick="toggleDesktopSidebar()" class="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer" title="Toggle Sidebar (Shrink / Expand)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h16" />
+            </svg>
+        </button>
+
         <h1 class="text-lg font-bold text-gray-900">{{ $title }}</h1>
     </div>
 
@@ -176,6 +185,12 @@
                     chevron.classList.add('rotate-180');
                 }
             }
+        }
+
+        function toggleDesktopSidebar() {
+            const isCollapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+            window.dispatchEvent(new Event('resize'));
         }
 
         function toggleDashboardSidebar(open) {

@@ -23,6 +23,8 @@
                             :title="$item->product->title"
                             :price="$item->product->price"
                             :compare-price="$item->product->compare_price"
+                            :category="$item->product->category?->name ?? $item->product->brand?->name ?? 'Electronics'"
+                            :brand="$item->product->brand?->name"
                             :condition="$item->product->condition->value"
                             :key-features="$item->product->keyFeatures(3)"
                             :image="$item->product->images->first()?->url()"

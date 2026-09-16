@@ -8,6 +8,12 @@
     <link rel="icon" href="{{ Illuminate\Support\Facades\Storage::disk('public')->url(setting('brand_favicon')) }}">
 @endif
 
+<script>
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed');
+    }
+</script>
+
 @fonts
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @include('layouts.partials.branding-style')

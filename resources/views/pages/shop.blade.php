@@ -88,13 +88,11 @@
                         @foreach ($products as $product)
                             <x-product-card
                                 :title="$product->title"
+                                :category="$product->category?->name ?? $product->brand?->name ?? 'Electronics'"
                                 :brand="$product->brand?->name"
                                 :price="$product->price"
                                 :compare-price="$product->compare_price"
-                                :condition="$product->condition->value"
-                                :key-features="$product->keyFeatures(3)"
-                                :seller="$product->user->name"
-                                :image="$product->images->first()?->url()"
+                                :image="$product->primaryImage()?->url() ?? $product->images->first()?->url()"
                                 :href="route('products.show', $product)"
                             />
                         @endforeach

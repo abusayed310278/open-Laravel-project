@@ -170,6 +170,7 @@ class HomeController extends Controller
     {
         return $products->map(fn (Product $product) => [
             'title' => $product->title,
+            'category' => $product->category?->name ?? $product->brand?->name ?? 'Electronics',
             'brand' => $product->brand?->name ?? 'Electronics',
             'price' => (float) $product->price,
             'comparePrice' => $product->compare_price ? (float) $product->compare_price : (float) ($product->price * 1.2),
