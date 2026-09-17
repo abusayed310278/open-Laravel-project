@@ -108,7 +108,7 @@ class AttributeController extends Controller
             return redirect($request->string('redirect_to'))->with('status', $msg);
         }
 
-        return redirect()->route('admin.attributes.index')->with('status', "Attribute '{$attribute->name}' created.");
+        return redirect()->route($this->getRoutePrefix() . 'attributes.index')->with('status', "Attribute '{$attribute->name}' created.");
     }
 
     public function show(Attribute $attribute): View
@@ -159,6 +159,18 @@ class AttributeController extends Controller
         $attribute->categories()->detach();
         $attribute->delete();
 
-        return redirect()->route('admin.attributes.index')->with('status', 'Attribute deleted.');
+        return redirect()->route($this->getRoutePrefix() . 'attributes.index')->with('status', 'Attribute deleted.');
+    }
+
+    protected function getRoutePrefix(): string
+    {
+        if (request()->routeIs('business.*')) {
+            return 'business.';
+        }
+        if (request()->routeIs('saler.*')) {
+            return 'saler.';
+        }
+
+        return 'admin.';
     }
 }

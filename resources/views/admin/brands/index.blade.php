@@ -1,8 +1,11 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Brands')
 
 @section('content')
+    @php
+        $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+    @endphp
 
     @session('status')
         <x-alert type="success">{{ $value }}</x-alert>
@@ -11,7 +14,7 @@
     <x-card>
         <x-slot:title>Brands</x-slot:title>
         <x-slot:action>
-            <x-button as="a" :href="route('admin.brands.create')" size="sm">Add Brand</x-button>
+            <x-button as="a" :href="route($portalPrefix . 'brands.create')" size="sm">Add Brand</x-button>
         </x-slot:action>
 
         <x-table :headers="['Name', 'Status', 'Actions']" id="brands-table">
@@ -27,7 +30,7 @@
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex items-center justify-end gap-1">
                             {{-- Toggle Status Icon --}}
-                            <form method="POST" action="{{ route('admin.brands.toggle-status', $brand) }}" class="inline-block m-0">
+                            <form method="POST" action="{{ route($portalPrefix . 'brands.toggle-status', $brand) }}" class="inline-block m-0">
                                 @csrf
                                 @method('PATCH')
                                 @if ($brand->status === \App\Enums\PublishStatus::Active)
@@ -42,12 +45,12 @@
                             </form>
 
                             {{-- Edit Icon --}}
-                            <a href="{{ route('admin.brands.edit', $brand) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Edit brand">
+                            <a href="{{ route($portalPrefix . 'brands.edit', $brand) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Edit brand">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </a>
 
                             {{-- Delete Icon --}}
-                            <form method="POST" action="{{ route('admin.brands.destroy', $brand) }}" data-confirm="Delete this brand?" class="inline-block m-0">
+                            <form method="POST" action="{{ route($portalPrefix . 'brands.destroy', $brand) }}" data-confirm="Delete this brand?" class="inline-block m-0">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete brand">
@@ -58,12 +61,12 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="3" class="px-4 py-10 text-center text-gray-400 text-sm">No brands yet.</td>
-                </tr>
+                <tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">No brands found.</td></tr>
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$brands" />
+        <div class="mt-4">
+            <x-pagination :paginator="$brands" />
+        </div>
     </x-card>
 @endsection

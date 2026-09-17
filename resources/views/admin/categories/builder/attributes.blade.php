@@ -1,6 +1,10 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Category Builder — Attributes')
+
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
 
 @section('content')
     @php($active = 'attributes')
@@ -72,7 +76,7 @@
                                     </td>
                                     <td class="px-3 py-2.5 text-xs text-gray-600">
                                         @if ($attr->hasOptions())
-                                            <a href="{{ route('admin.attributes.show', $attr) }}" class="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100">
+                                            <a href="{{ route($portalPrefix . 'attributes.show', $attr) }}" class="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100">
                                                 {{ $attr->values_count }} {{ $attr->values_count === 1 ? 'option' : 'options' }}
                                             </a>
                                         @else
@@ -97,10 +101,10 @@
                                     </td>
                                     <td class="px-3 py-2.5 text-right">
                                         <div class="inline-flex items-center justify-end gap-1">
-                                            <a href="{{ route('admin.attributes.show', $attr) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Manage & Edit attribute">
+                                            <a href="{{ route($portalPrefix . 'attributes.show', $attr) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Manage & Edit attribute">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                             </a>
-                                            <form method="POST" action="{{ route('admin.attributes.destroy', $attr) }}" data-confirm="Delete this attribute?" class="inline-block m-0">
+                                            <form method="POST" action="{{ route($portalPrefix . 'attributes.destroy', $attr) }}" data-confirm="Delete this attribute?" class="inline-block m-0">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete attribute">
@@ -124,9 +128,9 @@
         {{-- Right: Quick Add Attribute --}}
         <div class="lg:col-span-4">
             <x-card title="Quick Add Attribute">
-                <form method="POST" action="{{ route('admin.attributes.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route($portalPrefix . 'attributes.store') }}" class="space-y-4">
                     @csrf
-                    <input type="hidden" name="redirect_to" value="{{ route('admin.categories.builder.attributes') }}">
+                    <input type="hidden" name="redirect_to" value="{{ route($portalPrefix . 'categories.builder.attributes') }}">
 
                     <x-input label="Attribute Name" name="name" type="text" placeholder="e.g. RAM, Color, Battery Life" :value="old('name')" required />
 

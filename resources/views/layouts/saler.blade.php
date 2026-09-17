@@ -21,6 +21,11 @@
                     ['route' => 'saler.products.index', 'label' => 'Products', 'icon' => $icon['box']],
                     ['route' => 'saler.products.create', 'label' => 'Add Product', 'icon' => $icon['plus-circle']],
                     ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
+                    ['route' => 'saler.categories.builder', 'label' => 'Category Builder', 'icon' => $icon['sliders']],
+                    ['route' => 'saler.categories.index', 'label' => 'Categories', 'icon' => $icon['tag']],
+                    ['route' => 'saler.brands.index', 'label' => 'Brands', 'icon' => $icon['star']],
+                    ['route' => 'saler.attribute-groups.index', 'label' => 'Attribute Groups', 'icon' => $icon['document']],
+                    ['route' => 'saler.attributes.index', 'label' => 'Attributes', 'icon' => $icon['sliders']],
                     ['route' => 'saler.listing-credits.index', 'label' => 'Listing Credits', 'icon' => $icon['tag']],
                 ],
             ],
@@ -63,7 +68,7 @@
         ];
     @endphp
 
-    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Seller" back-href="{{ url('/') }}" />
+    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Seller" />
 
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />

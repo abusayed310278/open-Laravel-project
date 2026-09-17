@@ -1,9 +1,13 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', $attribute->name)
 
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
+
 @section('content')
-    <x-breadcrumb :items="['Attributes' => route('admin.attributes.index'), $attribute->name => null]" />
+    <x-breadcrumb :items="['Attributes' => route($portalPrefix . 'attributes.index'), $attribute->name => null]" />
 
     @session('status')
         <x-alert type="success">{{ $value }}</x-alert>
@@ -11,7 +15,7 @@
 
     <div class="grid md:grid-cols-2 gap-5">
         <x-card title="Attribute Details">
-            <form method="POST" action="{{ route('admin.attributes.update', $attribute) }}" class="space-y-4">
+            <form method="POST" action="{{ route($portalPrefix . 'attributes.update', $attribute) }}" class="space-y-4">
                 @csrf
                 @method('PUT')
 
@@ -58,7 +62,7 @@
 
         @if ($attribute->type->usesValueList())
             <x-card title="Predefined Options & Values">
-                <form method="POST" action="{{ route('admin.attributes.values.store', $attribute) }}" class="flex items-end gap-3 mb-5">
+                <form method="POST" action="{{ route($portalPrefix . 'attributes.values.store', $attribute) }}" class="flex items-end gap-3 mb-5">
                     @csrf
                     <div class="flex-1">
                         <x-input label="New value / option" name="value" type="text" placeholder="e.g. Red, XL, 128GB" required />
@@ -84,7 +88,7 @@
                                     <span class="text-xs text-gray-400 font-mono">{{ $value->color_hex }}</span>
                                 @endif
                             </div>
-                            <form method="POST" action="{{ route('admin.attributes.values.destroy', [$attribute, $value]) }}" data-confirm="Remove this value?">
+                            <form method="POST" action="{{ route($portalPrefix . 'attributes.values.destroy', [$attribute, $value]) }}" data-confirm="Remove this value?">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-xs font-medium text-red-500 hover:text-red-700">Remove</button>
                             </form>

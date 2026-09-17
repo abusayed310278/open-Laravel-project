@@ -1,6 +1,10 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Category Builder — Assign to Category')
+
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
 
 @section('content')
     @php($active = 'assign')
@@ -58,12 +62,12 @@
         <div class="lg:col-span-8">
             <div id="no-category-selected" class="{{ $selectedCategoryId ? 'hidden' : '' }}">
                 <x-card>
-                    <div class="py-16 text-center text-gray-400 space-y-2">
-                        <div class="w-12 h-12 mx-auto rounded-full bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-lg">
-                            ←
+                    <div class="py-16 text-center">
+                        <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                         </div>
-                        <h3 class="text-base font-semibold text-gray-700">Select a category on the left</h3>
-                        <p class="text-xs text-gray-500 max-w-sm mx-auto">Click any category from the tree to view and customize which specifications and attributes apply to it.</p>
+                        <h3 class="text-base font-bold text-gray-900">Select a Category</h3>
+                        <p class="text-xs text-gray-500 max-w-sm mx-auto mt-1">Pick a category from the tree on the left to assign or unassign specification attributes.</p>
                     </div>
                 </x-card>
             </div>
@@ -109,47 +113,44 @@
                                 <span id="diff-added-text" class="text-green-700 font-bold">+0 added</span>
                                 <span id="diff-removed-text" class="text-red-700 font-bold">-0 removed</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button type="button" id="btn-reset-diff" class="text-gray-500 hover:text-gray-700 underline">Reset</button>
-                                <x-button type="submit" size="sm">Save Assignments</x-button>
-                            </div>
+                            <button type="button" id="btn-reset-diff" class="text-amber-900 underline hover:no-underline font-semibold">Reset</button>
                         </div>
 
                         {{-- Grouped Attributes Container --}}
-                        <div class="space-y-6 max-h-[600px] overflow-y-auto pr-1" id="groups-container">
+                        <div class="space-y-4 max-h-[560px] overflow-y-auto pr-1" id="grouped-checklist-container">
                             @foreach ($groupedAttributes as $group)
-                                <div class="border border-gray-100 rounded-lg p-4 bg-gray-50/50 group-card" data-group-id="{{ $group['group_id'] }}">
-                                    <div class="flex items-center justify-between mb-3">
+                                <div class="border border-gray-100 rounded-lg p-3 group-card" data-group-id="{{ $group['group_id'] }}">
+                                    <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-gray-100">
                                         <div class="flex items-center gap-2">
-                                            <h3 class="text-sm font-bold text-gray-800">{{ $group['group_name'] }}</h3>
-                                            <span class="text-xs text-gray-400">({{ count($group['attributes']) }})</span>
+                                            <span class="text-xs font-bold uppercase tracking-wider text-gray-700">{{ $group['group_name'] }}</span>
+                                            <span class="text-[10px] text-gray-400">({{ count($group['attributes']) }})</span>
                                         </div>
-                                        <button type="button" class="text-[11px] font-medium text-brand-600 hover:underline btn-group-toggle" data-group-id="{{ $group['group_id'] }}">
+                                        <button type="button" class="text-[11px] font-medium text-brand-600 hover:underline btn-group-toggle">
                                             Toggle Group
                                         </button>
                                     </div>
 
                                     <div class="grid sm:grid-cols-2 gap-2">
                                         @foreach ($group['attributes'] as $attr)
-                                            <label class="flex items-start gap-2.5 p-2 rounded-md bg-white border border-gray-100 hover:border-brand-200 cursor-pointer text-xs transition attr-checkbox-label"
+                                            <label class="flex items-start gap-2 p-2 rounded border border-gray-100 hover:bg-gray-50 cursor-pointer text-xs transition attr-checkbox-label"
                                                    data-attr-id="{{ $attr['id'] }}"
                                                    data-attr-name="{{ strtolower($attr['name']) }}">
-                                                <input type="checkbox" name="attribute_ids[]" value="{{ $attr['id'] }}"
-                                                       class="w-4 h-4 mt-0.5 rounded accent-brand-500 attr-check"
-                                                       data-attr-id="{{ $attr['id'] }}">
+                                                <input type="checkbox"
+                                                       name="attribute_ids[]"
+                                                       value="{{ $attr['id'] }}"
+                                                       data-attr-id="{{ $attr['id'] }}"
+                                                       class="mt-0.5 w-3.5 h-3.5 rounded accent-brand-500 attr-check">
                                                 <div class="min-w-0 flex-1">
-                                                    <div class="flex items-center justify-between gap-1">
-                                                        <span class="font-medium text-gray-900 truncate">{{ $attr['name'] }}</span>
-                                                        <span class="text-[10px] text-gray-400 font-mono">{{ $attr['type'] }}</span>
+                                                    <div class="font-medium text-gray-900 truncate">{{ $attr['name'] }}</div>
+                                                    <div class="text-[10px] text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                                        <span>{{ $attr['type'] }}</span>
+                                                        @if ($attr['unit'])
+                                                            <span>• {{ $attr['unit'] }}</span>
+                                                        @endif
+                                                        @if (! empty($attr['values']))
+                                                            <span>• {{ count($attr['values']) }} options</span>
+                                                        @endif
                                                     </div>
-                                                    @if ($attr['unit'])
-                                                        <div class="text-[10px] text-gray-400">Unit: {{ $attr['unit'] }}</div>
-                                                    @endif
-                                                    @if (! empty($attr['values']))
-                                                        <div class="text-[10px] text-gray-500 truncate mt-0.5">
-                                                            {{ implode(', ', array_slice($attr['values'], 0, 3)) }}{{ count($attr['values']) > 3 ? '...' : '' }}
-                                                        </div>
-                                                    @endif
                                                 </div>
                                             </label>
                                         @endforeach
@@ -158,10 +159,12 @@
                             @endforeach
                         </div>
 
-                        {{-- Bottom Save Bar --}}
-                        <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                            <span class="text-xs text-gray-500" id="selection-summary">No changes yet.</span>
-                            <x-button type="submit">Save Attribute Assignments</x-button>
+                        {{-- Footer Actions --}}
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <span class="text-xs text-gray-500" id="selection-summary">0 attributes assigned.</span>
+                            <div class="flex items-center gap-2">
+                                <x-button type="submit" size="sm">Save Category Assignment</x-button>
+                            </div>
                         </div>
                     </x-card>
                 </form>
@@ -171,8 +174,11 @@
 
     {{-- State & Client-side Script --}}
     <script>
-        const assignmentsData = {{ Js::from($assignments) }};
-        let currentCategoryId = {{ Js::from($selectedCategoryId) }};
+        const assignmentsData = @json($assignments);
+        const initialCategoryId = @json($selectedCategoryId);
+        const portalPath = '{{ request()->routeIs("business.*") ? "/business" : (request()->routeIs("saler.*") ? "/saler" : "/admin") }}';
+
+        let currentCategoryId = initialCategoryId;
         let originalIds = new Set();
         let selectedIds = new Set();
 
@@ -199,8 +205,8 @@
 
             catTitle.textContent = `Attributes for ${categoryName}`;
             catBadge.textContent = `${assigned.length} currently assigned`;
-            syncForm.action = `/admin/categories/${categoryId}/attributes/sync`;
-            dedicatedLink.href = `/admin/categories/${categoryId}/attributes`;
+            syncForm.action = `${portalPath}/categories/${categoryId}/attributes/sync`;
+            dedicatedLink.href = `${portalPath}/categories/${categoryId}/attributes`;
 
             // Highlight in tree
             document.querySelectorAll('.cat-picker-item').forEach(btn => {

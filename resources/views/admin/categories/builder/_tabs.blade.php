@@ -1,9 +1,10 @@
 @php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
     $tabs = [
-        'categories'        => ['label' => '1. Categories Tree', 'route' => 'admin.categories.builder.categories', 'desc' => 'Manage category hierarchy'],
-        'attribute-groups'  => ['label' => '2. Attribute Groups', 'route' => 'admin.categories.builder.attribute-groups', 'desc' => 'Specification sections'],
-        'attributes'        => ['label' => '3. Attributes', 'route' => 'admin.categories.builder.attributes', 'desc' => 'Product specifications & inputs'],
-        'assign'            => ['label' => '4. Assign to Category', 'route' => 'admin.categories.builder.assign', 'desc' => 'Matrix assignment & sync'],
+        'categories'        => ['label' => '1. Categories Tree', 'route' => $portalPrefix . 'categories.builder.categories', 'desc' => 'Manage category hierarchy'],
+        'attribute-groups'  => ['label' => '2. Attribute Groups', 'route' => $portalPrefix . 'categories.builder.attribute-groups', 'desc' => 'Specification sections'],
+        'attributes'        => ['label' => '3. Attributes', 'route' => $portalPrefix . 'categories.builder.attributes', 'desc' => 'Product specifications & inputs'],
+        'assign'            => ['label' => '4. Assign to Category', 'route' => $portalPrefix . 'categories.builder.assign', 'desc' => 'Matrix assignment & sync'],
     ];
 @endphp
 
@@ -15,10 +16,10 @@
         </div>
         <div class="flex flex-col sm:items-end gap-2.5 shrink-0">
             <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <a href="{{ route('admin.categories.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
+                <a href="{{ route($portalPrefix . 'categories.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
                     Classic Categories
                 </a>
-                <a href="{{ route('admin.attributes.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
+                <a href="{{ route($portalPrefix . 'attributes.index') }}" class="whitespace-nowrap inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg hover:bg-gray-50 transition shadow-2xs">
                     Classic Attributes
                 </a>
             </div>

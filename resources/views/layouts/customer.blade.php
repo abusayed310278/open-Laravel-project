@@ -39,7 +39,7 @@
         ];
     @endphp
 
-    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="User" back-href="{{ url('/') }}" back-label="Back to Marketplace" />
+    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="User" />
 
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'My Account')" />

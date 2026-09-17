@@ -1,12 +1,16 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', $category->name . ' — Specifications & Attributes')
 
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
+
 @section('content')
     <x-breadcrumb :items="[
-        'Categories' => route('admin.categories.index'),
-        'Builder' => route('admin.categories.builder.assign', ['category' => $category->id]),
-        $category->name => route('admin.categories.edit', $category),
+        'Categories' => route($portalPrefix . 'categories.index'),
+        'Builder' => route($portalPrefix . 'categories.builder.assign', ['category' => $category->id]),
+        $category->name => route($portalPrefix . 'categories.edit', $category),
         'Attributes' => null,
     ]" />
 
@@ -31,7 +35,7 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.categories.builder.assign', ['category' => $category->id]) }}"
+            <a href="{{ route($portalPrefix . 'categories.builder.assign', ['category' => $category->id]) }}"
                class="inline-flex items-center text-xs font-semibold px-3 py-1.5 bg-brand-50 text-brand-600 rounded-md hover:bg-brand-100 transition">
                 ← Open in Assign Matrix
             </a>
@@ -58,31 +62,30 @@
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-medium text-gray-900 text-sm">{{ $attr->name }}</span>
-                                            <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
-                                                {{ $attr->type->label() }}
-                                            </span>
+                                            <span class="font-semibold text-gray-900 text-sm">{{ $attr->name }}</span>
+                                            <span class="text-xs text-gray-400">({{ $attr->type->label() }})</span>
                                             @if ($attr->unit)
-                                                <span class="text-xs text-gray-400">({{ $attr->unit }})</span>
+                                                <span class="text-xs text-gray-400 font-mono">[{{ $attr->unit }}]</span>
                                             @endif
                                         </div>
-
-                                        @if ($attr->hasOptions() && $attr->values->isNotEmpty())
-                                            <div class="flex flex-wrap gap-1 mt-1 text-[11px] text-gray-500">
-                                                <span>Options:</span>
-                                                @foreach ($attr->values->take(6) as $val)
-                                                    <span class="px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-700">
+                                        @if ($attr->hasOptions())
+                                            <div class="flex flex-wrap gap-1 mt-1">
+                                                @foreach ($attr->values as $val)
+                                                    <span class="inline-flex items-center gap-1 text-[11px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                                                        @if ($val->color_hex)
+                                                            <span class="w-2.5 h-2.5 rounded-full border border-gray-300" style="background-color: {{ $val->color_hex }}"></span>
+                                                        @endif
                                                         {{ $val->value }}
                                                     </span>
                                                 @endforeach
-                                                @if ($attr->values->count() > 6)
-                                                    <span class="text-gray-400 self-center">+{{ $attr->values->count() - 6 }} more</span>
+                                                @if ($attr->values->isEmpty())
+                                                    <span class="text-[11px] text-gray-400 italic">No values defined yet</span>
                                                 @endif
                                             </div>
                                         @endif
                                     </div>
 
-                                    <form method="POST" action="{{ route('admin.categories.attributes.destroy', [$category, $attr]) }}" data-confirm="Remove '{{ $attr->name }}' from {{ $category->name }}?">
+                                    <form method="POST" action="{{ route($portalPrefix . 'categories.attributes.destroy', [$category, $attr]) }}" data-confirm="Remove '{{ $attr->name }}' from {{ $category->name }}?">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-xs text-red-500 hover:text-red-700 hover:underline">
@@ -92,7 +95,7 @@
                                 </div>
 
                                 {{-- Inline Pivot Flags Editor --}}
-                                <form method="POST" action="{{ route('admin.categories.attributes.update', [$category, $attr]) }}"
+                                <form method="POST" action="{{ route($portalPrefix . 'categories.attributes.update', [$category, $attr]) }}"
                                       class="flex flex-wrap items-center gap-4 bg-gray-50/60 p-2.5 rounded-md border border-gray-100 text-xs">
                                     @csrf
                                     @method('PUT')
@@ -145,7 +148,7 @@
         <div class="lg:col-span-4 space-y-5">
             <x-card title="Assign Attribute">
                 @if ($availableAttributes->isNotEmpty())
-                    <form method="POST" action="{{ route('admin.categories.attributes.store', $category) }}" class="space-y-4">
+                    <form method="POST" action="{{ route($portalPrefix . 'categories.attributes.store', $category) }}" class="space-y-4">
                         @csrf
 
                         <div>
@@ -186,10 +189,10 @@
 
             <x-card title="Need a new attribute?">
                 <p class="text-xs text-gray-500 mb-3">Create a new global specification attribute and have it automatically attached here.</p>
-                <form method="POST" action="{{ route('admin.attributes.store') }}" class="space-y-3">
+                <form method="POST" action="{{ route($portalPrefix . 'attributes.store') }}" class="space-y-3">
                     @csrf
                     <input type="hidden" name="assign_to_category_id" value="{{ $category->id }}">
-                    <input type="hidden" name="redirect_to" value="{{ route('admin.categories.attributes', $category) }}">
+                    <input type="hidden" name="redirect_to" value="{{ route($portalPrefix . 'categories.attributes', $category) }}">
 
                     <x-input label="Attribute Name" name="name" type="text" placeholder="e.g. Screen Size" required />
 

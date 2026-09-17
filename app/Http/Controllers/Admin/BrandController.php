@@ -7,19 +7,32 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBrandRequest;
 use App\Models\Brand;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BrandController extends Controller
 {
-    public function index(): View
+    protected function getRoutePrefix(Request $request): string
+    {
+        if ($request->routeIs('business.*')) {
+            return 'business.';
+        }
+        if ($request->routeIs('saler.*')) {
+            return 'saler.';
+        }
+        return 'admin.';
+    }
+
+    public function index(Request $request): View
     {
         return view('admin.brands.index', [
             'brands' => Brand::query()->orderBy('name')->simplePaginate(10),
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         return view('admin.brands.create', ['brand' => new Brand]);
     }
@@ -34,10 +47,16 @@ class BrandController extends Controller
 
         Brand::query()->create($data);
 
-        return redirect()->route('admin.brands.index')->with('status', 'Brand created.');
+        $prefix = $this->getRoutePrefix($request);
+
+        if ($request->filled('redirect_to') && Str::startsWith($request->string('redirect_to'), [url('/'), '/'])) {
+            return redirect($request->string('redirect_to'))->with('status', 'Brand created.');
+        }
+
+        return redirect()->route($prefix . 'brands.index')->with('status', 'Brand created.');
     }
 
-    public function edit(Brand $brand): View
+    public function edit(Request $request, Brand $brand): View
     {
         return view('admin.brands.edit', ['brand' => $brand]);
     }
@@ -56,10 +75,16 @@ class BrandController extends Controller
 
         $brand->update($data);
 
-        return redirect()->route('admin.brands.index')->with('status', 'Brand updated.');
+        $prefix = $this->getRoutePrefix($request);
+
+        if ($request->filled('redirect_to') && Str::startsWith($request->string('redirect_to'), [url('/'), '/'])) {
+            return redirect($request->string('redirect_to'))->with('status', 'Brand updated.');
+        }
+
+        return redirect()->route($prefix . 'brands.index')->with('status', 'Brand updated.');
     }
 
-    public function destroy(Brand $brand): RedirectResponse
+    public function destroy(Request $request, Brand $brand): RedirectResponse
     {
         if ($brand->logo) {
             Storage::disk('public')->delete($brand->logo);
@@ -67,7 +92,9 @@ class BrandController extends Controller
 
         $brand->delete();
 
-        return redirect()->route('admin.brands.index')->with('status', 'Brand deleted.');
+        $prefix = $this->getRoutePrefix($request);
+
+        return redirect()->route($prefix . 'brands.index')->with('status', 'Brand deleted.');
     }
 
     public function toggleStatus(Brand $brand): RedirectResponse

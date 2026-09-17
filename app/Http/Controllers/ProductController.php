@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProductApprovalStatus;
+use App\Enums\UserRole;
 use App\Http\Requests\StoreProductRequest;
 use App\Models\Brand;
 use App\Models\Category;
@@ -10,6 +11,7 @@ use App\Models\Product;
 use App\Services\ProductService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -20,10 +22,27 @@ class ProductController extends Controller
         private readonly SubscriptionService $subscriptions,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $user = Auth::user();
+
+        // Store owners (business role) can see only individual seller (saler role) products;
+        // Individual sellers (saler role) see their own listings.
+        $query = $user->isBusiness()
+            ? Product::query()->whereHas('user', fn ($q) => $q->where('role', UserRole::Saler))->with(['category', 'images', 'user'])
+            : $user->products()->with(['category', 'images']);
+
+        if ($request->filled('search')) {
+            $search = $request->string('search')->toString();
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
         return view('seller.products.index', [
-            'products' => Auth::user()->products()->with(['category', 'images'])->latest()->paginate(15),
+            'products' => $query->latest()->paginate(15)->withQueryString(),
         ]);
     }
 
@@ -91,16 +110,18 @@ class ProductController extends Controller
             return back()->withErrors(['product' => 'This listing must be approved before it can be published.']);
         }
 
-        if (! $this->subscriptions->canPublish($product->user)) {
-            $message = $product->user->isSaler()
-                ? 'You have no listing credits left. Buy a subscription plan to publish more listings.'
-                : 'You need an active subscription (with room under its product limit) to publish more listings.';
+        $owner = $product->user ?? Auth::user();
+
+        if (! $this->subscriptions->canPublish($owner)) {
+            $message = $owner->isSaler()
+                ? 'The seller has no listing credits left. A subscription plan is required to publish more listings.'
+                : 'An active subscription is required to publish more listings.';
 
             return back()->withErrors(['product' => $message]);
         }
 
         $this->products->publish($product);
-        $this->subscriptions->recordPublish($product->user, $product);
+        $this->subscriptions->recordPublish($owner, $product);
 
         return back()->with('status', "\"{$product->title}\" is now live.");
     }

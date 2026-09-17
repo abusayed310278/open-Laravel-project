@@ -21,6 +21,11 @@
                     ['route' => 'business.products.index', 'label' => 'Products', 'icon' => $icon['box']],
                     ['route' => 'business.products.create', 'label' => 'Add Product', 'icon' => $icon['plus-circle']],
                     ['route' => 'business.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
+                    ['route' => 'business.categories.builder', 'label' => 'Category Builder', 'icon' => $icon['sliders']],
+                    ['route' => 'business.categories.index', 'label' => 'Categories', 'icon' => $icon['tag']],
+                    ['route' => 'business.brands.index', 'label' => 'Brands', 'icon' => $icon['star']],
+                    ['route' => 'business.attribute-groups.index', 'label' => 'Attribute Groups', 'icon' => $icon['document']],
+                    ['route' => 'business.attributes.index', 'label' => 'Attributes', 'icon' => $icon['sliders']],
                 ],
             ],
             [
@@ -56,7 +61,7 @@
         ];
     @endphp
 
-    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Store Owner" back-href="{{ url('/') }}" />
+    <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Store Owner" />
 
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />

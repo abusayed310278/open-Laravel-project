@@ -1,6 +1,10 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Category Builder — Categories Tree')
+
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
 
 @section('content')
     @php($active = 'categories')
@@ -48,7 +52,7 @@
                         </div>
 
                         <div class="flex items-center gap-2 shrink-0">
-                            <a href="{{ route('admin.categories.attributes', $node['id']) }}"
+                            <a href="{{ route($portalPrefix . 'categories.attributes', $node['id']) }}"
                                class="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100 transition"
                                title="Manage category specification attributes">
                                 {{ $node['attributes_count'] ?? 0 }} {{ ($node['attributes_count'] ?? 0) === 1 ? 'attr' : 'attrs' }}
@@ -58,14 +62,14 @@
                                 {{ $node['products_count'] }} {{ $node['products_count'] === 1 ? 'prod' : 'prods' }}
                             </span>
 
-                            <a href="{{ route('admin.categories.edit', $node['id']) }}"
+                            <a href="{{ route($portalPrefix . 'categories.edit', $node['id']) }}"
                                class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition"
                                title="Edit category">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </a>
 
                             @if ($node['can_delete'])
-                                <form method="POST" action="{{ route('admin.categories.destroy', $node['id']) }}" data-confirm="Delete this category?" class="inline-block m-0">
+                                <form method="POST" action="{{ route($portalPrefix . 'categories.destroy', $node['id']) }}" data-confirm="Delete this category?" class="inline-block m-0">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete category">
@@ -84,9 +88,9 @@
 
     {{-- Quick Add Category Modal --}}
     <x-modal id="add-category-modal" title="Quick Add Category" maxWidth="max-w-lg">
-        <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data" class="space-y-4">
+        <form method="POST" action="{{ route($portalPrefix . 'categories.store') }}" enctype="multipart/form-data" class="space-y-4">
             @csrf
-            <input type="hidden" name="redirect_to" value="{{ route('admin.categories.builder.categories') }}">
+            <input type="hidden" name="redirect_to" value="{{ route($portalPrefix . 'categories.builder.categories') }}">
 
             <x-input label="Category Name" name="name" type="text" :value="old('name')" required placeholder="e.g. Laptops & Notebooks" />
 

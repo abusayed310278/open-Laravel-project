@@ -1,6 +1,10 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Category Builder — Attribute Groups')
+
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
 
 @section('content')
     @php($active = 'attribute-groups')
@@ -65,7 +69,7 @@
                             </div>
 
                             <div class="flex items-center gap-1 shrink-0">
-                                <form method="POST" action="{{ route('admin.attribute-groups.toggle-active', $group) }}" class="inline-block m-0">
+                                <form method="POST" action="{{ route($portalPrefix . 'attribute-groups.toggle-active', $group) }}" class="inline-block m-0">
                                     @csrf
                                     @method('PATCH')
                                     @if ($group->is_active)
@@ -79,14 +83,14 @@
                                     @endif
                                 </form>
 
-                                <a href="{{ route('admin.attribute-groups.edit', $group) }}"
+                                <a href="{{ route($portalPrefix . 'attribute-groups.edit', $group) }}"
                                    class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer"
                                    title="Edit attribute group">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                 </a>
 
                                 @if ($group->attributes_count === 0)
-                                    <form method="POST" action="{{ route('admin.attribute-groups.destroy', $group) }}" data-confirm="Delete this attribute group?" class="inline-block m-0">
+                                    <form method="POST" action="{{ route($portalPrefix . 'attribute-groups.destroy', $group) }}" data-confirm="Delete this attribute group?" class="inline-block m-0">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete attribute group">
@@ -106,9 +110,9 @@
         {{-- Right: Quick Add Attribute Group --}}
         <div class="lg:col-span-4">
             <x-card title="Quick Add Group">
-                <form method="POST" action="{{ route('admin.attribute-groups.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route($portalPrefix . 'attribute-groups.store') }}" class="space-y-4">
                     @csrf
-                    <input type="hidden" name="redirect_to" value="{{ route('admin.categories.builder.attribute-groups') }}">
+                    <input type="hidden" name="redirect_to" value="{{ route($portalPrefix . 'categories.builder.attribute-groups') }}">
 
                     <x-input label="Group Name" name="name" type="text" placeholder="e.g. Technical Specifications" :value="old('name')" required />
                     <x-input label="Slug (optional)" name="slug" type="text" placeholder="auto-generated if empty" :value="old('slug')" />

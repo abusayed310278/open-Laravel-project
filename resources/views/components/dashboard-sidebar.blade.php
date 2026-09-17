@@ -1,4 +1,4 @@
-@props(['navGroups' => [], 'portalLabel' => 'Dashboard', 'backHref' => null, 'backLabel' => 'Back to Marketplace'])
+@props(['navGroups' => [], 'portalLabel' => 'Dashboard'])
 
 <style>
     #sidebar {
@@ -16,8 +16,7 @@
         }
         .sidebar-collapsed #sidebar .sidebar-brand-text,
         .sidebar-collapsed #sidebar .sidebar-group-label,
-        .sidebar-collapsed #sidebar .sidebar-text,
-        .sidebar-collapsed #sidebar .sidebar-footer-text {
+        .sidebar-collapsed #sidebar .sidebar-text {
             display: none !important;
             opacity: 0 !important;
         }
@@ -40,11 +39,6 @@
             height: 1px !important;
             background-color: #f1f5f9 !important;
             margin: 0.75rem 0.25rem !important;
-        }
-        .sidebar-collapsed #sidebar .sidebar-footer-link {
-            justify-content: center !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
         }
     }
 </style>
@@ -101,16 +95,6 @@
             </div>
         @endforeach
     </nav>
-
-    {{-- Sidebar Footer: Back to Store --}}
-    @if (!empty($backHref))
-        <div class="px-3 py-3 border-t border-gray-100 space-y-2 bg-gray-50/50 shrink-0">
-            <a href="{{ $backHref }}" title="{{ $backLabel }}" class="sidebar-footer-link flex items-center gap-2 px-2.5 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg font-medium transition-colors">
-                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                <span class="sidebar-footer-text truncate">{{ $backLabel }}</span>
-            </a>
-        </div>
-    @endif
 </aside>
 
 <div id="sidebar-overlay" onclick="toggleDashboardSidebar(false)" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden backdrop-blur-xs"></div>

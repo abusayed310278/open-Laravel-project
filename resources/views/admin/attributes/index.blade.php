@@ -1,6 +1,10 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Attributes')
+
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
 
 @section('content')
 
@@ -10,10 +14,10 @@
 
     <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.categories.builder.attributes') }}" class="text-xs font-semibold px-3 py-1.5 bg-brand-50 text-brand-600 rounded-md hover:bg-brand-100 transition">
+            <a href="{{ route($portalPrefix . 'categories.builder.attributes') }}" class="text-xs font-semibold px-3 py-1.5 bg-brand-50 text-brand-600 rounded-md hover:bg-brand-100 transition">
                 ← Open in Category Builder
             </a>
-            <a href="{{ route('admin.attribute-groups.index') }}" class="text-xs font-medium px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 transition">
+            <a href="{{ route($portalPrefix . 'attribute-groups.index') }}" class="text-xs font-medium px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 transition">
                 Manage Attribute Groups
             </a>
         </div>
@@ -51,12 +55,12 @@
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex items-center justify-end gap-1">
                             {{-- Edit / Manage Icon --}}
-                            <a href="{{ route('admin.attributes.show', $attribute) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Manage & Edit attribute">
+                            <a href="{{ route($portalPrefix . 'attributes.show', $attribute) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Manage & Edit attribute">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </a>
 
                             {{-- Delete Icon --}}
-                            <form method="POST" action="{{ route('admin.attributes.destroy', $attribute) }}" data-confirm="Delete this attribute?" class="inline-block m-0">
+                            <form method="POST" action="{{ route($portalPrefix . 'attributes.destroy', $attribute) }}" data-confirm="Delete this attribute?" class="inline-block m-0">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete attribute">
@@ -78,7 +82,7 @@
 
     {{-- Add Attribute Modal --}}
     <x-modal id="add-attribute-modal" title="Add Attribute" maxWidth="max-w-lg">
-        <form method="POST" action="{{ route('admin.attributes.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route($portalPrefix . 'attributes.store') }}" class="space-y-4">
             @csrf
             <x-input label="Attribute Name" name="name" type="text" :value="old('name')" placeholder="e.g. RAM, Storage, Screen Size" required />
 

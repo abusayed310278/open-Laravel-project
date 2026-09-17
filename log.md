@@ -314,3 +314,76 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
 - **Business/Seller Onboarding Profile ValueError Fix (`OnboardingController.php`)**:
   - Fixed `ValueError: Path must not be empty` when onboarding without a logo/photo file by ensuring `$file->isValid()`, `filled($file->getRealPath())`, and `file_exists()` before invoking Flysystem `store()`.
   - Added auto-creation fallback for missing business/seller profiles so onboarding completes smoothly without errors.
+- **Removed "Back to Marketplace" from Dashboard Sidebar Across All Roles (`dashboard-sidebar.blade.php`, `business.blade.php`, `saler.blade.php`, `verifier.blade.php`, `customer.blade.php`)**:
+  - Completely removed the "Back to Marketplace" / "Back to Store" bottom footer button from the dashboard sidebar across all user roles (Admin, Store Owner, Seller, Verifier, User).
+  - Cleaned up redundant props and obsolete footer CSS classes to give full vertical space to the navigation items while relying on the universal `[ ↗ View Site ]` button in the top navigation bar.
+
+---
+
+### 13. Seller Category Builder, Categories, Attribute Groups & Attributes Feature Integration
+- **Routes & Middleware Access (`routes/web.php`)**:
+  - Registered full Category Builder, Categories, Attribute Groups, and Attributes route structures under both `business.` (`Store Owner`) and `saler.` (`Seller`) route groups.
+  - Included Category Builder sub-views (`categories.builder`, `categories.builder.categories`, `categories.builder.attribute-groups`, `categories.builder.attributes`, `categories.builder.assign`), Category Specifications assignment, Category CRUD & status toggle, Attribute Groups CRUD & status toggle, and Attributes & Values management.
+- **Dynamic Controller Route Prefixing & Redirection**:
+  - `CategoryController.php`: Added dynamic `getRoutePrefix()` resolving to `business.`, `saler.`, or `admin.` based on the current route, supporting seamless redirection for `store`, `update`, `destroy`, and specification assignments.
+  - `AttributeGroupController.php`: Added dynamic route redirection and prefix resolution for all CRUD actions.
+  - `AttributeController.php`: Added dynamic route redirection and prefix resolution for attributes and values.
+- **Seller & Store Owner Dashboard Sidebars (`layouts/business.blade.php`, `layouts/saler.blade.php`)**:
+  - Added dedicated navigation items for **Category Builder**, **Categories**, **Attribute Groups**, and **Attributes** to both Store Owner (`business`) and Seller (`saler`) sidebars with active state tracking.
+- **Adaptive Layout & Path Resolution across Views (`resources/views/admin/...`)**:
+  - Generalized Category Builder, Categories, Attribute Groups, and Attribute blade templates to dynamically extend `layouts.business`, `layouts.saler`, or `layouts.admin` based on the request.
+  - Updated all form action routes, breadcrumb links, tab links, and JavaScript redirect paths to dynamically adapt to the active user's portal without hardcoding admin paths.
+
+---
+
+### 14. 403 Forbidden Access Resolution & Smart Role Route Redirection (`EnsureUserHasRole.php`)
+- **Root Cause**: When authenticated sellers or store owners entered or navigated to admin URLs (e.g. `/admin/categories/builder`), the role middleware threw a raw `403 Forbidden` error because the admin group strictly guarded `role:admin`.
+- **Intelligent Equivalent Route Redirection**:
+  - Enhanced [`EnsureUserHasRole`](file:///c:/laragon/www/open/app/Http/Middleware/EnsureUserHasRole.php) to automatically detect if the user's current role possesses an equivalent route (e.g. `admin.categories.builder` -> `saler.categories.builder` / `business.categories.builder`).
+  - Seamlessly redirects the authenticated seller/store owner to their portal's corresponding page preserving route parameters without any 403 error.
+  - For unauthenticated users, redirects directly to login rather than displaying a 403 error page.
+  - For general GET requests to unauthorized sections, gracefully redirects to their active role's dashboard.
+
+---
+
+### 15. Brands Management Capability for Seller & Store Owner Roles
+- **Routes & Middleware Access (`routes/web.php`)**:
+  - Registered full Brands CRUD (`index`, `create`, `store`, `edit`, `update`, `destroy`) and one-click status toggle (`toggle-status`) under `$sellerCategoryRoutes` for both `saler.` (`Seller`) and `business.` (`Store Owner`) portals.
+- **Dynamic Controller Route Prefixing & Redirection (`BrandController.php`)**:
+  - Added `getRoutePrefix()` method to dynamically resolve `admin.`, `business.`, or `saler.` for index redirects and form submissions.
+- **Sidebars & Blade View Adaptability (`layouts/business.blade.php`, `layouts/saler.blade.php`, `resources/views/admin/brands/*`)**:
+  - Added **Brands** navigation item to both Store Owner and Seller sidebars.
+  - Adapted `admin/brands/index.blade.php`, `create.blade.php`, and `edit.blade.php` to dynamically extend `layouts.business`, `layouts.saler`, or `layouts.admin` with correct portal routes and breadcrumbs.
+
+---
+
+### 16. FormRequest Authorization Fix for Categories, Attribute Groups, Attributes, Values & Brands
+- **Root Cause**: While routes and views were mapped to the `saler` and `business` portals, the underlying FormRequest classes (`StoreCategoryRequest`, `AttributeGroupRequest`, `StoreAttributeRequest`, `StoreAttributeValueRequest`, `CategoryAttributeRequest`, `BulkCategoryAttributeRequest`, `SyncCategoryAttributeRequest`, `StoreBrandRequest`) contained `authorize(): bool { return $this->user()->isAdmin(); }`. When a Seller submitted the create or edit forms, Laravel threw an unauthorized **403 Forbidden** error.
+- **FormRequest Authorization Update**:
+  - Updated all 8 FormRequest classes to authorize:
+    ```php
+    return $this->user()->isAdmin() || $this->user()->isBusiness() || $this->user()->isSaler();
+    ```
+  - Sellers (`saler`) and Store Owners (`business`) now have permission to create and update Categories, Attribute Groups, Attributes, Predefined Values, and Brands.
+
+---
+
+### 17. Store Owner (`business`) Saler Products View & Policy Authorization
+- **Catalog Query Enhancement (`ProductController.php`)**:
+  - Configured `ProductController::index` to display strictly individual seller listings (`whereHas('user', fn ($q) => $q->where('role', UserRole::Saler))`) when authenticated as a **Store Owner** (`business` role).
+  - Maintained individual seller privacy for the `saler` role (showing their own listings).
+- **Table & UI Updates (`resources/views/seller/products/index.blade.php`)**:
+  - Added a dedicated **"Seller"** column displayed for Store Owners showing the seller's name and role badge.
+  - Added a "Seller Products" badge in the Products card header for Store Owners.
+- **Product Policy Updates (`ProductPolicy.php`)**:
+  - Authorized Store Owners (`$user->isBusiness()`) in `view`, `update`, and `delete` policy methods for administrative listing control.
+
+---
+
+### 18. Product Title 4-Word Truncation & Image Fallback Rendering (`seller/products/index.blade.php`, `admin/products/index.blade.php`)
+- **4-Word Title & Seller Truncation**:
+  - Implemented `\Illuminate\Support\Str::words($product->title, 4, '...')` and `Str::words($product->user->name, 4, '...')` so long titles wrap cleanly without consuming excessive table height.
+  - Provided full text in the native `title` HTML tooltip attribute on hover.
+- **Robust Image Placeholder & Fallback**:
+  - Wrapped product image thumbnails with clean `onerror` SVG fallback containers so broken external placeholder links never render broken icons in the browser.
+

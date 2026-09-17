@@ -1,9 +1,13 @@
-@extends('layouts.admin')
+@extends(request()->routeIs('business.*') ? 'layouts.business' : (request()->routeIs('saler.*') ? 'layouts.saler' : 'layouts.admin'))
 
 @section('title', 'Edit '.$category->name)
 
+@php
+    $portalPrefix = request()->routeIs('business.*') ? 'business.' : (request()->routeIs('saler.*') ? 'saler.' : 'admin.');
+@endphp
+
 @section('content')
-    <x-breadcrumb :items="['Categories' => route('admin.categories.index'), $category->name => null]" />
+    <x-breadcrumb :items="['Categories' => route($portalPrefix . 'categories.index'), $category->name => null]" />
 
     @session('status')
         <x-alert type="success">{{ $value }}</x-alert>
@@ -11,7 +15,7 @@
 
     <div class="grid md:grid-cols-3 gap-5">
         <x-card class="md:col-span-2">
-            <form method="POST" action="{{ route('admin.categories.update', $category) }}" enctype="multipart/form-data" class="space-y-5">
+            <form method="POST" action="{{ route($portalPrefix . 'categories.update', $category) }}" enctype="multipart/form-data" class="space-y-5">
                 @include('admin.categories._form')
             </form>
         </x-card>
@@ -19,12 +23,12 @@
         <x-card title="Attributes">
             <div class="flex items-center justify-between mb-4">
                 <p class="text-sm text-gray-500">Choose which product attributes apply to this category.</p>
-                <a href="{{ route('admin.categories.attributes', $category) }}" class="text-xs text-brand-600 font-medium hover:underline shrink-0 ml-2">
+                <a href="{{ route($portalPrefix . 'categories.attributes', $category) }}" class="text-xs text-brand-600 font-medium hover:underline shrink-0 ml-2">
                     Advanced Manager →
                 </a>
             </div>
 
-            <form method="POST" action="{{ route('admin.categories.attributes.update', $category) }}" class="space-y-3">
+            <form method="POST" action="{{ route($portalPrefix . 'categories.attributes.update', $category) }}" class="space-y-3">
                 @csrf
                 @method('PUT')
 

@@ -38,7 +38,11 @@ class CategoryController extends Controller
 
         Category::query()->create($data);
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category created.');
+        if ($request->filled('redirect_to') && \Illuminate\Support\Str::startsWith($request->string('redirect_to'), [url('/'), '/'])) {
+            return redirect($request->string('redirect_to'))->with('status', 'Category created.');
+        }
+
+        return redirect()->route($this->getRoutePrefix() . 'categories.index')->with('status', 'Category created.');
     }
 
     public function edit(Category $category): View
@@ -73,7 +77,11 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category updated.');
+        if ($request->filled('redirect_to') && \Illuminate\Support\Str::startsWith($request->string('redirect_to'), [url('/'), '/'])) {
+            return redirect($request->string('redirect_to'))->with('status', 'Category updated.');
+        }
+
+        return redirect()->route($this->getRoutePrefix() . 'categories.index')->with('status', 'Category updated.');
     }
 
     public function updateAttributes(Category $category): RedirectResponse
@@ -103,6 +111,18 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return redirect()->route('admin.categories.index')->with('status', 'Category deleted.');
+        return redirect()->route($this->getRoutePrefix() . 'categories.index')->with('status', 'Category deleted.');
+    }
+
+    protected function getRoutePrefix(): string
+    {
+        if (request()->routeIs('business.*')) {
+            return 'business.';
+        }
+        if (request()->routeIs('saler.*')) {
+            return 'saler.';
+        }
+
+        return 'admin.';
     }
 }

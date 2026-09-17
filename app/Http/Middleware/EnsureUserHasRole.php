@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasRole
@@ -18,11 +19,36 @@ class EnsureUserHasRole
     {
         $user = $request->user();
 
-        abort_unless($user, 403);
+        if (! $user) {
+            return redirect()->guest(route('login'));
+        }
 
         $allowed = array_map(fn (string $role) => UserRole::from($role), $roles);
 
-        abort_unless(in_array($user->role, $allowed, strict: true), 403);
+        if (! in_array($user->role, $allowed, strict: true)) {
+            // Check if an equivalent route exists for the user's current role
+            $routeName = $request->route()?->getName();
+
+            if ($routeName && $user->role) {
+                $prefix = explode('.', $routeName)[0] ?? '';
+                $suffix = substr($routeName, strlen($prefix) + 1);
+
+                if ($suffix !== '') {
+                    $targetRoute = $user->role->value . '.' . $suffix;
+                    if (Route::has($targetRoute)) {
+                        return redirect()->route($targetRoute, $request->route()->parameters());
+                    }
+                }
+            }
+
+            // For GET requests, redirect gracefully to the user's portal dashboard
+            if ($request->isMethod('GET') && $user->role) {
+                return redirect()->route($user->role->dashboardRoute())
+                    ->with('info', 'Redirected to your dashboard.');
+            }
+
+            abort(403);
+        }
 
         return $next($request);
     }

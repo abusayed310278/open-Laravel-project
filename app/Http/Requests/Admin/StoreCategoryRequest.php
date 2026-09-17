@@ -11,7 +11,7 @@ class StoreCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isAdmin();
+        return $this->user()->isAdmin() || $this->user()->isBusiness() || $this->user()->isSaler();
     }
 
     /**

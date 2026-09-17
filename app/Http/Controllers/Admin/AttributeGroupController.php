@@ -63,7 +63,7 @@ class AttributeGroupController extends Controller
             return redirect($request->string('redirect_to'))->with('status', "Attribute group '{$group->name}' created.");
         }
 
-        return redirect()->route('admin.attribute-groups.index')->with('status', 'Attribute group created.');
+        return redirect()->route($this->getRoutePrefix() . 'attribute-groups.index')->with('status', 'Attribute group created.');
     }
 
     public function edit(AttributeGroup $attributeGroup): View
@@ -92,7 +92,7 @@ class AttributeGroupController extends Controller
             return redirect($request->string('redirect_to'))->with('status', "Attribute group '{$attributeGroup->name}' updated.");
         }
 
-        return redirect()->route('admin.attribute-groups.index')->with('status', 'Attribute group updated.');
+        return redirect()->route($this->getRoutePrefix() . 'attribute-groups.index')->with('status', 'Attribute group updated.');
     }
 
     public function toggleActive(AttributeGroup $attributeGroup): RedirectResponse
@@ -113,6 +113,18 @@ class AttributeGroupController extends Controller
         $attributeGroup->delete();
 
         return back()->with('status', 'Attribute group deleted.');
+    }
+
+    protected function getRoutePrefix(): string
+    {
+        if (request()->routeIs('business.*')) {
+            return 'business.';
+        }
+        if (request()->routeIs('saler.*')) {
+            return 'saler.';
+        }
+
+        return 'admin.';
     }
 
     private function uniqueSlug(string $name): string

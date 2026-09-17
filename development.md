@@ -88,6 +88,19 @@
       - Purple special offer text (`Save Extra Tk {amount} on various offer`) when compare price exceeds selling price.
       - Streamlined card by removing bulky gray spec blocks, author names, wishlist overlays, and duplicate view buttons.
       - Fully integrated across homepage, shop catalog, store page, product page related lists, and wishlist views.
+19. **Removal of "Back to Marketplace" Sidebar Footer Across All Dashboards**:
+    - Removed the "Back to Marketplace" footer link from `<x-dashboard-sidebar>` and all parent dashboard layouts (`business.blade.php`, `saler.blade.php`, `verifier.blade.php`, `customer.blade.php`, `admin.blade.php`).
+    - The topbar `[ ↗ View Site ]` button provides universal and uncluttered access back to the marketplace without taking up vertical sidebar space.
+20. **Seller Category Builder, Categories, Attribute Groups & Attributes Feature Integration**:
+    - Enabled Category Builder, Categories, Attribute Groups, and Attributes in both Store Owner (`business`) and Seller (`saler`) dashboards.
+    - Updated `routes/web.php` with modular seller category/attribute route definitions.
+    - Updated `CategoryController`, `AttributeGroupController`, and `AttributeController` to dynamically resolve route prefixes for form submissions and redirects.
+    - Dynamic blade layout resolution allows all existing builder and catalog views to function across Admin, Business, and Seller portals.
+21. **Brands Management & 403 Smart Role Redirection**:
+    - Added full Brands CRUD & status toggle to both Seller (`saler`) and Store Owner (`business`) roles.
+    - Enhanced `EnsureUserHasRole` to seamlessly redirect sellers navigating to admin URLs to their matching portal pages without 403 errors.
+22. **FormRequest Authorization Update**:
+    - Updated `StoreCategoryRequest`, `AttributeGroupRequest`, `StoreAttributeRequest`, `StoreAttributeValueRequest`, `CategoryAttributeRequest`, `BulkCategoryAttributeRequest`, `SyncCategoryAttributeRequest`, and `StoreBrandRequest` to permit `Admin`, `Business`, and `Saler` user roles.
 
 ---
 

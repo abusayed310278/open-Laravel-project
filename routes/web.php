@@ -210,6 +210,54 @@ $sellerPaymentRoutes = function () {
     Route::post('/payouts', [SellerWalletController::class, 'requestPayout'])->name('payouts.request');
 };
 
+$sellerCategoryRoutes = function () {
+    // Category Builder Workspace
+    Route::get('/categories/builder', [CategoryBuilderController::class, 'categories'])->name('categories.builder');
+    Route::get('/categories/builder/categories', [CategoryBuilderController::class, 'categories'])->name('categories.builder.categories');
+    Route::get('/categories/builder/attribute-groups', [CategoryBuilderController::class, 'attributeGroups'])->name('categories.builder.attribute-groups');
+    Route::get('/categories/builder/attributes', [CategoryBuilderController::class, 'attributes'])->name('categories.builder.attributes');
+    Route::get('/categories/builder/assign', [CategoryBuilderController::class, 'assign'])->name('categories.builder.assign');
+
+    // Categories & Category Attributes
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::put('/categories/{category}/attributes', [CategoryController::class, 'updateAttributes'])->name('categories.attributes.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    Route::get('/categories/{category}/attributes', [CategoryAttributeController::class, 'index'])->name('categories.attributes');
+    Route::post('/categories/{category}/attributes', [CategoryAttributeController::class, 'store'])->name('categories.attributes.store');
+    Route::post('/categories/{category}/attributes/bulk', [CategoryAttributeController::class, 'bulkStore'])->name('categories.attributes.bulk-store');
+    Route::post('/categories/{category}/attributes/sync', [CategoryAttributeController::class, 'sync'])->name('categories.attributes.sync');
+    Route::put('/categories/{category}/attributes/{attribute}', [CategoryAttributeController::class, 'update'])->name('categories.attributes.update-pivot');
+    Route::delete('/categories/{category}/attributes/{attribute}', [CategoryAttributeController::class, 'destroy'])->name('categories.attributes.destroy');
+
+    // Brands
+    Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+    Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+    Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+    Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+    Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+    Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
+    Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
+
+    // Attribute Groups
+    Route::resource('attribute-groups', AttributeGroupController::class);
+    Route::patch('/attribute-groups/{attributeGroup}/toggle-active', [AttributeGroupController::class, 'toggleActive'])->name('attribute-groups.toggle-active');
+
+    // Attributes & Values
+    Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index');
+    Route::post('/attributes', [AttributeController::class, 'store'])->name('attributes.store');
+    Route::get('/attributes/{attribute}', [AttributeController::class, 'show'])->name('attributes.show');
+    Route::put('/attributes/{attribute}', [AttributeController::class, 'update'])->name('attributes.update');
+    Route::patch('/attributes/{attribute}/toggle-active', [AttributeController::class, 'toggleActive'])->name('attributes.toggle-active');
+    Route::delete('/attributes/{attribute}', [AttributeController::class, 'destroy'])->name('attributes.destroy');
+    Route::post('/attributes/{attribute}/values', [AttributeValueController::class, 'store'])->name('attributes.values.store');
+    Route::delete('/attributes/{attribute}/values/{value}', [AttributeValueController::class, 'destroy'])->name('attributes.values.destroy');
+};
+
 /*
 |--------------------------------------------------------------------------
 | Onboarding (business/saler profile completion after registration)
@@ -469,7 +517,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profile.complete'])
-    ->prefix('business')->name('business.')->group(function () use ($sellerProductRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
+    ->prefix('business')->name('business.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
         Route::view('/', 'business.dashboard')->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
@@ -483,6 +531,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
         Route::post('/subscription/{plan}', [SubscriptionController::class, 'store'])->name('subscription.store');
 
         $sellerProductRoutes();
+        $sellerCategoryRoutes();
         $sellerPaymentRoutes();
         $sellerOrderRoutes();
         $sellerInventoryRoutes();
@@ -491,7 +540,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.complete'])
-    ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
+    ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
         Route::view('/', 'saler.dashboard')->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
@@ -505,6 +554,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
         Route::post('/subscriptions/{plan}', [SubscriptionController::class, 'store'])->name('subscriptions.store');
 
         $sellerProductRoutes();
+        $sellerCategoryRoutes();
         $salerAppointmentRoutes();
         $salerWarehouseRoutes();
         $sellerPaymentRoutes();
