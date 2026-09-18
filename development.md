@@ -101,6 +101,21 @@
     - Enhanced `EnsureUserHasRole` to seamlessly redirect sellers navigating to admin URLs to their matching portal pages without 403 errors.
 22. **FormRequest Authorization Update**:
     - Updated `StoreCategoryRequest`, `AttributeGroupRequest`, `StoreAttributeRequest`, `StoreAttributeValueRequest`, `CategoryAttributeRequest`, `BulkCategoryAttributeRequest`, `SyncCategoryAttributeRequest`, and `StoreBrandRequest` to permit `Admin`, `Business`, and `Saler` user roles.
+23. **Side Menu Notifications Removal & Sidebar Route Clean-up**:
+    - Removed duplicate "Notifications" menu items from Verifier Portal (`layouts/verifier.blade.php`) and Customer Account (`layouts/customer.blade.php`) sidebars since notifications are universally accessible via the top-bar bell icon dropdown with live feed and unread counter badges.
+    - Updated sidebar messages route definition in `verifier.blade.php` to target `verifier.messages.index`.
+24. **Verifier-to-Seller Real-Time Messaging & Chat Integration**:
+    - Added direct message action buttons across Inspection History Log (`verifier/history/index.blade.php`), Inspection Queue (`verifier/appointments/index.blade.php`), Seller Products (`verifier/products/index.blade.php`), inspection detail view (`inspect.blade.php`), and product details (`products/show.blade.php`).
+    - Enhanced `ChatController` and `ChatService` to support the `verifier` role with dynamic layout resolution and bidirectional conversation lookup.
+25. **Grade A Badge Palette Update & ProductGrade Enum Safety**:
+    - Replaced yellow background (`bg-amber-100`) on Grade A badges with clean emerald styling (`bg-emerald-50 text-emerald-700 border border-emerald-200/60`).
+    - Added `badgeClass()` to `App\Enums\ProductGrade` and resolved `TypeError` by type-safely handling `ProductGrade` enum instances in Blade templates.
+26. **User Avatar & Clean Name Display in Messages & Chat**:
+    - Updated Messages conversation list (`resources/views/chat/index.blade.php`) and Conversation header (`resources/views/chat/show.blade.php`) to show only the user's profile avatar image (or initials fallback in brand styling) and user's name, removing product title references and preview clutter.
+    - Eager loaded `buyer.profile` and `seller.profile` in `ChatController`.
+27. **Modern Real-Time Chat & Message Bubble Redesign**:
+    - Redesigned message bubbles with clean amber gradient styling (`from-amber-500 to-amber-600`) for sent messages and crisp border cards for received messages with custom avatar alignment.
+    - Added interactive attachment badges, floating rounded input bar, presence indicator, and auto-scroll polling transitions.
 
 ---
 

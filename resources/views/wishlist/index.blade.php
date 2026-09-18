@@ -27,7 +27,7 @@
                             :brand="$item->product->brand?->name"
                             :condition="$item->product->condition->value"
                             :key-features="$item->product->keyFeatures(3)"
-                            :image="$item->product->images->first()?->url()"
+                            :image="$item->product->primaryImageUrl()"
                             :href="route('products.show', $item->product)"
                         />
                         <div class="p-3 pt-0 flex items-center gap-2">

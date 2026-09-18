@@ -4,390 +4,266 @@
 
 @section('content')
 <div class="space-y-6 pb-12 font-sans">
-    {{-- Chart.js CDN for interactive charts --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    {{-- Header --}}
+    <div class="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 xl:flex-row xl:items-center xl:justify-between">
+        <div>
+            <div class="mb-1.5 flex items-center gap-2 text-xs font-medium text-slate-400">
+                <span class="relative flex h-2 w-2">
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                </span>
+                <span>{{ $liveActiveCount }} active right now</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Visitor Intelligence & Traffic Hub</h1>
+            <p class="mt-1 max-w-2xl text-sm text-slate-500">
+                Traffic telemetry, device distribution, crawlers, and geographic analytics.
+            </p>
+        </div>
 
-    {{-- Top Command Header --}}
-    <div class="relative overflow-hidden bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-[0_10px_35px_-5px_rgba(0,0,0,0.04)]">
-        {{-- Subtle decorative background glow --}}
-        <div class="absolute -right-20 -top-20 w-72 h-72 bg-gradient-to-br from-amber-400/10 via-brand-500/10 to-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-20 -bottom-20 w-72 h-72 bg-gradient-to-tr from-emerald-400/10 via-sky-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
-            <div>
-                <div class="flex items-center gap-2.5 mb-1.5">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-slate-900 text-amber-400 shadow-xs">
-                        <svg class="w-3 h-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                        <span>Telemetry Engine v2.4</span>
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span>{{ $liveActiveCount }} Active Now</span>
-                    </span>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                    <span>Visitor Intelligence & Traffic Hub</span>
-                </h1>
-                <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-                    Real-time traffic telemetry, visitor device distribution, search engine crawlers, and geographic analytics.
-                </p>
+        {{-- Controls & Date Filter Selector --}}
+        <div class="flex flex-wrap items-center gap-2 self-start xl:self-auto">
+            {{-- Date Presets --}}
+            <div class="inline-flex items-center gap-0.5 rounded-xl bg-slate-100 p-1">
+                @php
+                    $presets = [
+                        'today' => 'Today',
+                        '7d' => '7 Days',
+                        '30d' => '30 Days',
+                        'this_month' => 'This Month',
+                        'all' => 'All Time',
+                    ];
+                @endphp
+                @foreach ($presets as $key => $label)
+                    <a
+                        href="{{ route('admin.visitor-reports.index', ['range' => $key]) }}"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors {{ ($range ?? '30d') === $key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800' }}"
+                    >
+                        {{ $label }}
+                    </a>
+                @endforeach
             </div>
 
-            {{-- Controls & Date Filter Selector --}}
-            <div class="flex flex-wrap items-center gap-2.5 self-start xl:self-auto">
-                {{-- Date Presets --}}
-                <div class="inline-flex items-center p-1 bg-slate-100/80 rounded-2xl border border-slate-200/60 shadow-inner">
-                    @php
-                        $presets = [
-                            'today' => 'Today',
-                            '7d' => '7 Days',
-                            '30d' => '30 Days',
-                            'this_month' => 'This Month',
-                            'all' => 'All Time',
-                        ];
-                    @endphp
-                    @foreach ($presets as $key => $label)
-                        <a
-                            href="{{ route('admin.visitor-reports.index', ['range' => $key]) }}"
-                            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all {{ ($range ?? '30d') === $key ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50' }}"
-                        >
-                            {{ $label }}
-                        </a>
-                    @endforeach
-                </div>
-
-                {{-- Action Buttons --}}
-                <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onclick="window.location.reload()"
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-xs hover:shadow-sm transition-all cursor-pointer"
-                        title="Reload Analytics"
-                    >
-                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        <span>Refresh</span>
-                    </button>
-                    <button
-                        type="button"
-                        onclick="window.print()"
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
-                    >
-                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                        <span>Export</span>
-                    </button>
-                </div>
+            {{-- Action Buttons --}}
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    onclick="window.location.reload()"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                    title="Reload Analytics"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <span>Refresh</span>
+                </button>
+                <button
+                    type="button"
+                    onclick="window.print()"
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-brand-500 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-600"
+                >
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <span>Export</span>
+                </button>
             </div>
         </div>
     </div>
 
-    {{-- 5 High-Impact KPI Bento Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    {{-- 5 KPI Cards --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {{-- Card 1: Total Visits --}}
-        <div class="group relative overflow-hidden bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5">
             <div class="flex items-center justify-between gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-md shadow-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                </div>
-                <span class="inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                    +18.4%
-                </span>
+                <p class="text-xs font-medium text-slate-400">Total Impressions</p>
+                <span class="text-xs font-semibold text-emerald-600">+18.4%</span>
             </div>
-            <div class="mt-4">
-                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Total Impressions</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <p class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ number_format($totalVisits) }}</p>
-                    <span class="text-[11px] font-semibold text-slate-400">Hits</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1 mt-3 overflow-hidden">
-                    <div class="h-1 rounded-full bg-blue-600" style="width: 100%"></div>
-                </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($totalVisits) }}</p>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-1 rounded-full bg-brand-500" style="width: 100%"></div>
             </div>
         </div>
 
         {{-- Card 2: Unique Visitors --}}
-        <div class="group relative overflow-hidden bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5">
             <div class="flex items-center justify-between gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                </div>
-                <span class="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-                    +12.1%
-                </span>
+                <p class="text-xs font-medium text-slate-400">Unique Audience</p>
+                <span class="text-xs font-semibold text-emerald-600">+12.1%</span>
             </div>
-            <div class="mt-4">
-                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Unique Audience</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <p class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ number_format($uniqueVisitors) }}</p>
-                    <span class="text-[11px] font-semibold text-emerald-600 font-mono">{{ round(($uniqueVisitors / max(1, $totalVisits)) * 100) }}% ratio</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1 mt-3 overflow-hidden">
-                    <div class="h-1 rounded-full bg-emerald-500" style="width: {{ min(100, round(($uniqueVisitors / max(1, $totalVisits)) * 100)) }}%"></div>
-                </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($uniqueVisitors) }}</p>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-1 rounded-full bg-slate-900" style="width: {{ min(100, round(($uniqueVisitors / max(1, $totalVisits)) * 100)) }}%"></div>
             </div>
         </div>
 
         {{-- Card 3: Desktop Traffic --}}
-        <div class="group relative overflow-hidden bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all"></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5">
+            @php $desktopPct = round(($desktopCount / max(1, $totalVisits)) * 100); @endphp
             <div class="flex items-center justify-between gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 text-white shadow-md shadow-sky-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                </div>
-                @php $desktopPct = round(($desktopCount / max(1, $totalVisits)) * 100); @endphp
-                <span class="text-[10px] font-extrabold text-sky-700 bg-sky-50 border border-sky-200/60 px-2 py-0.5 rounded-full">{{ $desktopPct }}% share</span>
+                <p class="text-xs font-medium text-slate-400">Desktop</p>
+                <span class="text-xs font-semibold text-slate-400">{{ $desktopPct }}%</span>
             </div>
-            <div class="mt-4">
-                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Desktop Workstations</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <p class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ number_format($desktopCount) }}</p>
-                    <span class="text-[11px] font-semibold text-slate-400">Clients</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1 mt-3 overflow-hidden">
-                    <div class="h-1 rounded-full bg-sky-500" style="width: {{ min(100, $desktopPct) }}%"></div>
-                </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($desktopCount) }}</p>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-1 rounded-full bg-slate-400" style="width: {{ min(100, $desktopPct) }}%"></div>
             </div>
         </div>
 
         {{-- Card 4: Mobile Traffic --}}
-        <div class="group relative overflow-hidden bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5">
+            @php $mobilePct = round(($mobileCount / max(1, $totalVisits)) * 100); @endphp
             <div class="flex items-center justify-between gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 text-white shadow-md shadow-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                </div>
-                @php $mobilePct = round(($mobileCount / max(1, $totalVisits)) * 100); @endphp
-                <span class="text-[10px] font-extrabold text-purple-700 bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded-full">{{ $mobilePct }}% share</span>
+                <p class="text-xs font-medium text-slate-400">Mobile & Tablets</p>
+                <span class="text-xs font-semibold text-slate-400">{{ $mobilePct }}%</span>
             </div>
-            <div class="mt-4">
-                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Mobile & Tablets</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <p class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ number_format($mobileCount) }}</p>
-                    <span class="text-[11px] font-semibold text-slate-400">Devices</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1 mt-3 overflow-hidden">
-                    <div class="h-1 rounded-full bg-purple-500" style="width: {{ min(100, $mobilePct) }}%"></div>
-                </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($mobileCount) }}</p>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-1 rounded-full bg-slate-400" style="width: {{ min(100, $mobilePct) }}%"></div>
             </div>
         </div>
 
         {{-- Card 5: Bots & Crawlers --}}
-        <div class="group relative overflow-hidden bg-white rounded-3xl p-5 border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-xl transition-all duration-300 hover:-translate-y-1 sm:col-span-2 lg:col-span-1">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all"></div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:col-span-2 lg:col-span-1">
             <div class="flex items-center justify-between gap-3">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 text-white shadow-md shadow-rose-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                </div>
-                <span class="text-[10px] font-extrabold text-rose-700 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-full">Indexed</span>
+                <p class="text-xs font-medium text-slate-400">Search Crawlers</p>
+                <span class="text-xs font-semibold text-slate-400">Indexed</span>
             </div>
-            <div class="mt-4">
-                <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Search Crawlers</p>
-                <div class="flex items-baseline justify-between mt-1">
-                    <p class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ number_format($botCount) }}</p>
-                    <span class="text-[11px] font-semibold text-rose-600 font-mono">Googlebot / Bing</span>
-                </div>
-                <div class="w-full bg-slate-100 rounded-full h-1 mt-3 overflow-hidden">
-                    <div class="h-1 rounded-full bg-rose-500" style="width: {{ min(100, round(($botCount / max(1, $totalVisits)) * 100)) }}%"></div>
-                </div>
+            <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($botCount) }}</p>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-1 rounded-full bg-slate-400" style="width: {{ min(100, round(($botCount / max(1, $totalVisits)) * 100)) }}%"></div>
             </div>
         </div>
     </div>
 
-    {{-- Interactive Visual Traffic Chart Card --}}
-    <div class="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)]">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-100">
+    {{-- Traffic Chart --}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7">
+        <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-center md:justify-between">
             <div>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black shadow-xs">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-black text-slate-900 tracking-tight">Traffic Volume & Audience Trajectory</h2>
-                        <p class="text-xs text-slate-400">Daily visit frequency and unique audience progression</p>
-                    </div>
-                </div>
+                <h2 class="text-base font-bold tracking-tight text-slate-900">Traffic Volume & Audience Trajectory</h2>
+                <p class="mt-0.5 text-xs text-slate-400">Daily visit frequency and unique audience progression</p>
             </div>
 
-            {{-- Chart Metrics Summary Pills --}}
-            <div class="flex flex-wrap items-center gap-3 text-xs">
-                <div class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-                    <span class="text-slate-500 font-medium">Avg Duration:</span>
-                    <span class="font-bold text-slate-900">{{ $avgDuration }}</span>
+            {{-- Chart Metrics Summary --}}
+            <div class="flex flex-wrap items-center gap-4 text-xs">
+                <div>
+                    <span class="text-slate-400">Avg Duration </span>
+                    <span class="font-semibold text-slate-900">{{ $avgDuration }}</span>
                 </div>
-                <div class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-slate-500 font-medium">Bounce Rate:</span>
-                    <span class="font-bold text-slate-900">{{ $bounceRate }}%</span>
+                <div>
+                    <span class="text-slate-400">Bounce Rate </span>
+                    <span class="font-semibold text-slate-900">{{ $bounceRate }}%</span>
                 </div>
-                <div class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                    <span class="text-slate-500 font-medium">Pages / Visit:</span>
-                    <span class="font-bold text-slate-900">{{ $pagesPerSession }}</span>
+                <div>
+                    <span class="text-slate-400">Pages / Visit </span>
+                    <span class="font-semibold text-slate-900">{{ $pagesPerSession }}</span>
                 </div>
             </div>
         </div>
 
         {{-- Canvas Container --}}
-        <div class="relative w-full h-[280px] sm:h-[320px] mt-6">
+        <div class="relative mt-6 h-[280px] w-full sm:h-[320px]">
             <canvas id="visitorTrafficChart"></canvas>
         </div>
     </div>
 
-    {{-- 2x2 Telemetry Matrix --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {{-- 2x2 Matrix --}}
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {{-- Section 1: Top Visited Pages --}}
-        <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-            <div>
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">Top Visited Pages</h3>
+                    <p class="mt-0.5 text-xs text-slate-400">Most requested storefront routes & landing URLs</p>
+                </div>
+                <span class="text-xs font-medium text-slate-400">Top 10</span>
+            </div>
+
+            {{-- In-card Search Filter --}}
+            <div class="mt-4 mb-1 flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition-colors focus-within:border-brand-500">
+                <svg class="h-4 w-4 shrink-0 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input
+                    type="text"
+                    id="pageFilterInput"
+                    placeholder="Search URLs..."
+                    class="w-full border-0 bg-transparent p-0 text-xs leading-normal text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none"
+                    style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
+                >
+            </div>
+
+            <div id="pagesListContainer" class="mt-1 divide-y divide-slate-100">
+                @php $maxPageViews = $topPages->max('views') ?: 1; @endphp
+                @foreach ($topPages as $page)
+                    @php $pct = round(($page->views / max(1, $totalVisits)) * 100, 1); @endphp
+                    <div class="page-row flex items-center justify-between gap-4 py-3" data-url="{{ strtolower($page->url) }}">
+                        <div class="min-w-0 flex-1 pr-2">
+                            <a href="{{ $page->url }}" target="_blank" class="block truncate font-mono text-xs font-medium text-slate-700 transition-colors hover:text-brand-600 sm:text-sm">
+                                {{ $page->url }}
+                            </a>
+                            <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-1 rounded-full bg-brand-500" style="width: {{ min(100, round(($page->views / $maxPageViews) * 100)) }}%;"></div>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-black text-slate-900 text-base">Top Visited Pages</h3>
-                            <p class="text-xs text-slate-400">Most requested storefront routes & landing URLs</p>
+                        <div class="flex-shrink-0 text-right">
+                            <span class="text-xs font-bold text-slate-900 sm:text-sm">{{ number_format($page->views) }}</span>
+                            <span class="block text-[11px] text-slate-400">{{ $pct }}%</span>
                         </div>
                     </div>
-                    <span class="text-xs font-bold text-slate-500 bg-slate-100/80 px-2.5 py-1 rounded-xl">Top 10</span>
-                </div>
-
-                {{-- In-card Search Filter --}}
-                <div class="flex items-center gap-2 mt-4 mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
-                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    <input
-                        type="text"
-                        id="pageFilterInput"
-                        placeholder="Search URLs..."
-                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
-                        style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
-                    >
-                </div>
-
-                <div id="pagesListContainer" class="divide-y divide-slate-100 mt-2">
-                    @php $maxPageViews = $topPages->max('views') ?: 1; @endphp
-                    @foreach ($topPages as $page)
-                        @php $pct = round(($page->views / max(1, $totalVisits)) * 100, 1); @endphp
-                        <div class="py-3 flex items-center justify-between gap-4 group page-row" data-url="{{ strtolower($page->url) }}">
-                            <div class="flex-1 min-w-0 pr-2">
-                                <div class="flex items-center gap-2">
-                                    <a href="{{ $page->url }}" target="_blank" class="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-blue-600 truncate transition-colors flex items-center gap-1.5 font-mono">
-                                        <span>{{ $page->url }}</span>
-                                        <svg class="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                    </a>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                                    <div class="h-1.5 rounded-full transition-all duration-500" style="width: {{ min(100, round(($page->views / $maxPageViews) * 100)) }}%; background: linear-gradient(90deg, #3b82f6, #6366f1);"></div>
-                                </div>
-                            </div>
-                            <div class="text-right flex-shrink-0">
-                                <span class="text-xs sm:text-sm font-black text-slate-900">{{ number_format($page->views) }}</span>
-                                <span class="block text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md mt-0.5 border border-blue-100/80">{{ $pct }}%</span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- Section 2: Inbound Referrers / Acquisition Channels --}}
-        <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-            <div>
-                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-xs">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">Inbound Referrers & Sources</h3>
+                    <p class="mt-0.5 text-xs text-slate-400">Traffic acquisition origin & organic discovery</p>
+                </div>
+                <span class="text-xs font-medium text-slate-400">Top 10</span>
+            </div>
+
+            {{-- In-card Search Filter --}}
+            <div class="mt-4 mb-1 flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition-colors focus-within:border-brand-500">
+                <svg class="h-4 w-4 shrink-0 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input
+                    type="text"
+                    id="referrerFilterInput"
+                    placeholder="Search referrers..."
+                    class="w-full border-0 bg-transparent p-0 text-xs leading-normal text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none"
+                    style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
+                >
+            </div>
+
+            <div id="referrersListContainer" class="mt-1 divide-y divide-slate-100">
+                @php $maxReferrer = $topReferrers->max('count') ?: 1; @endphp
+                @foreach ($topReferrers as $ref)
+                    @php $pctRef = round(($ref->count / max(1, $totalVisits)) * 100, 1); @endphp
+                    <div class="referrer-row flex items-center justify-between gap-4 py-3" data-ref="{{ strtolower($ref->referrer) }}">
+                        <div class="min-w-0 flex-1 pr-2">
+                            <span class="truncate text-xs font-medium text-slate-700 sm:text-sm">
+                                {{ $ref->referrer }}
+                            </span>
+                            <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-1 rounded-full bg-slate-900" style="width: {{ min(100, round(($ref->count / $maxReferrer) * 100)) }}%;"></div>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-black text-slate-900 text-base">Inbound Referrers & Sources</h3>
-                            <p class="text-xs text-slate-400">Traffic acquisition origin & organic discovery</p>
+                        <div class="flex-shrink-0 text-right">
+                            <span class="text-xs font-bold text-slate-900 sm:text-sm">{{ number_format($ref->count) }}</span>
+                            <span class="block text-[11px] text-slate-400">{{ $pctRef }}%</span>
                         </div>
                     </div>
-                    <span class="text-xs font-bold text-slate-500 bg-slate-100/80 px-2.5 py-1 rounded-xl">Top 10</span>
-                </div>
-
-                {{-- In-card Search Filter --}}
-                <div class="flex items-center gap-2 mt-4 mb-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
-                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    <input
-                        type="text"
-                        id="referrerFilterInput"
-                        placeholder="Search referrers..."
-                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
-                        style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
-                    >
-                </div>
-
-                <div id="referrersListContainer" class="divide-y divide-slate-100 mt-2">
-                    @php $maxReferrer = $topReferrers->max('count') ?: 1; @endphp
-                    @foreach ($topReferrers as $ref)
-                        @php $pctRef = round(($ref->count / max(1, $totalVisits)) * 100, 1); @endphp
-                        <div class="py-3 flex items-center justify-between gap-4 group referrer-row" data-ref="{{ strtolower($ref->referrer) }}">
-                            <div class="flex-1 min-w-0 pr-2">
-                                <div class="flex items-center gap-2.5">
-                                    {{-- Brand icon indicator --}}
-                                    @if (str_contains(strtolower($ref->referrer), 'google'))
-                                        <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs border border-blue-100">G</span>
-                                    @elseif (str_contains(strtolower($ref->referrer), 'facebook'))
-                                        <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-700 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs border border-indigo-100">f</span>
-                                    @elseif (str_contains(strtolower($ref->referrer), 'youtube'))
-                                        <span class="w-6 h-6 rounded-lg bg-red-50 text-red-600 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs border border-red-100">▶</span>
-                                    @elseif (str_contains(strtolower($ref->referrer), 'instagram'))
-                                        <span class="w-6 h-6 rounded-lg bg-pink-50 text-pink-600 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs border border-pink-100">📷</span>
-                                    @elseif (str_contains(strtolower($ref->referrer), 't.co') || str_contains(strtolower($ref->referrer), 'twitter'))
-                                        <span class="w-6 h-6 rounded-lg bg-slate-900 text-white font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs">𝕏</span>
-                                    @elseif (str_contains(strtolower($ref->referrer), 'linkedin'))
-                                        <span class="w-6 h-6 rounded-lg bg-sky-50 text-sky-700 font-black text-xs flex items-center justify-center flex-shrink-0 shadow-2xs border border-sky-100">in</span>
-                                    @else
-                                        <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs">↗</span>
-                                    @endif
-
-                                    <span class="text-xs sm:text-sm font-semibold text-slate-800 truncate">
-                                        {{ $ref->referrer }}
-                                    </span>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                                    <div class="h-1.5 rounded-full transition-all duration-500" style="width: {{ min(100, round(($ref->count / $maxReferrer) * 100)) }}%; background: linear-gradient(90deg, #10b981, #059669);"></div>
-                                </div>
-                            </div>
-                            <div class="text-right flex-shrink-0">
-                                <span class="text-xs sm:text-sm font-black text-slate-900">{{ number_format($ref->count) }}</span>
-                                <span class="block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md mt-0.5 border border-emerald-100/80">{{ $pctRef }}%</span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- Section 3: Geographic Distribution (Countries & Cities) --}}
-        <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)]">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-xs">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <div>
-                        <h3 class="font-black text-slate-900 text-base">Geographic Telemetry</h3>
-                        <p class="text-xs text-slate-400">Global visitor breakdown by country & metropolitan cities</p>
-                    </div>
-                </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-sm font-bold text-slate-900">Geographic Telemetry</h3>
+                <p class="mt-0.5 text-xs text-slate-400">Global visitor breakdown by country & metropolitan cities</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+            <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {{-- Top Countries --}}
                 <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Top Countries</h4>
-                        <span class="text-[10px] font-bold text-slate-400">Traffic</span>
-                    </div>
-                    <div class="space-y-2">
+                    <h4 class="mb-2 text-xs font-medium text-slate-400">Top Countries</h4>
+                    <div class="space-y-1">
                         @php
                             $flags = [
                                 'BD' => '🇧🇩', 'SG' => '🇸🇬', 'US' => '🇺🇸', 'EG' => '🇪🇬',
@@ -396,12 +272,12 @@
                             ];
                         @endphp
                         @foreach ($topCountries as $c)
-                            <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-2.5 min-w-0 pr-2">
-                                    <span class="text-lg leading-none">{{ $flags[$c->country_code] ?? '🌐' }}</span>
-                                    <span class="text-xs font-bold text-slate-800 truncate">{{ $c->country }}</span>
+                            <div class="flex items-center justify-between py-1.5">
+                                <div class="flex min-w-0 items-center gap-2 pr-2">
+                                    <span class="text-base leading-none">{{ $flags[$c->country_code] ?? '🌐' }}</span>
+                                    <span class="truncate text-xs font-medium text-slate-700">{{ $c->country }}</span>
                                 </div>
-                                <span class="text-xs font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded-lg flex-shrink-0">{{ number_format($c->count) }}</span>
+                                <span class="flex-shrink-0 text-xs font-semibold text-slate-900">{{ number_format($c->count) }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -409,19 +285,15 @@
 
                 {{-- Top Cities --}}
                 <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Top Cities</h4>
-                        <span class="text-[10px] font-bold text-slate-400">Hubs</span>
-                    </div>
-                    <div class="space-y-2">
+                    <h4 class="mb-2 text-xs font-medium text-slate-400">Top Cities</h4>
+                    <div class="space-y-1">
                         @foreach ($topCities as $city)
-                            <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors">
-                                <div class="flex items-center gap-2 min-w-0 pr-2">
-                                    <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
-                                    <span class="text-xs font-bold text-slate-800 truncate">{{ $city->city }}</span>
-                                    <span class="text-[10px] text-slate-400 truncate hidden xl:inline">({{ $city->country }})</span>
+                            <div class="flex items-center justify-between py-1.5">
+                                <div class="flex min-w-0 items-center gap-2 pr-2">
+                                    <span class="truncate text-xs font-medium text-slate-700">{{ $city->city }}</span>
+                                    <span class="hidden truncate text-[11px] text-slate-400 xl:inline">({{ $city->country }})</span>
                                 </div>
-                                <span class="text-xs font-black text-amber-800 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-lg flex-shrink-0">{{ number_format($city->count) }}</span>
+                                <span class="flex-shrink-0 text-xs font-semibold text-slate-900">{{ number_format($city->count) }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -430,39 +302,26 @@
         </div>
 
         {{-- Section 4: Systems, Engines & Browsers Matrix --}}
-        <div class="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)]">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-xs">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    </div>
-                    <div>
-                        <h3 class="font-black text-slate-900 text-base">Client Engines & Systems</h3>
-                        <p class="text-xs text-slate-400">Browser engines, operating systems & client profiles</p>
-                    </div>
-                </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-sm font-bold text-slate-900">Client Engines & Systems</h3>
+                <p class="mt-0.5 text-xs text-slate-400">Browser engines, operating systems & client profiles</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+            <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {{-- Top Browsers --}}
                 <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Top Browsers</h4>
-                        <span class="text-[10px] font-bold text-slate-400">Share</span>
-                    </div>
-                    <div class="space-y-2.5">
+                    <h4 class="mb-2 text-xs font-medium text-slate-400">Top Browsers</h4>
+                    <div class="space-y-2">
                         @foreach ($topBrowsers as $b)
                             @php $bPct = round(($b->count / max(1, $totalVisits)) * 100, 1); @endphp
-                            <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                                <div class="flex items-center justify-between text-xs font-bold text-slate-900">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                                        <span>{{ $b->browser }}</span>
-                                    </div>
-                                    <span class="font-mono">{{ number_format($b->count) }}</span>
+                            <div>
+                                <div class="flex items-center justify-between text-xs font-medium text-slate-700">
+                                    <span>{{ $b->browser }}</span>
+                                    <span class="font-semibold text-slate-900">{{ number_format($b->count) }}</span>
                                 </div>
-                                <div class="w-full bg-slate-200/70 rounded-full h-1 mt-2 overflow-hidden">
-                                    <div class="h-1 rounded-full bg-purple-600" style="width: {{ min(100, $bPct * 1.3) }}%"></div>
+                                <div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div class="h-1 rounded-full bg-slate-400" style="width: {{ min(100, $bPct * 1.3) }}%"></div>
                                 </div>
                             </div>
                         @endforeach
@@ -471,23 +330,17 @@
 
                 {{-- Top Platforms / OS --}}
                 <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Operating Systems</h4>
-                        <span class="text-[10px] font-bold text-slate-400">Share</span>
-                    </div>
-                    <div class="space-y-2.5">
+                    <h4 class="mb-2 text-xs font-medium text-slate-400">Operating Systems</h4>
+                    <div class="space-y-2">
                         @foreach ($topPlatforms as $p)
                             @php $pPct = round(($p->count / max(1, $totalVisits)) * 100, 1); @endphp
-                            <div class="p-2.5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100/80 transition-colors">
-                                <div class="flex items-center justify-between text-xs font-bold text-slate-900">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-                                        <span>{{ $p->platform }}</span>
-                                    </div>
-                                    <span class="font-mono">{{ number_format($p->count) }}</span>
+                            <div>
+                                <div class="flex items-center justify-between text-xs font-medium text-slate-700">
+                                    <span>{{ $p->platform }}</span>
+                                    <span class="font-semibold text-slate-900">{{ number_format($p->count) }}</span>
                                 </div>
-                                <div class="w-full bg-slate-200/70 rounded-full h-1 mt-2 overflow-hidden">
-                                    <div class="h-1 rounded-full bg-sky-500" style="width: {{ min(100, $pPct * 1.3) }}%"></div>
+                                <div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div class="h-1 rounded-full bg-slate-400" style="width: {{ min(100, $pPct * 1.3) }}%"></div>
                                 </div>
                             </div>
                         @endforeach
@@ -497,88 +350,70 @@
         </div>
     </div>
 
-    {{-- Live Real-time Activity Terminal / Table --}}
-    <div class="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.03)]">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center font-black shadow-xs">
-                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                </div>
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Real-Time Live Request Stream</h3>
-                    <p class="text-xs text-slate-400">Live storefront requests and telemetry logs</p>
-                </div>
+    {{-- Live Activity Table --}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7">
+        <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900">Real-Time Live Request Stream</h3>
+                <p class="mt-0.5 text-xs text-slate-400">Live storefront requests and telemetry logs</p>
             </div>
 
             {{-- Live Terminal Search Input --}}
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2 w-full sm:w-64 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
-                    <svg class="w-4 h-4 text-slate-400 shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div class="flex w-full items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 transition-colors focus-within:border-brand-500 sm:w-64">
+                    <svg class="h-4 w-4 shrink-0 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <input
                         type="text"
                         id="liveLogsFilterInput"
                         placeholder="Filter live stream..."
-                        class="w-full bg-transparent border-0 p-0 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 leading-normal"
+                        class="w-full border-0 bg-transparent p-0 text-xs leading-normal text-slate-800 placeholder:text-slate-400 focus:ring-0 focus:outline-none"
                         style="border: none !important; box-shadow: none !important; padding: 0 !important; outline: none !important;"
                     >
                 </div>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200/60 shadow-2xs whitespace-nowrap">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    Live Stream
+                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-slate-400">
+                    <span class="relative flex h-2 w-2">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </span>
+                    Live
                 </span>
             </div>
         </div>
 
-        <div class="overflow-x-auto mt-4">
+        <div class="mt-4 overflow-x-auto">
             <table class="w-full text-left text-xs sm:text-sm">
-                <thead class="bg-slate-50/80 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                <thead class="border-b border-slate-100 text-[11px] font-medium uppercase tracking-wider text-slate-400">
                     <tr>
-                        <th class="px-5 py-3.5">Visitor / IP</th>
-                        <th class="px-5 py-3.5">Location</th>
-                        <th class="px-5 py-3.5">Requested Route</th>
-                        <th class="px-5 py-3.5">Client OS / Device</th>
-                        <th class="px-5 py-3.5">Browser Engine</th>
-                        <th class="px-5 py-3.5 text-right">Recorded Time</th>
+                        <th class="px-5 py-3">Visitor / IP</th>
+                        <th class="px-5 py-3">Location</th>
+                        <th class="px-5 py-3">Requested Route</th>
+                        <th class="px-5 py-3">Client OS / Device</th>
+                        <th class="px-5 py-3">Browser Engine</th>
+                        <th class="px-5 py-3 text-right">Recorded Time</th>
                     </tr>
                 </thead>
                 <tbody id="liveLogsTableBody" class="divide-y divide-slate-100 text-slate-700">
                     @forelse ($recentVisits as $visit)
-                        <tr class="hover:bg-slate-50/70 transition-colors log-row">
-                            <td class="px-5 py-3.5 font-mono text-xs text-slate-900 font-bold">
-                                <span class="inline-flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                                    <span>{{ $visit->ip_address ? substr($visit->ip_address, 0, 10) . '***' : '103.145.***' }}</span>
-                                </span>
+                        <tr class="log-row transition-colors hover:bg-slate-50">
+                            <td class="px-5 py-3 font-mono text-xs font-medium text-slate-900">
+                                {{ $visit->ip_address ? substr($visit->ip_address, 0, 10) . '***' : '103.145.***' }}
                             </td>
-                            <td class="px-5 py-3.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-slate-900">{{ $visit->city ?: 'Dhaka' }}</span>
-                                    <span class="text-slate-400 text-xs font-medium">({{ $visit->country ?: 'Bangladesh' }})</span>
-                                </div>
+                            <td class="px-5 py-3">
+                                <span class="font-medium text-slate-900">{{ $visit->city ?: 'Dhaka' }}</span>
+                                <span class="text-xs text-slate-400">({{ $visit->country ?: 'Bangladesh' }})</span>
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="font-mono text-xs text-indigo-700 bg-indigo-50/80 px-2.5 py-1 rounded-lg border border-indigo-100 font-semibold inline-block max-w-[240px] truncate">
+                            <td class="px-5 py-3">
+                                <span class="inline-block max-w-[240px] truncate font-mono text-xs text-slate-600">
                                     {{ $visit->url ?: '/' }}
                                 </span>
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 capitalize">
-                                    @if ($visit->device_type === 'mobile')
-                                        📱
-                                    @elseif ($visit->device_type === 'bot')
-                                        🤖
-                                    @else
-                                        💻
-                                    @endif
-                                    {{ $visit->device_type ?: 'Desktop' }} &bull; {{ $visit->platform ?: 'Windows' }}
-                                </span>
+                            <td class="px-5 py-3 text-xs capitalize text-slate-600">
+                                {{ $visit->device_type ?: 'Desktop' }} &bull; {{ $visit->platform ?: 'Windows' }}
                             </td>
-                            <td class="px-5 py-3.5">
-                                <span class="text-xs font-bold text-slate-800 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                                    {{ $visit->browser ?: 'Chrome' }}
-                                </span>
+                            <td class="px-5 py-3 text-xs text-slate-600">
+                                {{ $visit->browser ?: 'Chrome' }}
                             </td>
-                            <td class="px-5 py-3.5 text-right font-mono text-xs text-slate-400">
+                            <td class="px-5 py-3 text-right font-mono text-xs text-slate-400">
                                 {{ $visit->created_at?->diffForHumans() ?? 'Just now' }}
                             </td>
                         </tr>
@@ -606,12 +441,12 @@
             const chartUniques = @json($chartUniques);
 
             const gradientVisits = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
-            gradientVisits.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
+            gradientVisits.addColorStop(0, 'rgba(99, 102, 241, 0.18)');
             gradientVisits.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
             const gradientUniques = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
-            gradientUniques.addColorStop(0, 'rgba(16, 185, 129, 0.20)');
-            gradientUniques.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+            gradientUniques.addColorStop(0, 'rgba(15, 23, 42, 0.10)');
+            gradientUniques.addColorStop(1, 'rgba(15, 23, 42, 0.0)');
 
             new Chart(ctx, {
                 type: 'line',
@@ -623,11 +458,11 @@
                             data: chartVisits,
                             borderColor: '#6366f1',
                             backgroundColor: gradientVisits,
-                            borderWidth: 2.5,
+                            borderWidth: 2,
                             fill: true,
                             tension: 0.35,
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
                             pointBackgroundColor: '#6366f1',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
@@ -635,14 +470,14 @@
                         {
                             label: 'Unique Visitors',
                             data: chartUniques,
-                            borderColor: '#10b981',
+                            borderColor: '#0f172a',
                             backgroundColor: gradientUniques,
-                            borderWidth: 2.5,
+                            borderWidth: 2,
                             fill: true,
                             tension: 0.35,
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: '#10b981',
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            pointBackgroundColor: '#0f172a',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
                         }
@@ -660,13 +495,14 @@
                             position: 'top',
                             align: 'end',
                             labels: {
-                                boxWidth: 12,
-                                boxHeight: 12,
+                                boxWidth: 8,
+                                boxHeight: 8,
                                 usePointStyle: true,
                                 pointStyle: 'circle',
+                                color: '#64748b',
                                 font: {
                                     size: 11,
-                                    weight: 'bold',
+                                    weight: '600',
                                     family: 'system-ui, -apple-system, sans-serif'
                                 }
                             }
@@ -675,9 +511,9 @@
                             backgroundColor: '#0f172a',
                             titleColor: '#f8fafc',
                             bodyColor: '#cbd5e1',
-                            padding: 12,
-                            borderRadius: 12,
-                            titleFont: { size: 12, weight: 'bold' },
+                            padding: 10,
+                            borderRadius: 8,
+                            titleFont: { size: 12, weight: '600' },
                             bodyFont: { size: 12 },
                             usePointStyle: true,
                         }
@@ -690,7 +526,6 @@
                             ticks: {
                                 font: {
                                     size: 10,
-                                    weight: 'bold'
                                 },
                                 color: '#94a3b8',
                                 maxRotation: 0,
@@ -705,13 +540,12 @@
                             ticks: {
                                 font: {
                                     size: 10,
-                                    weight: 'bold'
                                 },
                                 color: '#94a3b8',
                                 precision: 0
                             },
                             border: {
-                                dash: [4, 4]
+                                display: false,
                             }
                         }
                     }

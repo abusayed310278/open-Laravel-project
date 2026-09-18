@@ -10,17 +10,23 @@
 
         $navGroups = [
             [
-                'label' => null,
+                'label' => 'Overview',
                 'items' => [
                     ['route' => 'verifier.dashboard', 'label' => 'Dashboard', 'icon' => $icon['home']],
                 ],
             ],
             [
-                'label' => 'Inspection Queue',
+                'label' => 'Verification & Quality',
                 'items' => [
-                    ['route' => 'verifier.appointments.index', 'label' => 'Appointments', 'icon' => $icon['calendar']],
-                    ['route' => 'verifier.products.index', 'label' => 'Products to Inspect', 'icon' => $icon['shield']],
-                    ['route' => 'verifier.history.index', 'label' => 'History', 'icon' => $icon['clock']],
+                    ['route' => 'verifier.products.index', 'label' => 'Seller Products', 'icon' => $icon['tag']],
+                    ['route' => 'verifier.appointments.index', 'label' => 'Inspection Queue', 'icon' => $icon['calendar']],
+                    ['route' => 'verifier.history.index', 'label' => 'Inspection History', 'icon' => $icon['clock']],
+                ],
+            ],
+            [
+                'label' => 'Communication',
+                'items' => [
+                    ['route' => 'verifier.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],
                 ],
             ],
         ];

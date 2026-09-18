@@ -38,7 +38,7 @@ class VerifierController extends Controller
             $user = User::query()->create([
                 'name' => $request->string('name')->value(),
                 'email' => $request->string('email')->value(),
-                'password' => Hash::make(Str::random(24)),
+                'password' => Hash::make($request->string('password')->value()),
                 'role' => UserRole::Verifier,
                 'status' => UserStatus::Active,
             ]);
@@ -54,7 +54,7 @@ class VerifierController extends Controller
             ]);
         });
 
-        return back()->with('status', 'Verifier account created. Ask them to use "Forgot password" to set their own password.');
+        return back()->with('status', 'Verifier account created successfully.');
     }
 
     public function update(Request $request, User $user): RedirectResponse

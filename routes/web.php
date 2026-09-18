@@ -81,6 +81,7 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\VendorPaymentSettingController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\Verifier\AppointmentController as VerifierAppointmentController;
+use App\Http\Controllers\Verifier\ProductController as VerifierProductController;
 use App\Http\Controllers\WarehouseDepositController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -126,6 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/messages/{message}/attachment', [ChatController::class, 'attachment'])->name('chat.attachment');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-feed', [NotificationController::class, 'unreadFeed'])->name('notifications.unread-feed');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
@@ -565,12 +567,20 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Verifier->value])
-    ->prefix('verifier')->name('verifier.')->group(function () {
-        Route::view('/', 'verifier.dashboard')->name('dashboard');
+    ->prefix('verifier')->name('verifier.')->group(function () use ($messagingRoutes) {
+        Route::get('/', [VerifierAppointmentController::class, 'dashboard'])->name('dashboard');
+
+        Route::get('/products', [VerifierProductController::class, 'index'])->name('products.index');
+        Route::get('/products/{product}', [VerifierProductController::class, 'show'])->name('products.show');
+        Route::post('/products/{product}/verify', [VerifierProductController::class, 'verify'])->name('products.verify');
 
         Route::get('/appointments', [VerifierAppointmentController::class, 'index'])->name('appointments.index');
         Route::get('/appointments/{verification}/inspect', [VerifierAppointmentController::class, 'inspect'])->name('appointments.inspect');
         Route::post('/appointments/{verification}/submit', [VerifierAppointmentController::class, 'submit'])->name('appointments.submit');
+
+        Route::get('/history', [VerifierAppointmentController::class, 'history'])->name('history.index');
+
+        $messagingRoutes();
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Customer->value])

@@ -92,7 +92,7 @@
                                 :brand="$product->brand?->name"
                                 :price="$product->price"
                                 :compare-price="$product->compare_price"
-                                :image="$product->primaryImage()?->url() ?? $product->images->first()?->url()"
+                                :image="$product->primaryImageUrl()"
                                 :href="route('products.show', $product)"
                             />
                         @endforeach

@@ -26,8 +26,7 @@
         <x-table :headers="['Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', 'Actions']" id="products-table">
             @forelse ($products as $product)
                 @php
-                    $primaryImg = $product->images->first();
-                    $imgUrl = $primaryImg ? $primaryImg->url() : null;
+                    $imgUrl = $product->primaryImageUrl();
                 @endphp
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 flex items-center gap-3">

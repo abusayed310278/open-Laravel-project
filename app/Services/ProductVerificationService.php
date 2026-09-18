@@ -148,4 +148,55 @@ class ProductVerificationService
             );
         }
     }
+
+    public function verifyDirectly(Product $product, User $verifier, string $decision, ?string $grade = null, ?int $batteryHealth = null, ?string $notes = null, ?string $rejectionReason = null, array $results = []): ProductVerification
+    {
+        return DB::transaction(function () use ($product, $verifier, $decision, $grade, $batteryHealth, $notes, $rejectionReason, $results) {
+            $locationId = $verifier->verifierProfile?->assigned_location_id;
+
+            $verification = ProductVerification::create([
+                'product_id' => $product->id,
+                'seller_id' => $product->user_id,
+                'verifier_id' => $verifier->id,
+                'location_id' => $locationId,
+                'status' => $decision === 'pass' ? VerificationStatus::Verified : VerificationStatus::Rejected,
+                'requested_at' => now(),
+                'scheduled_at' => now(),
+                'inspected_at' => now(),
+                'verified_at' => $decision === 'pass' ? now() : null,
+                'rejection_reason' => $decision === 'fail' ? $rejectionReason : null,
+                'notes' => $notes,
+            ]);
+
+            if (! empty($results)) {
+                $this->saveResults($verification, $results);
+            }
+
+            if ($decision === 'pass') {
+                $verification->gradeAssignment()->create([
+                    'product_id' => $product->id,
+                    'verifier_id' => $verifier->id,
+                    'grade' => $grade ?? 'A',
+                    'grade_notes' => $notes,
+                    'battery_health' => $batteryHealth,
+                    'assigned_at' => now(),
+                ]);
+
+                $product->update([
+                    'verification_status' => VerificationStatus::Verified,
+                    'grade' => $grade ?? 'A',
+                    'grade_notes' => $notes,
+                ]);
+
+                $product->user?->notify(new VerificationVerified($verification));
+                ActivityLog::record('product_verification.passed', $verification, ['grade' => $grade]);
+            } else {
+                $product->update(['verification_status' => VerificationStatus::Rejected]);
+                $product->user?->notify(new VerificationRejected($verification, $rejectionReason ?? 'Does not meet Openbox quality criteria'));
+                ActivityLog::record('product_verification.failed', $verification, ['reason' => $rejectionReason]);
+            }
+
+            return $verification->fresh();
+        });
+    }
 }

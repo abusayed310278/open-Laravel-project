@@ -10,16 +10,27 @@ use Illuminate\Http\UploadedFile;
 
 class ChatService
 {
-    public function startOrGetConversation(User $buyer, User $seller, ?Product $product = null): ChatConversation
+    public function startOrGetConversation(User $user1, User $user2, ?Product $product = null): ChatConversation
     {
-        abort_if($buyer->id === $seller->id, 422, 'You cannot message yourself.');
+        abort_if($user1->id === $user2->id, 422, 'You cannot message yourself.');
 
-        return ChatConversation::query()->firstOrCreate([
+        $existing = ChatConversation::query()
+            ->when($product, fn ($q) => $q->where('product_id', $product->id), fn ($q) => $q->whereNull('product_id'))
+            ->where(function ($q) use ($user1, $user2) {
+                $q->where(fn ($sub) => $sub->where('buyer_id', $user1->id)->where('seller_id', $user2->id))
+                  ->orWhere(fn ($sub) => $sub->where('buyer_id', $user2->id)->where('seller_id', $user1->id));
+            })
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return ChatConversation::create([
             'product_id' => $product?->id,
-            'buyer_id' => $buyer->id,
-            'seller_id' => $seller->id,
-        ], [
-            'seller_type' => $seller->role->value,
+            'buyer_id' => $user1->id,
+            'seller_id' => $user2->id,
+            'seller_type' => $user2->role?->value ?? 'saler',
         ]);
     }
 

@@ -40,6 +40,11 @@
         }
     },
     "scripts": {
+        "build": [
+            "@php -r \"file_exists('public/hot') && unlink('public/hot');\"",
+            "npm run build",
+            "@php artisan optimize:clear"
+        ],
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",

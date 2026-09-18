@@ -33,9 +33,7 @@
                                 @foreach ($group['items'] as $item)
                                     <div class="flex items-center gap-4 px-5 py-4">
                                         <div class="w-16 h-16 rounded-md bg-gray-50 flex-shrink-0 overflow-hidden">
-                                            @if ($item->product->images->isNotEmpty())
-                                                <img src="{{ $item->product->images->first()->url() }}" class="w-full h-full object-cover">
-                                            @endif
+                                            <img src="{{ $item->product->primaryImageUrl() }}" alt="{{ $item->product->title }}" class="w-full h-full object-cover">
                                         </div>
 
                                         <div class="flex-1 min-w-0">

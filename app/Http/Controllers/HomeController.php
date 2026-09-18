@@ -180,7 +180,7 @@ class HomeController extends Controller
             'condition' => $product->condition->value,
             'seller' => $product->user->name,
             'isNew' => $product->condition->value === 'new',
-            'image' => $product->primaryImage()?->url() ?? 'https://loremflickr.com/600/600/electronics?random=' . $product->id,
+            'image' => $product->primaryImageUrl(),
             'href' => route('products.show', $product),
             'keyFeatures' => $product->keyFeatures(3),
         ])->values()->all();

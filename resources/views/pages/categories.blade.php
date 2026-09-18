@@ -13,7 +13,7 @@
         @else
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach ($categories as $category)
-                    <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-xl p-5 shadow-2xs hover:shadow-md transition-all">
+                    <div class="bg-white border border-gray-100 hover:border-amber-300 rounded-xl p-5 shadow-2xs hover:shadow-md transition-all">
                         <a href="{{ route('categories.show', $category) }}" class="flex items-center gap-3 mb-3">
                             <div class="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center text-gray-900 font-bold text-sm">
                                 {{ strtoupper(substr($category->name, 0, 1)) }}

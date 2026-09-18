@@ -1,3 +1,6 @@
+import Chart from 'chart.js/auto';
+window.Chart = Chart;
+
 /**
  * Openbox shared vanilla JS utilities.
  * No Alpine, no Livewire — every interactive piece here is plain DOM.
@@ -98,12 +101,19 @@ document.querySelectorAll('[data-confirm]').forEach((el) => {
 });
 
 // Password show/hide toggle — <button data-password-toggle="field-id">
-document.querySelectorAll('[data-password-toggle]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const input = document.getElementById(btn.dataset.passwordToggle);
-        if (!input) return;
-        input.type = input.type === 'password' ? 'text' : 'password';
-    });
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-password-toggle]');
+    if (!btn) return;
+    const input = document.getElementById(btn.dataset.passwordToggle);
+    if (!input) return;
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    if (eyeOpen && eyeClosed) {
+        eyeOpen.classList.toggle('hidden', isPassword);
+        eyeClosed.classList.toggle('hidden', !isPassword);
+    }
 });
 
 // Password strength bar — <input data-strength-for> + <div id="strength-bar">
@@ -179,4 +189,104 @@ document.querySelectorAll('.row-check').forEach((c) => c.addEventListener('chang
 function toggleBulkBar() {
     const any = Array.from(document.querySelectorAll('.row-check')).some((c) => c.checked);
     document.getElementById('bulk-bar')?.classList.toggle('hidden', !any);
+}
+
+// Real-Time Notification Auto-Poller (Option 1)
+function initNotificationPoller() {
+    const container = document.getElementById('topbar-notif-container');
+    if (!container) return;
+
+    const feedUrl = container.dataset.feedUrl;
+    const csrfToken = container.dataset.csrf;
+    if (!feedUrl) return;
+
+    let previousCount = null;
+
+    async function pollNotifications() {
+        try {
+            const response = await fetch(feedUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                cache: 'no-store'
+            });
+
+            if (!response.ok) return;
+            const data = await response.json();
+
+            const badgeIndicator = document.getElementById('notif-badge-indicator');
+            const countBadge = document.getElementById('notif-count-badge');
+            const listContainer = document.getElementById('notif-items-list');
+
+            const count = data.unread_count ?? 0;
+
+            // Update badge indicator on the bell
+            if (badgeIndicator) {
+                if (count > 0) {
+                    badgeIndicator.classList.remove('hidden');
+                } else {
+                    badgeIndicator.classList.add('hidden');
+                }
+            }
+
+            // Update count label in the dropdown header
+            if (countBadge) {
+                if (count > 0) {
+                    countBadge.textContent = `${count} new`;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
+            }
+
+            // Update the dropdown list
+            if (listContainer) {
+                if (!data.notifications || data.notifications.length === 0) {
+                    listContainer.innerHTML = '<p class="px-4 py-6 text-center text-gray-400 text-xs">You\'re all caught up.</p>';
+                } else {
+                    listContainer.innerHTML = data.notifications.map((item) => `
+                        <form method="POST" action="${item.read_url}" class="block">
+                            <input type="hidden" name="_token" value="${csrfToken}">
+                            <button type="submit" class="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors cursor-pointer">
+                                <p class="text-gray-800 font-medium text-xs">${item.title}</p>
+                                <p class="text-gray-500 text-xs mt-0.5 line-clamp-2">${item.body}</p>
+                                <p class="text-gray-400 text-[10px] mt-1">${item.time_ago}</p>
+                            </button>
+                        </form>
+                    `).join('');
+                }
+            }
+
+            // Animate bell on new incoming notifications
+            if (previousCount !== null && count > previousCount) {
+                const notifBtn = document.getElementById('notif-btn');
+                if (notifBtn) {
+                    notifBtn.classList.add('animate-bounce');
+                    setTimeout(() => notifBtn.classList.remove('animate-bounce'), 1200);
+                }
+            }
+
+            previousCount = count;
+        } catch (e) {
+            // Silently fail if network interrupted
+        }
+    }
+
+    // Poll every 15 seconds
+    setInterval(pollNotifications, 15000);
+
+    // Also poll immediately when the tab becomes active again
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            pollNotifications();
+        }
+    });
+}
+
+// Start poller once DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNotificationPoller);
+} else {
+    initNotificationPoller();
 }

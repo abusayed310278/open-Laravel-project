@@ -23,7 +23,6 @@
                 'label' => 'Engagement',
                 'items' => [
                     ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],
-                    ['route' => 'notifications.index', 'label' => 'Notifications', 'icon' => $icon['bell']],
                     ['route' => 'account.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star']],
                     ['route' => 'account.support.index', 'label' => 'Support', 'icon' => $icon['support']],
                 ],

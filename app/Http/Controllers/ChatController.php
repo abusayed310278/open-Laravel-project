@@ -24,7 +24,7 @@ class ChatController extends Controller
 
         $conversations = ChatConversation::query()
             ->where(fn ($q) => $q->where('buyer_id', $user->id)->orWhere('seller_id', $user->id))
-            ->with(['buyer', 'seller', 'product', 'latestMessage'])
+            ->with(['buyer.profile', 'seller.profile', 'product', 'latestMessage'])
             ->orderByDesc('last_message_at')
             ->paginate(20);
 
@@ -43,7 +43,7 @@ class ChatController extends Controller
         $this->chat->markRead($conversation, Auth::user());
 
         return view('chat.show', [
-            'conversation' => $conversation->load(['buyer', 'seller', 'product']),
+            'conversation' => $conversation->load(['buyer.profile', 'seller.profile', 'product']),
             'messages' => $conversation->messages()->with('sender')->oldest()->get(),
             'layout' => $this->layoutFor(Auth::user()),
             'section' => $this->sectionFor(Auth::user()),
@@ -109,6 +109,7 @@ class ChatController extends Controller
         return match (true) {
             $user->isBusiness() => 'layouts.business',
             $user->isSaler() => 'layouts.saler',
+            $user->isVerifier() => 'layouts.verifier',
             default => 'layouts.customer',
         };
     }
@@ -118,12 +119,13 @@ class ChatController extends Controller
         return match (true) {
             $user->isBusiness() => 'business.',
             $user->isSaler() => 'saler.',
+            $user->isVerifier() => 'verifier.',
             default => 'account.',
         };
     }
 
     private function sectionFor(User $user): string
     {
-        return $user->isBusiness() || $user->isSaler() ? 'content' : 'account-content';
+        return $user->isBusiness() || $user->isSaler() || $user->isVerifier() ? 'content' : 'account-content';
     }
 }

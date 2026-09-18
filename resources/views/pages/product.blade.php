@@ -17,13 +17,7 @@
             {{-- Gallery --}}
             <div class="lg:col-span-2">
                 <div class="bg-gray-50 rounded-xl aspect-square flex items-center justify-center overflow-hidden">
-                    @if ($product->images->isNotEmpty())
-                        <img id="main-img" src="{{ $product->primaryImage()->url() }}" class="w-full h-full object-cover">
-                    @else
-                        <svg class="w-16 h-16 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
-                        </svg>
-                    @endif
+                    <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover">
                 </div>
 
                 @if ($product->images->count() > 1)
@@ -293,7 +287,7 @@
                             :brand="$item->brand?->name"
                             :grade="$item->isVerified() ? $item->grade->value : null"
                             :condition="$item->condition->value"
-                            :image="$item->images->first()?->url()"
+                            :image="$item->primaryImageUrl()"
                             :href="route('products.show', $item)"
                         />
                     @endforeach
@@ -315,7 +309,7 @@
                             :brand="$item->brand?->name"
                             :grade="$item->isVerified() ? $item->grade->value : null"
                             :condition="$item->condition->value"
-                            :image="$item->images->first()?->url()"
+                            :image="$item->primaryImageUrl()"
                             :href="route('products.show', $item)"
                         />
                     @endforeach

@@ -53,8 +53,7 @@
                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">
-                                    <img src="{{ asset('buy-and-sale.png') }}" alt="Buy & Sell" class="h-9 w-auto object-contain">
-                                    <img src="{{ asset('icon.png') }}" alt="Openbox" class="h-7 w-auto object-contain">
+                                    <img src="{{ asset('buy-and-sale.png') }}" alt="Openbox" class="h-9 w-auto object-contain">
                                 </div>
                             @endif
                         </div>
@@ -78,8 +77,7 @@
                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">
-                                    <img src="{{ asset('buy-and-sale.png') }}" alt="Buy & Sell" class="h-9 w-auto object-contain">
-                                    <img src="{{ asset('icon.png') }}" alt="Openbox" class="h-7 w-auto object-contain">
+                                    <img src="{{ asset('buy-and-sale.png') }}" alt="Openbox" class="h-9 w-auto object-contain">
                                 </div>
                             @endif
                         </div>

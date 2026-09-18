@@ -108,12 +108,46 @@
             </div>
 
             <div>
-                <x-select label="Assigned Location" name="assigned_location_id" placeholder="Select Location (Optional)" :options="$locations->pluck('name', 'id')" :selected="old('assigned_location_id')" />
+                <x-select label="Assigned Location / Hub" name="assigned_location_id" placeholder="Select Location (Optional)" :options="$locations->pluck('name', 'id')" :selected="old('assigned_location_id')" />
             </div>
 
-            <p class="text-xs text-gray-500 bg-gray-50 p-2.5 rounded border border-gray-100">
-                A secure account will be generated. The verifier will receive login instructions to set up their password.
-            </p>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="add_verifier_password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            name="password"
+                            id="add_verifier_password"
+                            placeholder="Enter password"
+                            required
+                            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent pr-11"
+                        >
+                        <button type="button" data-password-toggle="add_verifier_password" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer" aria-label="Toggle password visibility">
+                            <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="add_verifier_password_confirmation" class="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            name="password_confirmation"
+                            id="add_verifier_password_confirmation"
+                            placeholder="Re-enter password"
+                            required
+                            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent pr-11"
+                        >
+                        <button type="button" data-password-toggle="add_verifier_password_confirmation" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer" aria-label="Toggle password confirmation visibility">
+                            <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
                 <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
@@ -142,7 +176,22 @@
                     <x-select label="Account Status" name="status" :options="['active' => 'Active', 'suspended' => 'Suspended', 'pending' => 'Pending', 'blocked' => 'Blocked']" :selected="old('status', $verifier->status->value)" required />
                 </div>
 
-                <x-input label="Reset Password (Optional)" name="password" type="password" placeholder="Leave blank to keep existing password" />
+                <div>
+                    <label for="edit_verifier_password_{{ $verifier->id }}" class="block text-sm font-medium text-gray-700 mb-1.5">Reset Password (Optional)</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            name="password"
+                            id="edit_verifier_password_{{ $verifier->id }}"
+                            placeholder="Leave blank to keep existing password"
+                            class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent pr-11"
+                        >
+                        <button type="button" data-password-toggle="edit_verifier_password_{{ $verifier->id }}" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer" aria-label="Toggle password visibility">
+                            <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
                     <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">

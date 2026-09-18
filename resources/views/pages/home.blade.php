@@ -77,11 +77,11 @@
             @endphp
 
             @foreach ($categoryList as $cat)
-                <a href="{{ Route::has('shop') ? route('shop', ['category' => $cat['slug']]) : '#' }}" class="group bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all duration-200">
-                    <div class="w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-gray-900 flex items-center justify-center text-gray-700 group-hover:text-white transition-colors mb-2.5">
+                <a href="{{ Route::has('shop') ? route('shop', ['category' => $cat['slug']]) : '#' }}" class="group bg-white border border-gray-100 hover:border-amber-300 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                    <div class="w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-amber-50 border border-gray-100 group-hover:border-amber-200 flex items-center justify-center text-gray-600 group-hover:text-amber-600 transition-colors mb-2.5">
                         <x-category-icon :slug="$cat['slug']" class="w-6 h-6" />
                     </div>
-                    <span class="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-gray-950 transition-colors line-clamp-1">{{ $cat['name'] }}</span>
+                    <span class="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-amber-600 transition-colors line-clamp-1">{{ $cat['name'] }}</span>
                     <span class="text-[11px] text-gray-400 mt-0.5">{{ $cat['count'] }}</span>
                 </a>
             @endforeach

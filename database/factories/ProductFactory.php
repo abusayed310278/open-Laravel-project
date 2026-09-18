@@ -50,4 +50,18 @@ class ProductFactory extends Factory
             'published_at' => now(),
         ]);
     }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Product $product) {
+            if ($product->images()->doesntExist()) {
+                $product->images()->create([
+                    'path' => $product->defaultPlaceholderImage(),
+                    'type' => 'gallery',
+                    'sort_order' => 0,
+                    'is_primary' => true,
+                ]);
+            }
+        });
+    }
 }

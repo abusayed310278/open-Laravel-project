@@ -125,6 +125,11 @@ class Product extends Model
         return $this->hasOne(ProductVerification::class)->latestOfMany();
     }
 
+    public function gradeAssignment(): HasOne
+    {
+        return $this->hasOne(ProductGradeAssignment::class)->latestOfMany();
+    }
+
     public function warehouseEntries(): HasMany
     {
         return $this->hasMany(WarehouseProduct::class);
@@ -158,6 +163,36 @@ class Product extends Model
     public function primaryImage(): ?ProductImage
     {
         return $this->images->firstWhere('is_primary', true) ?? $this->images->first();
+    }
+
+    public function primaryImageUrl(): string
+    {
+        return $this->primaryImage()?->url()
+            ?? $this->images->first()?->url()
+            ?? $this->defaultPlaceholderImage();
+    }
+
+    public function defaultPlaceholderImage(): string
+    {
+        $categorySlug = strtolower($this->category?->slug ?? '');
+        $title = strtolower($this->title ?? '');
+        $seed = $this->id ? (int) $this->id : abs(crc32($title ?: 'openbox-product'));
+
+        $keyword = match (true) {
+            str_contains($categorySlug, 'phone') || str_contains($title, 'phone') || str_contains($title, 'iphone') || str_contains($title, 'pixel') || str_contains($title, 'samsung') => 'smartphone,phone',
+            str_contains($categorySlug, 'laptop') || str_contains($title, 'macbook') || str_contains($title, 'laptop') || str_contains($title, 'thinkpad') || str_contains($title, 'xps') => 'laptop,ultrabook',
+            str_contains($categorySlug, 'tablet') || str_contains($title, 'ipad') || str_contains($title, 'tablet') => 'tablet,ipad',
+            str_contains($categorySlug, 'watch') || str_contains($title, 'watch') => 'smartwatch,applewatch',
+            str_contains($categorySlug, 'console') || str_contains($title, 'ps5') || str_contains($title, 'xbox') || str_contains($title, 'switch') || str_contains($title, 'gaming') => 'gamingconsole,playstation',
+            str_contains($categorySlug, 'headphone') || str_contains($categorySlug, 'audio') || str_contains($title, 'headphone') || str_contains($title, 'earbuds') || str_contains($title, 'airpods') || str_contains($title, 'speaker') => 'headphones,audiodevice',
+            str_contains($categorySlug, 'camera') || str_contains($title, 'camera') || str_contains($title, 'sony alpha') || str_contains($title, 'canon') || str_contains($title, 'nikon') => 'camera,dslr',
+            str_contains($categorySlug, 'monitor') || str_contains($title, 'monitor') || str_contains($title, 'display') => 'monitor,screens',
+            str_contains($categorySlug, 'msi') || str_contains($categorySlug, 'pc') || str_contains($title, 'desktop') || str_contains($title, 'pc') => 'gamingcomputer,desktop',
+            str_contains($categorySlug, 'accessories') || str_contains($title, 'mouse') || str_contains($title, 'keyboard') || str_contains($title, 'charger') => 'gadget,techaccessory',
+            default => 'electronics,technology',
+        };
+
+        return "https://loremflickr.com/800/600/{$keyword}?lock={$seed}";
     }
 
     public function isVerified(): bool

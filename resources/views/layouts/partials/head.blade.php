@@ -4,9 +4,15 @@
 
 <title>@yield('title', config('app.name'))</title>
 
-@if (setting('brand_favicon'))
-    <link rel="icon" href="{{ Illuminate\Support\Facades\Storage::disk('public')->url(setting('brand_favicon')) }}">
-@endif
+@php
+    $customFavicon = setting('brand_favicon');
+    $faviconUrl = ($customFavicon && \Illuminate\Support\Facades\Storage::disk('public')->exists($customFavicon))
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($customFavicon)
+        : asset('icon.png');
+@endphp
+<link rel="icon" type="image/png" href="{{ $faviconUrl }}">
+<link rel="shortcut icon" href="{{ $faviconUrl }}">
+<link rel="apple-touch-icon" href="{{ $faviconUrl }}">
 
 <script>
     if (localStorage.getItem('sidebar_collapsed') === 'true') {

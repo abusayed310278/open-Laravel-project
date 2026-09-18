@@ -30,10 +30,11 @@ class ProductPolicy
      */
     public function update(User $user, Product $product): bool
     {
-        if ($user->isAdmin() || $user->isBusiness()) {
+        if ($user->isAdmin() || $user->isVerifier()) {
             return true;
         }
 
+        // Sellers (both Saler & Business) cannot edit a verified product
         return $user->id === $product->user_id && ! $product->isLocked();
     }
 

@@ -23,6 +23,7 @@ class StoreVerifierRequest extends FormRequest
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'employee_id' => ['required', 'string', 'max:50', 'unique:verifier_profiles,employee_id'],
             'assigned_location_id' => ['nullable', 'integer', 'exists:verification_locations,id'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
         ];
     }
 }

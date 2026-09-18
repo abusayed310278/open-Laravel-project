@@ -43,6 +43,7 @@ class ProductService
 
             $this->syncAttributeValues($product, $attributeValues);
             $this->addImages($product, $images);
+            $this->ensureImages($product);
 
             return $product->fresh(['images', 'attributeValues']);
         });
@@ -66,6 +67,7 @@ class ProductService
 
             $this->syncAttributeValues($product, $attributeValues);
             $this->addImages($product, $images);
+            $this->ensureImages($product);
 
             return $product->fresh(['images', 'attributeValues']);
         });
@@ -235,5 +237,23 @@ class ProductService
                 $hasPrimary = true;
             }
         }
+    }
+
+    /**
+     * Ensure that a product always has at least one valid primary image in the database.
+     */
+    public function ensureImages(Product $product): void
+    {
+        if ($product->images()->exists()) {
+            return;
+        }
+
+        $imageUrl = $product->defaultPlaceholderImage();
+        $product->images()->create([
+            'path' => $imageUrl,
+            'type' => 'gallery',
+            'sort_order' => 0,
+            'is_primary' => true,
+        ]);
     }
 }

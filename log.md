@@ -387,3 +387,56 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
 - **Robust Image Placeholder & Fallback**:
   - Wrapped product image thumbnails with clean `onerror` SVG fallback containers so broken external placeholder links never render broken icons in the browser.
 
+---
+
+### 19. Side Menu Notifications Removal & Sidebar Route Clean-up
+- **Notifications Removal from Sidebar**:
+  - Removed duplicate "Notifications" menu items from the sidebars in `resources/views/layouts/verifier.blade.php` and `resources/views/layouts/customer.blade.php`.
+  - Notifications remain universally accessible via the top-bar bell icon dropdown with live feed and unread counter badges.
+- **Verifier Messages Route Fix**:
+  - Updated the sidebar messages route definition in `verifier.blade.php` to target `verifier.messages.index`.
+
+---
+
+### 20. Verifier-to-Seller Real-Time Messaging & Chat Integration
+- **Direct Messaging Actions**:
+  - Added message action icon buttons to **Inspection History Log** (`resources/views/verifier/history/index.blade.php`), **Inspection Queue** (`resources/views/verifier/appointments/index.blade.php`), and **Seller Products** (`resources/views/verifier/products/index.blade.php`).
+  - Added "Message Seller" triggers in the single inspection view (`inspect.blade.php`) and product show view (`products/show.blade.php`).
+- **Chat Controller & Service Adaptations (`ChatController.php`, `ChatService.php`)**:
+  - Added support for `$user->isVerifier()` in `layoutFor()`, `routePrefixFor()`, and `sectionFor()` so verifiers can manage and view conversations directly within the Verifier Portal layout.
+  - Enhanced `ChatService::startOrGetConversation` to bidirectionally search existing conversations across buyer and seller IDs, avoiding duplicate thread creation.
+
+---
+
+### 21. Grade Badge Styling & ProductGrade Enum Type-Safety Fix
+- **Grade A Badge Palette Update**:
+  - Replaced yellow background (`bg-amber-100 text-amber-800`) on Grade A badges with clean emerald styling (`bg-emerald-50 text-emerald-700 border border-emerald-200/60`) across the Verifier Portal.
+- **ProductGrade Enum Method & Type-Safe Resolution**:
+  - Added `badgeClass(): string` method directly on `App\Enums\ProductGrade`.
+  - Resolved `TypeError: strtoupper(): Argument #1 ($string) must be of type string, App\Enums\ProductGrade given` by type-safely extracting the enum value or resolving backed enum instances in `verifier/history/index.blade.php`, `verifier/dashboard.blade.php`, `verifier/products/index.blade.php`, and `verifier/products/show.blade.php`.
+
+---
+
+### 22. User Avatar & Clean Name Display in Messages & Chat
+- **Chat Conversation List (`resources/views/chat/index.blade.php`)**:
+  - Replaced product title references and clutter with the other party's profile avatar image (or initials circle fallback in brand amber styling) and user name.
+- **Chat Conversation Header (`resources/views/chat/show.blade.php`)**:
+  - Updated the active chat header to strictly display the user's avatar image and user's name, removing the `Re: [Product Title]` line for a clean, focused messenger interface.
+- **Eager Loading Optimization (`ChatController.php`)**:
+  - Added `buyer.profile` and `seller.profile` to query eager loading in `ChatController::index` and `show` to prevent N+1 queries when rendering avatars.
+
+---
+
+### 23. Modernized Real-Time Chat & Message Bubble Redesign (`chat/show.blade.php`, `chat/index.blade.php`)
+- **Modern Message Bubble Aesthetics**:
+  - **Sent Messages (Mine)**: Redesigned with sleek gradient amber background (`bg-gradient-to-r from-amber-500 to-amber-600`), smooth modern border-radius (`rounded-2xl rounded-br-xs`), refined whitespace and typography, read receipt icon, and translucent attachment cards.
+  - **Received Messages (Other)**: Styled with clean white cards (`bg-white border border-gray-200/70 rounded-2xl rounded-bl-xs shadow-xs`), paired with the other user's avatar circle.
+- **Chat Header & Floating Input Controls**:
+  - Header features back navigation, user avatar with active presence indicator, name typography, and "Active" status.
+  - Floating input bar includes interactive paperclip attachment button, file preview pill with dismiss action, styled rounded input, and prominent send action button.
+- **Dynamic Polling & Message Insertion**:
+  - Updated JavaScript `appendMessage()` renderer to replicate the exact markup and responsive styling seamlessly during real-time polling updates.
+
+
+
+

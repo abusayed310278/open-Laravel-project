@@ -34,6 +34,34 @@ class NotificationController extends Controller
         return back();
     }
 
+    public function unreadFeed(): \Illuminate\Http\JsonResponse
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return response()->json([
+                'unread_count' => 0,
+                'notifications' => [],
+            ]);
+        }
+
+        $unread = $user->unreadNotifications()->limit(8)->get();
+
+        $notifications = $unread->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'title' => $notification->data['title'] ?? 'Notification',
+                'body' => $notification->data['body'] ?? '',
+                'time_ago' => $notification->created_at?->diffForHumans() ?? 'Just now',
+                'read_url' => route('notifications.read', $notification->id),
+            ];
+        });
+
+        return response()->json([
+            'unread_count' => $user->unreadNotifications()->count(),
+            'notifications' => $notifications,
+        ]);
+    }
+
     private function layoutFor(User $user): string
     {
         return match (true) {
