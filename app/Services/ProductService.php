@@ -29,9 +29,14 @@ class ProductService
      * @param  array<int, UploadedFile>  $images
      * @param  array<string, mixed>  $attributeValues  Keyed by attribute_id => attribute_value_id|string
      */
-    public function create(User $seller, array $data, array $images = [], array $attributeValues = []): Product
-    {
-        return DB::transaction(function () use ($seller, $data, $images, $attributeValues) {
+    public function create(
+        User $seller,
+        array $data,
+        array $images = [],
+        array $attributeValues = [],
+        ?int $primaryIndex = null
+    ): Product {
+        return DB::transaction(function () use ($seller, $data, $images, $attributeValues, $primaryIndex) {
             $product = $seller->products()->create([
                 ...$data,
                 'payment_route' => $this->paymentRouteFor($seller),
@@ -42,7 +47,7 @@ class ProductService
             ]);
 
             $this->syncAttributeValues($product, $attributeValues);
-            $this->addImages($product, $images);
+            $this->addImages($product, $images, $primaryIndex);
             $this->ensureImages($product);
 
             return $product->fresh(['images', 'attributeValues']);
@@ -53,10 +58,19 @@ class ProductService
      * @param  array<string, mixed>  $data
      * @param  array<int, UploadedFile>  $images
      * @param  array<string, mixed>  $attributeValues
+     * @param  array<int, int>  $deleteImageIds
      */
-    public function update(Product $product, array $data, array $images = [], array $attributeValues = [], ?User $actor = null): Product
-    {
-        return DB::transaction(function () use ($product, $data, $images, $attributeValues, $actor) {
+    public function update(
+        Product $product,
+        array $data,
+        array $images = [],
+        array $attributeValues = [],
+        ?User $actor = null,
+        ?int $primaryImageId = null,
+        ?int $primaryImageIndex = null,
+        array $deleteImageIds = []
+    ): Product {
+        return DB::transaction(function () use ($product, $data, $images, $attributeValues, $actor, $primaryImageId, $primaryImageIndex, $deleteImageIds) {
             $previousQuantity = $product->quantity;
 
             $product->update($data);
@@ -65,8 +79,28 @@ class ProductService
                 $this->inventoryService->logAdjustment($product, $product->quantity - $previousQuantity, $actor, 'Manual edit');
             }
 
+            // 1. Delete requested existing images
+            if (! empty($deleteImageIds)) {
+                $imagesToDelete = $product->images()->whereIn('id', $deleteImageIds)->get();
+                foreach ($imagesToDelete as $img) {
+                    if ($img->path && ! str_starts_with($img->path, 'http')) {
+                        Storage::disk('public')->delete($img->path);
+                    }
+                    $img->delete();
+                }
+            }
+
             $this->syncAttributeValues($product, $attributeValues);
-            $this->addImages($product, $images);
+
+            // 2. Upload and add newly attached images
+            $newPrimaryAdded = $this->addImages($product, $images, $primaryImageIndex);
+
+            // 3. Update primary image if explicitly set on an existing image and no new image override
+            if ($primaryImageId && ! $newPrimaryAdded) {
+                $product->images()->update(['is_primary' => false]);
+                $product->images()->where('id', $primaryImageId)->update(['is_primary' => true]);
+            }
+
             $this->ensureImages($product);
 
             return $product->fresh(['images', 'attributeValues']);
@@ -203,14 +237,15 @@ class ProductService
     /**
      * @param  array<int, UploadedFile>  $images
      */
-    private function addImages(Product $product, array $images): void
+    private function addImages(Product $product, array $images, ?int $primaryIndex = null): bool
     {
         if ($images === []) {
-            return;
+            return false;
         }
 
         $hasPrimary = $product->images()->where('is_primary', true)->exists();
         $nextSort = (int) ($product->images()->max('sort_order') ?? 0) + 1;
+        $setPrimaryInThisBatch = false;
 
         foreach ($images as $index => $image) {
             if (! $image instanceof UploadedFile || ! $image->isValid()) {
@@ -228,15 +263,23 @@ class ProductService
             $storedPath = Storage::disk('public')->putFileAs('products', $filePath, $filename);
 
             if ($storedPath) {
+                $isPrimary = ($primaryIndex !== null && (int) $primaryIndex === $index) || (! $hasPrimary && $index === 0);
+
+                if ($isPrimary) {
+                    $product->images()->update(['is_primary' => false]);
+                    $hasPrimary = true;
+                    $setPrimaryInThisBatch = true;
+                }
+
                 $product->images()->create([
                     'path' => $storedPath,
                     'sort_order' => $nextSort + $index,
-                    'is_primary' => ! $hasPrimary && $index === 0,
+                    'is_primary' => $isPrimary,
                 ]);
-
-                $hasPrimary = true;
             }
         }
+
+        return $setPrimaryInThisBatch;
     }
 
     /**

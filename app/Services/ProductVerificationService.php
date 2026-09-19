@@ -19,6 +19,31 @@ use Illuminate\Support\Facades\DB;
 class ProductVerificationService
 {
     /**
+     * Get 30-minute scrutiny time slots for physical device inspection.
+     *
+     * @return array<string, string>
+     */
+    public static function get30MinTimeSlots(): array
+    {
+        return [
+            '09:00' => '09:00 AM - 09:30 AM',
+            '09:30' => '09:30 AM - 10:00 AM',
+            '10:00' => '10:00 AM - 10:30 AM',
+            '10:30' => '10:30 AM - 11:00 AM',
+            '11:00' => '11:00 AM - 11:30 AM',
+            '11:30' => '11:30 AM - 12:00 PM',
+            '12:00' => '12:00 PM - 12:30 PM',
+            '13:00' => '01:00 PM - 01:30 PM',
+            '13:30' => '01:30 PM - 02:00 PM',
+            '14:00' => '02:00 PM - 02:30 PM',
+            '14:30' => '02:30 PM - 03:00 PM',
+            '15:00' => '03:00 PM - 03:30 PM',
+            '15:30' => '03:30 PM - 04:00 PM',
+            '16:00' => '04:00 PM - 04:30 PM',
+            '16:30' => '04:30 PM - 05:00 PM',
+        ];
+    }
+    /**
      * A seller books their own appointment slot — there's no separate admin
      * confirmation step in v1, so the appointment is confirmed immediately.
      */

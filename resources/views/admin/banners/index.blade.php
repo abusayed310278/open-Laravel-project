@@ -115,7 +115,7 @@
                             </button>
 
                             {{-- Delete Icon --}}
-                            <form method="POST" action="{{ route('admin.banners.destroy', $banner) }}" onsubmit="return confirm('Delete this banner permanently?')" data-confirm="Delete this banner permanently?" class="inline-block m-0">
+                            <form method="POST" action="{{ route('admin.banners.destroy', $banner) }}" onsubmit="return confirm('Delete this banner permanently?')" class="inline-block m-0">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete Banner">
@@ -154,11 +154,12 @@
                 <x-input label="Ends At (Optional)" name="ends_at" type="datetime-local" />
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">Banner Image <span class="text-red-500">*</span></label>
-                <input type="file" name="image" accept="image/*" required class="block w-full text-xs text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 border border-gray-200 rounded-lg p-1.5 bg-white cursor-pointer">
-                <p class="text-[11px] text-gray-400 mt-1">Recommended size: 1600x500px or 1200x400px (Max 4MB)</p>
-            </div>
+            <x-file-upload
+                name="image"
+                label="Banner Image *"
+                hint="Recommended size: 1600x500px or 1200x400px (Max 4MB)"
+                required
+            />
 
             <div class="flex items-center gap-2 pt-1">
                 <input type="checkbox" name="is_active" id="add_is_active" value="1" checked class="w-4 h-4 rounded accent-brand-500 border-gray-300">
@@ -266,16 +267,12 @@
                     <x-input label="Ends At (Optional)" name="ends_at" type="datetime-local" :value="old('ends_at', $banner->ends_at?->format('Y-m-d\TH:i'))" />
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">Banner Image</label>
-                    @if ($banner->image_url)
-                        <div class="mb-2 w-full h-24 rounded-lg overflow-hidden border border-gray-100 bg-gray-50">
-                            <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
-                        </div>
-                    @endif
-                    <input type="file" name="image" accept="image/*" class="block w-full text-xs text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 border border-gray-200 rounded-lg p-1.5 bg-white cursor-pointer">
-                    <p class="text-[11px] text-gray-400 mt-1">Leave empty to keep existing image</p>
-                </div>
+                <x-file-upload
+                    name="image"
+                    label="Banner Image"
+                    hint="Leave empty to keep existing image (Max 4MB)"
+                    :value="$banner->image_url"
+                />
 
                 <div class="flex items-center gap-2 pt-1">
                     <input type="hidden" name="is_active" value="0">

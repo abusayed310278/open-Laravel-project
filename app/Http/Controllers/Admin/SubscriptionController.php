@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\SubscriptionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
@@ -18,6 +19,14 @@ class SubscriptionController extends Controller
                 ->latest()
                 ->paginate(20)
                 ->withQueryString(),
+            'statusCounts' => Subscription::query()
+                ->selectRaw('status, count(*) as aggregate')
+                ->groupBy('status')
+                ->pluck('aggregate', 'status'),
+            'activeRevenue' => Subscription::query()
+                ->where('status', SubscriptionStatus::Active)
+                ->join('subscription_plans', 'subscriptions.plan_id', '=', 'subscription_plans.id')
+                ->sum('subscription_plans.price'),
         ]);
     }
 }

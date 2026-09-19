@@ -20,10 +20,9 @@ class VerificationController extends Controller
     public function index(Request $request): View
     {
         $applications = UserVerification::query()
-            ->with('user')
+            ->with(['user', 'documents'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->whereNot('status', KycStatus::Draft)
-            ->latest('submitted_at')
+            ->orderByRaw('submitted_at IS NULL, submitted_at DESC, updated_at DESC')
             ->paginate(20)
             ->withQueryString();
 

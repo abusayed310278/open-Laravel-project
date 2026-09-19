@@ -437,6 +437,68 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
 - **Dynamic Polling & Message Insertion**:
   - Updated JavaScript `appendMessage()` renderer to replicate the exact markup and responsive styling seamlessly during real-time polling updates.
 
+---
+
+### 24. Admin All-Roles Direct Chat & Universal Directory Management (`admin/chat/index.blade.php`, `admin/chat/show.blade.php`, `Admin/ChatController.php`)
+- **Universal User Directory & Role Filtering (`resources/views/admin/chat/index.blade.php`)**:
+  - Implemented an interactive directory in the Admin Chat hub displaying all platform users across all roles (**Sellers**, **Store Owners / Business**, **Verifiers**, **Users / Customers**, and **Admins**).
+  - Added filter pills for instant role toggling (`All`, `Sellers`, `Store Owners`, `Verifiers`, `Users`, `Admins`) with live user count badges and a search bar for filtering by name, email, or phone.
+  - Added direct icon-only **Message** action buttons (`w-8 h-8 rounded-xl bg-amber-500`) on every user record to immediately start or resume a 1-on-1 direct conversation without needing a product context.
+  - Added tab switcher between **"All User Roles"** directory and **"Active Conversations"** thread manager.
+  - Added top metric stat cards showing Total Users available to chat, Sellers & Stores, Verifiers & Team, and Total Conversations.
+- **Admin Real-Time Chat & Message Stream (`resources/views/admin/chat/show.blade.php`)**:
+  - Redesigned the single conversation view with modern amber message bubbles, responsive avatar display, role badges, file attachments, and active presence indicator.
+  - Added full message sending (`POST /admin/chat/{conversation}`) with multipart attachment upload support.
+  - Integrated 3.5s real-time live polling (`GET /admin/chat/{conversation}/poll/{afterId}`) for seamless instant messaging within the Admin console.
+- **Backend Controller & Route Enhancements (`app/Http/Controllers/Admin/ChatController.php`, `routes/web.php`)**:
+  - Enhanced `Admin\ChatController` to support directory listing, `startWithUser(User $user)`, `show`, `store` with attachment processing, and `poll` live updates.
+  - Added named routes `admin.chat.start-user`, `admin.chat.store`, and `admin.chat.poll`.
+- **UserRole Enum Badge Styling (`app/Enums/UserRole.php`)**:
+  - Added `badgeClass(): string` method providing consistent Tailwind color badges for Admin (purple), Verifier (blue), Business (indigo), Saler (emerald), and Customer (amber) roles.
+
+---
+
+### 25. Chat Image Upload Fix, Single Message Box Structure & Time-Under-Box UI Refinements (`chat/show.blade.php`, `admin/chat/show.blade.php`, `ChatController.php`, `ChatMessage.php`)
+- **Image Attachment Serving & Inline Previews**:
+  - Replaced unsupported local filesystem `temporaryUrl()` in `ChatController::attachment()` with `Storage::disk('local')->response()`, enabling direct image and file downloads without driver exceptions.
+  - Allowed Admin users to view attachments across all conversations.
+  - Added `isImage(): bool` helper on `ChatMessage` model and returned `is_image` flag in both `ChatController::poll` and `Admin\ChatController::poll`.
+  - Embedded inline image rendering directly inside the message box so uploaded photos display natively with click-to-view support.
+- **Unified Single Message Box & Timestamp Placement**:
+  - Restructured message item layout so that message body and media/file attachments render together inside a clean single message box (`rounded-2xl rounded-br-xs` for sent, `rounded-2xl rounded-bl-xs` for received).
+  - Placed the message timestamp cleanly **under** (below) the message box with subtle muted typography (`text-[11px] text-gray-400 mt-1 px-1`).
+  - Removed checkmark/arrow icons from the timestamp and streamlined the action buttons.
+- **Admin Chat View Clean-Up**:
+  - Removed redundant "Directory" top-right button in `resources/views/admin/chat/show.blade.php` for a cleaner header.
+
+---
+
+### 26. Admin Dashboard Sidebar Activity Logs Removal (`resources/views/layouts/admin.blade.php`)
+- **Activity Logs Menu Removal**:
+  - Removed "Activity Logs" navigation menu item from the System section of the Admin Dashboard sidebar layout (`resources/views/layouts/admin.blade.php`) to streamline admin dashboard navigation.
+
+---
+
+### 27. Dynamic Admin Dashboard Real-Time Telemetry & Interactive Analytics Graphs (`admin/dashboard.blade.php`, `Admin/DashboardController.php`, `routes/web.php`)
+- **Admin Dashboard Controller (`app/Http/Controllers/Admin/DashboardController.php`)**:
+  - Replaced static view route with a dedicated controller querying live database telemetry.
+  - Calculated live metrics: Total Platform Revenue (`Tk`), Monthly Revenue Growth (`%`), Total Order Volume & Month-over-Month change, Active & Total Catalog Products, Pending KYC / Product Verifications count, Total Commission fees earned, and Platform User count breakdown.
+  - Built a 30-day daily velocity dataset aggregating daily revenue and daily order counts across contiguous dates.
+  - Generated product category breakdown and fetched latest 5 recent orders and top pending KYC submissions.
+  - Resolved `KycStatus` enum cases (`KycStatus::Submitted`, `KycStatus::UnderReview`) and added `badgeClass()` methods to `KycStatus` and `OrderStatus` enums.
+  - Added `user()` relationship alias on `Order` model for seamless interoperability with `customer()`.
+- **Interactive Graphs & Visual Dashboards (`resources/views/admin/dashboard.blade.php`)**:
+  - **30-Day Sales & Orders Velocity Chart**: Interactive Chart.js spline area chart comparing revenue (`#f59e0b` amber gradient) and order count trends (`#0f172a` dashed line) with custom tooltips.
+  - **Category Breakdown Chart**: Clean Doughnut chart illustrating catalog distribution across top categories.
+  - **Operational Tables**: Live Recent Orders table with order status badges and a Pending KYC Verifications queue with direct review actions.
+
+
+
+
+
+
+
+
 
 
 

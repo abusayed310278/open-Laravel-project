@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Enums\KycDocumentStatus;
+use App\Enums\KycDocumentType;
 use App\Enums\KycStatus;
+use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\User;
 use App\Models\UserVerification;
@@ -12,6 +14,8 @@ use App\Notifications\KycApproved;
 use App\Notifications\KycRejected;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class KycService
 {
@@ -20,11 +24,58 @@ class KycService
      */
     public function requirementsFor(User $user): Collection
     {
-        return VerificationRequirement::query()
+        $requirements = VerificationRequirement::query()
             ->where('role', $user->role)
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get();
+
+        if ($requirements->isEmpty()) {
+            $this->ensureDefaultRequirementsExistFor($user->role);
+
+            $requirements = VerificationRequirement::query()
+                ->where('role', $user->role)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        }
+
+        return $requirements;
+    }
+
+    public function ensureDefaultRequirementsExistFor(UserRole $role): void
+    {
+        $defaults = match ($role) {
+            UserRole::Business => [
+                ['document_type' => KycDocumentType::TradeLicense, 'is_required' => true, 'sort_order' => 1],
+                ['document_type' => KycDocumentType::BusinessRegistration, 'is_required' => true, 'sort_order' => 2],
+                ['document_type' => KycDocumentType::Tax, 'is_required' => false, 'sort_order' => 3],
+                ['document_type' => KycDocumentType::Vat, 'is_required' => false, 'sort_order' => 4],
+            ],
+            UserRole::Saler => [
+                ['document_type' => KycDocumentType::Nid, 'is_required' => true, 'sort_order' => 1],
+                ['document_type' => KycDocumentType::AddressProof, 'is_required' => true, 'sort_order' => 2],
+                ['document_type' => KycDocumentType::Passport, 'is_required' => false, 'sort_order' => 3],
+            ],
+            default => [
+                ['document_type' => KycDocumentType::Nid, 'is_required' => true, 'sort_order' => 1],
+                ['document_type' => KycDocumentType::AddressProof, 'is_required' => false, 'sort_order' => 2],
+            ],
+        };
+
+        foreach ($defaults as $req) {
+            VerificationRequirement::firstOrCreate(
+                [
+                    'role' => $role,
+                    'document_type' => $req['document_type'],
+                ],
+                [
+                    'is_required' => $req['is_required'],
+                    'is_active' => true,
+                    'sort_order' => $req['sort_order'],
+                ]
+            );
+        }
     }
 
     /**
@@ -50,7 +101,20 @@ class KycService
         $application = $this->currentApplication($user);
 
         foreach ($files as $type => $file) {
-            $path = $file->store("kyc/{$user->id}", 'local');
+            if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                continue;
+            }
+
+            $realPath = $file->getRealPath();
+            if (! $realPath || ! file_exists($realPath)) {
+                continue;
+            }
+
+            $ext = $file->getClientOriginalExtension() ?: 'pdf';
+            $filename = Str::random(40).'.'.$ext;
+            $path = "kyc/{$user->id}/{$filename}";
+
+            Storage::disk('local')->put($path, file_get_contents($realPath));
 
             $application->documents()->updateOrCreate(
                 ['document_type' => $type],

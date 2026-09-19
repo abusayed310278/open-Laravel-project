@@ -96,8 +96,38 @@ class AppointmentController extends Controller
             })
             ->orderBy('scheduled_at');
 
+        $calendarAppointments = ProductVerification::query()
+            ->with(['product.images', 'product.category', 'seller', 'location'])
+            ->when($locationId, fn ($q) => $q->where('location_id', $locationId))
+            ->whereNotNull('scheduled_at')
+            ->get()
+            ->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'product_id' => $v->product_id,
+                    'title' => $v->product->title ?? 'Product',
+                    'image' => $v->product->primaryImageUrl(),
+                    'sku' => $v->product->sku ?? 'N/A',
+                    'price' => '$' . number_format($v->product->price ?? 0, 2),
+                    'category' => $v->product->category?->name ?? 'Electronics',
+                    'date' => $v->scheduled_at ? $v->scheduled_at->format('Y-m-d') : '',
+                    'time' => $v->scheduled_at ? $v->scheduled_at->format('g:i A') : '',
+                    'formatted_schedule' => $v->scheduled_at ? $v->scheduled_at->format('M j, Y \a\t g:i A') . ' (30 min slot)' : '—',
+                    'status' => $v->status->value,
+                    'status_label' => $v->status->label(),
+                    'status_color' => $v->status->badgeColor(),
+                    'location_name' => $v->location?->name ?? 'Main Hub',
+                    'location_address' => implode(', ', array_filter([$v->location?->address, $v->location?->city, $v->location?->country])),
+                    'seller_name' => $v->seller?->name ?? 'Seller',
+                    'seller_email' => $v->seller?->email ?? '',
+                    'inspect_url' => route('verifier.appointments.inspect', $v),
+                    'notes' => $v->notes ?? 'Scheduled physical device scrutiny.',
+                ];
+            });
+
         return view('verifier.appointments.index', [
             'appointments' => $query->paginate(15)->withQueryString(),
+            'calendarAppointments' => $calendarAppointments,
             'currentStatus' => $request->query('status'),
             'search' => $request->query('search'),
         ]);

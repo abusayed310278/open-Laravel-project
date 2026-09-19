@@ -3,7 +3,7 @@
         {{-- Brand & About --}}
         <div class="col-span-2 md:col-span-1">
             <a href="{{ route('home') }}" class="inline-block mb-4">
-                <x-brand-logo :dark="true" />
+                <x-brand-logo :dark="true" :footer="true" />
             </a>
             <p class="text-xs text-gray-400 leading-relaxed mb-4">
                 Bangladesh's premier verified electronics marketplace. Every device inspected, graded, and warehoused for authentic peace of mind.
@@ -39,11 +39,11 @@
         <div>
             <h3 class="text-white text-xs font-bold uppercase tracking-wider mb-4" style="color: #ffffff;">Support</h3>
             <ul class="space-y-2.5 text-xs text-gray-400">
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Help Center</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Track Order</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Returns &amp; Refund Policy</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Escrow Protection</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Contact Support</a></li>
+                <li><a href="{{ route('pages.show', 'help-center') }}" class="hover:text-amber-400 transition-colors">Help Center</a></li>
+                <li><a href="{{ route('pages.show', 'track-order') }}" class="hover:text-amber-400 transition-colors">Track Order</a></li>
+                <li><a href="{{ route('pages.show', 'returns-refund-policy') }}" class="hover:text-amber-400 transition-colors">Returns &amp; Refund Policy</a></li>
+                <li><a href="{{ route('pages.show', 'escrow-protection') }}" class="hover:text-amber-400 transition-colors">Escrow Protection</a></li>
+                <li><a href="{{ route('pages.show', 'contact-support') }}" class="hover:text-amber-400 transition-colors">Contact Support</a></li>
             </ul>
         </div>
 
@@ -51,11 +51,11 @@
         <div>
             <h3 class="text-white text-xs font-bold uppercase tracking-wider mb-4" style="color: #ffffff;">Company</h3>
             <ul class="space-y-2.5 text-xs text-gray-400">
-                <li><a href="#" class="hover:text-amber-400 transition-colors">About Openbox</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Terms of Service</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Trust &amp; Safety</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Careers</a></li>
+                <li><a href="{{ route('pages.show', 'about-openbox') }}" class="hover:text-amber-400 transition-colors">About Openbox</a></li>
+                <li><a href="{{ route('pages.show', 'terms-of-service') }}" class="hover:text-amber-400 transition-colors">Terms of Service</a></li>
+                <li><a href="{{ route('pages.show', 'privacy-policy') }}" class="hover:text-amber-400 transition-colors">Privacy Policy</a></li>
+                <li><a href="{{ route('pages.show', 'trust-safety') }}" class="hover:text-amber-400 transition-colors">Trust &amp; Safety</a></li>
+                <li><a href="{{ route('pages.show', 'careers') }}" class="hover:text-amber-400 transition-colors">Careers</a></li>
             </ul>
         </div>
     </div>

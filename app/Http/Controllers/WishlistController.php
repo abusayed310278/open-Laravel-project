@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\CartService;
 use App\Services\WishlistService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -23,11 +25,17 @@ class WishlistController extends Controller
         ]);
     }
 
-    public function toggle(Product $product): RedirectResponse
+    public function toggle(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $added = $this->wishlists->toggle(Auth::user(), $product);
 
-        return back()->with('status', $added ? "\"{$product->title}\" was added to your wishlist." : "\"{$product->title}\" was removed from your wishlist.");
+        $message = $added ? "\"{$product->title}\" was added to your wishlist." : "\"{$product->title}\" was removed from your wishlist.";
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json(['added' => $added, 'message' => $message]);
+        }
+
+        return back()->with('status', $message);
     }
 
     public function moveToCart(Product $product): RedirectResponse

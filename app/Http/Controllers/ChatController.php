@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Requests\StoreChatMessageRequest;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Services\ChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -80,7 +82,8 @@ class ChatController extends Controller
             'sender_name' => $m->sender->name,
             'body' => $m->body,
             'attachment_url' => $m->attachment_path ? route('chat.attachment', $m) : null,
-            'created_at' => $m->created_at->format('M j, g:ia'),
+            'is_image' => $m->isImage(),
+            'created_at' => $m->created_at->format('g:i A'),
         ]));
     }
 
@@ -92,15 +95,42 @@ class ChatController extends Controller
         return redirect()->route($this->routePrefixFor($user).'chat.show', $conversation);
     }
 
-    public function attachment(ChatMessage $message): RedirectResponse
+    public function startWithAdmin(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+
+        $admin = User::where('role', UserRole::Admin)->first();
+        abort_unless($admin, 503, 'Support is currently unavailable.');
+
+        if ($admin->id === $user->id) {
+            return redirect()->route('admin.chat.index');
+        }
+
+        $conversation = $this->chat->startOrGetConversation($user, $admin);
+
+        $message = trim((string) $request->input('body'));
+        if ($message !== '') {
+            $this->chat->sendMessage($conversation, $user, $message);
+        }
+
+        return redirect()->route($this->routePrefixFor($user).'chat.show', $conversation);
+    }
+
+    public function attachment(ChatMessage $message): \Symfony\Component\HttpFoundation\StreamedResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         $this->authorizeParticipant($message->conversation);
 
-        return redirect()->away(Storage::disk('local')->temporaryUrl($message->attachment_path, now()->addMinutes(5)));
+        abort_unless($message->attachment_path && Storage::disk('local')->exists($message->attachment_path), 404);
+
+        return Storage::disk('local')->response($message->attachment_path);
     }
 
     private function authorizeParticipant(ChatConversation $conversation): void
     {
+        if (Auth::user()?->isAdmin()) {
+            return;
+        }
+
         abort_unless(in_array(Auth::id(), [$conversation->buyer_id, $conversation->seller_id], true), 403);
     }
 

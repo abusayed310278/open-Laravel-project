@@ -27,4 +27,9 @@ class Cart extends Model
     {
         return (float) $this->items->sum(fn (CartItem $item) => $item->price * $item->quantity);
     }
+
+    public function totalCount(): int
+    {
+        return (int) $this->items()->sum('quantity');
+    }
 }

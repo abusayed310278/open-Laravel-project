@@ -19,13 +19,7 @@
                 'label' => 'Catalog',
                 'items' => [
                     ['route' => 'business.products.index', 'label' => 'Products', 'icon' => $icon['box']],
-                    ['route' => 'business.products.create', 'label' => 'Add Product', 'icon' => $icon['plus-circle']],
                     ['route' => 'business.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
-                    ['route' => 'business.categories.builder', 'label' => 'Category Builder', 'icon' => $icon['sliders']],
-                    ['route' => 'business.categories.index', 'label' => 'Categories', 'icon' => $icon['tag']],
-                    ['route' => 'business.brands.index', 'label' => 'Brands', 'icon' => $icon['star']],
-                    ['route' => 'business.attribute-groups.index', 'label' => 'Attribute Groups', 'icon' => $icon['document']],
-                    ['route' => 'business.attributes.index', 'label' => 'Attributes', 'icon' => $icon['sliders']],
                 ],
             ],
             [
@@ -33,7 +27,6 @@
                 'items' => [
                     ['route' => 'business.orders.index', 'label' => 'Orders', 'icon' => $icon['shopping-bag']],
                     ['route' => 'business.customers.index', 'label' => 'Customers', 'icon' => $icon['users']],
-                    ['route' => 'business.invoices.index', 'label' => 'Invoices', 'icon' => $icon['document']],
                     ['route' => 'business.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star']],
                     ['route' => 'business.payment-verifications.index', 'label' => 'Payment Verifications', 'icon' => $icon['banknotes']],
                     ['route' => 'business.refunds.index', 'label' => 'Refunds', 'icon' => $icon['banknotes']],
@@ -63,13 +56,15 @@
 
     <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Store Owner" />
 
-    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
+    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen min-w-0 max-w-full">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
-        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6">
+        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
             @yield('content')
         </main>
     </div>
+
+    <x-support-chat-widget />
 
 </body>
 </html>

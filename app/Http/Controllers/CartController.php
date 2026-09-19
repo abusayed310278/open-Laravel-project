@@ -24,13 +24,21 @@ class CartController extends Controller
         ]);
     }
 
-    public function store(Request $request, Product $product): RedirectResponse
+    public function store(Request $request, Product $product): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $request->validate(['quantity' => ['nullable', 'integer', 'min:1']]);
 
         abort_unless($product->publication_status->value === 'published', 404);
 
         $this->carts->add($this->currentCart(), $product, $request->integer('quantity', 1));
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "\"{$product->title}\" was added to your cart.",
+                'cart_count' => $this->currentCart()->totalCount(),
+            ]);
+        }
 
         if ($request->boolean('checkout')) {
             return redirect()->route('checkout');

@@ -41,6 +41,10 @@ class StoreProductRequest extends FormRequest
             'meta_description' => ['nullable', 'string', 'max:255'],
             'images' => ['nullable', 'array', 'max:8'],
             'images.*' => ['file', 'image', 'max:4096'],
+            'primary_image_id' => ['nullable', 'integer'],
+            'primary_image_index' => ['nullable', 'integer', 'min:0'],
+            'delete_images' => ['nullable', 'array'],
+            'delete_images.*' => ['integer'],
             'attributes' => ['nullable', 'array'],
         ];
 

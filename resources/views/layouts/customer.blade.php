@@ -15,7 +15,6 @@
                     ['route' => 'account.dashboard', 'label' => 'Overview', 'icon' => $icon['home']],
                     ['route' => 'account.orders.index', 'label' => 'My Orders', 'icon' => $icon['shopping-bag']],
                     ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
-                    ['route' => 'account.invoices.index', 'label' => 'Invoices', 'icon' => $icon['document']],
                     ['route' => 'account.returns.index', 'label' => 'Returns', 'icon' => $icon['undo']],
                 ],
             ],
@@ -32,7 +31,6 @@
                 'items' => [
                     ['route' => 'account.addresses.index', 'label' => 'Addresses', 'icon' => $icon['map-pin']],
                     ['route' => 'account.profile.edit', 'label' => 'Profile Settings', 'icon' => $icon['cog']],
-                    ['route' => 'account.security.edit', 'label' => 'Security', 'icon' => $icon['shield-check']],
                 ],
             ],
         ];
@@ -51,6 +49,8 @@
             @endif
         </main>
     </div>
+
+    <x-support-chat-widget />
 
 </body>
 </html>

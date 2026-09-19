@@ -39,21 +39,75 @@
             </div>
         </x-card>
 
-        <x-card title="Media">
-            <x-file-upload name="images" hint="Up to 8 images, JPG/PNG, 4MB each" multiple />
+        <x-card title="Product Images &amp; Media">
+            <div id="product-media-manager" class="space-y-4">
+                {{-- Hidden State Inputs --}}
+                <input type="hidden" name="primary_image_id" id="primary_image_id" value="{{ $product->exists && $product->primaryImage() ? $product->primaryImage()->id : '' }}">
+                <input type="hidden" name="primary_image_index" id="primary_image_index" value="">
+                <div id="delete-images-container"></div>
 
-            @if ($product->exists && $product->images->isNotEmpty())
-                <div class="grid grid-cols-4 gap-3 mt-4">
-                    @foreach ($product->images as $image)
-                        <div class="relative rounded-md overflow-hidden h-20 bg-gray-50">
-                            <img src="{{ $image->url() }}" class="w-full h-full object-cover">
-                            @if ($image->is_primary)
-                                <span class="absolute top-1 left-1 bg-brand-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">Primary</span>
-                            @endif
+                {{-- Dropzone Header & Upload Input --}}
+                <div class="border-2 border-dashed border-gray-300 hover:border-brand-500 rounded-xl p-6 text-center bg-gray-50/50 hover:bg-brand-50/20 transition-all cursor-pointer relative group" id="product-image-dropzone">
+                    <input type="file" name="images[]" id="product_images_file_input" multiple accept="image/*" class="hidden">
+                    <div class="flex flex-col items-center justify-center gap-2 pointer-events-none">
+                        <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
-                    @endforeach
+                        <div>
+                            <span class="text-sm font-bold text-gray-800"><span class="text-brand-600 underline">Click to upload</span> or drag and drop photos</span>
+                            <p class="text-xs text-gray-400 mt-0.5">PNG, JPG, WEBP up to 4MB each (Max 8 images)</p>
+                        </div>
+                    </div>
                 </div>
-            @endif
+
+                {{-- Interactive Cards Grid --}}
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Gallery &amp; Main Thumbnail</span>
+                        <span class="text-xs text-gray-400">Click ⭐ to set primary thumbnail</span>
+                    </div>
+
+                    <div id="product-images-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {{-- Render Existing Saved Images (if editing) --}}
+                        @if ($product->exists && $product->images->isNotEmpty())
+                            @foreach ($product->images as $image)
+                                <div class="js-image-card existing-image-card relative rounded-xl overflow-hidden border-2 {{ $image->is_primary ? 'border-brand-500 ring-2 ring-brand-500/20 bg-brand-50/20' : 'border-gray-200 bg-gray-50' }} group h-36 flex flex-col justify-between p-1.5 shadow-2xs transition-all" data-image-id="{{ $image->id }}">
+                                    <div class="relative w-full h-full rounded-lg overflow-hidden bg-white">
+                                        <img src="{{ $image->url() }}" alt="Product Image" class="w-full h-full object-cover">
+                                        
+                                        {{-- Top-Left Primary Badge --}}
+                                        <div class="js-primary-badge absolute top-1.5 left-1.5 z-10 {{ $image->is_primary ? '' : 'hidden' }}">
+                                            <span class="bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                                                ⭐ Primary
+                                            </span>
+                                        </div>
+
+                                        {{-- Top-Right Always-Visible Red Delete Button --}}
+                                        <button type="button" class="absolute top-1.5 right-1.5 z-20 w-7 h-7 bg-white hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90 cursor-pointer" title="Delete Image" onclick="deleteExistingImage({{ $image->id }}, this)">
+                                            <svg class="w-3.5 h-3.5 text-red-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+
+                                        {{-- Action Overlay --}}
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2 z-10">
+                                            <button type="button" class="js-set-primary-btn px-2.5 py-1 text-[11px] font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-xs transition-transform transform active:scale-95 cursor-pointer" onclick="setPrimaryExisting({{ $image->id }}, this)">
+                                                ⭐ Primary
+                                            </button>
+                                            <button type="button" class="px-2.5 py-1 text-[11px] font-bold text-red-600 bg-white hover:bg-red-600 hover:text-white border border-red-200 hover:border-red-600 rounded-lg shadow-xs transition-colors inline-flex items-center gap-1 cursor-pointer" title="Delete Image" onclick="deleteExistingImage({{ $image->id }}, this)">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    <p id="no-images-notice" class="text-xs text-gray-400 text-center py-6 border border-dashed border-gray-200 rounded-lg {{ ($product->exists && $product->images->isNotEmpty()) ? 'hidden' : '' }}">
+                        No photos added yet. Upload photos above to preview cards.
+                    </p>
+                </div>
+            </div>
         </x-card>
 
         <x-card title="Attributes">
@@ -287,4 +341,235 @@
             });
         }
     });
+
+    // Product Images Media Manager Script
+    (function() {
+        function initProductMediaManager() {
+            const dropzone = document.getElementById('product-image-dropzone');
+            const fileInput = document.getElementById('product_images_file_input');
+            const grid = document.getElementById('product-images-grid');
+            const notice = document.getElementById('no-images-notice');
+            const primaryIdInput = document.getElementById('primary_image_id');
+            const primaryIndexInput = document.getElementById('primary_image_index');
+            const deleteContainer = document.getElementById('delete-images-container');
+
+            if (!dropzone || !fileInput || !grid) return;
+
+            let selectedFiles = []; // Holds array of newly selected File objects
+
+            dropzone.addEventListener('click', (e) => {
+                if (e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+
+            ['dragenter', 'dragover'].forEach(evt => {
+                dropzone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('border-brand-500', 'bg-brand-50/40');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(evt => {
+                dropzone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('border-brand-500', 'bg-brand-50/40');
+                });
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                if (e.dataTransfer.files && e.dataTransfer.files.length) {
+                    handleNewFiles(Array.from(e.dataTransfer.files));
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files.length) {
+                    handleNewFiles(Array.from(e.target.files));
+                }
+            });
+
+            function handleNewFiles(newFiles) {
+                const validImages = newFiles.filter(f => f.type && f.type.startsWith('image/'));
+                if (!validImages.length) return;
+
+                selectedFiles = [...selectedFiles, ...validImages].slice(0, 8);
+                syncFileInput();
+                renderNewFileCards();
+            }
+
+            function syncFileInput() {
+                try {
+                    const dt = new DataTransfer();
+                    selectedFiles.forEach(file => dt.items.add(file));
+                    fileInput.files = dt.files;
+                } catch(e) {
+                    console.warn('DataTransfer not fully supported:', e);
+                }
+            }
+
+            function renderNewFileCards() {
+                // Remove previous new image cards
+                grid.querySelectorAll('.new-image-card').forEach(card => card.remove());
+
+                selectedFiles.forEach((file, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'js-image-card new-image-card relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 group h-36 flex flex-col justify-between p-1.5 shadow-2xs transition-all';
+                    card.dataset.newIndex = index;
+
+                    const objectUrl = URL.createObjectURL(file);
+
+                    card.innerHTML = `
+                        <div class="relative w-full h-full rounded-lg overflow-hidden bg-white">
+                            <img src="${objectUrl}" alt="New Photo" class="w-full h-full object-cover">
+                            
+                            <div class="js-primary-badge absolute top-1.5 left-1.5 z-10 hidden">
+                                <span class="bg-amber-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                                    ⭐ Primary
+                                </span>
+                            </div>
+
+                            <button type="button" class="js-delete-top-btn absolute top-1.5 right-1.5 z-20 w-7 h-7 bg-white hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90 cursor-pointer" title="Delete Image">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-2 z-10">
+                                <button type="button" class="js-set-primary-new-btn px-2.5 py-1 text-[11px] font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-xs transition-transform transform active:scale-95 cursor-pointer">
+                                    ⭐ Primary
+                                </button>
+                                <button type="button" class="js-delete-new-btn px-2.5 py-1 text-[11px] font-bold text-red-600 bg-white hover:bg-red-600 hover:text-white border border-red-200 hover:border-red-600 rounded-lg shadow-xs transition-colors inline-flex items-center gap-1 cursor-pointer" title="Delete Image">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Primary button listener
+                    card.querySelector('.js-set-primary-new-btn').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setPrimaryNew(index);
+                    });
+
+                    // Delete button listeners (both top button & overlay button if present)
+                    card.querySelectorAll('.js-delete-top-btn, .js-delete-new-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteNewImage(index);
+                        });
+                    });
+
+                    grid.appendChild(card);
+                });
+
+                // If no primary is set yet, make the first item primary by default
+                const hasExistingPrimary = grid.querySelector('.existing-image-card.border-brand-500');
+                if (!hasExistingPrimary && primaryIndexInput.value === '' && selectedFiles.length > 0) {
+                    setPrimaryNew(0);
+                }
+
+                updateNoticeVisibility();
+            }
+
+            window.setPrimaryExisting = function(imageId, btn) {
+                primaryIdInput.value = imageId;
+                primaryIndexInput.value = '';
+
+                grid.querySelectorAll('.js-image-card').forEach(c => {
+                    c.classList.remove('border-brand-500', 'ring-2', 'ring-brand-500/20', 'bg-brand-50/20');
+                    c.classList.add('border-gray-200', 'bg-gray-50');
+                    const badge = c.querySelector('.js-primary-badge');
+                    if (badge) badge.classList.add('hidden');
+                });
+
+                const card = btn.closest('.js-image-card');
+                if (card) {
+                    card.classList.remove('border-gray-200', 'bg-gray-50');
+                    card.classList.add('border-brand-500', 'ring-2', 'ring-brand-500/20', 'bg-brand-50/20');
+                    const badge = card.querySelector('.js-primary-badge');
+                    if (badge) badge.classList.remove('hidden');
+                }
+            };
+
+            function setPrimaryNew(index) {
+                primaryIndexInput.value = index;
+                primaryIdInput.value = '';
+
+                grid.querySelectorAll('.js-image-card').forEach(c => {
+                    c.classList.remove('border-brand-500', 'ring-2', 'ring-brand-500/20', 'bg-brand-50/20');
+                    c.classList.add('border-gray-200', 'bg-gray-50');
+                    const badge = c.querySelector('.js-primary-badge');
+                    if (badge) badge.classList.add('hidden');
+                });
+
+                const card = grid.querySelector(`.new-image-card[data-new-index="${index}"]`);
+                if (card) {
+                    card.classList.remove('border-gray-200', 'bg-gray-50');
+                    card.classList.add('border-brand-500', 'ring-2', 'ring-brand-500/20', 'bg-brand-50/20');
+                    const badge = card.querySelector('.js-primary-badge');
+                    if (badge) badge.classList.remove('hidden');
+                }
+            }
+
+            window.deleteExistingImage = function(imageId, btn) {
+                const card = btn.closest('.js-image-card');
+                if (!card) return;
+
+                // Add hidden input to form
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'delete_images[]';
+                hidden.value = imageId;
+                deleteContainer.appendChild(hidden);
+
+                const isPrimary = primaryIdInput.value == imageId || card.classList.contains('border-brand-500');
+
+                card.remove();
+
+                if (isPrimary) {
+                    primaryIdInput.value = '';
+                    const firstRemaining = grid.querySelector('.js-image-card');
+                    if (firstRemaining) {
+                        if (firstRemaining.classList.contains('existing-image-card')) {
+                            setPrimaryExisting(firstRemaining.dataset.imageId, firstRemaining.querySelector('.js-set-primary-btn'));
+                        } else if (firstRemaining.dataset.newIndex !== undefined) {
+                            setPrimaryNew(parseInt(firstRemaining.dataset.newIndex));
+                        }
+                    }
+                }
+
+                updateNoticeVisibility();
+            };
+
+            function deleteNewImage(index) {
+                selectedFiles.splice(index, 1);
+                syncFileInput();
+
+                if (primaryIndexInput.value == index) {
+                    primaryIndexInput.value = '';
+                } else if (primaryIndexInput.value > index) {
+                    primaryIndexInput.value = primaryIndexInput.value - 1;
+                }
+
+                renderNewFileCards();
+            }
+
+            function updateNoticeVisibility() {
+                const count = grid.querySelectorAll('.js-image-card').length;
+                if (notice) {
+                    notice.classList.toggle('hidden', count > 0);
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initProductMediaManager);
+        } else {
+            initProductMediaManager();
+        }
+    })();
 </script>

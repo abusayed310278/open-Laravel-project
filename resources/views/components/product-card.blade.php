@@ -1,4 +1,5 @@
 @props([
+    'id' => null,
     'title',
     'category' => null,
     'brand' => null,
@@ -24,31 +25,64 @@
     $description = $description ? implode(', ', $description) : null;
 @endphp
 
-<div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl p-3 sm:p-4 flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
+<div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
     {{-- Product Image --}}
-    <a href="{{ $href }}" class="relative w-full h-40 sm:h-44 flex items-center justify-center mb-3 shrink-0 overflow-hidden rounded-xl bg-gray-50">
-        <div class="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
-            @if ($discountPercent)
-                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
-            @endif
-            @if ($isNew)
-                <span class="text-emerald-600 bg-emerald-50 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none">New</span>
-            @endif
-        </div>
+    <div class="relative w-full h-72 sm:h-80 shrink-0 overflow-hidden bg-gray-50">
+        @if ($discountPercent)
+            <span class="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
+        @endif
 
-        @if ($image)
-            <img src="{{ $image }}" alt="{{ $title }}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-            <div class="hidden w-full h-full items-center justify-center text-gray-300">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="{{ $href }}" class="absolute inset-0 flex items-center justify-center">
+            @if ($image)
+                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <div class="hidden w-full h-full items-center justify-center text-gray-300">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                    </svg>
+                </div>
+            @else
+                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
                 </svg>
-            </div>
-        @else
-            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
-            </svg>
-        @endif
-    </a>
+            @endif
+        </a>
+
+        {{-- Hover Actions: Wishlist & Share --}}
+        <div class="absolute top-2 left-2 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+            <button
+                type="button"
+                data-wishlist-id="{{ $id }}"
+                class="js-wishlist-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                title="Save to wishlist"
+            >
+                <svg class="w-4 h-4 js-wishlist-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+            </button>
+            <button
+                type="button"
+                data-share-url="{{ $href }}"
+                data-share-title="{{ $title }}"
+                class="js-share-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors cursor-pointer"
+                title="Share"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="18" cy="5" r="2.5" />
+                    <circle cx="6" cy="12" r="2.5" />
+                    <circle cx="18" cy="19" r="2.5" />
+                    <line x1="8.2" y1="13.4" x2="15.8" y2="17.6" />
+                    <line x1="15.8" y1="6.4" x2="8.2" y2="10.6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="p-3 sm:p-4 pt-2.5 flex flex-col grow">
+
+    {{-- New Badge --}}
+    @if ($isNew)
+        <span class="self-start text-emerald-600 bg-white border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none mb-2">New</span>
+    @endif
 
     {{-- Category Heading --}}
     <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 uppercase tracking-wide mb-1">
@@ -104,13 +138,15 @@
     @endif
 
     {{-- Seller & Add to Cart --}}
-    <div class="mt-auto pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2">
+    <div class="mt-auto pt-2.5 flex items-center justify-between gap-2">
         <span class="text-xs text-gray-500 truncate">{{ $seller }}</span>
-        <button type="button" class="shrink-0 inline-flex items-center gap-1 border border-gray-200 hover:border-brand-500 hover:bg-brand-500 hover:text-white text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
+        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span>Add</span>
+            <span class="js-btn-text">Add</span>
         </button>
+    </div>
+
     </div>
 </div>

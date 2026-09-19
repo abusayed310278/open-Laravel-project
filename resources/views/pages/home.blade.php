@@ -114,6 +114,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @foreach ($featuredProducts as $product)
                 <x-product-card
+                    :id="$product['id'] ?? null"
                     :title="$product['title']"
                     :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
                     :brand="$product['brand']"
@@ -147,6 +148,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @foreach ($refurbishedDeals as $product)
                 <x-product-card
+                    :id="$product['id'] ?? null"
                     :title="$product['title']"
                     :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
                     :brand="$product['brand']"
@@ -264,6 +266,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @foreach ($mobileTechProducts as $product)
                 <x-product-card
+                    :id="$product['id'] ?? null"
                     :title="$product['title']"
                     :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
                     :brand="$product['brand']"
@@ -348,6 +351,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             @foreach ($latestProducts as $product)
                 <x-product-card
+                    :id="$product['id'] ?? null"
                     :title="$product['title']"
                     :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
                     :brand="$product['brand']"

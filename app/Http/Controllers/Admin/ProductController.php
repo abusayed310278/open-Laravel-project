@@ -21,7 +21,7 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $products = Product::query()
-            ->with(['user', 'category', 'images'])
+            ->with(['user', 'category', 'brand', 'images'])
             ->when($request->filled('status'), fn ($query) => $query->where('approval_status', $request->string('status')))
             ->latest()
             ->paginate(20)
@@ -46,9 +46,10 @@ class ProductController extends Controller
     {
         $product = $this->products->create(
             $request->user(),
-            $request->safe()->except(['images', 'attributes']),
+            $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
             $request->input('attributes', []),
+            $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
         );
 
         // Admin's own inventory doesn't need admin approval of itself.
@@ -70,10 +71,13 @@ class ProductController extends Controller
     {
         $this->products->update(
             $product,
-            $request->safe()->except(['images', 'attributes']),
+            $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
             $request->input('attributes', []),
             $request->user(),
+            $request->input('primary_image_id') ? (int) $request->input('primary_image_id') : null,
+            $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
+            array_map('intval', $request->input('delete_images', []))
         );
 
         return redirect()->route('admin.products.index')->with('status', 'Product updated.');

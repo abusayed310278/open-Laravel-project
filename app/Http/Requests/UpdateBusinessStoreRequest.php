@@ -12,6 +12,47 @@ class UpdateBusinessStoreRequest extends FormRequest
         return $this->user()->isBusiness();
     }
 
+    protected function prepareForValidation(): void
+    {
+        $website = trim((string) $this->input('website'));
+        if ($website !== '' && !preg_match('~^https?://~i', $website)) {
+            $this->merge(['website' => 'https://' . $website]);
+        }
+
+        $socialLinks = $this->input('social_links');
+        if (is_array($socialLinks)) {
+            if (!empty($socialLinks['instagram']) && is_string($socialLinks['instagram'])) {
+                $val = trim($socialLinks['instagram']);
+                if ($val !== '') {
+                    if (str_starts_with($val, '@')) {
+                        $val = substr($val, 1);
+                    }
+                    if (!preg_match('~^https?://~i', $val)) {
+                        $socialLinks['instagram'] = str_contains($val, '/') ? 'https://' . $val : 'https://instagram.com/' . $val;
+                    } else {
+                        $socialLinks['instagram'] = $val;
+                    }
+                }
+            }
+
+            if (!empty($socialLinks['twitter']) && is_string($socialLinks['twitter'])) {
+                $val = trim($socialLinks['twitter']);
+                if ($val !== '') {
+                    if (str_starts_with($val, '@')) {
+                        $val = substr($val, 1);
+                    }
+                    if (!preg_match('~^https?://~i', $val)) {
+                        $socialLinks['twitter'] = str_contains($val, '/') ? 'https://' . $val : 'https://x.com/' . $val;
+                    } else {
+                        $socialLinks['twitter'] = $val;
+                    }
+                }
+            }
+
+            $this->merge(['social_links' => $socialLinks]);
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

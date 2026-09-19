@@ -87,6 +87,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         @foreach ($products as $product)
                             <x-product-card
+                                :id="$product->id"
                                 :title="$product->title"
                                 :category="$product->category?->name ?? $product->brand?->name ?? 'Electronics'"
                                 :brand="$product->brand?->name"

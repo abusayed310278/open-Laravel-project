@@ -23,10 +23,12 @@
 
 <x-textarea label="Description" name="description" rows="3" :value="old('description', $category->description)" />
 
-<x-file-upload name="image" label="Image" hint="PNG or JPG, square recommended" />
-@if ($category->image)
-    <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($category->image) }}" alt="{{ $category->name }}" class="w-16 h-16 rounded-md object-cover border border-gray-100 -mt-3">
-@endif
+<x-file-upload
+    name="image"
+    label="Image"
+    hint="PNG or JPG, square recommended"
+    :value="$category->image ? Illuminate\Support\Facades\Storage::disk('public')->url($category->image) : null"
+/>
 
 <div class="grid sm:grid-cols-2 gap-5">
     <x-input label="Sort order" name="sort_order" type="number" :value="old('sort_order', $category->sort_order ?? 0)" />

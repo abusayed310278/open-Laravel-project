@@ -6,7 +6,7 @@
 
 @php
     $customFavicon = setting('brand_favicon');
-    $faviconUrl = ($customFavicon && \Illuminate\Support\Facades\Storage::disk('public')->exists($customFavicon))
+    $faviconUrl = (!empty($customFavicon) && is_string($customFavicon) && trim($customFavicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($customFavicon))
         ? \Illuminate\Support\Facades\Storage::disk('public')->url($customFavicon)
         : asset('icon.png');
 @endphp
@@ -23,3 +23,17 @@
 @fonts
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @include('layouts.partials.branding-style')
+
+<style>
+    /* Hide scrollbars globally */
+    html, body, *, ::-webkit-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+    ::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+</style>
+

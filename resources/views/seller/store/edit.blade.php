@@ -1,12 +1,14 @@
-@extends(auth()->user()->isBusiness() ? 'layouts.business' : 'layouts.saler')
-
-@section('title', 'Store Profile')
-
 @php
     $isBusiness = auth()->user()->isBusiness();
     $routePrefix = $isBusiness ? 'business.' : 'saler.';
-    $storeUrl = $isBusiness ? route('stores.business', $profile->slug) : route('stores.saler', $profile->slug);
+    $storeUrl = ($profile && !empty($profile->slug)) 
+        ? ($isBusiness ? route('stores.business', $profile->slug) : route('stores.saler', $profile->slug)) 
+        : '#';
 @endphp
+
+@extends($isBusiness ? 'layouts.business' : 'layouts.saler')
+
+@section('title', $isBusiness ? 'Store Profile' : 'Seller Profile')
 
 @section('content')
 
@@ -15,9 +17,11 @@
     @endsession
 
     <x-card>
-        <x-slot:title>Store Profile</x-slot:title>
+        <x-slot:title>{{ $isBusiness ? 'Store Profile' : 'Seller Profile' }}</x-slot:title>
         <x-slot:action>
-            <a href="{{ $storeUrl }}" target="_blank" class="text-sm text-brand-600 font-medium hover:underline">View live store →</a>
+            @if ($storeUrl !== '#')
+                <a href="{{ $storeUrl }}" target="_blank" class="text-sm text-brand-600 font-medium hover:underline">{{ $isBusiness ? 'View live store →' : 'View live profile →' }}</a>
+            @endif
         </x-slot:action>
 
         <form method="POST" action="{{ route($routePrefix.'store.update') }}" enctype="multipart/form-data" class="space-y-6">
@@ -32,18 +36,37 @@
             @endif
 
             <div class="grid sm:grid-cols-2 gap-5">
+                @php
+                    $currentPhoto = $profile->logo ?? $profile->profile_photo ?? null;
+                    $getStorageUrl = function ($path) {
+                        if (empty($path)) return null;
+                        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                            return $path;
+                        }
+                        $path = ltrim($path, '/');
+                        if (str_starts_with($path, 'public/')) {
+                            $path = substr($path, 7);
+                        }
+                        if (str_starts_with($path, 'storage/')) {
+                            return asset($path);
+                        }
+                        return Illuminate\Support\Facades\Storage::disk('public')->url($path);
+                    };
+                @endphp
                 <div>
-                    <x-file-upload :name="$isBusiness ? 'logo' : 'profile_photo'" :label="$isBusiness ? 'Logo' : 'Profile photo'" />
-                    @php($currentPhoto = $isBusiness ? $profile->logo : $profile->profile_photo)
-                    @if ($currentPhoto)
-                        <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($currentPhoto) }}" class="w-14 h-14 rounded-md object-cover border border-gray-100 mt-3">
-                    @endif
+                    <x-file-upload 
+                        :name="$isBusiness ? 'logo' : 'profile_photo'" 
+                        :label="$isBusiness ? 'Logo' : 'Profile photo'" 
+                        :value="$getStorageUrl($currentPhoto)" 
+                    />
                 </div>
                 <div>
-                    <x-file-upload name="cover_image" label="Cover image" hint="Wide banner, 1200×300 recommended" />
-                    @if ($profile->cover_image)
-                        <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($profile->cover_image) }}" class="w-full h-16 rounded-md object-cover border border-gray-100 mt-3">
-                    @endif
+                    <x-file-upload 
+                        name="cover_image" 
+                        label="Cover image" 
+                        hint="Wide banner, 1200×300 recommended" 
+                        :value="$getStorageUrl($profile->cover_image ?? null)" 
+                    />
                 </div>
             </div>
 
@@ -58,15 +81,16 @@
 
                 @if ($isBusiness)
                     <x-input label="Phone" name="phone" type="tel" :value="old('phone', $profile->phone)" />
-                    <x-input label="Website" name="website" type="url" :value="old('website', $profile->website)" />
+                    <x-input label="Website" name="website" type="text" placeholder="https://yourstore.com" :value="old('website', $profile->website ?? '')" />
                 @endif
             </div>
 
             @if ($isBusiness)
+                @php($social = is_array($profile->social_links) ? $profile->social_links : (json_decode($profile->social_links ?? '', true) ?: []))
                 <div class="grid sm:grid-cols-3 gap-5">
-                    <x-input label="Instagram" name="social_links[instagram]" type="url" :value="old('social_links.instagram', $profile->social_links['instagram'] ?? null)" />
-                    <x-input label="Twitter / X" name="social_links[twitter]" type="url" :value="old('social_links.twitter', $profile->social_links['twitter'] ?? null)" />
-                    <x-input label="WhatsApp" name="social_links[whatsapp]" type="text" :value="old('social_links.whatsapp', $profile->social_links['whatsapp'] ?? null)" />
+                    <x-input label="Instagram" name="social_links[instagram]" type="text" placeholder="https://instagram.com/yourstore or @handle" :value="old('social_links.instagram', $social['instagram'] ?? '')" />
+                    <x-input label="Twitter / X" name="social_links[twitter]" type="text" placeholder="https://x.com/yourstore or @handle" :value="old('social_links.twitter', $social['twitter'] ?? '')" />
+                    <x-input label="WhatsApp" name="social_links[whatsapp]" type="text" placeholder="+97455001122" :value="old('social_links.whatsapp', $social['whatsapp'] ?? '')" />
                 </div>
             @endif
 
@@ -75,7 +99,7 @@
                 Store is publicly visible
             </label>
 
-            <x-button type="submit">Save Store Settings</x-button>
+            <x-button type="submit">{{ $isBusiness ? 'Save Store Settings' : 'Save Profile Settings' }}</x-button>
         </form>
     </x-card>
 @endsection

@@ -19,7 +19,7 @@ class SellerOrderController extends Controller
     {
         $vendorOrders = VendorOrder::query()
             ->where('vendor_id', Auth::id())
-            ->with(['order.customer', 'items'])
+            ->with(['order.customer', 'items', 'invoice'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->latest()
             ->paginate(20)
@@ -37,7 +37,7 @@ class SellerOrderController extends Controller
         abort_unless($vendorOrder->vendor_id === Auth::id(), 403);
 
         return view('seller.orders.show', [
-            'vendorOrder' => $vendorOrder->load(['order.customer', 'order.shippingAddress', 'items', 'statusHistories.createdBy']),
+            'vendorOrder' => $vendorOrder->load(['order.customer', 'order.shippingAddress', 'items', 'invoice', 'statusHistories.createdBy']),
             'nextStatuses' => $this->fulfillment->nextStatuses($vendorOrder),
             'routePrefix' => Auth::user()->isBusiness() ? 'business.' : 'saler.',
         ]);

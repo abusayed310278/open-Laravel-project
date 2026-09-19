@@ -54,11 +54,11 @@
                 $customLogo = setting('brand_logo');
                 $siteIcon = setting('site_icon');
             @endphp
-            @if ($customLogo && \Illuminate\Support\Facades\Storage::disk('public')->exists($customLogo))
+            @if (!empty($customLogo) && is_string($customLogo) && trim($customLogo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($customLogo))
                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($customLogo) }}" alt="{{ config('app.name', 'Openbox') }}" class="h-8 w-auto max-w-[140px] object-contain shrink-0" />
             @else
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <img src="{{ $siteIcon && \Illuminate\Support\Facades\Storage::disk('public')->exists($siteIcon) ? \Illuminate\Support\Facades\Storage::disk('public')->url($siteIcon) : asset('icon.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="w-8 h-8 object-contain" width="32" height="32" />
+                    <img src="{{ !empty($siteIcon) && is_string($siteIcon) && trim($siteIcon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($siteIcon) ? \Illuminate\Support\Facades\Storage::disk('public')->url($siteIcon) : asset('icon.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="w-8 h-8 object-contain" width="32" height="32" />
                 </div>
                 <div class="sidebar-brand-text flex flex-col min-w-0 transition-opacity duration-200">
                     <span class="font-black text-gray-900 text-sm tracking-tight leading-tight group-hover:text-brand-600 transition-colors truncate">{{ config('app.name', 'Openbox') }}</span>

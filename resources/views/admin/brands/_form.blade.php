@@ -7,10 +7,13 @@
 
 <x-textarea label="Description" name="description" rows="3" :value="old('description', $brand->description)" />
 
-<x-file-upload name="logo" label="Logo" hint="PNG or SVG" />
-@if ($brand->logo)
-    <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($brand->logo) }}" alt="{{ $brand->name }}" class="w-16 h-16 rounded-md object-contain border border-gray-100 -mt-3">
-@endif
+<x-file-upload
+    name="logo"
+    label="Logo"
+    hint="PNG, JPG or SVG"
+    :value="$brand->logo ? Illuminate\Support\Facades\Storage::disk('public')->url($brand->logo) : null"
+    :delete-url="$brand->exists && $brand->logo ? route('admin.brands.logo.remove', $brand) : null"
+/>
 
 <x-select
     label="Status"

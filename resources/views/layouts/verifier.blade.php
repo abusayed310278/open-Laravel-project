@@ -19,7 +19,7 @@
                 'label' => 'Verification & Quality',
                 'items' => [
                     ['route' => 'verifier.products.index', 'label' => 'Seller Products', 'icon' => $icon['tag']],
-                    ['route' => 'verifier.appointments.index', 'label' => 'Inspection Queue', 'icon' => $icon['calendar']],
+                    ['route' => 'verifier.appointments.index', 'label' => 'Appointments', 'icon' => $icon['calendar']],
                     ['route' => 'verifier.history.index', 'label' => 'Inspection History', 'icon' => $icon['clock']],
                 ],
             ],
@@ -34,13 +34,15 @@
 
     <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Verifier Portal" />
 
-    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
+    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen min-w-0 max-w-full">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
-        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6">
+        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
             @yield('content')
         </main>
     </div>
+
+    <x-support-chat-widget />
 
 </body>
 </html>

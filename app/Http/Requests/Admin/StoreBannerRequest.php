@@ -17,9 +17,11 @@ class StoreBannerRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isUpdate = $this->route('banner') !== null || $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
             'title' => ['required', 'string', 'max:150'],
-            'image' => [$this->isMethod('post') ? 'required' : 'nullable', 'image', 'max:4096'],
+            'image' => [$isUpdate ? 'nullable' : 'required', 'image', 'max:4096'],
             'link' => ['nullable', 'string', 'max:255'],
             'position' => ['required', 'string', 'max:50'],
             'sort_order' => ['nullable', 'integer'],

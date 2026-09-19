@@ -18,7 +18,7 @@ class CustomerOrderController extends Controller
     public function index(): View
     {
         return view('account.orders.index', [
-            'orders' => Auth::user()->orders()->with('vendorOrders')->latest()->paginate(10),
+            'orders' => Auth::user()->orders()->with('vendorOrders.invoice')->latest()->paginate(10),
         ]);
     }
 
@@ -27,7 +27,7 @@ class CustomerOrderController extends Controller
         abort_unless($order->customer_id === Auth::id(), 403);
 
         return view('account.orders.show', [
-            'order' => $order->load('vendorOrders.items', 'vendorOrders.manualPaymentSubmission', 'vendorOrders.refunds', 'vendorOrders.vendor.paymentSettings', 'shippingAddress', 'billingAddress'),
+            'order' => $order->load('vendorOrders.items', 'vendorOrders.invoice', 'vendorOrders.manualPaymentSubmission', 'vendorOrders.refunds', 'vendorOrders.vendor.paymentSettings', 'shippingAddress', 'billingAddress'),
             'openboxBankDetails' => $this->settings->get('bank_details'),
             'eligibleReviewables' => $this->reviews->eligibleReviewables(Auth::user(), $order),
         ]);

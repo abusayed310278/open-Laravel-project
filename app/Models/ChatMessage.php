@@ -31,4 +31,15 @@ class ChatMessage extends Model
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
+
+    public function isImage(): bool
+    {
+        if (! $this->attachment_path) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($this->attachment_path, PATHINFO_EXTENSION));
+
+        return in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif'], true);
+    }
 }

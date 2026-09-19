@@ -23,6 +23,7 @@ class StoreBrandRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
             'status' => ['required', new Enum(PublishStatus::class)],
         ];
     }

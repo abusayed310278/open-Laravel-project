@@ -49,7 +49,7 @@
                     </div>
                     <div class="h-20 bg-gray-50/60 rounded-md border border-dashed border-gray-200 flex items-center justify-between px-6">
                         <div id="preview-logo-light">
-                            @if ($logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
+                            @if (!empty($logo) && is_string($logo) && trim($logo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">
@@ -73,7 +73,7 @@
                     </div>
                     <div class="h-20 bg-gray-900/80 rounded-md border border-dashed border-gray-800 flex items-center justify-between px-6">
                         <div id="preview-logo-dark">
-                            @if ($logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
+                            @if (!empty($logo) && is_string($logo) && trim($logo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">

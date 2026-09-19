@@ -52,11 +52,11 @@ class SettingsController extends Controller
 
         // Delete old custom logo file if exists
         $oldLogo = $this->settings->get('brand_logo');
-        if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+        if (!empty($oldLogo) && is_string($oldLogo) && trim($oldLogo) !== '' && Storage::disk('public')->exists($oldLogo)) {
             Storage::disk('public')->delete($oldLogo);
         }
 
-        $path = $request->file('logo')->store('branding', 'public');
+        $path = $this->storeUploadedFile($request->file('logo'), 'branding', 'public');
         $this->settings->set('brand_logo', $path, 'branding');
 
         ActivityLog::record('settings.logo.updated');
@@ -67,7 +67,7 @@ class SettingsController extends Controller
     public function removeLogo(): RedirectResponse
     {
         $oldLogo = $this->settings->get('brand_logo');
-        if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+        if (!empty($oldLogo) && is_string($oldLogo) && trim($oldLogo) !== '' && Storage::disk('public')->exists($oldLogo)) {
             Storage::disk('public')->delete($oldLogo);
         }
 
@@ -91,11 +91,11 @@ class SettingsController extends Controller
         ]);
 
         $oldFavicon = $this->settings->get('brand_favicon');
-        if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
+        if (!empty($oldFavicon) && is_string($oldFavicon) && trim($oldFavicon) !== '' && Storage::disk('public')->exists($oldFavicon)) {
             Storage::disk('public')->delete($oldFavicon);
         }
 
-        $path = $request->file('favicon')->store('branding', 'public');
+        $path = $this->storeUploadedFile($request->file('favicon'), 'branding', 'public');
         $this->settings->set('brand_favicon', $path, 'branding');
 
         ActivityLog::record('settings.siteicon.updated');
@@ -106,7 +106,7 @@ class SettingsController extends Controller
     public function removeSiteicon(): RedirectResponse
     {
         $oldFavicon = $this->settings->get('brand_favicon');
-        if ($oldFavicon && Storage::disk('public')->exists($oldFavicon)) {
+        if (!empty($oldFavicon) && is_string($oldFavicon) && trim($oldFavicon) !== '' && Storage::disk('public')->exists($oldFavicon)) {
             Storage::disk('public')->delete($oldFavicon);
         }
 
@@ -116,7 +116,47 @@ class SettingsController extends Controller
         return back()->with('status', 'Custom site icon removed. Default favicon restored.');
     }
 
+    public function footericon(): View
+    {
+        return view('admin.settings.footericon', [
+            'footerIcon' => $this->settings->get('brand_footer_icon'),
+        ]);
+    }
+
+    public function updateFootericon(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'footer_icon' => ['required', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:2048'],
+        ]);
+
+        $oldIcon = $this->settings->get('brand_footer_icon');
+        if (!empty($oldIcon) && is_string($oldIcon) && trim($oldIcon) !== '' && Storage::disk('public')->exists($oldIcon)) {
+            Storage::disk('public')->delete($oldIcon);
+        }
+
+        $path = $this->storeUploadedFile($request->file('footer_icon'), 'branding', 'public');
+        $this->settings->set('brand_footer_icon', $path, 'branding');
+
+        ActivityLog::record('settings.footericon.updated');
+
+        return back()->with('status', 'Footer icon updated successfully.');
+    }
+
+    public function removeFootericon(): RedirectResponse
+    {
+        $oldIcon = $this->settings->get('brand_footer_icon');
+        if (!empty($oldIcon) && is_string($oldIcon) && trim($oldIcon) !== '' && Storage::disk('public')->exists($oldIcon)) {
+            Storage::disk('public')->delete($oldIcon);
+        }
+
+        $this->settings->set('brand_footer_icon', null, 'branding');
+        ActivityLog::record('settings.footericon.removed');
+
+        return back()->with('status', 'Custom footer icon removed. Default icon restored.');
+    }
+
     public function font(): View
+
     {
         return view('admin.settings.font', [
             'fonts' => UpdateBrandingRequest::FONTS,
@@ -179,11 +219,11 @@ class SettingsController extends Controller
     public function updateBranding(UpdateBrandingRequest $request): RedirectResponse
     {
         if ($request->hasFile('logo')) {
-            $this->settings->set('brand_logo', $request->file('logo')->store('branding', 'public'), 'branding');
+            $this->settings->set('brand_logo', $this->storeUploadedFile($request->file('logo'), 'branding', 'public'), 'branding');
         }
 
         if ($request->hasFile('favicon')) {
-            $this->settings->set('brand_favicon', $request->file('favicon')->store('branding', 'public'), 'branding');
+            $this->settings->set('brand_favicon', $this->storeUploadedFile($request->file('favicon'), 'branding', 'public'), 'branding');
         }
 
         $this->settings->set('brand_font', $request->string('brand_font')->value() ?: null, 'branding');
@@ -193,6 +233,35 @@ class SettingsController extends Controller
 
         return back()->with('status', 'Branding updated.');
     }
+
+    /**
+     * Store an uploaded file safely, handling PHP 8.4 / Windows temp file paths.
+     */
+    private function storeUploadedFile(\Illuminate\Http\UploadedFile $file, string $directory = 'branding', string $disk = 'public'): string
+    {
+        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png';
+        $filename = \Illuminate\Support\Str::random(40) . '.' . strtolower($extension);
+        $targetPath = trim($directory, '/') . '/' . $filename;
+
+        $sourcePath = $file->getRealPath() ?: $file->getPathname();
+
+        if (!empty($sourcePath) && file_exists($sourcePath)) {
+            $stream = @fopen($sourcePath, 'r');
+            if ($stream !== false) {
+                try {
+                    Storage::disk($disk)->put($targetPath, $stream);
+                    return $targetPath;
+                } finally {
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
+            }
+        }
+
+        return $file->store($directory, $disk);
+    }
+
 
     public function mail(): View
     {

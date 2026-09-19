@@ -43,4 +43,15 @@ enum OrderStatus: string
             self::Returned, self::Refunded => 'amber',
         };
     }
+
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::Pending, self::Confirmed => 'bg-amber-50 text-amber-700 border border-amber-200/60',
+            self::Processing, self::Packed, self::Shipped, self::OutForDelivery => 'bg-blue-50 text-blue-700 border border-blue-200/60',
+            self::Delivered => 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+            self::Cancelled, self::Failed => 'bg-rose-50 text-rose-700 border border-rose-200/60',
+            self::Returned, self::Refunded => 'bg-orange-50 text-orange-700 border border-orange-200/60',
+        };
+    }
 }

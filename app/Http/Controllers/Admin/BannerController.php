@@ -19,9 +19,11 @@ class BannerController extends Controller
 
     public function store(StoreBannerRequest $request): RedirectResponse
     {
+        $imagePath = $this->storeUploadedFile($request->file('image'), 'banners', 'public');
+
         Banner::create([
             ...$request->safe()->except('image'),
-            'image' => $request->file('image')->store('banners', 'public'),
+            'image' => $imagePath,
             'is_active' => $request->boolean('is_active', true),
             'sort_order' => $request->integer('sort_order', 0),
         ]);
@@ -32,18 +34,54 @@ class BannerController extends Controller
     public function update(StoreBannerRequest $request, Banner $banner): RedirectResponse
     {
         $data = [
-            ...$request->safe()->except('image'),
-            'is_active' => $request->boolean('is_active', true),
+            ...$request->safe()->except(['image', 'remove_image']),
+            'is_active' => $request->boolean('is_active', false),
             'sort_order' => $request->integer('sort_order', 0),
         ];
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('banners', 'public');
+        if ($request->boolean('remove_image')) {
+            if ($banner->image && !str_starts_with($banner->image, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
+            if ($banner->image && !str_starts_with($banner->image, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+            }
+            $data['image'] = $this->storeUploadedFile($request->file('image'), 'banners', 'public');
         }
 
         $banner->update($data);
 
         return back()->with('status', 'Banner updated.');
+    }
+
+    /**
+     * Store an uploaded file safely, handling PHP 8.4 / Windows temp file paths.
+     */
+    private function storeUploadedFile(\Illuminate\Http\UploadedFile $file, string $directory = 'banners', string $disk = 'public'): string
+    {
+        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png';
+        $filename = \Illuminate\Support\Str::random(40) . '.' . strtolower($extension);
+        $targetPath = trim($directory, '/') . '/' . $filename;
+
+        $sourcePath = $file->getRealPath() ?: $file->getPathname();
+
+        if (!empty($sourcePath) && file_exists($sourcePath)) {
+            $stream = @fopen($sourcePath, 'r');
+            if ($stream !== false) {
+                try {
+                    \Illuminate\Support\Facades\Storage::disk($disk)->put($targetPath, $stream);
+                    return $targetPath;
+                } finally {
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
+            }
+        }
+
+        return $file->store($directory, $disk);
     }
 
     public function toggleActive(Banner $banner): RedirectResponse
@@ -57,6 +95,10 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner): RedirectResponse
     {
+        if ($banner->image && !str_starts_with($banner->image, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+        }
+
         $banner->delete();
 
         return back()->with('status', 'Banner deleted.');

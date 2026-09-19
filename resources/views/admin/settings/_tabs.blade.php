@@ -2,7 +2,9 @@
     $tabs = [
         'logo' => ['label' => 'Logo', 'route' => 'admin.settings.logo'],
         'siteicon' => ['label' => 'Site Icon', 'route' => 'admin.settings.siteicon'],
+        'footericon' => ['label' => 'Footer Icon', 'route' => 'admin.settings.footericon'],
         'font' => ['label' => 'Font', 'route' => 'admin.settings.font'],
+
         'color' => ['label' => 'Color', 'route' => 'admin.settings.color'],
         'cache' => ['label' => 'Cache Clear', 'route' => 'admin.settings.cache'],
         'mail' => ['label' => 'Mail (SMTP)', 'route' => 'admin.settings.mail'],

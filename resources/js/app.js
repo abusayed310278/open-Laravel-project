@@ -290,3 +290,207 @@ if (document.readyState === 'loading') {
 } else {
     initNotificationPoller();
 }
+
+// Image Deletion Helpers
+window.deleteExistingImage = function (btn, deleteUrl) {
+    if (confirm('Are you sure you want to delete this image?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = deleteUrl;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+};
+
+window.markImageForDeletion = function (btn) {
+    const wrapper = btn.closest('.js-file-upload');
+    if (wrapper) {
+        const removeFlag = wrapper.querySelector('.js-remove-flag');
+        if (removeFlag) removeFlag.value = '1';
+        const existingPreview = wrapper.querySelector('.js-existing-preview');
+        if (existingPreview) existingPreview.classList.add('hidden');
+        const deletedNotice = wrapper.querySelector('.js-existing-deleted-notice');
+        if (deletedNotice) {
+            deletedNotice.classList.remove('hidden');
+            deletedNotice.classList.add('flex');
+        }
+        const fileInput = wrapper.querySelector('.js-file-input');
+        if (fileInput) fileInput.value = '';
+    }
+};
+
+window.undoImageDeletion = function (btn) {
+    const wrapper = btn.closest('.js-file-upload');
+    if (wrapper) {
+        const removeFlag = wrapper.querySelector('.js-remove-flag');
+        if (removeFlag) removeFlag.value = '0';
+        const existingPreview = wrapper.querySelector('.js-existing-preview');
+        if (existingPreview) existingPreview.classList.remove('hidden');
+        const deletedNotice = wrapper.querySelector('.js-existing-deleted-notice');
+        if (deletedNotice) {
+            deletedNotice.classList.add('hidden');
+            deletedNotice.classList.remove('flex');
+        }
+    }
+};
+
+// File Upload Live Preview & Delete Handler
+window.initFileUploads = function initFileUploads() {
+    document.querySelectorAll('.js-file-upload').forEach((wrapper) => {
+        if (wrapper.dataset.initialized) return;
+        wrapper.dataset.initialized = 'true';
+
+        const fileInput = wrapper.querySelector('.js-file-input');
+        const dropzone = wrapper.querySelector('.js-dropzone');
+        const newPreviewContainer = wrapper.querySelector('.js-new-preview-container');
+        const existingPreview = wrapper.querySelector('.js-existing-preview');
+        const deleteExistingBtn = wrapper.querySelector('.js-delete-existing-btn');
+        const existingDeletedNotice = wrapper.querySelector('.js-existing-deleted-notice');
+        const undoDeleteExistingBtn = wrapper.querySelector('.js-undo-delete-existing');
+        const removeFlag = wrapper.querySelector('.js-remove-flag');
+
+        if (!fileInput) return;
+
+        let activeObjectUrls = [];
+
+        function clearNewPreviews() {
+            activeObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+            activeObjectUrls = [];
+            if (newPreviewContainer) {
+                newPreviewContainer.innerHTML = '';
+                newPreviewContainer.classList.add('hidden');
+            }
+        }
+
+        function renderNewPreviews(files) {
+            clearNewPreviews();
+            if (!files || files.length === 0) return;
+
+            if (newPreviewContainer) {
+                newPreviewContainer.classList.remove('hidden');
+            }
+
+            Array.from(files).forEach((file) => {
+                if (!file.type.startsWith('image/')) {
+                    const card = document.createElement('div');
+                    card.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50';
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-gray-500 font-semibold text-xs shrink-0">
+                                FILE
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-gray-800 truncate">${file.name}</p>
+                                <p class="text-[11px] text-gray-400">${(file.size / 1024).toFixed(1)} KB</p>
+                            </div>
+                        </div>
+                        <button type="button" class="js-remove-file-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-md border border-rose-200/60 transition-colors" title="Remove file">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Delete
+                        </button>
+                    `;
+                    card.querySelector('.js-remove-file-btn').addEventListener('click', () => {
+                        fileInput.value = '';
+                        clearNewPreviews();
+                    });
+                    newPreviewContainer.appendChild(card);
+                    return;
+                }
+
+                const url = URL.createObjectURL(file);
+                activeObjectUrls.push(url);
+
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between p-3 border border-brand-200 rounded-lg bg-brand-50/20';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <img src="${url}" alt="${file.name}" class="w-14 h-14 rounded-md object-contain border border-gray-200 bg-white p-1 shrink-0">
+                        <div class="min-w-0">
+                            <span class="inline-block px-1.5 py-0.5 text-[10px] font-semibold bg-brand-100 text-brand-700 rounded mb-0.5">New Image</span>
+                            <p class="text-xs font-semibold text-gray-800 truncate">${file.name}</p>
+                            <p class="text-[11px] text-gray-400">${(file.size / 1024).toFixed(1)} KB</p>
+                        </div>
+                    </div>
+                    <button type="button" class="js-remove-file-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-md border border-rose-200/60 transition-colors" title="Delete selected image">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Delete
+                    </button>
+                `;
+
+                card.querySelector('.js-remove-file-btn').addEventListener('click', () => {
+                    fileInput.value = '';
+                    clearNewPreviews();
+                });
+
+                newPreviewContainer.appendChild(card);
+            });
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            renderNewPreviews(e.target.files);
+            if (removeFlag) removeFlag.value = '0';
+        });
+
+        if (dropzone) {
+            ['dragenter', 'dragover'].forEach((eventName) => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('border-brand-500', 'bg-brand-50/30');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach((eventName) => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('border-brand-500', 'bg-brand-50/30');
+                });
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    renderNewPreviews(fileInput.files);
+                    if (removeFlag) removeFlag.value = '0';
+                }
+            });
+        }
+
+        deleteExistingBtn?.addEventListener('click', () => {
+            if (removeFlag) removeFlag.value = '1';
+            existingPreview?.classList.add('hidden');
+            existingDeletedNotice?.classList.remove('hidden');
+            existingDeletedNotice?.classList.add('flex');
+            fileInput.value = '';
+            clearNewPreviews();
+        });
+
+        undoDeleteExistingBtn?.addEventListener('click', () => {
+            if (removeFlag) removeFlag.value = '0';
+            existingPreview?.classList.remove('hidden');
+            existingDeletedNotice?.classList.add('hidden');
+            existingDeletedNotice?.classList.remove('flex');
+        });
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initFileUploads);
+} else {
+    window.initFileUploads();
+}

@@ -30,10 +30,10 @@ class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request): RedirectResponse
     {
-        $data = $request->safe()->except('image');
+        $data = $request->safe()->except(['image', 'remove_image']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = $this->storeUploadedFile($request->file('image'), 'categories', 'public');
         }
 
         Category::query()->create($data);
@@ -65,14 +65,19 @@ class CategoryController extends Controller
             }
         }
 
-        $data = $request->safe()->except('image');
+        $data = $request->safe()->except(['image', 'remove_image']);
 
-        if ($request->hasFile('image')) {
+        if ($request->boolean('remove_image')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $data['image'] = null;
+        } elseif ($request->hasFile('image')) {
             if ($category->image) {
                 Storage::disk('public')->delete($category->image);
             }
 
-            $data['image'] = $request->file('image')->store('categories', 'public');
+            $data['image'] = $this->storeUploadedFile($request->file('image'), 'categories', 'public');
         }
 
         $category->update($data);
@@ -82,6 +87,34 @@ class CategoryController extends Controller
         }
 
         return redirect()->route($this->getRoutePrefix() . 'categories.index')->with('status', 'Category updated.');
+    }
+
+    /**
+     * Store an uploaded file safely, handling PHP 8.4 / Windows temp file paths.
+     */
+    private function storeUploadedFile(\Illuminate\Http\UploadedFile $file, string $directory = 'categories', string $disk = 'public'): string
+    {
+        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png';
+        $filename = \Illuminate\Support\Str::random(40) . '.' . strtolower($extension);
+        $targetPath = trim($directory, '/') . '/' . $filename;
+
+        $sourcePath = $file->getRealPath() ?: $file->getPathname();
+
+        if (!empty($sourcePath) && file_exists($sourcePath)) {
+            $stream = @fopen($sourcePath, 'r');
+            if ($stream !== false) {
+                try {
+                    Storage::disk($disk)->put($targetPath, $stream);
+                    return $targetPath;
+                } finally {
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                }
+            }
+        }
+
+        return $file->store($directory, $disk);
     }
 
     public function updateAttributes(Category $category): RedirectResponse

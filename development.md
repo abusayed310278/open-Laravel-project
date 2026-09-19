@@ -116,6 +116,24 @@
 27. **Modern Real-Time Chat & Message Bubble Redesign**:
     - Redesigned message bubbles with clean amber gradient styling (`from-amber-500 to-amber-600`) for sent messages and crisp border cards for received messages with custom avatar alignment.
     - Added interactive attachment badges, floating rounded input bar, presence indicator, and auto-scroll polling transitions.
+28. **Admin All-Roles Direct Chat & Universal Directory Management**:
+    - Created an all-roles messaging hub in the Admin portal (`admin/chat/index.blade.php` and `admin/chat/show.blade.php`) enabling the Admin to browse, filter, search, and initiate 1-on-1 direct conversations with any user across all platform roles (**Sellers**, **Store Owners / Business**, **Verifiers**, **Users / Customers**, and **Admins**).
+    - Integrated role filter pills with live counts, metric stat cards, compact icon-only directory message action buttons, multipart file attachments, and 3.5s real-time message stream polling.
+29. **Chat Image Upload Fix, Single Message Box Structure & Time-Under-Box UI**:
+    - Fixed image upload and download serving by replacing unsupported driver temporary URLs with direct streaming responses (`Storage::disk('local')->response()`) and enabling Admin attachment authorization.
+    - Added inline image previews for uploaded photos and restructured messages into unified single boxes with timestamps positioned under the message box without arrow icons. Removed redundant directory button from chat show headers.
+30. **Admin Dashboard Sidebar Activity Logs Removal**:
+    - Removed the "Activity Logs" item from the System section of the Admin Dashboard sidebar layout (`resources/views/layouts/admin.blade.php`).
+31. **Dynamic Admin Dashboard Metrics, Telemetry & Interactive Analytics Graphs**:
+    - Connected the `/admin` dashboard to [`Admin\DashboardController`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/DashboardController.php) computing live metrics for Platform Revenue, Orders, Catalog Products, Pending KYC / Product Verifications, Total Commission, and User Role Distributions.
+    - Integrated Chart.js 30-day continuous revenue & order volume spline area charts, top product categories breakdown doughnut charts, recent orders table, and a pending KYC queue with direct review actions.
+    - Ensured enum type-safety with `KycStatus::Submitted`/`KycStatus::UnderReview` and added `badgeClass()` methods on `KycStatus` and `OrderStatus` enums alongside `user()` relationship compatibility on `Order`.
+
+
+
+
+
+
 
 ---
 

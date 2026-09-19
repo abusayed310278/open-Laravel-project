@@ -24,6 +24,7 @@ class StoreCategoryRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'image' => ['nullable', 'image', 'max:2048'],
+            'remove_image' => ['nullable', 'boolean'],
             'status' => ['required', new Enum(PublishStatus::class)],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'meta_title' => ['nullable', 'string', 'max:255'],

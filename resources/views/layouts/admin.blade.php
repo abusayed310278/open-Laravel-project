@@ -76,7 +76,6 @@
                     ['route' => 'admin.reports.index', 'label' => 'Reports', 'icon' => $icon['chart']],
                     ['route' => 'admin.visitor-reports.index', 'label' => 'Visitor Reports', 'icon' => $icon['visitor']],
                     ['route' => 'admin.settings.branding', 'label' => 'Settings', 'icon' => $icon['cog']],
-                    ['route' => 'admin.activity-logs.index', 'label' => 'Activity Logs', 'icon' => $icon['clock']],
                 ],
             ],
         ];
@@ -84,13 +83,34 @@
 
     <x-dashboard-sidebar :nav-groups="$navGroups" portal-label="Admin" />
 
-    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
+    <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen min-w-0 max-w-full">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
-        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6">
+        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
             @yield('content')
         </main>
+
+        {{-- Admin Dashboard Footer --}}
+        <footer class="mt-auto border-t border-gray-100 bg-white px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+            <div class="flex items-center gap-3">
+                @php
+                    $footerIcon = setting('brand_footer_icon');
+                @endphp
+                @if (!empty($footerIcon) && is_string($footerIcon) && trim($footerIcon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($footerIcon))
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($footerIcon) }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
+                @else
+                    <img src="{{ asset('icon.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
+                @endif
+                <span class="font-medium text-gray-700">&copy; {{ date('Y') }} {{ config('app.name', 'Openbox') }}. All rights reserved.</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-400">
+                <span>Admin Dashboard</span>
+                <span>•</span>
+                <span>v1.0.0</span>
+            </div>
+        </footer>
     </div>
+
 
 </body>
 </html>

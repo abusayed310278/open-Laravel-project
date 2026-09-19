@@ -34,4 +34,15 @@ enum UserRole: string
             self::Customer => 'account.dashboard',
         };
     }
+
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::Admin => 'bg-red-50 text-red-700 border border-red-200/60',
+            self::Verifier => 'bg-amber-50 text-amber-800 border border-amber-200/60',
+            self::Business => 'bg-purple-50 text-purple-700 border border-purple-200/60',
+            self::Saler => 'bg-blue-50 text-blue-700 border border-blue-200/60',
+            self::Customer => 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+        };
+    }
 }

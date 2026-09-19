@@ -21,7 +21,21 @@ class ProductController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Product::query()
+        $verifier = Auth::user();
+        $locationId = $verifier->verifierProfile?->assigned_location_id;
+
+        // Scope query strictly to products with appointments at the verifier's location or assigned to the verifier
+        $baseQuery = Product::query()
+            ->whereHas('verifications', function ($q) use ($verifier, $locationId) {
+                $q->where(function ($sub) use ($verifier, $locationId) {
+                    $sub->where('verifier_id', $verifier->id);
+                    if ($locationId) {
+                        $sub->orWhere('location_id', $locationId);
+                    }
+                });
+            });
+
+        $query = (clone $baseQuery)
             ->with(['user', 'category', 'images', 'gradeAssignment', 'latestVerificationRequest'])
             ->latest();
 
@@ -50,10 +64,10 @@ class ProductController extends Controller
             $query->where('condition', $request->query('condition'));
         }
 
-        $totalCount = Product::count();
-        $verifiedCount = Product::where('verification_status', VerificationStatus::Verified)->count();
-        $pendingCount = Product::whereIn('verification_status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])->count();
-        $unverifiedCount = Product::where('verification_status', VerificationStatus::NotRequested)->count();
+        $totalCount = (clone $baseQuery)->count();
+        $verifiedCount = (clone $baseQuery)->where('verification_status', VerificationStatus::Verified)->count();
+        $pendingCount = (clone $baseQuery)->whereIn('verification_status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])->count();
+        $unverifiedCount = (clone $baseQuery)->where('verification_status', VerificationStatus::NotRequested)->count();
 
         return view('verifier.products.index', [
             'products' => $query->paginate(15)->withQueryString(),
@@ -71,6 +85,20 @@ class ProductController extends Controller
 
     public function show(Product $product): View
     {
+        $verifier = Auth::user();
+        $locationId = $verifier->verifierProfile?->assigned_location_id;
+
+        $hasAppointment = $product->verifications()
+            ->where(function ($sub) use ($verifier, $locationId) {
+                $sub->where('verifier_id', $verifier->id);
+                if ($locationId) {
+                    $sub->orWhere('location_id', $locationId);
+                }
+            })
+            ->exists();
+
+        abort_unless($hasAppointment, 403, 'You are only authorized to view products scheduled for appointment at your assigned location.');
+
         $checklist = $this->verifications->checklistFor($product);
 
         return view('verifier.products.show', [
@@ -81,6 +109,20 @@ class ProductController extends Controller
 
     public function verify(Request $request, Product $product): RedirectResponse
     {
+        $verifier = Auth::user();
+        $locationId = $verifier->verifierProfile?->assigned_location_id;
+
+        $hasAppointment = $product->verifications()
+            ->where(function ($sub) use ($verifier, $locationId) {
+                $sub->where('verifier_id', $verifier->id);
+                if ($locationId) {
+                    $sub->orWhere('location_id', $locationId);
+                }
+            })
+            ->exists();
+
+        abort_unless($hasAppointment, 403, 'You are only authorized to inspect products scheduled for appointment at your assigned location.');
+
         $decision = $request->input('decision', 'pass');
 
         $validated = $request->validate([
@@ -91,8 +133,6 @@ class ProductController extends Controller
             'reason' => [Rule::requiredIf($decision === 'fail'), 'nullable', 'string', 'max:500'],
             'results' => ['nullable', 'array'],
         ]);
-
-        $verifier = Auth::user();
 
         $this->verifications->verifyDirectly(
             $product,

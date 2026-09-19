@@ -169,6 +169,7 @@ class HomeController extends Controller
     private function productCards($products): array
     {
         return $products->map(fn (Product $product) => [
+            'id' => $product->id,
             'title' => $product->title,
             'category' => $product->category?->name ?? $product->brand?->name ?? 'Electronics',
             'brand' => $product->brand?->name ?? 'Electronics',

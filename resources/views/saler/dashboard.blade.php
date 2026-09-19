@@ -12,8 +12,7 @@
 
     <x-card title="Getting Started">
         <p class="text-sm text-gray-500 leading-relaxed">
-            This is the foundation shell for the Saler Portal. Credit-based listings, verification requests, and
-            warehouse deposits will populate as their respective build phases land.
+            This is the foundation shell for the Saler Portal. Credit-based listings and verification requests will populate as their respective build phases land.
         </p>
     </x-card>
 @endsection

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CategoryBuilderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\CommissionRuleController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
@@ -66,6 +67,8 @@ use App\Http\Controllers\ProductPageController;
 use App\Http\Controllers\ProductVerificationController;
 use App\Http\Controllers\RefundRequestController;
 use App\Http\Controllers\ReviewReportController;
+use App\Http\Controllers\SellerCustomerController;
+use App\Http\Controllers\SellerDashboardController;
 use App\Http\Controllers\SellerInventoryController;
 use App\Http\Controllers\SellerInvoiceController;
 use App\Http\Controllers\SellerOrderController;
@@ -99,6 +102,7 @@ Route::get('/seller/{slug}', [StorePageController::class, 'saler'])->name('store
 Route::get('/blog', [BlogPageController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogPageController::class, 'show'])->name('blog.show');
 Route::get('/p/{page:slug}', [CmsPageController::class, 'show'])->name('pages.show');
+Route::get('/pages/{page:slug}', [CmsPageController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +126,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
 
     Route::post('/products/{product}/chat', [ChatController::class, 'startFromProduct'])->name('chat.start');
+    Route::post('/support-chat/start', [ChatController::class, 'startWithAdmin'])->middleware('throttle:10,1')->name('chat.start-admin');
     Route::post('/chat/{conversation}', [ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.store');
     Route::get('/chat/{conversation}/poll/{afterId}', [ChatController::class, 'poll'])->whereNumber('afterId')->name('chat.poll');
     Route::get('/chat/messages/{message}/attachment', [ChatController::class, 'attachment'])->name('chat.attachment');
@@ -177,6 +182,11 @@ $sellerOrderRoutes = function () {
     Route::get('/orders', [SellerOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{vendorOrder}', [SellerOrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{vendorOrder}/status', [SellerOrderController::class, 'updateStatus'])->name('orders.status');
+};
+
+$sellerCustomerRoutes = function () {
+    Route::get('/customers', [SellerCustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{customer}', [SellerCustomerController::class, 'show'])->name('customers.show');
 };
 
 $sellerInventoryRoutes = function () {
@@ -242,6 +252,7 @@ $sellerCategoryRoutes = function () {
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
     Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+    Route::delete('/brands/{brand}/logo', [BrandController::class, 'removeLogo'])->name('brands.logo.remove');
     Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
     Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
@@ -279,7 +290,7 @@ Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(fu
 */
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
     ->prefix('admin')->name('admin.')->group(function () {
-        Route::view('/', 'admin.dashboard')->name('dashboard');
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
@@ -300,6 +311,11 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/settings/siteicon', [SettingsController::class, 'siteicon'])->name('settings.siteicon');
         Route::post('/settings/siteicon', [SettingsController::class, 'updateSiteicon'])->name('settings.siteicon.update');
         Route::delete('/settings/siteicon', [SettingsController::class, 'removeSiteicon'])->name('settings.siteicon.remove');
+
+        Route::get('/settings/footericon', [SettingsController::class, 'footericon'])->name('settings.footericon');
+        Route::post('/settings/footericon', [SettingsController::class, 'updateFootericon'])->name('settings.footericon.update');
+        Route::delete('/settings/footericon', [SettingsController::class, 'removeFootericon'])->name('settings.footericon.remove');
+
 
         Route::get('/settings/font', [SettingsController::class, 'font'])->name('settings.font');
         Route::post('/settings/font', [SettingsController::class, 'updateFont'])->name('settings.font.update');
@@ -364,6 +380,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
         Route::get('/brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
         Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+        Route::delete('/brands/{brand}/logo', [BrandController::class, 'removeLogo'])->name('brands.logo.remove');
         Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
         Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
@@ -464,7 +481,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/review-reports/{report}/dismiss', [AdminReviewReportController::class, 'dismiss'])->name('review-reports.dismiss');
 
         Route::get('/chat', [AdminChatController::class, 'index'])->name('chat.index');
+        Route::post('/chat/start-user/{user}', [AdminChatController::class, 'startWithUser'])->name('chat.start-user');
         Route::get('/chat/{conversation}', [AdminChatController::class, 'show'])->name('chat.show');
+        Route::post('/chat/{conversation}', [AdminChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.store');
+        Route::get('/chat/{conversation}/poll/{afterId}', [AdminChatController::class, 'poll'])->whereNumber('afterId')->name('chat.poll');
 
         Route::get('/support', [AdminSupportController::class, 'index'])->name('support.index');
         Route::get('/support/{ticket}', [AdminSupportController::class, 'show'])->name('support.show');
@@ -519,7 +539,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profile.complete'])
-    ->prefix('business')->name('business.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
+    ->prefix('business')->name('business.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerCustomerRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
         Route::view('/', 'business.dashboard')->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
@@ -536,13 +556,14 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
         $sellerCategoryRoutes();
         $sellerPaymentRoutes();
         $sellerOrderRoutes();
+        $sellerCustomerRoutes();
         $sellerInventoryRoutes();
         $sellerReportRoutes();
         $messagingRoutes();
     });
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.complete'])
-    ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
+    ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerCustomerRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
         Route::view('/', 'saler.dashboard')->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
@@ -561,6 +582,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
         $salerWarehouseRoutes();
         $sellerPaymentRoutes();
         $sellerOrderRoutes();
+        $sellerCustomerRoutes();
         $sellerInventoryRoutes();
         $sellerReportRoutes();
         $messagingRoutes();

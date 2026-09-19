@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\StorageStatus;
 use App\Models\Address;
 use App\Models\Banner;
 use App\Models\BlogCategory;
@@ -19,6 +20,12 @@ use App\Models\SalerProfile;
 use App\Models\Tag;
 use App\Models\User;
 use App\Models\VendorOrder;
+use App\Models\ProductVerification;
+use App\Models\VerificationChecklist;
+use App\Models\VerificationLocation;
+use App\Models\Warehouse;
+use App\Models\WarehouseLocation;
+use App\Models\WarehouseProduct;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -41,6 +48,9 @@ class DummyDataSeeder extends Seeder
             $this->seedBlog($admin);
             $this->seedOrdersAndReviews($customers, $vendors, $products);
             $this->seedCommissionRule();
+            $this->seedWarehousesAndInventory($admin, $products);
+            $this->seedVerificationChecklistsAndLocations();
+            $this->seedVerificationRequirements();
         });
     }
 
@@ -426,80 +436,120 @@ class DummyDataSeeder extends Seeder
             'Excellent communication from the vendor and the item works flawlessly.',
         ];
 
-        for ($i = 0; $i < 10; $i++) {
-            $customer = $customers[$i % count($customers)];
-            $product = $products[array_rand($products)];
-            $vendor = $product->user;
+        $statuses = ['delivered', 'shipped', 'processing', 'pending'];
+        $invoiceStatuses = [\App\Enums\InvoicePaymentStatus::Paid, \App\Enums\InvoicePaymentStatus::Paid, \App\Enums\InvoicePaymentStatus::Unpaid, \App\Enums\InvoicePaymentStatus::Refunded];
+        $invoiceService = app(\App\Services\InvoiceService::class);
 
-            $order = Order::create([
-                'order_number' => 'ORD-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
-                'customer_id' => $customer->id,
-                'status' => 'delivered',
-                'subtotal' => $product->price,
-                'shipping_total' => 0,
-                'tax_total' => 0,
-                'total' => $product->price,
-            ]);
+        $orderIndex = 0;
 
-            $vendorOrder = VendorOrder::create([
-                'order_id' => $order->id,
-                'vendor_id' => $vendor->id,
-                'vendor_order_number' => 'VO-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
-                'status' => 'delivered',
-                'subtotal' => $product->price,
-                'shipping' => 0,
-                'tax' => 0,
-                'total' => $product->price,
-                'payment_route' => $product->payment_route,
-                'payment_method' => 'cod',
-                'tracking_number' => strtoupper(Str::random(10)),
-                'shipped_at' => now()->subDays(5),
-                'delivered_at' => now()->subDays(2),
-            ]);
+        foreach ($vendors as $vEntry) {
+            $vendorUser = $vEntry['user'];
+            $vendorProducts = array_filter($products, fn ($p) => $p->user_id === $vendorUser->id);
+            if (empty($vendorProducts)) {
+                $vendorProducts = $products;
+            }
 
-            OrderItem::create([
-                'order_id' => $order->id,
-                'vendor_order_id' => $vendorOrder->id,
-                'product_id' => $product->id,
-                'product_title' => $product->title,
-                'product_grade' => $product->grade,
-                'product_condition' => $product->condition,
-                'sku' => $product->sku,
-                'quantity' => 1,
-                'unit_price' => $product->price,
-                'total_price' => $product->price,
-                'payment_route' => $product->payment_route,
-            ]);
+            for ($i = 0; $i < 4; $i++) {
+                $customer = $customers[$orderIndex % count($customers)];
+                $product = $vendorProducts[array_rand($vendorProducts)];
+                $status = $statuses[$i % count($statuses)];
+                $createdAt = now()->subDays(($i + 1) * 3 + rand(1, 5));
 
-            Review::firstOrCreate(
-                [
-                    'reviewer_id' => $customer->id,
-                    'reviewable_type' => 'product',
-                    'reviewable_id' => $product->id,
+                $order = Order::create([
+                    'order_number' => 'ORD-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
+                    'customer_id' => $customer->id,
+                    'status' => $status,
+                    'subtotal' => $product->price,
+                    'shipping_total' => 15.00,
+                    'tax_total' => 0,
+                    'total' => $product->price + 15.00,
+                    'created_at' => $createdAt,
+                ]);
+
+                $vendorOrder = VendorOrder::create([
                     'order_id' => $order->id,
-                ],
-                [
-                    'rating' => fake()->numberBetween(4, 5),
-                    'title' => fake()->randomElement($reviewTitles),
-                    'body' => fake()->randomElement($reviewBodies),
-                    'status' => 'approved',
-                ]
-            );
+                    'vendor_id' => $vendorUser->id,
+                    'vendor_order_number' => 'VO-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)),
+                    'status' => $status,
+                    'subtotal' => $product->price,
+                    'shipping' => 15.00,
+                    'tax' => 0,
+                    'total' => $product->price + 15.00,
+                    'payment_route' => $product->payment_route,
+                    'payment_method' => 'cod',
+                    'tracking_number' => strtoupper(Str::random(10)),
+                    'shipped_at' => in_array($status, ['shipped', 'delivered']) ? $createdAt->copy()->addDay() : null,
+                    'delivered_at' => $status === 'delivered' ? $createdAt->copy()->addDays(3) : null,
+                    'created_at' => $createdAt,
+                ]);
 
-            Review::firstOrCreate(
-                [
-                    'reviewer_id' => $customer->id,
-                    'reviewable_type' => 'seller',
-                    'reviewable_id' => $vendor->id,
+                OrderItem::create([
                     'order_id' => $order->id,
-                ],
-                [
-                    'rating' => fake()->numberBetween(4, 5),
-                    'title' => fake()->randomElement($reviewTitles),
-                    'body' => fake()->randomElement($reviewBodies),
-                    'status' => 'approved',
-                ]
-            );
+                    'vendor_order_id' => $vendorOrder->id,
+                    'product_id' => $product->id,
+                    'product_title' => $product->title,
+                    'product_grade' => $product->grade,
+                    'product_condition' => $product->condition,
+                    'sku' => $product->sku,
+                    'quantity' => 1,
+                    'unit_price' => $product->price,
+                    'total_price' => $product->price,
+                    'payment_route' => $product->payment_route,
+                    'created_at' => $createdAt,
+                ]);
+
+                // Generate invoice for each vendor order row
+                $invoice = $invoiceService->generateForVendorOrder($vendorOrder);
+                $invoice->update([
+                    'payment_status' => $invoiceStatuses[$i % count($invoiceStatuses)],
+                    'created_at' => $createdAt,
+                    'issued_at' => $createdAt,
+                ]);
+
+                if ($status === 'delivered') {
+                    Review::firstOrCreate(
+                        [
+                            'reviewer_id' => $customer->id,
+                            'reviewable_type' => 'product',
+                            'reviewable_id' => $product->id,
+                            'order_id' => $order->id,
+                        ],
+                        [
+                            'rating' => fake()->numberBetween(4, 5),
+                            'title' => fake()->randomElement($reviewTitles),
+                            'body' => fake()->randomElement($reviewBodies),
+                            'status' => 'approved',
+                        ]
+                    );
+
+                    Review::firstOrCreate(
+                        [
+                            'reviewer_id' => $customer->id,
+                            'reviewable_type' => 'seller',
+                            'reviewable_id' => $vendorUser->id,
+                            'order_id' => $order->id,
+                        ],
+                        [
+                            'rating' => fake()->numberBetween(4, 5),
+                            'title' => fake()->randomElement($reviewTitles),
+                            'body' => fake()->randomElement($reviewBodies),
+                            'status' => 'approved',
+                        ]
+                    );
+                }
+
+                $orderIndex++;
+            }
+        }
+
+        // Ensure every VendorOrder in the database has a generated invoice
+        foreach (VendorOrder::whereDoesntHave('invoice')->get() as $idx => $vo) {
+            $inv = $invoiceService->generateForVendorOrder($vo);
+            $inv->update([
+                'payment_status' => $invoiceStatuses[$idx % count($invoiceStatuses)],
+                'created_at' => $vo->created_at,
+                'issued_at' => $vo->created_at,
+            ]);
         }
     }
 
@@ -514,5 +564,317 @@ class DummyDataSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+    }
+
+    /**
+     * @param  array<int, Product>  $products
+     */
+    private function seedWarehousesAndInventory(User $admin, array $products): void
+    {
+        $warehousesData = [
+            [
+                'name' => 'Main Logistics Hub - Doha',
+                'address' => 'Building 42, Street 810, Zone 57',
+                'city' => 'Doha',
+                'country' => 'Qatar',
+                'phone' => '+97444001122',
+                'email' => 'doha.hub@openbox.com',
+                'storage_capacity' => 10000,
+                'is_active' => true,
+                'locations' => [
+                    ['zone' => 'Zone A', 'row' => 'R01', 'shelf' => 'S01', 'slot' => 'SL01'],
+                    ['zone' => 'Zone A', 'row' => 'R01', 'shelf' => 'S02', 'slot' => 'SL02'],
+                    ['zone' => 'Zone B', 'row' => 'R04', 'shelf' => 'S01', 'slot' => 'SL03'],
+                ],
+            ],
+            [
+                'name' => 'Regional Distribution Center - Al Rayyan',
+                'address' => 'Plot 105, Al Rayyan Express Highway',
+                'city' => 'Al Rayyan',
+                'country' => 'Qatar',
+                'phone' => '+97444003344',
+                'email' => 'rayyan.wh@openbox.com',
+                'storage_capacity' => 5000,
+                'is_active' => true,
+                'locations' => [
+                    ['zone' => 'Zone C', 'row' => 'R02', 'shelf' => 'S03', 'slot' => 'SL01'],
+                    ['zone' => 'Zone C', 'row' => 'R03', 'shelf' => 'S01', 'slot' => 'SL02'],
+                ],
+            ],
+        ];
+
+        foreach ($warehousesData as $wData) {
+            $locations = $wData['locations'];
+            unset($wData['locations']);
+
+            $warehouse = Warehouse::firstOrCreate(
+                ['name' => $wData['name']],
+                array_merge($wData, ['manager_id' => $admin->id])
+            );
+
+            $createdLocations = [];
+            foreach ($locations as $locData) {
+                $createdLocations[] = WarehouseLocation::firstOrCreate(
+                    [
+                        'warehouse_id' => $warehouse->id,
+                        'zone' => $locData['zone'],
+                        'row' => $locData['row'],
+                        'shelf' => $locData['shelf'],
+                        'slot' => $locData['slot'],
+                    ],
+                    array_merge($locData, ['warehouse_id' => $warehouse->id, 'is_occupied' => true])
+                );
+            }
+
+            foreach (array_slice($products, 0, 5) as $idx => $product) {
+                $location = $createdLocations[$idx % count($createdLocations)];
+                WarehouseProduct::firstOrCreate(
+                    [
+                        'product_id' => $product->id,
+                        'warehouse_id' => $warehouse->id,
+                    ],
+                    [
+                        'warehouse_location_id' => $location->id,
+                        'seller_id' => $product->user_id,
+                        'received_at' => now()->subDays($idx * 3 + 1),
+                        'condition_at_receipt' => 'Excellent - Grade '.$product->grade->value,
+                        'quantity' => rand(10, 50),
+                        'storage_status' => StorageStatus::Stored,
+                    ]
+                );
+            }
+        }
+    }
+
+    private function seedVerificationChecklistsAndLocations(): void
+    {
+        $locationsData = [
+            [
+                'name' => 'Doha Main Verification Hub',
+                'address' => 'Street 100, West Bay Commercial District',
+                'city' => 'Doha',
+                'country' => 'Qatar',
+                'phone' => '+97444112233',
+                'email' => 'inspection.doha@openbox.com',
+                'working_hours' => ['Mon-Sat: 8:00 AM - 6:00 PM'],
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Al Rayyan Quality Inspection Center',
+                'address' => 'Main Commercial Street, Gate 2',
+                'city' => 'Al Rayyan',
+                'country' => 'Qatar',
+                'phone' => '+97444223344',
+                'email' => 'inspection.rayyan@openbox.com',
+                'working_hours' => ['Sun-Thu: 9:00 AM - 7:00 PM'],
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Al Wakra Device Testing Facility',
+                'address' => 'Al Wakra Coastal Road, Building 18',
+                'city' => 'Al Wakra',
+                'country' => 'Qatar',
+                'phone' => '+97444334455',
+                'email' => 'inspection.wakra@openbox.com',
+                'working_hours' => ['Mon-Sat: 9:00 AM - 5:00 PM'],
+                'is_active' => true,
+            ],
+        ];
+
+        $createdLocations = [];
+        foreach ($locationsData as $loc) {
+            $createdLocations[] = VerificationLocation::firstOrCreate(
+                ['name' => $loc['name']],
+                $loc
+            );
+        }
+
+        // Seed Demo Verifier Users
+        $verifiers = [
+            [
+                'email' => 'verifier@openbox.com',
+                'name' => 'Inspector Ahmed (Doha Hub)',
+                'emp_id' => 'VER-1001',
+                'loc_index' => 0,
+                'specs' => ['Smartphones', 'Laptops', 'Tablets'],
+            ],
+            [
+                'email' => 'verifier2@openbox.com',
+                'name' => 'Inspector Fatima (Al Rayyan Hub)',
+                'emp_id' => 'VER-1002',
+                'loc_index' => 1,
+                'specs' => ['Audio & Wearables', 'Cameras', 'Smartphones'],
+            ],
+            [
+                'email' => 'verifier3@openbox.com',
+                'name' => 'Inspector Tariq (Al Wakra Hub)',
+                'emp_id' => 'VER-1003',
+                'loc_index' => 2,
+                'specs' => ['Gaming Consoles', 'Smartwatches', 'Laptops'],
+            ],
+        ];
+
+        foreach ($verifiers as $vInfo) {
+            $u = User::firstOrCreate(
+                ['email' => $vInfo['email']],
+                [
+                    'name' => $vInfo['name'],
+                    'password' => bcrypt('password'),
+                    'role' => 'verifier',
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            $loc = $createdLocations[$vInfo['loc_index']] ?? $createdLocations[0];
+
+            \App\Models\VerifierProfile::firstOrCreate(
+                ['user_id' => $u->id],
+                [
+                    'employee_id' => $vInfo['emp_id'],
+                    'assigned_location_id' => $loc->id,
+                    'specializations' => $vInfo['specs'],
+                ]
+            );
+        }
+
+        // Ensure all verifiers in system have assigned locations
+        $allVerifiersInSystem = User::where('role', 'verifier')->get();
+        foreach ($allVerifiersInSystem as $idx => $vUser) {
+            $loc = $createdLocations[$idx % count($createdLocations)];
+            \App\Models\VerifierProfile::updateOrCreate(
+                ['user_id' => $vUser->id],
+                [
+                    'employee_id' => 'VER-'.(1000 + $vUser->id),
+                    'assigned_location_id' => $loc->id,
+                    'specializations' => ['Smartphones', 'Laptops', 'Tablets'],
+                ]
+            );
+        }
+
+        // Create 4 scheduled 30-minute physical scrutiny appointments for EACH verifier
+        $allProducts = Product::all();
+        $productChunk = 0;
+        $slots30Min = ['09:00:00', '09:30:00', '10:00:00', '10:30:00', '11:00:00', '11:30:00', '13:00:00', '13:30:00', '14:00:00'];
+
+        foreach ($allVerifiersInSystem as $vUser) {
+            $locationId = $vUser->verifierProfile->assigned_location_id;
+
+            for ($i = 0; $i < 4; $i++) {
+                if (isset($allProducts[$productChunk])) {
+                    $prod = $allProducts[$productChunk];
+                    $slotTime = $slots30Min[$i % count($slots30Min)];
+                    $scheduledDate = now()->addDays(rand(0, 2))->format('Y-m-d');
+
+                    $verification = ProductVerification::updateOrCreate(
+                        ['product_id' => $prod->id],
+                        [
+                            'seller_id' => $prod->user_id,
+                            'verifier_id' => $vUser->id,
+                            'location_id' => $locationId,
+                            'status' => \App\Enums\VerificationStatus::Scheduled,
+                            'requested_at' => now()->subDays(1),
+                            'scheduled_at' => "{$scheduledDate} {$slotTime}",
+                        ]
+                    );
+
+                    $verification->appointments()->updateOrCreate(
+                        ['product_verification_id' => $verification->id],
+                        [
+                            'appointment_date' => $scheduledDate,
+                            'appointment_time' => substr($slotTime, 0, 5),
+                            'status' => \App\Enums\AppointmentStatus::Confirmed,
+                        ]
+                    );
+
+                    $prod->update(['verification_status' => \App\Enums\VerificationStatus::Scheduled]);
+                    $productChunk++;
+                }
+            }
+        }
+
+        $checklistsData = [
+            [
+                'item_name' => 'Screen Display & Touch Response',
+                'description' => 'Inspect for cracks, dead pixels, touch responsiveness, and panel authenticity.',
+                'is_required' => true,
+                'sort_order' => 1,
+            ],
+            [
+                'item_name' => 'Battery Health & Charging Port',
+                'description' => 'Check battery maximum capacity percentage, fast charging function, and port tightness.',
+                'is_required' => true,
+                'sort_order' => 2,
+            ],
+            [
+                'item_name' => 'Camera & Sensor Functionality',
+                'description' => 'Test front & rear camera clarity, autofocus, flash, optical zoom, and facial recognition.',
+                'is_required' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'item_name' => 'Speaker, Microphone & Audio',
+                'description' => 'Verify earpiece volume, stereo speaker clarity, noise cancellation microphone, and audio output.',
+                'is_required' => true,
+                'sort_order' => 4,
+            ],
+            [
+                'item_name' => 'Cosmetic Body & Frame Condition',
+                'description' => 'Inspect enclosure corners, back glass, side frame scratches, dents, or signs of liquid ingress.',
+                'is_required' => false,
+                'sort_order' => 5,
+            ],
+            [
+                'item_name' => 'Connectivity (Wi-Fi, Bluetooth, Cellular)',
+                'description' => 'Confirm Wi-Fi antenna, Bluetooth pairing, 5G/4G network signal, and SIM tray lock status.',
+                'is_required' => true,
+                'sort_order' => 6,
+            ],
+            [
+                'item_name' => 'IMEI & Cloud Lock Status',
+                'description' => 'Verify original serial/IMEI number against blacklist registry, and check iCloud/Google FRP logout.',
+                'is_required' => true,
+                'sort_order' => 7,
+            ],
+            [
+                'item_name' => 'Original Accessories & Packaging',
+                'description' => 'Confirm presence of genuine charging cable, adapter, retail box, and documentation if listed.',
+                'is_required' => false,
+                'sort_order' => 8,
+            ],
+        ];
+
+        foreach ($checklistsData as $chk) {
+            VerificationChecklist::firstOrCreate(
+                ['item_name' => $chk['item_name']],
+                $chk
+            );
+        }
+    }
+
+    private function seedVerificationRequirements(): void
+    {
+        $requirements = [
+            // Saler / Individual Seller Requirements
+            ['role' => \App\Enums\UserRole::Saler, 'document_type' => \App\Enums\KycDocumentType::Nid, 'is_required' => true, 'is_active' => true, 'sort_order' => 1],
+            ['role' => \App\Enums\UserRole::Saler, 'document_type' => \App\Enums\KycDocumentType::AddressProof, 'is_required' => true, 'is_active' => true, 'sort_order' => 2],
+            ['role' => \App\Enums\UserRole::Saler, 'document_type' => \App\Enums\KycDocumentType::Passport, 'is_required' => false, 'is_active' => true, 'sort_order' => 3],
+
+            // Business / Store Owner Requirements
+            ['role' => \App\Enums\UserRole::Business, 'document_type' => \App\Enums\KycDocumentType::TradeLicense, 'is_required' => true, 'is_active' => true, 'sort_order' => 1],
+            ['role' => \App\Enums\UserRole::Business, 'document_type' => \App\Enums\KycDocumentType::BusinessRegistration, 'is_required' => true, 'is_active' => true, 'sort_order' => 2],
+            ['role' => \App\Enums\UserRole::Business, 'document_type' => \App\Enums\KycDocumentType::Tax, 'is_required' => false, 'is_active' => true, 'sort_order' => 3],
+            ['role' => \App\Enums\UserRole::Business, 'document_type' => \App\Enums\KycDocumentType::Vat, 'is_required' => false, 'is_active' => true, 'sort_order' => 4],
+        ];
+
+        foreach ($requirements as $req) {
+            \App\Models\VerificationRequirement::firstOrCreate(
+                [
+                    'role' => $req['role'],
+                    'document_type' => $req['document_type'],
+                ],
+                $req
+            );
+        }
     }
 }

@@ -59,9 +59,10 @@ class ProductController extends Controller
     {
         $product = $this->products->create(
             $request->user(),
-            $request->safe()->except(['images', 'attributes']),
+            $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
             $request->input('attributes', []),
+            $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
         );
 
         return redirect()->route($this->indexRoute())->with('status', "\"{$product->title}\" was saved as a draft.");
@@ -84,10 +85,13 @@ class ProductController extends Controller
 
         $this->products->update(
             $product,
-            $request->safe()->except(['images', 'attributes']),
+            $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
             $request->input('attributes', []),
             $request->user(),
+            $request->input('primary_image_id') ? (int) $request->input('primary_image_id') : null,
+            $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
+            array_map('intval', $request->input('delete_images', []))
         );
 
         return redirect()->route($this->indexRoute())->with('status', 'Listing updated.');
