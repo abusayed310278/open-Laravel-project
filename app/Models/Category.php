@@ -253,18 +253,31 @@ class Category extends Model
         $rows = Cache::rememberForever(self::TREE_CACHE_KEY, fn () => self::query()
             ->active()
             ->roots()
-            ->with('children')
+            ->with([
+                'children' => fn ($q) => $q->active()->orderBy('sort_order'),
+                'children.children' => fn ($q) => $q->active()->orderBy('sort_order'),
+            ])
             ->orderBy('sort_order')
             ->get()
             ->map(fn (self $category) => [
                 'attributes' => $category->getAttributes(),
-                'children' => $category->children->map(fn (self $child) => $child->getAttributes())->all(),
+                'children' => $category->children->map(fn (self $child) => [
+                    'attributes' => $child->getAttributes(),
+                    'children' => $child->children->map(fn (self $grandchild) => $grandchild->getAttributes())->all(),
+                ])->all(),
             ])
             ->all());
 
         return collect($rows)->map(function (array $row) {
             $category = (new self)->newFromBuilder($row['attributes']);
-            $category->setRelation('children', collect($row['children'])->map(fn (array $attrs) => (new self)->newFromBuilder($attrs)));
+            $children = collect($row['children'] ?? [])->map(function (array $childRow) {
+                $child = (new self)->newFromBuilder($childRow['attributes']);
+                $grandChildren = collect($childRow['children'] ?? [])->map(fn (array $attrs) => (new self)->newFromBuilder($attrs));
+                $child->setRelation('children', $grandChildren);
+
+                return $child;
+            });
+            $category->setRelation('children', $children);
 
             return $category;
         });

@@ -43,14 +43,14 @@ class VerificationController extends Controller
     {
         $this->kyc->approve($verification, $request->user());
 
-        return redirect()->route('admin.verifications.index')->with('status', "{$verification->user->name}'s verification was approved.");
+        return back()->with('status', "{$verification->user->name}'s KYC verification was approved successfully.");
     }
 
     public function reject(RejectKycRequest $request, UserVerification $verification): RedirectResponse
     {
         $this->kyc->reject($verification, $request->user(), $request->string('reason')->value());
 
-        return redirect()->route('admin.verifications.index')->with('status', "{$verification->user->name}'s verification was rejected.");
+        return back()->with('status', "{$verification->user->name}'s KYC verification was rejected.");
     }
 
     /**

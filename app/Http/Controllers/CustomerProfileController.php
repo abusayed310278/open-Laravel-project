@@ -25,7 +25,7 @@ class CustomerProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:30', Rule::unique('users', 'phone')->ignore($user->id)],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,svg,gif', 'max:4096'],
             'company' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'designation' => ['nullable', 'string', 'max:255'],
@@ -39,13 +39,20 @@ class CustomerProfileController extends Controller
             'phone' => $data['phone'] ?? null,
         ]);
 
-        if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $user->profile()->updateOrCreate(
-                ['user_id' => $user->id],
-                ['avatar' => $avatarPath]
-            );
+        $profileData = [
+            'company' => $data['company'] ?? null,
+            'location' => $data['location'] ?? null,
+            'designation' => $data['designation'] ?? null,
+        ];
+
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            $profileData['avatar'] = \App\Helpers\FileUploadHelper::store($request->file('avatar'), 'avatars', 'public');
         }
+
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            $profileData
+        );
 
         if ($user->businessProfile && !empty($data['company'])) {
             $user->businessProfile->update(['business_name' => $data['company']]);

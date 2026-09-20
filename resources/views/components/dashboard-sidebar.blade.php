@@ -74,8 +74,68 @@
     </div>
 
     {{-- Nav Items (Scrollable with preserved position) --}}
+    @php
+        $user = auth()->user();
+        $userRoleSlug = $roleSlug ?? ($user?->role?->value ?? $user?->roleModel?->slug ?? null);
+        $siteMgmt = app(\App\Services\SiteManagementService::class);
+        $dynamicMenus = $userRoleSlug ? $siteMgmt->getMenuForRole($userRoleSlug) : collect();
+
+        if ($dynamicMenus->isNotEmpty()) {
+            $effectiveGroups = [];
+            $grouped = $dynamicMenus->groupBy('group_name');
+            $iconPaths = \App\Support\Icons::PATHS;
+
+            foreach ($grouped as $groupLabel => $items) {
+                $filteredItems = [];
+                foreach ($items as $item) {
+                    if ($item->permission_slug && !user_can($item->permission_slug)) {
+                        continue;
+                    }
+                    $iconKey = $item->icon;
+                    if (empty($iconKey) || !isset($iconPaths[$iconKey])) {
+                        $t = strtolower(($item->title ?? '') . ' ' . ($item->route_name ?? ''));
+                        if (str_contains($t, 'dash')) $iconKey = 'home';
+                        elseif (str_contains($t, 'site') || str_contains($t, 'whole')) $iconKey = 'sliders';
+                        elseif (str_contains($t, 'user') || str_contains($t, 'profile') || str_contains($t, 'address') || str_contains($t, 'account')) $iconKey = 'users';
+                        elseif (str_contains($t, 'setting') || str_contains($t, 'brand')) $iconKey = 'cog';
+                        elseif (str_contains($t, 'report') || str_contains($t, 'visitor')) $iconKey = 'chart';
+                        elseif (str_contains($t, 'product') || str_contains($t, 'catalog') || str_contains($t, 'item')) $iconKey = 'box';
+                        elseif (str_contains($t, 'categor') || str_contains($t, 'tag')) $iconKey = 'tag';
+                        elseif (str_contains($t, 'order') || str_contains($t, 'shop')) $iconKey = 'shopping-bag';
+                        elseif (str_contains($t, 'invoice') || str_contains($t, 'payout') || str_contains($t, 'wallet') || str_contains($t, 'payment')) $iconKey = 'banknotes';
+                        elseif (str_contains($t, 'plan') || str_contains($t, 'subscript')) $iconKey = 'credit-card';
+                        elseif (str_contains($t, 'verif') || str_contains($t, 'inspect') || str_contains($t, 'queue') || str_contains($t, 'kyc') || str_contains($t, 'hub')) $iconKey = 'shield';
+                        elseif (str_contains($t, 'house') || str_contains($t, 'stock') || str_contains($t, 'store')) $iconKey = 'building';
+                        elseif (str_contains($t, 'chat') || str_contains($t, 'messag')) $iconKey = 'chat';
+                        elseif (str_contains($t, 'support') || str_contains($t, 'ticket')) $iconKey = 'support';
+                        elseif (str_contains($t, 'review')) $iconKey = 'star';
+                        elseif (str_contains($t, 'wishlist')) $iconKey = 'heart';
+                        elseif (str_contains($t, 'return')) $iconKey = 'undo';
+                        else $iconKey = 'box';
+                    }
+
+                    $iconSvg = $iconPaths[$iconKey] ?? $iconPaths['box'];
+                    $filteredItems[] = [
+                        'route' => $item->route_name,
+                        'url' => $item->url_path,
+                        'label' => $item->title,
+                        'icon' => $iconSvg,
+                    ];
+                }
+                if (!empty($filteredItems)) {
+                    $effectiveGroups[] = [
+                        'label' => ($groupLabel === 'MAIN' || $groupLabel === 'Dashboard' || $groupLabel === 'Navigation') ? null : $groupLabel,
+                        'items' => $filteredItems,
+                    ];
+                }
+            }
+        } else {
+            $effectiveGroups = $navGroups;
+        }
+    @endphp
+
     <nav id="sidebar-nav" class="flex-1 px-3 py-3 space-y-3 overflow-y-auto">
-        @foreach ($navGroups as $group)
+        @foreach ($effectiveGroups as $group)
             <div>
                 @if (!empty($group['label']))
                     <p class="sidebar-group-label px-3 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider" style="font-size: 10px; letter-spacing: 0.05em;">{{ $group['label'] }}</p>
@@ -83,10 +143,22 @@
                 @endif
                 <div class="space-y-0.5">
                     @foreach ($group['items'] as $item)
+                        @php
+                            if (isset($item['route']) && \Illuminate\Support\Facades\Route::has($item['route'])) {
+                                $href = route($item['route']);
+                                $isActive = request()->routeIs($item['route'] . '*');
+                            } elseif (!empty($item['url'])) {
+                                $href = url($item['url']);
+                                $isActive = request()->is(trim($item['url'], '/'));
+                            } else {
+                                $href = '#';
+                                $isActive = false;
+                            }
+                        @endphp
                         <x-dashboard.nav-item
-                            :href="isset($item['route']) && \Illuminate\Support\Facades\Route::has($item['route']) ? route($item['route']) : '#'"
+                            :href="$href"
                             :icon="$item['icon']"
-                            :active="isset($item['route']) && request()->routeIs($item['route'] . '*')"
+                            :active="$isActive"
                         >
                             {{ $item['label'] }}
                         </x-dashboard.nav-item>

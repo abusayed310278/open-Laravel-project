@@ -26,6 +26,19 @@ class CartController extends Controller
 
     public function store(Request $request, Product $product): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        if (Auth::check() && !Auth::user()->isCustomer()) {
+            $msg = 'Only customer accounts can purchase items on the marketplace.';
+
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 403);
+            }
+
+            return back()->with('error', $msg);
+        }
+
         $request->validate(['quantity' => ['nullable', 'integer', 'min:1']]);
 
         abort_unless($product->publication_status->value === 'published', 404);

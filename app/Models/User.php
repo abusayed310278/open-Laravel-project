@@ -208,6 +208,40 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->latestVerification?->status === KycStatus::Approved;
     }
 
+    public function roleModel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if user has a permission slug.
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        $roleSlug = $this->role?->value ?? $this->role;
+        $role = Role::where('slug', $roleSlug)->first();
+
+        if (!$role) {
+            return false;
+        }
+
+        return $role->permissions()->where('slug', $permissionSlug)->exists();
+    }
+
+    /**
+     * Check if user has any of the given permission slugs.
+     */
+    public function hasAnyPermission(array $permissionSlugs): bool
+    {
+        foreach ($permissionSlugs as $slug) {
+            if ($this->hasPermission($slug)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

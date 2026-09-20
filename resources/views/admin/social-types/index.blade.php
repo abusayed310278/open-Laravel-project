@@ -10,7 +10,19 @@
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Social Types</h1>
             <p class="text-sm text-gray-500 mt-1">Manage system social type platforms, SVG icons, and order.</p>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
+            <form method="POST" action="{{ route('admin.social-types.seed') }}" class="inline-block m-0">
+                @csrf
+                <button
+                    type="submit"
+                    onclick="return confirm('This will seed default social type platforms (Facebook, YouTube, Twitter/X, Instagram, LinkedIn, WhatsApp). Continue?')"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                >
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <span>Seed Defaults</span>
+                </button>
+            </form>
+
             <button
                 type="button"
                 onclick="openAddModal()"
@@ -153,8 +165,22 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                                No social types configured yet.
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="max-w-xs mx-auto text-center">
+                                    <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    <p class="text-sm font-medium text-gray-600 mb-1">No social types configured yet.</p>
+                                    <p class="text-xs text-gray-400 mb-4">Populate standard social platforms with a single click.</p>
+                                    <form method="POST" action="{{ route('admin.social-types.seed') }}" class="inline-block m-0">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                            <span>Seed Default Social Types</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforelse

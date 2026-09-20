@@ -492,13 +492,129 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
   - **Category Breakdown Chart**: Clean Doughnut chart illustrating catalog distribution across top categories.
   - **Operational Tables**: Live Recent Orders table with order status badges and a Pending KYC Verifications queue with direct review actions.
 
+---
 
+### 28. Administrator RBAC Control Matrix & Inventory Access Control (`User.php`, `CheckPermission.php`, `routes/web.php`)
+- **Administrator Permission Matrix Overrides**:
+  - Enhanced `User::hasPermissionTo()` and `CheckPermission` middleware to ensure Administrator users (`$user->isAdmin()`) bypass restricted permission gates for full system administration while maintaining role-based restriction matrix checks for all non-admin roles.
+  - Protected warehouse and inventory routes with `permission:inventory.manage`.
 
+---
 
+### 29. Admin Dashboard KYC Overview & Review Workflow (`admin/dashboard.blade.php`, `DashboardController.php`, `AdminVerificationController.php`)
+- **Dashboard KYC Telemetry**:
+  - Added pending KYC verification counts, status breakdowns, and recent submission queue cards to the Admin Dashboard console.
+- **Direct Verification Review Actions**:
+  - Integrated direct review, approval, and rejection action triggers with modal feedback, allowing Admins to review and process user KYC verifications seamlessly.
 
+---
 
+### 30. Merged Verification & KYC Sidebar Menu Sections (`RbacAndFeatureSettingsSeeder.php`)
+- **Unified Menu Grouping**:
+  - Merged duplicate sidebar menu sections for Verification and KYC into a unified "VERIFICATION & KYC" group in `RbacAndFeatureSettingsSeeder.php` and re-seeded `dashboard_menus`.
 
+---
 
+### 31. HTML `<dialog>` Viewport Centering & CSS Modal Alignment (`app.css`, `support/index.blade.php`)
+- **Modal Centering & Backdrop Styling**:
+  - Fixed HTML `<dialog>` positioning across support ticket and user forms by centering dialogs in the viewport (`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2`) with clean backdrop blur overlays.
 
+---
+
+### 32. Multi-Portal Chat Messaging Routes & Real-Time Polling Repair (`routes/web.php`, `chat/show.blade.php`, `ChatController.php`)
+- **Missing Portal Messaging Endpoints**:
+  - Registered `chat.store`, `chat.poll`, `chat.attachment`, `chat.start-admin`, and `chat.start` in `$messagingRoutes` and global auth middleware group in `routes/web.php`.
+- **Dynamic Route Prefix Resolution**:
+  - Updated `resources/views/chat/show.blade.php` to use dynamic `$routePrefix` for form submission actions (`route($routePrefix.'chat.store', $conversation)`) and real-time JavaScript auto-polling (`route($routePrefix.'chat.poll', ...)`).
+
+---
+
+### 33. Customer Navigation Menu & Dashboard Stat Card Route Fixes (`RbacAndFeatureSettingsSeeder.php`, `account/dashboard.blade.php`, `chat/index.blade.php`)
+- **Dynamic Menu Route Correction**:
+  - Fixed "Chat Messages" dynamic menu route definition in `RbacAndFeatureSettingsSeeder.php` from `messages.index` to `account.messages.index` and re-seeded `dashboard_menus` to prevent invalid fallback navigation.
+- **Interactive Overview Stat Cards**:
+  - Wrapped Orders, Wishlist, Messages, and Reviews stat cards on the Customer Account Dashboard (`account/dashboard.blade.php`) in clickable links pointing to their respective portal routes.
+- **Marketplace Button Route Fix**:
+  - Updated empty state marketplace button route in `chat/index.blade.php` from `products.index` to `shop`.
+
+---
+
+### 34. Floating Support Chat Widget Removal (`components/support-chat-widget.blade.php`)
+- **Universal Launcher Removal**:
+  - Disabled the floating bottom-right support chat launcher icon across all portal layouts (`customer`, `saler`, `business`, `verifier`) for a clean interface.
+
+---
+
+### 35. Address Form Checkbox Realignment & Inline Layout (`components/checkbox.blade.php`, `account/addresses/index.blade.php`)
+- **Inline Checkbox Layout**:
+  - Updated `<x-checkbox>` component layout from `flex justify-between` to `inline-flex items-center gap-2.5`, placing the checkbox input immediately to the left of the label text.
+- **Form Placement**:
+  - Aligned "Set as default address" checkbox cleanly directly above the "Save Address" button.
+
+---
+
+### 36. Submitted Verification Documents List, Document Status & Download Actions (`verification/index.blade.php`, `VerificationController.php`, `routes/web.php`, `VerificationDocument.php`)
+- **Submitted Documents Status List (`resources/views/verification/index.blade.php`)**:
+  - Redesigned the Verification portal page to display a dedicated **"Submitted Documents"** status section listing every document uploaded by the seller/business.
+  - Added status badges (`Pending`, `Approved`, `Rejected`) per document using `KycDocumentStatus::badgeColor()`.
+  - Displayed document metadata including document numbers, upload timestamps (`created_at`), document type labels, and admin review remarks.
+- **File Download & View Actions (`VerificationController.php`, `routes/web.php`)**:
+  - Added `downloadDocument()` action method on `VerificationController` allowing users to securely stream and view their submitted document files (`/business/verification/documents/{document}` and `/saler/verification/documents/{document}`).
+  - Added "View File" action buttons for every uploaded document card.
+  - Added `isImage()` and `fileName()` helper methods to `VerificationDocument` model.
+- **Collapsible Update Form**:
+  - Wrapped document upload inputs in a collapsible/optional section when documents are under review, ensuring submitted documents remain prominent.
+
+---
+
+---
+
+### 39. Category Builder & Specification Attribute Authorization Restrictions for Store Owners & Sellers (`CategoryController.php`, `AttributeGroupController.php`, `AttributeController.php`, `CategoryAttributeController.php`, `AttributeValueController.php`, Category Builder Views)
+- **Controller Authorization Protection**:
+  - Enforced `abort_unless(auth()->user()?->isAdmin(), 403)` on `edit`, `update`, `updateAttributes`, `toggleStatus`, and `destroy` in [`CategoryController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/CategoryController.php).
+  - Enforced `abort_unless(auth()->user()?->isAdmin(), 403)` on `edit`, `update`, `toggleActive`, and `destroy` in [`AttributeGroupController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/AttributeGroupController.php).
+  - Enforced `abort_unless(auth()->user()?->isAdmin(), 403)` on `edit`, `update`, `toggleActive`, and `destroy` in [`AttributeController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/AttributeController.php).
+  - Enforced `abort_unless(auth()->user()?->isAdmin(), 403)` on `update` (pivot) and `destroy` (detach attribute) in [`CategoryAttributeController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/CategoryAttributeController.php).
+  - Enforced `abort_unless(auth()->user()?->isAdmin(), 403)` on `destroy` in [`AttributeValueController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Admin/AttributeValueController.php).
+  - Preserved full creation (`create`, `store`), browsing, and attribute category assignment capability (`store`, `bulkStore`, `sync`) for Store Owners (`business` role) and Sellers (`saler` role).
+---
+
+### 40. Verifier Pending Queue Navigation, Query Filters & Stat Card Link Repairs (`AppointmentController.php`, `Verifier/ProductController.php`, `verifier/dashboard.blade.php`, `verifier/products/index.blade.php`)
+- **Verifier Queue Query & Date Filter Repairs**:
+  - Updated `AppointmentController::dashboard()` and `index()` query logic to include active pending appointments scheduled today or earlier (`whereDate('scheduled_at', '<=', today())`), ensuring overdue inspections awaiting action are displayed to verifiers.
+  - Added location fallback logic allowing verifiers without a designated location assignment to access and review all pending platform verifications instead of returning empty 0-result sets.
+  - Added `pending_queue` and `pending` parameter resolution in `Verifier\ProductController::index()`, correctly filtering products with `scheduled`, `inspecting`, or `pending` status.
+- **Interactive Stat Card Links**:
+  - Wrapped "Today's Appointments", "Active Queue", "Completed This Month", and "Pass Rate" stat cards on the Verifier Dashboard ([`verifier/dashboard.blade.php`](file:///c:/laragon/www/open/resources/views/verifier/dashboard.blade.php)) in clickable links.
+  - Wrapped "Total Listings", "Verified & Graded", "Pending Queue", and "Not Requested" stat cards on the Verifier Products page ([`verifier/products/index.blade.php`](file:///c:/laragon/www/open/resources/views/verifier/products/index.blade.php)) in clickable links with pre-filtered query routes.
+
+---
+
+### 41. Dashboard Topbar Double HTML Escaping Repair (`components/dashboard-topbar.blade.php`)
+- **Title Rendering Repair**:
+  - Updated `<x-dashboard-topbar>` component title header element from `{{ $title }}` to `{!! $title !!}` in [`components/dashboard-topbar.blade.php`](file:///c:/laragon/www/open/resources/views/components/dashboard-topbar.blade.php).
+  - Resolved double-escaping of ampersands (`&amp;`) in page titles across dashboard layouts (such as "Inspection History & Audit Log", "Inspection Queue & Appointments", "Seller Products & Verification").
+
+---
+
+### 42. Verifier Dashboard Pending Inspection Products Table & Navigation Anchor Integration (`AppointmentController.php`, `verifier/dashboard.blade.php`)
+- **Pending Inspection Products Table**:
+  - Configured `AppointmentController::dashboard()` to fetch and pass `$pendingAppointments` containing all active pending, scheduled, and inspecting verification records (`scheduled_at <= today()`).
+  - Renamed the Verifier Dashboard table section to **"Pending Inspection Products"** with explicit element anchor ID `id="pending-inspection-products"`.
+  - Linked the "Pending Queue" stat card directly to `#pending-inspection-products`, navigating and scrolling verifiers directly to the pending inspection products section.
+  - Standardized table columns (`Product`, `Seller`, `Scheduled Date & Time`, `Status`, `Action`), formatted date & time (`M j, Y · g:i A`), added empty state handling, and integrated direct "Start Inspection" action triggers.
+
+---
+
+### 44. Stripe Web Portal Checkout Redirection & Dynamic Shipping Address Selection (`CheckoutController.php`, `checkout/index.blade.php`, `checkout/stripe-portal.blade.php`, `routes/web.php`)
+- **Automatic Default Shipping Address Selection & Collapsible New Address Form**:
+  - Updated [`resources/views/checkout/index.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/index.blade.php) so that if a customer already has saved shipping addresses, the default/first address is automatically pre-selected.
+  - Collapsed and hid the new address input fields (`Full name`, `Phone`, `Address line 1`, etc.) by default when an existing saved address is selected.
+  - Configured "+ Use a new address" radio option to dynamically reveal the new address form section when selected.
+- **Stripe Web Portal Gateway Redirection & Confirmation**:
+  - Updated `CheckoutController::store()` to create a Stripe Checkout Session via Stripe API when `payment_method` is `stripe` and redirect the customer directly to the official hosted Stripe Web Portal (`pay.stripe.com`).
+  - Added fallback routing to a dedicated Stripe Hosted Web Portal view ([`resources/views/checkout/stripe-portal.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/stripe-portal.blade.php)) for test/demo environments.
+  - Registered `checkout.stripe-portal`, `checkout.stripe-confirm`, and `checkout.stripe-success` routes in [`routes/web.php`](file:///c:/laragon/www/open/routes/web.php).
+  - Dynamically updated the checkout submit button text to **"Proceed to Stripe Payment"** when Stripe is selected.
 
 

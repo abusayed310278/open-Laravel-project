@@ -33,7 +33,7 @@
                 @if ($review->replies->isEmpty())
                     <button type="button" onclick="document.getElementById('reply-{{ $review->id }}').showModal()" class="text-sm text-brand-600 font-medium hover:underline mt-3">Reply</button>
 
-                    <dialog id="reply-{{ $review->id }}" class="rounded-md p-6 w-full max-w-sm backdrop:bg-black/40">
+                    <dialog id="reply-{{ $review->id }}" class="rounded-2xl p-6 w-full max-w-sm border-0 shadow-2xl backdrop:bg-gray-950/50 backdrop:backdrop-blur-xs" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;">
                         <form method="POST" action="{{ route($routePrefix.'reviews.reply', $review) }}" class="space-y-4">
                             @csrf
                             <x-textarea label="Your reply" name="body" rows="3" required />

@@ -28,7 +28,11 @@ class PaymentService
 
     public function recordPendingTransaction(VendorOrder $vendorOrder, string $provider): Transaction
     {
-        return Transaction::create([
+        $status = in_array($provider, ['stripe', 'paypal'], true)
+            ? TransactionStatus::Completed
+            : TransactionStatus::Pending;
+
+        $txn = Transaction::create([
             'transaction_number' => 'TXN-'.now()->format('Y').'-'.Str::upper(Str::random(8)),
             'order_id' => $vendorOrder->order_id,
             'vendor_order_id' => $vendorOrder->id,
@@ -37,8 +41,15 @@ class PaymentService
             'payment_route' => $vendorOrder->payment_route,
             'provider' => $provider,
             'amount' => $vendorOrder->total,
-            'status' => TransactionStatus::Pending,
+            'status' => $status,
         ]);
+
+        if ($status === TransactionStatus::Completed) {
+            $this->invoiceService->markPaid($vendorOrder);
+            $this->commissionService->recordSaleForVendorOrder($vendorOrder);
+        }
+
+        return $txn;
     }
 
     public function submitManualPayment(VendorOrder $vendorOrder, UploadedFile $proof, ?string $reference, ?string $bankName): ManualPaymentSubmission

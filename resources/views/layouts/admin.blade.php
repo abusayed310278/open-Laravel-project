@@ -73,6 +73,7 @@
             [
                 'label' => 'System',
                 'items' => [
+                    ['route' => 'admin.site-management.index', 'label' => 'Manage Whole Site', 'icon' => $icon['sliders']],
                     ['route' => 'admin.reports.index', 'label' => 'Reports', 'icon' => $icon['chart']],
                     ['route' => 'admin.visitor-reports.index', 'label' => 'Visitor Reports', 'icon' => $icon['visitor']],
                     ['route' => 'admin.settings.branding', 'label' => 'Settings', 'icon' => $icon['cog']],

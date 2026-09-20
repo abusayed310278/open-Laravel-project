@@ -23,8 +23,12 @@
                     <x-input label="Country" name="country" value="{{ old('country') }}" />
                     <x-input label="Postal Code (optional)" name="postal_code" value="{{ old('postal_code') }}" />
                 </div>
-                <x-checkbox name="is_default">Set as default address</x-checkbox>
-                <x-button type="submit">Save Address</x-button>
+                <div class="pt-1">
+                    <x-checkbox name="is_default">Set as default address</x-checkbox>
+                </div>
+                <div class="pt-1">
+                    <x-button type="submit">Save Address</x-button>
+                </div>
             </form>
         </x-card>
 

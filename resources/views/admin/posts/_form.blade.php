@@ -2,6 +2,10 @@
     $currentTags = $post->exists ? $post->tags->pluck('name')->implode(', ') : '';
 @endphp
 
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+
 <div class="grid lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-6">
         <x-card>
@@ -12,7 +16,11 @@
             </div>
 
             <div class="mt-4">
-                <x-textarea label="Content" name="content" rows="16" required>{{ old('content', $post->content) }}</x-textarea>
+                <label for="summernote-content" class="block text-sm font-medium text-gray-700 mb-1.5">Content (Summernote Editor)</label>
+                <textarea id="summernote-content" name="content" class="w-full">{{ old('content', $post->content) }}</textarea>
+                @error('content')
+                    <p class="text-xs text-red-500 mt-1.5">{{ $message }}</p>
+                @enderror
             </div>
         </x-card>
 
@@ -66,3 +74,35 @@
         </x-card>
     </div>
 </div>
+
+<script>
+    (function () {
+        function initSummernote() {
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.summernote) {
+                window.jQuery('#summernote-content').summernote({
+                    placeholder: 'Type or paste post content here...',
+                    tabsize: 2,
+                    height: 400,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                        ['fontname', ['fontname']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph', 'height']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video', 'hr']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
+                });
+            } else {
+                setTimeout(initSummernote, 100);
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSummernote);
+        } else {
+            initSummernote();
+        }
+    })();
+</script>

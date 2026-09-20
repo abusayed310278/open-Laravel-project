@@ -35,45 +35,64 @@
 
     {{-- Metric Stat Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        <x-stat-card
-            label="Today's Appointments"
-            :value="$todayAppointmentsCount"
-            hint="Scheduled for today"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
-        />
+        <a href="#pending-inspection-products" class="block group">
+            <x-stat-card
+                label="Today's Appointments"
+                :value="$todayAppointmentsCount"
+                hint="Scheduled for today or pending"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Active Queue"
-            :value="$pendingInspectionsCount"
-            hint="Awaiting inspection"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-        />
+        <a href="#pending-inspection-products" class="block group">
+            <x-stat-card
+                label="Pending Queue"
+                :value="$pendingInspectionsCount"
+                hint="Awaiting inspection"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Completed This Month"
-            :value="$completedThisMonthCount"
-            hint="Inspected & graded"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-        />
+        <a href="{{ route('verifier.history.index') }}" class="block group">
+            <x-stat-card
+                label="Completed This Month"
+                :value="$completedThisMonthCount"
+                hint="Inspected & graded"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Pass Rate"
-            :value="$passRate . '%'"
-            hint="Certified quality standard"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>'
-        />
+        <a href="{{ route('verifier.history.index') }}" class="block group">
+            <x-stat-card
+                label="Pass Rate"
+                :value="$passRate . '%'"
+                hint="Certified quality standard"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>'
+            />
+        </a>
     </div>
 
-    {{-- Today's Scheduled Inspections --}}
-    <x-card title="Today's Scheduled Appointments">
-        <x-table :headers="['Product', 'Seller', 'Scheduled Time', 'Status', '']" id="today-appointments-table">
-            @forelse ($todayAppointments as $item)
+    {{-- Pending Inspection Products Section --}}
+    <x-card id="pending-inspection-products">
+        <x-slot:title>
+            <div class="flex items-center justify-between w-full">
+                <span class="font-bold text-gray-900">Pending Inspection Products</span>
+                <a href="{{ route('verifier.appointments.index') }}" class="text-xs text-amber-600 hover:underline font-semibold">
+                    View Full Active Queue →
+                </a>
+            </div>
+        </x-slot:title>
+
+        <x-table :headers="['Product', 'Seller', 'Scheduled Date & Time', 'Status', 'Action']" id="pending-inspection-products-table">
+            @forelse ($pendingAppointments as $item)
                 <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                     <td class="px-4 py-3.5 font-medium text-gray-900">
                         <div class="flex items-center gap-3">
                             <img src="{{ $item->product->primaryImageUrl() }}" alt="{{ $item->product->title }}" class="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0">
                             <div>
-                                <p class="text-sm font-semibold text-gray-900 line-clamp-1">{{ $item->product->title }}</p>
+                                <a href="{{ route('verifier.products.show', $item->product) }}" class="text-sm font-semibold text-gray-900 hover:text-amber-600 transition-colors line-clamp-1">
+                                    {{ $item->product->title }}
+                                </a>
                                 <p class="text-xs text-gray-400">{{ $item->product->category?->name ?? 'Electronics' }} · SKU: {{ $item->product->sku ?? '—' }}</p>
                             </div>
                         </div>
@@ -83,7 +102,7 @@
                         <p class="text-gray-400">{{ $item->seller->email }}</p>
                     </td>
                     <td class="px-4 py-3.5 text-xs text-gray-700 font-medium">
-                        {{ $item->scheduled_at?->format('g:i A') ?? 'Scheduled Today' }}
+                        {{ $item->scheduled_at ? $item->scheduled_at->format('M j, Y · g:i A') : 'Pending Schedule' }}
                     </td>
                     <td class="px-4 py-3.5">
                         <x-badge :color="$item->status->badgeColor()">{{ $item->status->label() }}</x-badge>
@@ -98,7 +117,7 @@
             @empty
                 <tr>
                     <td colspan="5" class="px-4 py-8 text-center text-gray-400 text-xs sm:text-sm">
-                        No appointments scheduled for today yet.
+                        No pending products in the inspection queue.
                     </td>
                 </tr>
             @endforelse

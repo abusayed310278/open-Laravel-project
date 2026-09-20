@@ -19,6 +19,8 @@ class AttributeValueController extends Controller
 
     public function destroy(Attribute $attribute, AttributeValue $value): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $value->delete();
 
         return back()->with('status', 'Value removed.');

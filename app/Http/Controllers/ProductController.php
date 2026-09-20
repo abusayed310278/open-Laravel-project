@@ -26,11 +26,10 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        // Store owners (business role) can see only individual seller (saler role) products;
-        // Individual sellers (saler role) see their own listings.
-        $query = $user->isBusiness()
-            ? Product::query()->whereHas('user', fn ($q) => $q->where('role', UserRole::Saler))->with(['category', 'images', 'user'])
-            : $user->products()->with(['category', 'images']);
+        // Admin sees all products across the platform; Store Owners (business) and Sellers (saler) see only their own listings.
+        $query = $user->isAdmin()
+            ? Product::query()->with(['category', 'images', 'user'])
+            : $user->products()->with(['category', 'images', 'user']);
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();

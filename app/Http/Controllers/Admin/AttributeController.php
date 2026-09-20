@@ -121,11 +121,15 @@ class AttributeController extends Controller
 
     public function edit(Attribute $attribute): View
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         return $this->show($attribute);
     }
 
     public function update(StoreAttributeRequest $request, Attribute $attribute): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $data = $request->validated();
         unset($data['values'], $data['assign_to_category_id'], $data['redirect_to']);
 
@@ -146,6 +150,8 @@ class AttributeController extends Controller
 
     public function toggleActive(Attribute $attribute): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $attribute->update(['is_active' => ! $attribute->is_active]);
 
         $status = $attribute->is_active ? 'activated' : 'deactivated';
@@ -155,6 +161,8 @@ class AttributeController extends Controller
 
     public function destroy(Attribute $attribute): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $attribute->values()->delete();
         $attribute->categories()->detach();
         $attribute->delete();

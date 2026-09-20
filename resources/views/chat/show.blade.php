@@ -5,8 +5,9 @@
 @section($section)
     @php
         $other = $conversation->otherParty(auth()->user());
-        $avatarUrl = $other->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($other->profile->avatar) : null;
-        $initials = strtoupper(substr($other->name, 0, 2));
+        $otherName = $other?->name ?? 'Support';
+        $avatarUrl = $other?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($other->profile->avatar) : null;
+        $initials = strtoupper(substr($otherName, 0, 2));
         $lastId = $messages->last()?->id ?? 0;
     @endphp
 
@@ -21,7 +22,7 @@
                 {{-- User Avatar & Online Indicator --}}
                 <div class="relative shrink-0">
                     @if ($avatarUrl)
-                        <img src="{{ $avatarUrl }}" alt="{{ $other->name }}" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-2xs">
+                        <img src="{{ $avatarUrl }}" alt="{{ $otherName }}" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-2xs">
                     @else
                         <div class="w-10 h-10 rounded-full bg-amber-400 text-gray-950 font-bold flex items-center justify-center text-xs shadow-2xs">
                             {{ $initials }}
@@ -31,7 +32,7 @@
                 </div>
 
                 <div class="min-w-0">
-                    <p class="font-bold text-gray-950 text-sm sm:text-base leading-tight truncate">{{ $other->name }}</p>
+                    <p class="font-bold text-gray-950 text-sm sm:text-base leading-tight truncate">{{ $otherName }}</p>
                     <p class="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>Active</span>
@@ -112,7 +113,7 @@
                 </span>
             </div>
 
-            <form method="POST" action="{{ route('chat.store', $conversation) }}" enctype="multipart/form-data" class="flex items-center gap-2.5" id="chat-form">
+            <form method="POST" action="{{ route($routePrefix.'chat.store', $conversation) }}" enctype="multipart/form-data" class="flex items-center gap-2.5" id="chat-form">
                 @csrf
                 {{-- Attachment Paperclip --}}
                 <label class="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition cursor-pointer shrink-0" title="Attach photo or file">
@@ -216,8 +217,10 @@
                 container.scrollTop = container.scrollHeight;
             }
 
+            const pollBaseUrl = @json(route($routePrefix.'chat.poll', ['conversation' => $conversation->id, 'afterId' => 0]));
+
             function poll() {
-                fetch('/chat/' + conversationId + '/poll/' + lastId)
+                fetch(pollBaseUrl.replace(/\/0$/, '/' + lastId))
                     .then((r) => r.json())
                     .then((messages) => {
                         messages.forEach((m) => {

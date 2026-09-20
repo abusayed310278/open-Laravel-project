@@ -79,7 +79,14 @@
                             <span>Total</span>
                             <span>${{ number_format($grandTotal, 2) }}</span>
                         </div>
-                        <x-button as="a" :href="route('checkout')" class="w-full justify-center">Proceed to Checkout</x-button>
+                        @if (auth()->check() && !auth()->user()->isCustomer())
+                            <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium flex items-center gap-2">
+                                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Purchasing is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
+                            </div>
+                        @else
+                            <x-button as="a" :href="route('checkout')" class="w-full justify-center">Proceed to Checkout</x-button>
+                        @endif
                     </div>
                 </div>
             </div>

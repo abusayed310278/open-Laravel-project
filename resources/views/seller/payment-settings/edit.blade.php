@@ -23,12 +23,34 @@
             @csrf
 
             <label class="flex items-center justify-between py-3 border-b border-gray-50">
-                <span class="text-sm font-medium text-gray-700">Cash on Delivery</span>
+                <div>
+                    <span class="text-sm font-medium text-gray-700 block">Stripe Card Payments</span>
+                    <span class="text-xs text-gray-400">Accept credit and debit cards via Stripe</span>
+                </div>
+                <input type="checkbox" name="stripe_enabled" value="1" @checked($settings->stripe_enabled) class="w-4 h-4 rounded accent-brand-500">
+            </label>
+
+            <label class="flex items-center justify-between py-3 border-b border-gray-50">
+                <div>
+                    <span class="text-sm font-medium text-gray-700 block">PayPal Payments</span>
+                    <span class="text-xs text-gray-400">Accept PayPal account and express checkout</span>
+                </div>
+                <input type="checkbox" name="paypal_enabled" value="1" @checked($settings->paypal_enabled) class="w-4 h-4 rounded accent-brand-500">
+            </label>
+
+            <label class="flex items-center justify-between py-3 border-b border-gray-50">
+                <div>
+                    <span class="text-sm font-medium text-gray-700 block">Cash on Delivery</span>
+                    <span class="text-xs text-gray-400">Collect cash payment upon product delivery</span>
+                </div>
                 <input type="checkbox" name="cod_enabled" value="1" @checked($settings->cod_enabled) class="w-4 h-4 rounded accent-brand-500">
             </label>
 
             <label class="flex items-center justify-between py-3 border-b border-gray-50">
-                <span class="text-sm font-medium text-gray-700">Manual Bank Transfer</span>
+                <div>
+                    <span class="text-sm font-medium text-gray-700 block">Manual Bank Transfer</span>
+                    <span class="text-xs text-gray-400">Direct wire transfer to your bank account</span>
+                </div>
                 <input type="checkbox" name="manual_bank_enabled" value="1" @checked($settings->manual_bank_enabled) class="w-4 h-4 rounded accent-brand-500">
             </label>
 

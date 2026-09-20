@@ -29,7 +29,7 @@
     {{-- Product Image --}}
     <div class="relative w-full h-72 sm:h-80 shrink-0 overflow-hidden bg-gray-50">
         @if ($discountPercent)
-            <span class="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
+            <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
         @endif
 
         <a href="{{ $href }}" class="absolute inset-0 flex items-center justify-center">
@@ -48,7 +48,7 @@
         </a>
 
         {{-- Hover Actions: Wishlist & Share --}}
-        <div class="absolute top-2 left-2 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+        <div class="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
             <button
                 type="button"
                 data-wishlist-id="{{ $id }}"

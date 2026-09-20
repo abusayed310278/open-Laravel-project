@@ -172,6 +172,8 @@ class CategoryAttributeController extends Controller
 
     public function update(CategoryAttributeRequest $request, Category $category, Attribute $attribute): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $category->attributes()->updateExistingPivot($attribute->id, [
             'is_required'   => $request->boolean('is_required'),
             'is_filterable' => $request->boolean('is_filterable'),
@@ -184,6 +186,8 @@ class CategoryAttributeController extends Controller
 
     public function destroy(Category $category, Attribute $attribute): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $category->attributes()->detach($attribute->id);
 
         return back()->with('status', "Removed '{$attribute->name}' from {$category->name}.");

@@ -13,7 +13,12 @@
         <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('admin.verifications.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-gray-200/80 hover:bg-gray-50 text-gray-700 shadow-2xs transition">
                 <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                <span>KYC Queue ({{ $metrics['pendingVerifications'] }})</span>
+                <span>KYC Queue ({{ $metrics['pendingKycUsers'] }})</span>
+            </a>
+
+            <a href="{{ route('admin.verification-requirements.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-gray-200/80 hover:bg-gray-50 text-gray-700 shadow-2xs transition">
+                <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>KYC Rules</span>
             </a>
 
             <a href="{{ route('admin.reports.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition">
@@ -90,6 +95,49 @@
             </div>
             <div class="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-200/60 flex items-center justify-center text-indigo-600 shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+        </div>
+    </div>
+
+    {{-- Seller Identity & KYC Control Center Telemetry Bar --}}
+    <div class="bg-gradient-to-r from-gray-900 via-gray-850 to-gray-900 border border-gray-800 rounded-2xl p-5 shadow-xs text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-brand-500/20 border border-brand-500/40 flex items-center justify-center text-brand-400 shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <span>Seller Identity & KYC Control Center</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30">Active</span>
+                </h3>
+                <p class="text-xs text-gray-400 mt-0.5">Manage trade licenses, NID, tax proofs, and identity verifications for Store Owners & Individual Sellers.</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 sm:gap-6 text-xs shrink-0 flex-wrap">
+            <div class="text-center px-3 py-1.5 rounded-xl bg-white/5 border border-white/10">
+                <span class="text-gray-400 block text-[10px] uppercase tracking-wider font-semibold">Total</span>
+                <span class="text-sm font-extrabold text-white">{{ $metrics['totalKycApplications'] }}</span>
+            </div>
+            <div class="text-center px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <span class="text-blue-300 block text-[10px] uppercase tracking-wider font-semibold">Pending</span>
+                <span class="text-sm font-extrabold text-blue-400">{{ $metrics['pendingKycUsers'] }}</span>
+            </div>
+            <div class="text-center px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <span class="text-emerald-300 block text-[10px] uppercase tracking-wider font-semibold">Approved</span>
+                <span class="text-sm font-extrabold text-emerald-400">{{ $metrics['approvedKycUsers'] }}</span>
+            </div>
+            <div class="text-center px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                <span class="text-rose-300 block text-[10px] uppercase tracking-wider font-semibold">Rejected</span>
+                <span class="text-sm font-extrabold text-rose-400">{{ $metrics['rejectedKycUsers'] }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.verifications.index') }}" class="px-3.5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-xs transition cursor-pointer text-xs whitespace-nowrap">
+                    KYC Applications →
+                </a>
+                <a href="{{ route('admin.verification-requirements.index') }}" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl border border-white/10 transition cursor-pointer text-xs whitespace-nowrap">
+                    Setup Rules
+                </a>
             </div>
         </div>
     </div>

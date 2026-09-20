@@ -40,4 +40,19 @@ class VerificationDocument extends Model
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
+
+    public function isImage(): bool
+    {
+        if (! $this->file_path) {
+            return false;
+        }
+        $ext = strtolower(pathinfo($this->file_path, PATHINFO_EXTENSION));
+
+        return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true);
+    }
+
+    public function fileName(): string
+    {
+        return basename((string) $this->file_path);
+    }
 }

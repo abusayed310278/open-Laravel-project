@@ -28,6 +28,7 @@ class RegistrationService
             'password' => Hash::make($data['password']),
             'role' => $role,
             'status' => UserStatus::Active,
+            'email_verified_at' => now(),
         ]);
 
         match ($role) {

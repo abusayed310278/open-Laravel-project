@@ -38,7 +38,7 @@
                             </form>
                             <button type="button" onclick="document.getElementById('reject-{{ $submission->id }}').showModal()" class="text-red-600 font-medium hover:underline">Reject</button>
 
-                            <dialog id="reject-{{ $submission->id }}" class="rounded-md p-6 w-full max-w-sm backdrop:bg-black/40">
+                            <dialog id="reject-{{ $submission->id }}" class="rounded-2xl p-6 w-full max-w-sm border-0 shadow-2xl backdrop:bg-gray-950/50 backdrop:backdrop-blur-xs text-left" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0;">
                                 <form method="POST" action="{{ route($routePrefix.'payment-verifications.reject', $submission) }}" class="space-y-4">
                                     @csrf
                                     <x-textarea label="Rejection notes" name="notes" rows="3" required />

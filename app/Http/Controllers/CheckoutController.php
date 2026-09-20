@@ -7,9 +7,13 @@ use App\Models\Address;
 use App\Models\Order;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\PaymentService;
+use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -20,9 +24,14 @@ class CheckoutController extends Controller
         private readonly CheckoutService $checkout,
     ) {}
 
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
         $user = Auth::user();
+
+        if (! $user->isCustomer()) {
+            return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
+        }
+
         $cart = $this->carts->forUser($user);
 
         return view('checkout.index', [
@@ -35,6 +44,11 @@ class CheckoutController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
+
+        if (! $user->isCustomer()) {
+            return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
+        }
+
         $cart = $this->carts->forUser($user);
 
         $available = $this->checkout->availablePaymentMethods($cart);
@@ -48,7 +62,75 @@ class CheckoutController extends Controller
 
         $order = $this->checkout->placeOrder($user, $cart, $shipping, $billing, PaymentMethod::from($request->string('payment_method')->value()));
 
+        if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
+            $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
+
+            if (filled($secretKey)) {
+                try {
+                    $response = Http::withBasicAuth($secretKey, '')
+                        ->asForm()
+                        ->post('https://api.stripe.com/v1/checkout/sessions', [
+                            'payment_method_types' => ['card'],
+                            'line_items' => [
+                                [
+                                    'price_data' => [
+                                        'currency' => 'usd',
+                                        'product_data' => [
+                                            'name' => 'Order #' . $order->order_number,
+                                        ],
+                                        'unit_amount' => (int) round($order->total * 100),
+                                    ],
+                                    'quantity' => 1,
+                                ],
+                            ],
+                            'mode' => 'payment',
+                            'success_url' => route('checkout.stripe-success', $order) . '?session_id={CHECKOUT_SESSION_ID}',
+                            'cancel_url' => route('checkout'),
+                        ]);
+
+                    if ($response->successful() && isset($response->json()['url'])) {
+                        return redirect()->away($response->json()['url']);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Stripe API session creation failed: ' . $e->getMessage());
+                }
+            }
+
+            return redirect()->route('checkout.stripe-portal', $order);
+        }
+
         return redirect()->route('orders.confirmation', $order)->with('status', 'Order placed!');
+    }
+
+    public function stripePortal(Order $order): View
+    {
+        abort_unless($order->customer_id === Auth::id(), 403);
+
+        return view('checkout.stripe-portal', [
+            'order' => $order->load('vendorOrders.items'),
+        ]);
+    }
+
+    public function stripeConfirm(Order $order): RedirectResponse
+    {
+        abort_unless($order->customer_id === Auth::id(), 403);
+
+        foreach ($order->vendorOrders as $vendorOrder) {
+            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+        }
+
+        return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');
+    }
+
+    public function stripeSuccess(Order $order): RedirectResponse
+    {
+        abort_unless($order->customer_id === Auth::id(), 403);
+
+        foreach ($order->vendorOrders as $vendorOrder) {
+            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+        }
+
+        return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');
     }
 
     public function confirmation(Order $order): View

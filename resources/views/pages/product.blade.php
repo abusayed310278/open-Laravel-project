@@ -32,14 +32,16 @@
             {{-- Info --}}
             <div class="lg:col-span-3">
                 <div class="flex items-center gap-2 mb-3">
-                    @if ($product->isVerified())
-                        <x-grade-badge :grade="$product->grade->value" />
-                        <x-verified-badge />
-                    @else
-                        <x-badge color="blue">{{ $product->condition->label() }}</x-badge>
-                    @endif
-                    @if ($product->isWarehoused())
-                        <x-verified-badge warehouse />
+                    @if (feature_enabled('product_verification_badge'))
+                        @if ($product->isVerified())
+                            <x-grade-badge :grade="$product->grade->value" />
+                            <x-verified-badge />
+                        @else
+                            <x-badge color="blue">{{ $product->condition->label() }}</x-badge>
+                        @endif
+                        @if ($product->isWarehoused())
+                            <x-verified-badge warehouse />
+                        @endif
                     @endif
                     @if ($product->is_negotiable)
                         <x-badge color="gray">Negotiable</x-badge>
@@ -72,52 +74,63 @@
                 </div>
 
                 {{-- Seller card --}}
-                <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6">
-                    <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
-                        <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center flex-shrink-0">
-                            {{ Str::upper(Str::substr($sellerName, 0, 1)) }}
-                        </div>
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-sm font-semibold text-gray-900 truncate">{{ $sellerName }}</span>
-                                @if ($product->user->status->value === 'active')
-                                    <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
-                                @endif
+                @if (feature_enabled('product_seller_box'))
+                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6">
+                        <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center flex-shrink-0">
+                                {{ Str::upper(Str::substr($sellerName, 0, 1)) }}
                             </div>
-                            <p class="text-xs text-gray-400">
-                                @if ($sellerReviewCount > 0)
-                                    ★ {{ number_format($sellerRating, 1) }}
-                                @endif
-                                @if ($sellerLocation)
-                                    · {{ $sellerLocation }}
-                                @endif
-                            </p>
-                        </div>
-                    </a>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-sm font-semibold text-gray-900 truncate">{{ $sellerName }}</span>
+                                    @if ($product->user->status->value === 'active')
+                                        <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-gray-400">
+                                    @if ($sellerReviewCount > 0)
+                                        ★ {{ number_format($sellerRating, 1) }}
+                                    @endif
+                                    @if ($sellerLocation)
+                                        · {{ $sellerLocation }}
+                                    @endif
+                                </p>
+                            </div>
+                        </a>
 
-                    @auth
-                        @if (auth()->id() !== $product->user_id)
-                            <form method="POST" action="{{ route('chat.start', $product) }}">
-                                @csrf
-                                <x-button type="submit" variant="secondary" size="sm">Contact</x-button>
-                            </form>
+                        @if (feature_enabled('product_chat_widget'))
+                            @auth
+                                @if (auth()->id() !== $product->user_id)
+                                    <form method="POST" action="{{ route('chat.start', $product) }}">
+                                        @csrf
+                                        <x-button type="submit" variant="secondary" size="sm">Contact</x-button>
+                                    </form>
+                                @endif
+                            @endauth
                         @endif
-                    @endauth
-                </div>
+                    </div>
+                @endif
 
                 {{-- Purchase actions --}}
-                <form method="POST" action="{{ route('cart.add', $product) }}">
-                    @csrf
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="flex items-center border border-gray-200 rounded-md">
-                            <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">&minus;</button>
-                            <input type="number" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
-                            <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">+</button>
-                        </div>
-                        <x-button type="submit" class="flex-1 justify-center">Add to Cart</x-button>
-                        <x-button type="submit" name="checkout" value="1" variant="dark" class="flex-1 justify-center">Buy Now</x-button>
+                @if (auth()->check() && !auth()->user()->isCustomer())
+                    <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium mb-4 flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span>Purchasing items is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                     </div>
-                </form>
+                @elseif (feature_enabled('product_buy_box'))
+                    <form method="POST" action="{{ route('cart.add', $product) }}">
+                        @csrf
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="flex items-center border border-gray-200 rounded-md">
+                                <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">&minus;</button>
+                                <input type="number" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
+                                <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">+</button>
+                            </div>
+                            <x-button type="submit" class="flex-1 justify-center">Add to Cart</x-button>
+                            <x-button type="submit" name="checkout" value="1" variant="dark" class="flex-1 justify-center">Buy Now</x-button>
+                        </div>
+                    </form>
+                @endif
 
                 @auth
                     <form method="POST" action="{{ route('wishlist.toggle', $product) }}" class="mb-6">
@@ -157,79 +170,85 @@
         {{-- Tabs --}}
         <div class="mt-12">
             <div class="border-b border-gray-200 flex items-center gap-8 mb-6">
-                <button type="button" data-tab="specs" class="tab-btn pb-3 text-sm sm:text-base font-semibold border-b-2 border-brand-500 text-brand-600 transition-colors duration-150 cursor-pointer -mb-px">Specification</button>
+                @if (feature_enabled('product_specifications'))
+                    <button type="button" data-tab="specs" class="tab-btn pb-3 text-sm sm:text-base font-semibold border-b-2 border-brand-500 text-brand-600 transition-colors duration-150 cursor-pointer -mb-px">Specification</button>
+                @endif
                 <button type="button" data-tab="description" class="tab-btn pb-3 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300 transition-colors duration-150 cursor-pointer -mb-px">Description</button>
-                <button type="button" data-tab="reviews" class="tab-btn pb-3 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300 transition-colors duration-150 cursor-pointer -mb-px">Reviews ({{ $reviewCount }})</button>
-            </div>
-
-            <div data-tab-content="specs" class="pb-6">
-                <h2 class="text-lg sm:text-xl font-bold text-[#01132d] mb-4">Specification</h2>
-
-                @php
-                    $savedValues = $product->attributeValues->keyBy('attribute_id');
-                    $categoryAttributes = $product->category?->attributes ?? collect();
-
-                    if ($categoryAttributes->isNotEmpty()) {
-                        $groupedSpecs = $categoryAttributes
-                            ->sortBy([
-                                fn ($a, $b) => ($a->group?->sort_order ?? 999) <=> ($b->group?->sort_order ?? 999),
-                                fn ($a, $b) => ($a->pivot?->sort_order ?? $a->sort_order ?? 999) <=> ($b->pivot?->sort_order ?? $b->sort_order ?? 999),
-                            ])
-                            ->groupBy(fn ($a) => $a->group?->name ?? 'General Specifications');
-                    } else {
-                        $groupedSpecs = $product->attributeValues
-                            ->sortBy([
-                                fn ($a, $b) => ($a->attribute?->group?->sort_order ?? 999) <=> ($b->attribute?->group?->sort_order ?? 999),
-                                fn ($a, $b) => ($a->attribute?->sort_order ?? 999) <=> ($b->attribute?->sort_order ?? 999),
-                            ])
-                            ->groupBy(fn ($v) => $v->attribute?->group?->name ?? 'General Specifications');
-                    }
-                @endphp
-
-                @if ($groupedSpecs->isEmpty())
-                    <div class="text-center py-8 bg-gray-50 rounded-md border border-dashed border-gray-200">
-                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <p class="text-gray-500 text-sm font-medium">No specifications listed for this product.</p>
-                        <p class="text-gray-400 text-xs mt-1">Specifications can be assigned in the product edit form under Attributes.</p>
-                    </div>
-                @else
-                    <div class="space-y-4">
-                        @foreach ($groupedSpecs as $groupName => $items)
-                            <div class="bg-white rounded-sm overflow-hidden">
-                                <div class="bg-[#f5f6fc] px-4 py-2.5">
-                                    <h3 class="text-[14px] font-bold text-[#3749bb] tracking-tight">{{ $groupName }}</h3>
-                                </div>
-                                <table class="w-full text-left border-collapse text-[13.5px]">
-                                    <tbody>
-                                        @foreach ($items as $item)
-                                            @php
-                                                if ($item instanceof \App\Models\Attribute) {
-                                                    $attr = $item;
-                                                    $saved = $savedValues->get($attr->id);
-                                                    $savedVal = $saved?->displayValue();
-                                                    $val = ($savedVal !== null && $savedVal !== '') ? $savedVal : $attr->unit;
-                                                } else {
-                                                    $attr = $item->attribute;
-                                                    $savedVal = $item->displayValue();
-                                                    $val = ($savedVal !== null && $savedVal !== '') ? $savedVal : $attr?->unit;
-                                                }
-                                            @endphp
-                                            <tr class="hover:bg-[#fafbfe] transition-colors">
-                                                <td class="w-1/3 sm:w-1/4 px-4 py-2.5 text-[#666666] font-normal align-top leading-relaxed">
-                                                    {{ $attr?->name ?? 'Specification' }}
-                                                </td>
-                                                <td class="px-4 py-2.5 text-[#111111] font-normal align-top leading-relaxed">
-                                                    {{ $val ?: '—' }}
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endforeach
-                    </div>
+                @if (feature_enabled('product_reviews'))
+                    <button type="button" data-tab="reviews" class="tab-btn pb-3 text-sm sm:text-base font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300 transition-colors duration-150 cursor-pointer -mb-px">Reviews ({{ $reviewCount }})</button>
                 @endif
             </div>
+
+            @if (feature_enabled('product_specifications'))
+                <div data-tab-content="specs" class="pb-6">
+                    <h2 class="text-lg sm:text-xl font-bold text-[#01132d] mb-4">Specification</h2>
+
+                    @php
+                        $savedValues = $product->attributeValues->keyBy('attribute_id');
+                        $categoryAttributes = $product->category?->attributes ?? collect();
+
+                        if ($categoryAttributes->isNotEmpty()) {
+                            $groupedSpecs = $categoryAttributes
+                                ->sortBy([
+                                    fn ($a, $b) => ($a->group?->sort_order ?? 999) <=> ($b->group?->sort_order ?? 999),
+                                    fn ($a, $b) => ($a->pivot?->sort_order ?? $a->sort_order ?? 999) <=> ($b->pivot?->sort_order ?? $b->sort_order ?? 999),
+                                ])
+                                ->groupBy(fn ($a) => $a->group?->name ?? 'General Specifications');
+                        } else {
+                            $groupedSpecs = $product->attributeValues
+                                ->sortBy([
+                                    fn ($a, $b) => ($a->attribute?->group?->sort_order ?? 999) <=> ($b->attribute?->group?->sort_order ?? 999),
+                                    fn ($a, $b) => ($a->attribute?->sort_order ?? 999) <=> ($b->attribute?->sort_order ?? 999),
+                                ])
+                                ->groupBy(fn ($v) => $v->attribute?->group?->name ?? 'General Specifications');
+                        }
+                    @endphp
+
+                    @if ($groupedSpecs->isEmpty())
+                        <div class="text-center py-8 bg-gray-50 rounded-md border border-dashed border-gray-200">
+                            <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <p class="text-gray-500 text-sm font-medium">No specifications listed for this product.</p>
+                            <p class="text-gray-400 text-xs mt-1">Specifications can be assigned in the product edit form under Attributes.</p>
+                        </div>
+                    @else
+                        <div class="space-y-4">
+                            @foreach ($groupedSpecs as $groupName => $items)
+                                <div class="bg-white rounded-sm overflow-hidden">
+                                    <div class="bg-[#f5f6fc] px-4 py-2.5">
+                                        <h3 class="text-[14px] font-bold text-[#3749bb] tracking-tight">{{ $groupName }}</h3>
+                                    </div>
+                                    <table class="w-full text-left border-collapse text-[13.5px]">
+                                        <tbody>
+                                            @foreach ($items as $item)
+                                                @php
+                                                    if ($item instanceof \App\Models\Attribute) {
+                                                        $attr = $item;
+                                                        $saved = $savedValues->get($attr->id);
+                                                        $savedVal = $saved?->displayValue();
+                                                        $val = ($savedVal !== null && $savedVal !== '') ? $savedVal : $attr->unit;
+                                                    } else {
+                                                        $attr = $item->attribute;
+                                                        $savedVal = $item->displayValue();
+                                                        $val = ($savedVal !== null && $savedVal !== '') ? $savedVal : $attr?->unit;
+                                                    }
+                                                @endphp
+                                                <tr class="hover:bg-[#fafbfe] transition-colors">
+                                                    <td class="w-1/3 sm:w-1/4 px-4 py-2.5 text-[#666666] font-normal align-top leading-relaxed">
+                                                        {{ $attr?->name ?? 'Specification' }}
+                                                    </td>
+                                                    <td class="px-4 py-2.5 text-[#111111] font-normal align-top leading-relaxed">
+                                                        {{ $val ?: '—' }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             <div data-tab-content="description" class="py-6 text-gray-700 leading-relaxed hidden">
                 @if ($product->description)
@@ -245,76 +264,80 @@
                 @endif
             </div>
 
-            <div data-tab-content="reviews" class="py-6 hidden">
-                @if ($reviewCount > 0)
-                    <div class="flex items-center gap-3 mb-6">
-                        <x-star-rating :rating="round($averageRating)" />
-                        <span class="text-sm text-gray-500">{{ number_format($averageRating, 1) }} out of 5 · {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</span>
-                    </div>
-                @endif
-
-                @forelse ($reviews as $review)
-                    <div class="py-4 border-b border-gray-50 last:border-0">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="flex items-center gap-2">
-                                <x-star-rating :rating="$review->rating" />
-                                <span class="text-sm font-medium text-gray-800">{{ $review->reviewer->name }}</span>
-                            </div>
-                            <span class="text-xs text-gray-400">{{ $review->created_at->format('M j, Y') }}</span>
+            @if (feature_enabled('product_reviews'))
+                <div data-tab-content="reviews" class="py-6 hidden">
+                    @if ($reviewCount > 0)
+                        <div class="flex items-center gap-3 mb-6">
+                            <x-star-rating :rating="round($averageRating)" />
+                            <span class="text-sm text-gray-500">{{ number_format($averageRating, 1) }} out of 5 · {{ $reviewCount }} {{ Str::plural('review', $reviewCount) }}</span>
                         </div>
-                        @if ($review->title)
-                            <p class="font-medium text-gray-900 mt-1">{{ $review->title }}</p>
-                        @endif
-                        <p class="text-sm text-gray-600 mt-1">{{ $review->body }}</p>
-                    </div>
-                @empty
-                    <p class="text-gray-400 text-sm">No reviews yet.</p>
-                @endforelse
-            </div>
+                    @endif
+
+                    @forelse ($reviews as $review)
+                        <div class="py-4 border-b border-gray-50 last:border-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-2">
+                                    <x-star-rating :rating="$review->rating" />
+                                    <span class="text-sm font-medium text-gray-800">{{ $review->reviewer->name }}</span>
+                                </div>
+                                <span class="text-xs text-gray-400">{{ $review->created_at->format('M j, Y') }}</span>
+                            </div>
+                            @if ($review->title)
+                                <p class="font-medium text-gray-900 mt-1">{{ $review->title }}</p>
+                            @endif
+                            <p class="text-sm text-gray-600 mt-1">{{ $review->body }}</p>
+                        </div>
+                    @empty
+                        <p class="text-gray-400 text-sm">No reviews yet.</p>
+                    @endforelse
+                </div>
+            @endif
         </div>
 
         {{-- Similar products --}}
-        @if ($related->isNotEmpty())
-            <div class="mt-12">
-                <h2 class="text-lg font-bold text-gray-900 mb-5">Similar Products</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @foreach ($related as $item)
-                        <x-product-card
-                            :title="$item->title"
-                            :price="$item->price"
-                            :compare-price="$item->compare_price"
-                            :category="$item->category?->name ?? $item->brand?->name ?? 'Electronics'"
-                            :brand="$item->brand?->name"
-                            :grade="$item->isVerified() ? $item->grade->value : null"
-                            :condition="$item->condition->value"
-                            :image="$item->primaryImageUrl()"
-                            :href="route('products.show', $item)"
-                        />
-                    @endforeach
+        @if (feature_enabled('product_related_items'))
+            @if ($related->isNotEmpty())
+                <div class="mt-12">
+                    <h2 class="text-lg font-bold text-gray-900 mb-5">Similar Products</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach ($related as $item)
+                            <x-product-card
+                                :title="$item->title"
+                                :price="$item->price"
+                                :compare-price="$item->compare_price"
+                                :category="$item->category?->name ?? $item->brand?->name ?? 'Electronics'"
+                                :brand="$item->brand?->name"
+                                :grade="$item->isVerified() ? $item->grade->value : null"
+                                :condition="$item->condition->value"
+                                :image="$item->primaryImageUrl()"
+                                :href="route('products.show', $item)"
+                            />
+                        @endforeach
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
 
-        {{-- More from this seller --}}
-        @if ($moreFromSeller->isNotEmpty())
-            <div class="mt-12">
-                <h2 class="text-lg font-bold text-gray-900 mb-5">More from {{ $sellerName }}</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @foreach ($moreFromSeller as $item)
-                        <x-product-card
-                            :title="$item->title"
-                            :price="$item->price"
-                            :compare-price="$item->compare_price"
-                            :category="$item->category?->name ?? $item->brand?->name ?? 'Electronics'"
-                            :brand="$item->brand?->name"
-                            :grade="$item->isVerified() ? $item->grade->value : null"
-                            :condition="$item->condition->value"
-                            :image="$item->primaryImageUrl()"
-                            :href="route('products.show', $item)"
-                        />
-                    @endforeach
+            {{-- More from this seller --}}
+            @if ($moreFromSeller->isNotEmpty())
+                <div class="mt-12">
+                    <h2 class="text-lg font-bold text-gray-900 mb-5">More from {{ $sellerName }}</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @foreach ($moreFromSeller as $item)
+                            <x-product-card
+                                :title="$item->title"
+                                :price="$item->price"
+                                :compare-price="$item->compare_price"
+                                :category="$item->category?->name ?? $item->brand?->name ?? 'Electronics'"
+                                :brand="$item->brand?->name"
+                                :grade="$item->isVerified() ? $item->grade->value : null"
+                                :condition="$item->condition->value"
+                                :image="$item->primaryImageUrl()"
+                                :href="route('products.show', $item)"
+                            />
+                        @endforeach
+                    </div>
                 </div>
-            </div>
+            @endif
         @endif
     </div>
 

@@ -46,7 +46,7 @@
             </svg>
         </button>
 
-        <h1 class="text-lg font-bold text-gray-900">{{ $title }}</h1>
+        <h1 class="text-lg font-bold text-gray-900">{!! $title !!}</h1>
     </div>
 
     <div class="flex items-center gap-2.5 sm:gap-3.5">

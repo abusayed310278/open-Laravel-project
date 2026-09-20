@@ -36,7 +36,11 @@ class EnsureUserHasRole
                 if ($suffix !== '') {
                     $targetRoute = $user->role->value . '.' . $suffix;
                     if (Route::has($targetRoute)) {
-                        return redirect()->route($targetRoute, $request->route()->parameters());
+                        try {
+                            return redirect()->route($targetRoute, $request->route()->parameters());
+                        } catch (\Throwable $e) {
+                            // Route parameter mismatch, fallback to dashboard
+                        }
                     }
                 }
             }

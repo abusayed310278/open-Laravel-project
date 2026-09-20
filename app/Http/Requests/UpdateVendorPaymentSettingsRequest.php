@@ -18,6 +18,8 @@ class UpdateVendorPaymentSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'stripe_enabled' => ['boolean'],
+            'paypal_enabled' => ['boolean'],
             'cod_enabled' => ['boolean'],
             'manual_bank_enabled' => ['boolean'],
             'bank_details.bank_name' => ['nullable', 'string', 'max:255'],

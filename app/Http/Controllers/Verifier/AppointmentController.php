@@ -22,16 +22,21 @@ class AppointmentController extends Controller
         $locationId = $verifier->verifierProfile?->assigned_location_id;
         $location = $verifier->verifierProfile?->location;
 
-        $baseQuery = ProductVerification::query()
-            ->when($locationId, fn ($q) => $q->where('location_id', $locationId));
+        $baseQuery = ProductVerification::query();
+        if ($locationId) {
+            $baseQuery->where(function ($q) use ($verifier, $locationId) {
+                $q->where('location_id', $locationId)
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        }
 
         $todayAppointmentsCount = (clone $baseQuery)
-            ->whereDate('scheduled_at', today())
-            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting])
+            ->whereDate('scheduled_at', '<=', today())
+            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])
             ->count();
 
         $pendingInspectionsCount = (clone $baseQuery)
-            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting])
+            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])
             ->count();
 
         $completedThisMonthCount = (clone $baseQuery)
@@ -52,10 +57,9 @@ class AppointmentController extends Controller
 
         $todayAppointments = (clone $baseQuery)
             ->with(['product.images', 'product.category', 'seller', 'location'])
-            ->whereDate('scheduled_at', today())
-            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting])
+            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])
             ->orderBy('scheduled_at')
-            ->limit(6)
+            ->limit(10)
             ->get();
 
         $recentInspections = (clone $baseQuery)
@@ -72,6 +76,7 @@ class AppointmentController extends Controller
             'pendingInspectionsCount' => $pendingInspectionsCount,
             'completedThisMonthCount' => $completedThisMonthCount,
             'passRate' => $passRate,
+            'pendingAppointments' => $todayAppointments,
             'todayAppointments' => $todayAppointments,
             'recentInspections' => $recentInspections,
         ]);
@@ -84,23 +89,44 @@ class AppointmentController extends Controller
 
         $query = ProductVerification::query()
             ->with(['product.images', 'product.category', 'seller', 'location'])
-            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting])
-            ->when($locationId, fn ($q) => $q->where('location_id', $locationId))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->query('status')))
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $term = '%'.$request->query('search').'%';
-                $q->where(function ($sub) use ($term) {
-                    $sub->whereHas('product', fn ($pq) => $pq->where('title', 'like', $term)->orWhere('sku', 'like', $term))
-                        ->orWhereHas('seller', fn ($sq) => $sq->where('name', 'like', $term)->orWhere('email', 'like', $term));
-                });
-            })
-            ->orderBy('scheduled_at');
+            ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending]);
 
-        $calendarAppointments = ProductVerification::query()
+        if ($locationId) {
+            $query->where(function ($q) use ($verifier, $locationId) {
+                $q->where('location_id', $locationId)
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $statusVal = $request->query('status');
+            if (in_array($statusVal, ['pending', 'pending_queue', 'queue'], true)) {
+                $query->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending]);
+            } else {
+                $query->where('status', $statusVal);
+            }
+        }
+
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $term = '%'.$request->query('search').'%';
+            $q->where(function ($sub) use ($term) {
+                $sub->whereHas('product', fn ($pq) => $pq->where('title', 'like', $term)->orWhere('sku', 'like', $term))
+                    ->orWhereHas('seller', fn ($sq) => $sq->where('name', 'like', $term)->orWhere('email', 'like', $term));
+            });
+        })->orderBy('scheduled_at');
+
+        $calendarQuery = ProductVerification::query()
             ->with(['product.images', 'product.category', 'seller', 'location'])
-            ->when($locationId, fn ($q) => $q->where('location_id', $locationId))
-            ->whereNotNull('scheduled_at')
-            ->get()
+            ->whereNotNull('scheduled_at');
+
+        if ($locationId) {
+            $calendarQuery->where(function ($q) use ($verifier, $locationId) {
+                $q->where('location_id', $locationId)
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        }
+
+        $calendarAppointments = $calendarQuery->get()
             ->map(function ($v) {
                 return [
                     'id' => $v->id,
@@ -141,7 +167,7 @@ class AppointmentController extends Controller
         $query = ProductVerification::query()
             ->with(['product.images', 'seller', 'location', 'gradeAssignment', 'verifier'])
             ->whereIn('status', [VerificationStatus::Verified, VerificationStatus::Rejected])
-            ->when($locationId, fn ($q) => $q->where('location_id', $locationId))
+            ->where('location_id', $locationId)
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->query('status')))
             ->when($request->filled('grade'), function ($q) use ($request) {
                 $q->whereHas('gradeAssignment', fn ($gq) => $gq->where('grade', $request->query('grade')));

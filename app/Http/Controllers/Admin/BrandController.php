@@ -58,11 +58,15 @@ class BrandController extends Controller
 
     public function edit(Request $request, Brand $brand): View
     {
+        abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
+
         return view('admin.brands.edit', ['brand' => $brand]);
     }
 
     public function update(StoreBrandRequest $request, Brand $brand): RedirectResponse
     {
+        abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
+
         $data = $request->safe()->except(['logo', 'remove_logo']);
 
         if ($request->boolean('remove_logo')) {
@@ -119,6 +123,8 @@ class BrandController extends Controller
 
     public function destroy(Request $request, Brand $brand): RedirectResponse
     {
+        abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
+
         if ($brand->logo) {
             Storage::disk('public')->delete($brand->logo);
         }
@@ -132,6 +138,8 @@ class BrandController extends Controller
 
     public function removeLogo(Request $request, Brand $brand): RedirectResponse
     {
+        abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
+
         if ($brand->logo) {
             Storage::disk('public')->delete($brand->logo);
             $brand->update(['logo' => null]);
@@ -140,8 +148,10 @@ class BrandController extends Controller
         return back()->with('status', 'Brand logo deleted.');
     }
 
-    public function toggleStatus(Brand $brand): RedirectResponse
+    public function toggleStatus(Request $request, Brand $brand): RedirectResponse
     {
+        abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
+
         $newStatus = $brand->status === PublishStatus::Active
             ? PublishStatus::Inactive
             : PublishStatus::Active;

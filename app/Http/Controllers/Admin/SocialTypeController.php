@@ -103,6 +103,17 @@ class SocialTypeController extends Controller
     }
 
     /**
+     * Seed default social types.
+     */
+    public function seed(): RedirectResponse
+    {
+        (new \Database\Seeders\SocialTypeSeeder())->run();
+
+        return redirect()->route('admin.social-types.index')
+            ->with('status', 'Default social types seeded successfully.');
+    }
+
+    /**
      * Export social types to CSV.
      */
     private function exportCsv($socialTypes): StreamedResponse

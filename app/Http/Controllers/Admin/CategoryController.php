@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\PublishStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Models\Attribute;
@@ -13,6 +14,18 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
+    public function toggleStatus(Category $category): RedirectResponse
+    {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
+        $newStatus = $category->status === PublishStatus::Active
+            ? PublishStatus::Inactive
+            : PublishStatus::Active;
+
+        $category->update(['status' => $newStatus]);
+
+        return back()->with('status', "Category \"{$category->name}\" status changed to " . strtolower($newStatus->label()) . '.');
+    }
     public function index(): View
     {
         return view('admin.categories.index', [
@@ -47,6 +60,8 @@ class CategoryController extends Controller
 
     public function edit(Category $category): View
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         return view('admin.categories.edit', [
             'category' => $category,
             'parents' => Category::query()->where('id', '!=', $category->id)->orderBy('name')->get(),
@@ -57,6 +72,8 @@ class CategoryController extends Controller
 
     public function update(StoreCategoryRequest $request, Category $category): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         if ($request->filled('parent_id')) {
             $parent = Category::query()->findOrFail($request->integer('parent_id'));
 
@@ -119,6 +136,8 @@ class CategoryController extends Controller
 
     public function updateAttributes(Category $category): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $attributes = collect(request()->input('attributes', []))
             ->mapWithKeys(fn (string $id, int $index) => [
                 (int) $id => [
@@ -134,6 +153,8 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         if ($category->children()->exists()) {
             return back()->withErrors(['category' => 'Remove or reassign its subcategories first.']);
         }

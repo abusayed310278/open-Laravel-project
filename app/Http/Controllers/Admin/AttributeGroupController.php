@@ -68,6 +68,8 @@ class AttributeGroupController extends Controller
 
     public function edit(AttributeGroup $attributeGroup): View
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         return view('admin.attribute-groups.edit', [
             'group' => $attributeGroup->loadCount('attributes'),
         ]);
@@ -75,6 +77,8 @@ class AttributeGroupController extends Controller
 
     public function update(AttributeGroupRequest $request, AttributeGroup $attributeGroup): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $name = $request->string('name')->toString();
         $slug = $request->filled('slug')
             ? Str::slug($request->string('slug'))
@@ -97,6 +101,8 @@ class AttributeGroupController extends Controller
 
     public function toggleActive(AttributeGroup $attributeGroup): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $attributeGroup->update(['is_active' => ! $attributeGroup->is_active]);
 
         $status = $attributeGroup->is_active ? 'activated' : 'deactivated';
@@ -106,6 +112,8 @@ class AttributeGroupController extends Controller
 
     public function destroy(AttributeGroup $attributeGroup): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         if ($attributeGroup->attributes()->exists()) {
             return back()->with('error', 'Cannot delete group with assigned attributes. Please reassign or remove them first.');
         }

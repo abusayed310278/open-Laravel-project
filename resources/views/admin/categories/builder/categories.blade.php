@@ -62,20 +62,34 @@
                                 {{ $node['products_count'] }} {{ $node['products_count'] === 1 ? 'prod' : 'prods' }}
                             </span>
 
-                            <a href="{{ route($portalPrefix . 'categories.edit', $node['id']) }}"
-                               class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition"
-                               title="Edit category">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            </a>
-
-                            @if ($node['can_delete'])
-                                <form method="POST" action="{{ route($portalPrefix . 'categories.destroy', $node['id']) }}" data-confirm="Delete this category?" class="inline-block m-0">
+                            @if (auth()->user()?->isAdmin())
+                                {{-- Active / Inactive Toggle Switch Icon --}}
+                                <form method="POST" action="{{ route($portalPrefix . 'categories.toggle-status', $node['id']) }}" class="inline-flex items-center m-0">
                                     @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete category">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="group relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent shadow-inner transition-colors duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 {{ $node['status'] === 'active' ? 'bg-gradient-to-r from-brand-500 to-brand-600' : 'bg-gray-200 hover:bg-gray-300' }}"
+                                            title="{{ $node['status'] === 'active' ? 'Active in menu — Click to deactivate' : 'Inactive in menu — Click to activate' }}">
+                                        <span class="sr-only">Toggle active status</span>
+                                        <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-300 ease-in-out group-hover:scale-110 group-active:scale-90 {{ $node['status'] === 'active' ? 'translate-x-4' : 'translate-x-0' }}"></span>
                                     </button>
                                 </form>
+
+                                <a href="{{ route($portalPrefix . 'categories.edit', $node['id']) }}"
+                                   class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition"
+                                   title="Edit category">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </a>
+
+                                @if ($node['can_delete'])
+                                    <form method="POST" action="{{ route($portalPrefix . 'categories.destroy', $node['id']) }}" data-confirm="Delete this category?" class="inline-block m-0">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete category">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         </div>
                     </div>

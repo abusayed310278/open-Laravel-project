@@ -49,6 +49,9 @@ class DashboardController extends Controller
         $totalProductsCount = Product::count();
 
         $pendingKycUsers = UserVerification::whereIn('status', [KycStatus::Submitted, KycStatus::UnderReview])->count();
+        $approvedKycUsers = UserVerification::where('status', KycStatus::Approved)->count();
+        $rejectedKycUsers = UserVerification::where('status', KycStatus::Rejected)->count();
+        $totalKycApplications = UserVerification::count();
         $pendingProductVerifications = ProductVerification::where('status', 'pending')->count();
         $totalPendingVerifications = $pendingKycUsers + $pendingProductVerifications;
 
@@ -140,6 +143,9 @@ class DashboardController extends Controller
                 'totalProducts' => $totalProductsCount,
                 'pendingVerifications' => $totalPendingVerifications,
                 'pendingKycUsers' => $pendingKycUsers,
+                'approvedKycUsers' => $approvedKycUsers,
+                'rejectedKycUsers' => $rejectedKycUsers,
+                'totalKycApplications' => $totalKycApplications,
                 'pendingProducts' => $pendingProductVerifications,
                 'totalCommission' => $totalCommission,
                 'totalUsers' => $totalUsers,

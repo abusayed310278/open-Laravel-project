@@ -22,33 +22,41 @@
 
     {{-- Metric Stat Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        <x-stat-card
-            label="Total Listings"
-            :value="$totalCount"
-            hint="Across all sellers"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>'
-        />
+        <a href="{{ route('verifier.products.index') }}" class="block group">
+            <x-stat-card
+                label="Total Listings"
+                :value="$totalCount"
+                hint="Across all sellers"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Verified & Graded"
-            :value="$verifiedCount"
-            hint="Certified & Locked"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
-        />
+        <a href="{{ route('verifier.products.index', ['verification_status' => 'verified']) }}" class="block group">
+            <x-stat-card
+                label="Verified & Graded"
+                :value="$verifiedCount"
+                hint="Certified & Locked"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Pending Queue"
-            :value="$pendingCount"
-            hint="Awaiting physical check"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-        />
+        <a href="{{ route('verifier.products.index', ['verification_status' => 'pending_queue']) }}" class="block group">
+            <x-stat-card
+                label="Pending Queue"
+                :value="$pendingCount"
+                hint="Awaiting physical check"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            />
+        </a>
 
-        <x-stat-card
-            label="Not Requested"
-            :value="$unverifiedCount"
-            hint="Direct seller pre-owned"
-            icon='<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-        />
+        <a href="{{ route('verifier.products.index', ['verification_status' => 'not_requested']) }}" class="block group">
+            <x-stat-card
+                label="Not Requested"
+                :value="$unverifiedCount"
+                hint="Direct seller pre-owned"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            />
+        </a>
     </div>
 
     {{-- Filter Toolbar --}}
@@ -81,10 +89,11 @@
             <div class="w-44">
                 <select name="verification_status" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
                     <option value="">All Verification States</option>
+                    <option value="pending_queue" {{ in_array($selectedStatus, ['pending', 'pending_queue'], true) ? 'selected' : '' }}>Pending Queue</option>
                     <option value="verified" {{ $selectedStatus === 'verified' ? 'selected' : '' }}>Verified (Locked)</option>
-                    <option value="not_requested" {{ $selectedStatus === 'not_requested' ? 'selected' : '' }}>Not Requested</option>
                     <option value="scheduled" {{ $selectedStatus === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
                     <option value="inspecting" {{ $selectedStatus === 'inspecting' ? 'selected' : '' }}>Inspecting</option>
+                    <option value="not_requested" {{ $selectedStatus === 'not_requested' ? 'selected' : '' }}>Not Requested</option>
                     <option value="rejected" {{ $selectedStatus === 'rejected' ? 'selected' : '' }}>Rejected</option>
                 </select>
             </div>

@@ -16,4 +16,13 @@ enum KycDocumentStatus: string
             self::Rejected => 'Rejected',
         };
     }
+
+    public function badgeColor(): string
+    {
+        return match ($this) {
+            self::Pending => 'amber',
+            self::Approved => 'emerald',
+            self::Rejected => 'rose',
+        };
+    }
 }

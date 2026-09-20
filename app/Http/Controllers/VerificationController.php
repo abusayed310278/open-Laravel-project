@@ -32,4 +32,12 @@ class VerificationController extends Controller
 
         return back()->with('status', 'Your documents were submitted for review.');
     }
+
+    public function downloadDocument(VerificationDocument $document): \Symfony\Component\HttpFoundation\StreamedResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        abort_unless($document->verification?->user_id === Auth::id() || Auth::user()?->isAdmin(), 403);
+        abort_unless($document->file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($document->file_path), 404);
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($document->file_path);
+    }
 }

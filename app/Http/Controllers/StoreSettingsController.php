@@ -44,14 +44,14 @@ class StoreSettingsController extends Controller
         $data['is_store_active'] = $request->boolean('is_store_active');
         $data['profile_completed'] = true;
 
-        if ($request->hasFile('logo') && $request->file('logo')->isValid() && !empty($request->file('logo')->getRealPath())) {
-            $data['logo'] = $request->file('logo')->store('business-logos', 'public');
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $data['logo'] = \App\Helpers\FileUploadHelper::store($request->file('logo'), 'business-logos', 'public');
         } elseif ($request->boolean('remove_logo')) {
             $data['logo'] = null;
         }
 
-        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid() && !empty($request->file('cover_image')->getRealPath())) {
-            $data['cover_image'] = $request->file('cover_image')->store('business-covers', 'public');
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+            $data['cover_image'] = \App\Helpers\FileUploadHelper::store($request->file('cover_image'), 'business-covers', 'public');
         } elseif ($request->boolean('remove_cover_image')) {
             $data['cover_image'] = null;
         }
@@ -73,14 +73,14 @@ class StoreSettingsController extends Controller
         $data['is_store_active'] = $request->boolean('is_store_active');
         $data['profile_completed'] = true;
 
-        if ($request->hasFile('profile_photo') && $request->file('profile_photo')->isValid() && !empty($request->file('profile_photo')->getRealPath())) {
-            $data['profile_photo'] = $request->file('profile_photo')->store('saler-photos', 'public');
+        if ($request->hasFile('profile_photo') && $request->file('profile_photo')->isValid()) {
+            $data['profile_photo'] = \App\Helpers\FileUploadHelper::store($request->file('profile_photo'), 'saler-photos', 'public');
         } elseif ($request->boolean('remove_profile_photo')) {
             $data['profile_photo'] = null;
         }
 
-        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid() && !empty($request->file('cover_image')->getRealPath())) {
-            $data['cover_image'] = $request->file('cover_image')->store('saler-covers', 'public');
+        if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+            $data['cover_image'] = \App\Helpers\FileUploadHelper::store($request->file('cover_image'), 'saler-covers', 'public');
         } elseif ($request->boolean('remove_cover_image')) {
             $data['cover_image'] = null;
         }

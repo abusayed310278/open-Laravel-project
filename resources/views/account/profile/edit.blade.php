@@ -20,9 +20,9 @@
 
     $avatarUrl = $user?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($user->profile->avatar) : null;
 
-    $company = $user?->businessProfile?->business_name ?? ($user?->salerProfile?->display_name ?? '');
-    $location = $user?->salerProfile?->location ?? '';
-    $designation = match($user?->role?->value) {
+    $company = $user?->profile?->company ?? ($user?->businessProfile?->business_name ?? ($user?->salerProfile?->display_name ?? ''));
+    $location = $user?->profile?->location ?? ($user?->salerProfile?->location ?? '');
+    $designation = $user?->profile?->designation ?? match($user?->role?->value) {
         'admin' => 'Admin',
         'business' => 'Business Owner',
         'saler' => 'Individual Seller',

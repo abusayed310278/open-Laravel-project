@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
             'profile.complete' => EnsureProfileIsComplete::class,
         ]);
 

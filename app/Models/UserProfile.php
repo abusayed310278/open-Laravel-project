@@ -13,6 +13,9 @@ class UserProfile extends Model
         'bio',
         'date_of_birth',
         'gender',
+        'company',
+        'location',
+        'designation',
     ];
 
     protected function casts(): array

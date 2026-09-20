@@ -24,16 +24,16 @@ class ProductController extends Controller
         $verifier = Auth::user();
         $locationId = $verifier->verifierProfile?->assigned_location_id;
 
-        // Scope query strictly to products with appointments at the verifier's location or assigned to the verifier
-        $baseQuery = Product::query()
-            ->whereHas('verifications', function ($q) use ($verifier, $locationId) {
+        $baseQuery = Product::query();
+
+        if ($locationId) {
+            $baseQuery->whereHas('verifications', function ($q) use ($verifier, $locationId) {
                 $q->where(function ($sub) use ($verifier, $locationId) {
-                    $sub->where('verifier_id', $verifier->id);
-                    if ($locationId) {
-                        $sub->orWhere('location_id', $locationId);
-                    }
+                    $sub->where('verifier_id', $verifier->id)
+                        ->orWhere('location_id', $locationId);
                 });
             });
+        }
 
         $query = (clone $baseQuery)
             ->with(['user', 'category', 'images', 'gradeAssignment', 'latestVerificationRequest'])
@@ -56,7 +56,12 @@ class ProductController extends Controller
 
         // Filter by Verification Status
         if ($request->filled('verification_status')) {
-            $query->where('verification_status', $request->query('verification_status'));
+            $statusVal = $request->query('verification_status');
+            if (in_array($statusVal, ['pending', 'pending_queue', 'queue'], true)) {
+                $query->whereIn('verification_status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending]);
+            } else {
+                $query->where('verification_status', $statusVal);
+            }
         }
 
         // Filter by Condition

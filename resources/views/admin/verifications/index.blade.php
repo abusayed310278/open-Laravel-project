@@ -3,6 +3,7 @@
 @section('title', 'KYC Verifications')
 
 @section('content')
+    @include('admin.verifications._tabs')
 
     @session('status')
         <x-alert type="success">{{ $value }}</x-alert>
@@ -51,11 +52,27 @@
                     <td class="px-4 py-3.5 text-sm text-gray-500">
                         {{ $application->submitted_at?->format('M j, Y') ?? '—' }}
                     </td>
-                    <td class="px-4 py-3.5 text-right">
-                        <a href="{{ route('admin.verifications.show', $application) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700 hover:underline">
-                            Review
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
+                    <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-2">
+                            @if ($application->status->value !== 'approved')
+                                <form method="POST" action="{{ route('admin.verifications.approve', $application) }}" class="inline-block m-0">
+                                    @csrf
+                                    <button
+                                        type="submit"
+                                        onclick="return confirm('Quick Approve KYC verification for {{ $application->user->name }}?')"
+                                        class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs"
+                                        title="Quick Approve KYC"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+                            @endif
+
+                            <a href="{{ route('admin.verifications.show', $application) }}" class="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 transition">
+                                <span>Review</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
                     </td>
                 </tr>
             @empty

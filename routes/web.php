@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\ReviewReportController as AdminReviewReportController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SiteManagementController;
 use App\Http\Controllers\Admin\SocialTypeController;
 use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use App\Http\Controllers\Admin\SubscriptionPlanController;
@@ -121,6 +122,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout.store');
+    Route::get('/checkout/stripe-portal/{order}', [CheckoutController::class, 'stripePortal'])->name('checkout.stripe-portal');
+    Route::post('/checkout/stripe-confirm/{order}', [CheckoutController::class, 'stripeConfirm'])->name('checkout.stripe-confirm');
+    Route::get('/checkout/stripe-success/{order}', [CheckoutController::class, 'stripeSuccess'])->name('checkout.stripe-success');
     Route::get('/orders/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('orders.confirmation');
 
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
@@ -171,6 +175,8 @@ $salerWarehouseRoutes = function () {
 $messagingRoutes = function () {
     Route::get('/messages', [ChatController::class, 'index'])->name('messages.index');
     Route::get('/messages/{conversation}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/messages/{conversation}', [ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.store');
+    Route::get('/messages/{conversation}/poll/{afterId}', [ChatController::class, 'poll'])->whereNumber('afterId')->name('chat.poll');
 
     Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
     Route::post('/support', [SupportTicketController::class, 'store'])->middleware('throttle:10,1')->name('support.store');
@@ -237,6 +243,7 @@ $sellerCategoryRoutes = function () {
     Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::put('/categories/{category}/attributes', [CategoryController::class, 'updateAttributes'])->name('categories.attributes.update');
+    Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
     Route::get('/categories/{category}/attributes', [CategoryAttributeController::class, 'index'])->name('categories.attributes');
@@ -291,6 +298,19 @@ Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(fu
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
     ->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Manage Whole Site (RBAC, Section Toggles, Dynamic Menus)
+        Route::get('/site-management', [SiteManagementController::class, 'index'])->name('site-management.index');
+        Route::get('/site-management/features', [SiteManagementController::class, 'features'])->name('site-management.features');
+        Route::post('/site-management/features/{key}/toggle', [SiteManagementController::class, 'toggleFeature'])->name('site-management.features.toggle');
+        Route::put('/site-management/features/{feature}', [SiteManagementController::class, 'updateFeature'])->name('site-management.features.update');
+        Route::get('/site-management/roles', [SiteManagementController::class, 'roles'])->name('site-management.roles');
+        Route::put('/site-management/roles/{role}/permissions', [SiteManagementController::class, 'updateRolePermissions'])->name('site-management.roles.permissions');
+        Route::get('/site-management/menus', [SiteManagementController::class, 'menus'])->name('site-management.menus');
+        Route::post('/site-management/menus', [SiteManagementController::class, 'storeMenu'])->name('site-management.menus.store');
+        Route::put('/site-management/menus/{menu}', [SiteManagementController::class, 'updateMenu'])->name('site-management.menus.update');
+        Route::delete('/site-management/menus/{menu}', [SiteManagementController::class, 'deleteMenu'])->name('site-management.menus.destroy');
+        Route::post('/site-management/cache/clear', [SiteManagementController::class, 'clearCache'])->name('site-management.cache.clear');
 
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
@@ -365,6 +385,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
         Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::put('/categories/{category}/attributes', [CategoryController::class, 'updateAttributes'])->name('categories.attributes.update');
+        Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
         Route::get('/categories/{category}/attributes', [CategoryAttributeController::class, 'index'])->name('categories.attributes');
@@ -429,19 +450,21 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::patch('/verification-checklists/{verificationChecklist}/toggle-required', [VerificationChecklistController::class, 'toggleRequired'])->name('verification-checklists.toggle-required');
         Route::delete('/verification-checklists/{verificationChecklist}', [VerificationChecklistController::class, 'destroy'])->name('verification-checklists.destroy');
 
-        Route::get('/warehouses', [AdminWarehouseController::class, 'index'])->name('warehouses.index');
-        Route::post('/warehouses', [AdminWarehouseController::class, 'store'])->name('warehouses.store');
-        Route::get('/warehouses/{warehouse}', [AdminWarehouseController::class, 'show'])->name('warehouses.show');
-        Route::put('/warehouses/{warehouse}', [AdminWarehouseController::class, 'update'])->name('warehouses.update');
-        Route::patch('/warehouses/{warehouse}/toggle-active', [AdminWarehouseController::class, 'toggleActive'])->name('warehouses.toggle-active');
-        Route::delete('/warehouses/{warehouse}', [AdminWarehouseController::class, 'destroy'])->name('warehouses.destroy');
-        Route::post('/warehouses/{warehouse}/locations', [WarehouseLocationController::class, 'store'])->name('warehouses.locations.store');
-        Route::delete('/warehouses/{warehouse}/locations/{location}', [WarehouseLocationController::class, 'destroy'])->name('warehouses.locations.destroy');
+        Route::middleware(['permission:inventory.manage'])->group(function () {
+            Route::get('/warehouses', [AdminWarehouseController::class, 'index'])->name('warehouses.index');
+            Route::post('/warehouses', [AdminWarehouseController::class, 'store'])->name('warehouses.store');
+            Route::get('/warehouses/{warehouse}', [AdminWarehouseController::class, 'show'])->name('warehouses.show');
+            Route::put('/warehouses/{warehouse}', [AdminWarehouseController::class, 'update'])->name('warehouses.update');
+            Route::patch('/warehouses/{warehouse}/toggle-active', [AdminWarehouseController::class, 'toggleActive'])->name('warehouses.toggle-active');
+            Route::delete('/warehouses/{warehouse}', [AdminWarehouseController::class, 'destroy'])->name('warehouses.destroy');
+            Route::post('/warehouses/{warehouse}/locations', [WarehouseLocationController::class, 'store'])->name('warehouses.locations.store');
+            Route::delete('/warehouses/{warehouse}/locations/{location}', [WarehouseLocationController::class, 'destroy'])->name('warehouses.locations.destroy');
 
-        Route::get('/warehouse-products', [WarehouseProductController::class, 'index'])->name('warehouse-products.index');
-        Route::get('/warehouse-products/{warehouseProduct}/receive', [WarehouseProductController::class, 'receive'])->name('warehouse-products.receive');
-        Route::post('/warehouse-products/{warehouseProduct}/receive', [WarehouseProductController::class, 'storeReceive'])->name('warehouse-products.receive.store');
-        Route::post('/warehouse-products/{warehouseProduct}/release', [WarehouseProductController::class, 'release'])->name('warehouse-products.release');
+            Route::get('/warehouse-products', [WarehouseProductController::class, 'index'])->name('warehouse-products.index');
+            Route::get('/warehouse-products/{warehouseProduct}/receive', [WarehouseProductController::class, 'receive'])->name('warehouse-products.receive');
+            Route::post('/warehouse-products/{warehouseProduct}/receive', [WarehouseProductController::class, 'storeReceive'])->name('warehouse-products.receive.store');
+            Route::post('/warehouse-products/{warehouseProduct}/release', [WarehouseProductController::class, 'release'])->name('warehouse-products.release');
+        });
 
         Route::get('/subscriptions/plans', [SubscriptionPlanController::class, 'index'])->name('subscriptions.plans.index');
         Route::post('/subscriptions/plans', [SubscriptionPlanController::class, 'store'])->name('subscriptions.plans.store');
@@ -504,7 +527,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/payouts/{payout}/complete', [AdminPayoutController::class, 'complete'])->name('payouts.complete');
         Route::post('/payouts/{payout}/reject', [AdminPayoutController::class, 'reject'])->name('payouts.reject');
 
-        Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
+        Route::get('/inventory', [AdminInventoryController::class, 'index'])->middleware('permission:inventory.manage')->name('inventory.index');
 
         Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
 
@@ -534,6 +557,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::put('/banners/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [AdminBannerController::class, 'destroy'])->name('banners.destroy');
 
+        Route::post('/social-types/seed', [SocialTypeController::class, 'seed'])->name('social-types.seed');
         Route::resource('social-types', SocialTypeController::class)->except(['create', 'show', 'edit']);
         Route::get('/visitor-reports', [VisitorReportController::class, 'index'])->name('visitor-reports.index');
     });
@@ -544,6 +568,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
         Route::post('/verification', [VerificationController::class, 'store'])->name('verification.store');
+        Route::get('/verification/documents/{document}', [VerificationController::class, 'downloadDocument'])->name('verification.document');
 
         Route::get('/store', [StoreSettingsController::class, 'edit'])->name('store.edit');
         Route::post('/store', [StoreSettingsController::class, 'updateBusiness'])->name('store.update');
@@ -568,6 +593,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
         Route::post('/verification', [VerificationController::class, 'store'])->name('verification.store');
+        Route::get('/verification/documents/{document}', [VerificationController::class, 'downloadDocument'])->name('verification.document');
 
         Route::get('/store', [StoreSettingsController::class, 'edit'])->name('store.edit');
         Route::post('/store', [StoreSettingsController::class, 'updateSaler'])->name('store.update');
@@ -605,7 +631,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Verifier->value])
         $messagingRoutes();
     });
 
-Route::middleware(['auth', 'verified', 'role:'.UserRole::Customer->value])
+Route::middleware(['auth', 'verified'])
     ->prefix('account')->name('account.')->group(function () use ($messagingRoutes) {
         Route::get('/', [CustomerAccountController::class, 'index'])->name('dashboard');
 
@@ -641,6 +667,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Customer->value])
 Route::middleware('auth')->group(function () {
     Route::get('/account/profile', [CustomerProfileController::class, 'edit'])->name('account.profile.edit');
     Route::patch('/account/profile', [CustomerProfileController::class, 'update'])->name('account.profile.update');
+
+    Route::get('/chat/attachment/{message}', [ChatController::class, 'attachment'])->name('chat.attachment');
+    Route::post('/chat/start-admin', [ChatController::class, 'startWithAdmin'])->name('chat.start-admin');
+    Route::post('/chat/start/{product}', [ChatController::class, 'startFromProduct'])->name('chat.start');
 });
 
 require __DIR__.'/auth.php';

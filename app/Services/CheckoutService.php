@@ -56,8 +56,24 @@ class CheckoutService
      */
     private function methodsForGroup(array $group): array
     {
+        $platformStripeEnabled = $this->settingsService->get('stripe_enabled') === '1'
+            || (filled($this->settingsService->get('stripe_publishable_key')) && $this->settingsService->has('stripe_secret_key'))
+            || (filled(config('services.stripe.key')) && filled(config('services.stripe.secret')));
+
+        $platformPaypalEnabled = $this->settingsService->get('paypal_enabled') === '1'
+            || (filled($this->settingsService->get('paypal_client_id')) && $this->settingsService->has('paypal_client_secret'))
+            || filled(config('services.paypal.client_id'));
+
         if ($group['route'] === 'openbox') {
             $methods = [PaymentMethod::Cod];
+
+            if ($platformStripeEnabled) {
+                $methods[] = PaymentMethod::Stripe;
+            }
+
+            if ($platformPaypalEnabled) {
+                $methods[] = PaymentMethod::Paypal;
+            }
 
             if (filled($this->settingsService->get('bank_details'))) {
                 $methods[] = PaymentMethod::ManualBank;
@@ -69,11 +85,21 @@ class CheckoutService
         $settings = $group['seller']->paymentSettings;
         $codEnabled = $settings ? $settings->cod_enabled : true;
         $manualBankEnabled = $settings && $settings->manual_bank_enabled && filled($settings->bank_details);
+        $vendorStripeEnabled = $settings ? (bool) $settings->stripe_enabled : false;
+        $vendorPaypalEnabled = $settings ? (bool) $settings->paypal_enabled : false;
 
         $methods = [];
 
         if ($codEnabled) {
             $methods[] = PaymentMethod::Cod;
+        }
+
+        if ($platformStripeEnabled || $vendorStripeEnabled) {
+            $methods[] = PaymentMethod::Stripe;
+        }
+
+        if ($platformPaypalEnabled || $vendorPaypalEnabled) {
+            $methods[] = PaymentMethod::Paypal;
         }
 
         if ($manualBankEnabled) {
