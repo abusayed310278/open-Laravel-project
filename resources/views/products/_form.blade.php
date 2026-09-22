@@ -8,7 +8,7 @@
 
         <x-card title="Basic Info">
             <div class="space-y-5">
-                <x-input label="Product title" name="title" type="text" :value="old('title', $product->title)" />
+                <x-input label="Product title" name="title" type="text" placeholder="e.g. Wireless Noise-Canceling Headphones, iPhone 15 Pro Max" :value="old('title', $product->title)" />
 
                 <div class="grid sm:grid-cols-2 gap-5">
                     <x-select
@@ -188,13 +188,13 @@
                 />
 
                 <div class="grid sm:grid-cols-2 gap-4">
-                    <x-input label="Price" name="price" type="number" step="0.01" :value="old('price', $product->price)" />
-                    <x-input label="Compare-at price" name="compare_price" type="number" step="0.01" :value="old('compare_price', $product->compare_price)" />
+                    <x-input label="Price" name="price" type="number" step="0.01" placeholder="0.00" :value="old('price', $product->price)" />
+                    <x-input label="Compare-at price" name="compare_price" type="number" step="0.01" placeholder="0.00" :value="old('compare_price', $product->compare_price)" />
                 </div>
 
                 <div class="grid sm:grid-cols-2 gap-4">
-                    <x-input label="SKU (optional)" name="sku" type="text" :value="old('sku', $product->sku)" />
-                    <x-input label="Quantity" name="quantity" type="number" :value="old('quantity', $product->quantity ?? 1)" />
+                    <x-input label="SKU (optional)" name="sku" type="text" placeholder="e.g. PROD-10293" :value="old('sku', $product->sku)" />
+                    <x-input label="Quantity" name="quantity" type="number" placeholder="1" :value="old('quantity', $product->quantity ?? 1)" />
                 </div>
 
                 <label class="flex items-center gap-2 text-sm text-gray-600">
@@ -211,9 +211,45 @@
             </div>
         </x-card>
 
+        <x-card title="Promotions, Coupons &amp; Gift Cards">
+            <div class="space-y-4">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <x-input
+                        label="Product Promo / Coupon Code"
+                        name="promo_code"
+                        type="text"
+                        placeholder="e.g. SAVE10 or PROMO20"
+                        :value="old('promo_code', $product->promo_code ?? '')"
+                    />
+                    <x-input
+                        label="Special Discount Rate (%)"
+                        name="discount_percent"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 10 or 15"
+                        :value="old('discount_percent', $product->discount_percent ?? '')"
+                    />
+                </div>
+
+                <div class="space-y-2.5 border-t border-gray-100 pt-3">
+                    <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" name="allow_coupons" value="1" @checked(old('allow_coupons', $product->allow_coupons ?? true)) class="w-4 h-4 rounded accent-brand-500">
+                        <span>Eligible for storewide &amp; seller promotional coupons</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" name="allow_gift_cards" value="1" @checked(old('allow_gift_cards', $product->allow_gift_cards ?? true)) class="w-4 h-4 rounded accent-brand-500">
+                        <span>Eligible for Gift Card payments at checkout</span>
+                    </label>
+                </div>
+            </div>
+        </x-card>
+
         <x-card title="Shipping">
             <div class="space-y-5">
-                <x-input label="Weight (kg, optional)" name="weight" type="number" step="0.01" :value="old('weight', $product->weight)" />
+                <x-input label="Weight (kg, optional)" name="weight" type="number" step="0.01" placeholder="e.g. 0.50" :value="old('weight', $product->weight)" />
 
                 <x-select
                     label="Shipping" name="shipping_type"
@@ -222,15 +258,15 @@
                 />
 
                 <div id="shipping_flat_rate_wrap" @if (old('shipping_type', $product->shipping_type?->value ?? 'free') !== 'flat_rate') style="display:none" @endif>
-                    <x-input label="Flat rate amount" name="shipping_flat_rate" type="number" step="0.01" :value="old('shipping_flat_rate', $product->shipping_flat_rate)" />
+                    <x-input label="Flat rate amount" name="shipping_flat_rate" type="number" step="0.01" placeholder="e.g. 15.00" :value="old('shipping_flat_rate', $product->shipping_flat_rate)" />
                 </div>
             </div>
         </x-card>
 
         <x-card title="SEO">
             <div class="space-y-5">
-                <x-input label="Meta title" name="meta_title" type="text" :value="old('meta_title', $product->meta_title)" />
-                <x-input label="Meta description" name="meta_description" type="text" :value="old('meta_description', $product->meta_description)" />
+                <x-input label="Meta title" name="meta_title" type="text" placeholder="SEO title for search engine listing" :value="old('meta_title', $product->meta_title)" />
+                <x-input label="Meta description" name="meta_description" type="text" placeholder="SEO summary description for search engine listing" :value="old('meta_description', $product->meta_description)" />
             </div>
         </x-card>
 

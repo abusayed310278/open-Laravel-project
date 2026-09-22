@@ -7,6 +7,7 @@ enum ProductCondition: string
     case New = 'new';
     case Used = 'used';
     case Refurbished = 'refurbished';
+    case Openbox = 'openbox';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum ProductCondition: string
             self::New => 'New',
             self::Used => 'Used',
             self::Refurbished => 'Refurbished',
+            self::Openbox => 'Openbox',
         };
     }
 }

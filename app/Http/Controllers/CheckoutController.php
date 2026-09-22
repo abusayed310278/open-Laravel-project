@@ -63,7 +63,11 @@ class CheckoutController extends Controller
         $order = $this->checkout->placeOrder($user, $cart, $shipping, $billing, PaymentMethod::from($request->string('payment_method')->value()));
 
         if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
-            $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
+            $firstVendor = $order->vendorOrders()->with('vendor.paymentSettings')->first()?->vendor;
+            $vendorStripeKey = $firstVendor?->paymentSettings?->stripe_secret_key;
+            $secretKey = filled($vendorStripeKey)
+                ? $vendorStripeKey
+                : (app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret'));
 
             if (filled($secretKey)) {
                 try {
@@ -144,7 +148,7 @@ class CheckoutController extends Controller
 
     private function resolveAddress(Request $request, string $prefix): Address
     {
-        if ($request->filled("{$prefix}_address_id")) {
+        if ($request->filled("{$prefix}_address_id") && is_numeric($request->input("{$prefix}_address_id"))) {
             return Auth::user()->addresses()->findOrFail($request->integer("{$prefix}_address_id"));
         }
 

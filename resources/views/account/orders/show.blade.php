@@ -51,9 +51,10 @@
                 @if ($vendorOrder->payment_method->value === 'manual_bank')
                     <div class="mt-4 border-t border-gray-50 pt-4">
                         @php
-                            $bank = $vendorOrder->payment_route->value === 'openbox'
+                            $vendorBankDetails = $vendorOrder->vendor->paymentSettings->bank_details ?? null;
+                            $bank = ($vendorOrder->payment_route->value === 'openbox' || empty($vendorBankDetails))
                                 ? $openboxBankDetails
-                                : ($vendorOrder->vendor->paymentSettings->bank_details ?? null);
+                                : $vendorBankDetails;
                         @endphp
 
                         @if ($bank)

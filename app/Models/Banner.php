@@ -10,6 +10,7 @@ class Banner extends Model
     protected $fillable = [
         'title',
         'image',
+        'video',
         'link',
         'position',
         'sort_order',
@@ -57,5 +58,23 @@ class Banner extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->imageUrl();
+    }
+
+    public function videoUrl(): ?string
+    {
+        if (! $this->video) {
+            return null;
+        }
+
+        if (str_starts_with($this->video, 'http://') || str_starts_with($this->video, 'https://')) {
+            return $this->video;
+        }
+
+        return asset('storage/'.ltrim($this->video, '/'));
+    }
+
+    public function getVideoUrlAttribute(): ?string
+    {
+        return $this->videoUrl();
     }
 }

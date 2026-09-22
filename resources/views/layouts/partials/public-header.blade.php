@@ -202,11 +202,15 @@
             display: none;
         }
         .nav-item-group:hover > .nav-dropdown,
-        .nav-dropdown:hover {
+        .nav-item-group.is-open > .nav-dropdown {
             display: block !important;
             opacity: 1 !important;
             visibility: visible !important;
             pointer-events: auto !important;
+        }
+        #nav-more-dropdown:hover .more-chevron,
+        #nav-more-dropdown.is-open .more-chevron {
+            transform: rotate(180deg);
         }
 
         /* Level 2 & Level 3 Flyout Submenus (Fly out to the RIGHT side) */
@@ -657,19 +661,10 @@
             </div>
 
             {{-- Categories Navigation Bar (Adapts based on device width) --}}
-            <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start">
-                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1">
+            <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start min-w-0 overflow-hidden">
+                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-hidden">
                     @foreach ($navMenuCategories as $index => $navCat)
-                        @php
-                            $visibilityClass = match(true) {
-                                $index < 3 => 'hidden sm:inline-flex',
-                                $index < 5 => 'hidden md:inline-flex',
-                                $index < 8 => 'hidden lg:inline-flex',
-                                $index < 12 => 'hidden xl:inline-flex',
-                                default => 'hidden 2xl:inline-flex',
-                            };
-                        @endphp
-                        <div class="relative nav-item-group flex-shrink-0 {{ $visibilityClass }}">
+                        <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
                             <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center text-[12.5px] sm:text-[13px] font-semibold text-gray-800 hover:text-gray-950 transition-colors whitespace-nowrap group">
                                 <span>{{ $navCat['name'] }}</span>
@@ -721,27 +716,19 @@
                     @endforeach
 
                     {{-- More Dropdown --}}
-                    <div id="nav-more-dropdown" class="relative nav-item-group flex-shrink-0 2xl:hidden">
-                        <button type="button" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group">
-                            <span>More</span>
-                            <span class="text-gray-900 group-hover:text-black transition-colors duration-200 tracking-tighter">...</span>
+                    <div id="nav-more-dropdown" class="relative nav-item-group flex-shrink-0 hidden">
+                        <button type="button" id="nav-more-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none" aria-label="More categories">
+                            <span class="text-sm font-extrabold tracking-wider">...</span>
+                            <svg class="w-3 h-3 text-gray-900 more-chevron transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
                             <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
                         </button>
 
-                        <div class="nav-dropdown absolute right-0 sm:left-auto top-full pt-0.5 hidden z-50 min-w-[220px]">
+                        <div id="nav-more-menu" class="nav-dropdown absolute right-0 sm:left-auto top-full pt-0.5 hidden z-50 min-w-[220px]">
                             <div class="bg-white rounded-b-lg shadow-xl border border-gray-100 py-1.5 text-[13px]">
                                 @foreach ($navMenuCategories as $index => $navCat)
-                                    @php
-                                        // Visibility in More dropdown is inverted relative to top bar
-                                        $moreClass = match(true) {
-                                            $index < 3 => 'sm:hidden',
-                                            $index < 5 => 'md:hidden',
-                                            $index < 8 => 'lg:hidden',
-                                            $index < 12 => 'xl:hidden',
-                                            default => '2xl:hidden',
-                                        };
-                                    @endphp
-                                    <div class="relative nav-sub-item-group group/sub {{ $moreClass }}">
+                                    <div class="relative nav-sub-item-group group/sub js-more-category-item" data-index="{{ $index }}">
                                         <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
                                             <span>{{ $navCat['name'] }}</span>
                                             @if (!empty($navCat['children']))
@@ -767,6 +754,7 @@
                     </div>
                 </div>
             </nav>
+
         </div>
     </div>
 
@@ -808,6 +796,136 @@
                         allCatContainer.classList.remove('is-open');
                     }
                 });
+            }
+
+            // Dynamic Responsive Navigation Bar Category Overflow (Priority-Plus Menu)
+            const navContainer = document.getElementById('header-main-nav');
+            const navItemsContainer = document.getElementById('header-nav-items');
+            const topItems = Array.from(document.querySelectorAll('.js-nav-category-item'));
+            const moreDropdown = document.getElementById('nav-more-dropdown');
+            const moreItems = Array.from(document.querySelectorAll('.js-more-category-item'));
+            const moreBtn = document.getElementById('nav-more-btn');
+
+            if (navContainer && navItemsContainer && topItems.length > 0 && moreDropdown) {
+                // More Dropdown Hover & Click toggle
+                if (moreDropdown) {
+                    let moreTimeout;
+                    moreDropdown.addEventListener('mouseenter', () => {
+                        clearTimeout(moreTimeout);
+                        moreDropdown.classList.add('is-open');
+                    });
+
+                    moreDropdown.addEventListener('mouseleave', () => {
+                        moreTimeout = setTimeout(() => {
+                            moreDropdown.classList.remove('is-open');
+                        }, 150);
+                    });
+
+                    if (moreBtn) {
+                        moreBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            moreDropdown.classList.toggle('is-open');
+                        });
+                    }
+
+                    document.addEventListener('click', (e) => {
+                        if (!moreDropdown.contains(e.target)) {
+                            moreDropdown.classList.remove('is-open');
+                        }
+                    });
+
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            moreDropdown.classList.remove('is-open');
+                        }
+                    });
+                }
+
+                let cachedItemWidths = [];
+                let cachedMoreWidth = 0;
+
+                const measureWidths = () => {
+                    moreDropdown.style.display = 'inline-flex';
+                    moreDropdown.classList.remove('hidden');
+                    topItems.forEach(item => {
+                        item.style.display = 'inline-flex';
+                        item.classList.remove('hidden');
+                    });
+
+                    cachedMoreWidth = moreDropdown.offsetWidth || 80;
+                    cachedItemWidths = topItems.map(item => item.offsetWidth || 100);
+                };
+
+                const updateNavOverflow = () => {
+                    if (cachedItemWidths.length === 0) {
+                        measureWidths();
+                    }
+
+                    const availableWidth = navContainer.clientWidth;
+                    if (availableWidth <= 0) return;
+
+                    let totalWidthAll = cachedItemWidths.reduce((sum, w) => sum + w, 0);
+
+                    let visibleCount = 0;
+                    if (totalWidthAll <= availableWidth) {
+                        visibleCount = cachedItemWidths.length;
+                    } else {
+                        const targetWidth = availableWidth - cachedMoreWidth;
+                        let accumWidth = 0;
+                        for (let i = 0; i < cachedItemWidths.length; i++) {
+                            if (accumWidth + cachedItemWidths[i] <= targetWidth) {
+                                accumWidth += cachedItemWidths[i];
+                                visibleCount++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Apply display states
+                    topItems.forEach((item, idx) => {
+                        if (idx < visibleCount) {
+                            item.style.display = 'inline-flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    moreItems.forEach((item, idx) => {
+                        if (idx >= visibleCount) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    if (visibleCount < topItems.length) {
+                        moreDropdown.style.display = 'inline-flex';
+                        moreDropdown.classList.remove('hidden');
+                    } else {
+                        moreDropdown.style.display = 'none';
+                        moreDropdown.classList.add('hidden');
+                        moreDropdown.classList.remove('is-open');
+                    }
+                };
+
+                // Run measurement and calculation
+                measureWidths();
+                updateNavOverflow();
+
+                // Recalculate on window resize & ResizeObserver
+                window.addEventListener('resize', () => {
+                    measureWidths();
+                    updateNavOverflow();
+                });
+
+                if (window.ResizeObserver) {
+                    const ro = new ResizeObserver(() => {
+                        updateNavOverflow();
+                    });
+                    ro.observe(navContainer);
+                }
             }
 
             // Global Cart Badge Manager & Add to Cart Click Listener

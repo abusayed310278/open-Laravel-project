@@ -64,7 +64,9 @@ class ProductController extends Controller
             $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
         );
 
-        return redirect()->route($this->indexRoute())->with('status', "\"{$product->title}\" was saved as a draft.");
+        $this->products->submitForApproval($product);
+
+        return redirect()->route($this->indexRoute())->with('status', "\"{$product->title}\" was created and submitted for review.");
     }
 
     public function edit(Product $product): View
@@ -92,6 +94,10 @@ class ProductController extends Controller
             $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
             array_map('intval', $request->input('delete_images', []))
         );
+
+        if (in_array($product->status, [\App\Enums\ProductStatus::Draft, \App\Enums\ProductStatus::Rejected], true)) {
+            $this->products->submitForApproval($product);
+        }
 
         return redirect()->route($this->indexRoute())->with('status', 'Listing updated.');
     }

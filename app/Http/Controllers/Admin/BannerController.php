@@ -19,11 +19,13 @@ class BannerController extends Controller
 
     public function store(StoreBannerRequest $request): RedirectResponse
     {
-        $imagePath = $this->storeUploadedFile($request->file('image'), 'banners', 'public');
+        $imagePath = $request->hasFile('image') ? $this->storeUploadedFile($request->file('image'), 'banners', 'public') : null;
+        $videoPath = $request->hasFile('video') ? $this->storeUploadedFile($request->file('video'), 'banners', 'public') : null;
 
         Banner::create([
-            ...$request->safe()->except('image'),
+            ...$request->safe()->except(['image', 'video']),
             'image' => $imagePath,
+            'video' => $videoPath,
             'is_active' => $request->boolean('is_active', true),
             'sort_order' => $request->integer('sort_order', 0),
         ]);
@@ -34,7 +36,7 @@ class BannerController extends Controller
     public function update(StoreBannerRequest $request, Banner $banner): RedirectResponse
     {
         $data = [
-            ...$request->safe()->except(['image', 'remove_image']),
+            ...$request->safe()->except(['image', 'remove_image', 'video', 'remove_video']),
             'is_active' => $request->boolean('is_active', false),
             'sort_order' => $request->integer('sort_order', 0),
         ];
@@ -49,6 +51,18 @@ class BannerController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
             }
             $data['image'] = $this->storeUploadedFile($request->file('image'), 'banners', 'public');
+        }
+
+        if ($request->boolean('remove_video')) {
+            if ($banner->video && !str_starts_with($banner->video, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
+            }
+            $data['video'] = null;
+        } elseif ($request->hasFile('video')) {
+            if ($banner->video && !str_starts_with($banner->video, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
+            }
+            $data['video'] = $this->storeUploadedFile($request->file('video'), 'banners', 'public');
         }
 
         $banner->update($data);
@@ -97,6 +111,9 @@ class BannerController extends Controller
     {
         if ($banner->image && !str_starts_with($banner->image, 'http')) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+        }
+        if ($banner->video && !str_starts_with($banner->video, 'http')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
         }
 
         $banner->delete();

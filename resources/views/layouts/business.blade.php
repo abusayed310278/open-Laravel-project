@@ -37,8 +37,8 @@
                 'items' => [
                     ['route' => 'business.store.edit', 'label' => 'Store Profile', 'icon' => $icon['building']],
                     ['route' => 'business.verification.index', 'label' => 'Verification', 'icon' => $icon['shield']],
-                    ['route' => 'business.subscription.index', 'label' => 'Subscription', 'icon' => $icon['credit-card']],
-                    ['route' => 'business.payment-settings.edit', 'label' => 'Payment Settings', 'icon' => $icon['banknotes']],
+                    ['route' => 'business.subscription.index', 'label' => 'Subscription', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],
+                    ['route' => 'business.payment-settings.edit', 'label' => 'Payment Settings', 'icon' => $icon['banknotes'], 'permission' => 'payments.manage'],
                     ['route' => 'business.payouts.index', 'label' => 'Payouts', 'icon' => $icon['wallet']],
                 ],
             ],

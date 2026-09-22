@@ -32,6 +32,38 @@ class ChatMessage extends Model
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    public function isPdf(): bool
+    {
+        if (! $this->attachment_path) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($this->attachment_path, PATHINFO_EXTENSION));
+
+        return $extension === 'pdf';
+    }
+
+    public function isDocument(): bool
+    {
+        if (! $this->attachment_path) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($this->attachment_path, PATHINFO_EXTENSION));
+
+        return in_array($extension, ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'zip', 'rar', '7z'], true);
+    }
+
+    public function attachmentExtension(): string
+    {
+        return strtoupper(pathinfo($this->attachment_path ?? '', PATHINFO_EXTENSION) ?: 'FILE');
+    }
+
+    public function attachmentName(): string
+    {
+        return basename($this->attachment_path ?? 'attachment');
+    }
+
     public function isImage(): bool
     {
         if (! $this->attachment_path) {

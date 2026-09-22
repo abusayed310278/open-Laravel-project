@@ -187,6 +187,15 @@
     - Updated `CheckoutController::store()` to create a Stripe Checkout Session via Stripe API and redirect the customer directly to the official hosted Stripe Web Portal (`pay.stripe.com`).
     - Added dedicated Stripe Hosted Web Portal view ([`resources/views/checkout/stripe-portal.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/stripe-portal.blade.php)) and routes (`checkout.stripe-portal`, `checkout.stripe-confirm`, `checkout.stripe-success`).
     - Updated checkout submit button text to **"Proceed to Stripe Payment"** when Stripe is selected.
+48. **Verifiers Staff Navigation & Admin Dashboard Integration**:
+    - Updated [`RbacAndFeatureSettingsSeeder.php`](file:///c:/laragon/www/open/database/seeders/RbacAndFeatureSettingsSeeder.php) to include **Verifiers Staff** (`admin.verifiers.index`), **Inspection Locations** (`admin.verification-locations.index`), and **Verification Checklists** (`admin.verification-checklists.index`) under the `VERIFICATION & KYC` group in `dashboard_menus` table.
+    - Re-seeded `dashboard_menus` table so **Verifiers Staff** appears directly under `VERIFICATION & KYC` in the Admin sidebar navigation.
+    - Added a **Verifiers Staff** quick action button in the Admin Dashboard header banner ([`resources/views/admin/dashboard.blade.php`](file:///c:/laragon/www/open/resources/views/admin/dashboard.blade.php)) and wrapped the verifier count metric in a clickable link leading directly to the Verifiers directory.
+49. **Verifier Location Assignment Route Parameter Binding Repair**:
+    - Resolved `UrlGenerationException: Missing required parameter` error on `/admin/verifiers` caused by passing `$verifier->verifierProfile` (which can be `null`) to `route('admin.verifiers.assign-location')`.
+    - Updated route `admin.verifiers.assign-location` in [`routes/web.php`](file:///c:/laragon/www/open/routes/web.php) to bind directly to `{user}` (`User $user`).
+    - Updated `VerifierController::assignLocation()` to use `$user->verifierProfile()->updateOrCreate(...)`.
+    - Updated [`resources/views/admin/verifiers/index.blade.php`](file:///c:/laragon/www/open/resources/views/admin/verifiers/index.blade.php) to pass `$verifier` directly to `route('admin.verifiers.assign-location', $verifier)`.
 
 
 ---

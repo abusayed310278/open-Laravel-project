@@ -7,7 +7,7 @@
         <x-table :headers="['Product', 'Type', 'Change', 'By', 'Date']" id="admin-inventory-table">
             @forelse ($movements as $movement)
                 <tr class="border-b border-gray-50">
-                    <td class="px-4 py-3 text-gray-700">{{ $movement->product->title }}</td>
+                    <td class="px-4 py-3 text-gray-700">{{ $movement->product?->title ?? 'Deleted Product' }}</td>
                     <td class="px-4 py-3 text-gray-500">{{ $movement->type->label() }}</td>
                     <td class="px-4 py-3 {{ $movement->quantity >= 0 ? 'text-green-600' : 'text-red-600' }} font-medium">
                         {{ $movement->quantity >= 0 ? '+' : '' }}{{ $movement->quantity }}

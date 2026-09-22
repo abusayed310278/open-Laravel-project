@@ -8,27 +8,77 @@
         <x-alert type="success">{{ $value }}</x-alert>
     @endsession
 
+    <form id="bulk-delete-form" method="POST" action="{{ route('admin.products.bulk-destroy') }}">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <x-card>
         <x-slot:title>Products</x-slot:title>
         <x-slot:action>
             <x-button as="a" :href="route('admin.products.create')" size="sm">Add Product</x-button>
         </x-slot:action>
 
-        <form method="GET" class="mb-5">
-            <select name="status" onchange="this.form.submit()" class="border border-gray-200 rounded-md px-4 py-2.5 text-sm bg-white">
-                <option value="">All approval statuses</option>
-                @foreach ($statuses as $status)
-                    <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
-                @endforeach
-            </select>
-        </form>
+        {{-- SEARCH BAR & BULK ACTIONS TOOLBAR --}}
+        <div class="mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50/70 p-4 rounded-xl border border-gray-100">
+            <form method="GET" action="{{ route('admin.products.index') }}" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-3xl">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text" 
+                        name="search" 
+                        value="{{ request('search') }}" 
+                        placeholder="Search products by title, SKU, brand, seller..." 
+                        class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                    >
+                </div>
 
-        <x-table :headers="['Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', 'Actions']" id="products-table" class="min-w-[1200px]">
+                <select name="status" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3.5 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0">
+                    <option value="">All approval statuses</option>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="px-4 py-2 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg shadow-2xs transition shrink-0 cursor-pointer">
+                    Search
+                </button>
+
+                @if (request()->filled('search') || request()->filled('status'))
+                    <a href="{{ route('admin.products.index') }}" class="px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-900 transition flex items-center gap-1 shrink-0">
+                        Clear Filters
+                    </a>
+                @endif
+            </form>
+
+            <div class="flex items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-gray-100 shrink-0">
+                <button 
+                    type="submit" 
+                    form="bulk-delete-form"
+                    id="bulk-delete-btn" 
+                    disabled 
+                    onclick="return confirm('Are you sure you want to delete the selected product(s)?')" 
+                    class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed rounded-lg shadow-2xs transition cursor-pointer"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span>Delete Selected (<span id="selected-count">0</span>)</span>
+                </button>
+            </div>
+        </div>
+
+        <x-table :headers="['<input type=\'checkbox\' id=\'select-all-products\' class=\'rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer\'>', 'Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', 'Actions']" id="products-table" class="min-w-[1200px]">
             @forelse ($products as $product)
                 @php
                     $imgUrl = $product->primaryImageUrl();
                 @endphp
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3 w-10">
+                        <input type="checkbox" name="ids[]" value="{{ $product->id }}" form="bulk-delete-form" class="product-checkbox rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer">
+                    </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-3 min-w-0">
                             <div class="w-10 h-10 rounded-md bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-gray-400 border border-gray-100">
@@ -211,8 +261,8 @@
                                 @if ($product->description)
                                     <div>
                                         <h5 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Description</h5>
-                                        <div class="text-xs text-gray-600 max-h-36 overflow-y-auto bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed whitespace-pre-line">
-                                            {{ $product->description }}
+                                        <div class="text-xs text-gray-700 max-h-56 overflow-y-auto bg-gray-50 p-3.5 rounded-lg border border-gray-100 leading-relaxed prose prose-sm max-w-none">
+                                            {!! $product->description !!}
                                         </div>
                                     </div>
                                 @endif
@@ -233,11 +283,44 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">No products yet.</td>
+                    <td colspan="8" class="px-4 py-10 text-center text-gray-400 text-sm">No products found.</td>
                 </tr>
             @endforelse
         </x-table>
 
         <x-pagination :paginator="$products" />
     </x-card>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all-products');
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+            const selectedCount = document.getElementById('selected-count');
+
+            function updateState() {
+                const checked = document.querySelectorAll('.product-checkbox:checked');
+                const count = checked.length;
+                if (selectedCount) selectedCount.textContent = count;
+                if (bulkDeleteBtn) bulkDeleteBtn.disabled = count === 0;
+                if (selectAll) {
+                    selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                    selectAll.indeterminate = count > 0 && count < checkboxes.length;
+                }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                    updateState();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateState);
+            });
+
+            updateState();
+        });
+    </script>
 @endsection

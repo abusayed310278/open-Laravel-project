@@ -37,7 +37,7 @@
                         <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-800 font-semibold">{{ $verifier->verifierProfile?->employee_id ?? '—' }}</span>
                     </td>
                     <td class="px-4 py-3">
-                        <form method="POST" action="{{ route('admin.verifiers.assign-location', $verifier->verifierProfile) }}" class="inline-block m-0">
+                        <form method="POST" action="{{ route('admin.verifiers.assign-location', $verifier) }}" class="inline-block m-0">
                             @csrf
                             @method('PATCH')
                             <select name="assigned_location_id" onchange="this.form.submit()" class="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white text-gray-700 hover:border-gray-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer">

@@ -301,14 +301,25 @@
                 {{-- New Password --}}
                 <div>
                     <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">New Password (Leave blank to keep current)</label>
-                    <input
-                        type="password"
-                        name="password"
-                        id="modal-user-password"
-                        placeholder="Min 8 characters"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs"
-                        style="padding: 10px 14px !important;"
-                    >
+                    <div class="relative">
+                        <input
+                            type="password"
+                            name="password"
+                            id="modal-user-password"
+                            placeholder="Min 8 characters"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs"
+                            style="padding: 10px 42px 10px 14px !important;"
+                        >
+                        <button
+                            type="button"
+                            onclick="togglePasswordVisibility('modal-user-password', this)"
+                            class="absolute right-2 top-0 bottom-0 my-auto h-8 w-8 text-gray-400 hover:text-gray-600 flex items-center justify-center cursor-pointer transition-colors"
+                            title="Toggle password visibility"
+                        >
+                            <svg class="w-4 h-4 eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                            <svg class="w-4 h-4 eye-off-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.025 10.025 0 013.722-.863c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-2.585 3.992M15 12a3 3 0 11-6 0 3 3 0 016 0zM3 3l18 18" /></svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
@@ -366,6 +377,24 @@
             }
         }
 
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            const eyeIcon = btn.querySelector('.eye-icon');
+            const eyeOffIcon = btn.querySelector('.eye-off-icon');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon?.classList.add('hidden');
+                eyeOffIcon?.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                eyeIcon?.classList.remove('hidden');
+                eyeOffIcon?.classList.add('hidden');
+            }
+        }
+
         function openEditModal(userData) {
             const form = document.getElementById('edit-user-form');
             form.action = userData.update_url;
@@ -375,7 +404,17 @@
             document.getElementById('modal-user-phone').value = userData.phone || '';
             document.getElementById('modal-user-role').value = userData.role || '';
             document.getElementById('modal-user-status').value = userData.status || '';
-            document.getElementById('modal-user-password').value = '';
+            
+            const pwdInput = document.getElementById('modal-user-password');
+            if (pwdInput) {
+                pwdInput.value = '';
+                pwdInput.type = 'password';
+                const eyeBtn = pwdInput.nextElementSibling;
+                if (eyeBtn) {
+                    eyeBtn.querySelector('.eye-icon')?.classList.remove('hidden');
+                    eyeBtn.querySelector('.eye-off-icon')?.classList.add('hidden');
+                }
+            }
 
             const modal = document.getElementById('edit-user-modal');
             modal.classList.remove('hidden');

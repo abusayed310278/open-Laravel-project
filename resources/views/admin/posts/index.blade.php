@@ -159,8 +159,8 @@
                 {{-- Content --}}
                 <div>
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Content</div>
-                    <div class="text-xs text-gray-700 bg-gray-50 p-3 rounded-lg max-h-48 overflow-y-auto whitespace-pre-line leading-relaxed border border-gray-100">
-                        {{ $post->content }}
+                    <div class="text-xs text-gray-700 bg-gray-50 p-3.5 rounded-lg max-h-56 overflow-y-auto leading-relaxed border border-gray-100 prose prose-sm max-w-none">
+                        {!! $post->content !!}
                     </div>
                 </div>
 

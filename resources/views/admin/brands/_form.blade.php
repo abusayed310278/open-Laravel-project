@@ -3,9 +3,9 @@
     @method('PUT')
 @endif
 
-<x-input label="Name" name="name" type="text" :value="old('name', $brand->name)" />
+<x-input label="Name" name="name" type="text" placeholder="e.g. Nike, Apple, Samsung" :value="old('name', $brand->name)" />
 
-<x-textarea label="Description" name="description" rows="3" :value="old('description', $brand->description)" />
+<x-textarea label="Description" name="description" rows="3" placeholder="Enter a short description about this brand..." :value="old('description', $brand->description)" />
 
 <x-file-upload
     name="logo"

@@ -19,9 +19,9 @@
     />
 </div>
 
-<x-input label="Name" name="name" type="text" :value="old('name', $category->name)" />
+<x-input label="Name" name="name" type="text" placeholder="e.g. Electronics, Men's Clothing" :value="old('name', $category->name)" />
 
-<x-textarea label="Description" name="description" rows="3" :value="old('description', $category->description)" />
+<x-textarea label="Description" name="description" rows="3" placeholder="Enter a short description for this category..." :value="old('description', $category->description)" />
 
 <x-file-upload
     name="image"
@@ -31,7 +31,7 @@
 />
 
 <div class="grid sm:grid-cols-2 gap-5">
-    <x-input label="Sort order" name="sort_order" type="number" :value="old('sort_order', $category->sort_order ?? 0)" />
+    <x-input label="Sort order" name="sort_order" type="number" placeholder="e.g. 0" :value="old('sort_order', $category->sort_order ?? 0)" />
 </div>
 
 <hr class="border-gray-100">
@@ -39,8 +39,8 @@
 <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">SEO</p>
 
 <div class="grid sm:grid-cols-2 gap-5">
-    <x-input label="Meta title" name="meta_title" type="text" :value="old('meta_title', $category->meta_title)" />
-    <x-input label="Meta description" name="meta_description" type="text" :value="old('meta_description', $category->meta_description)" />
+    <x-input label="Meta title" name="meta_title" type="text" placeholder="SEO title for search engines" :value="old('meta_title', $category->meta_title)" />
+    <x-input label="Meta description" name="meta_description" type="text" placeholder="SEO meta description for search engines" :value="old('meta_description', $category->meta_description)" />
 </div>
 
 <x-button type="submit">{{ $category->exists ? 'Save Changes' : 'Create Category' }}</x-button>

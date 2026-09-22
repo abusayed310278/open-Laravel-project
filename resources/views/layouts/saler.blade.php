@@ -42,8 +42,8 @@
                 'label' => 'Account',
                 'items' => [
                     ['route' => 'saler.store.edit', 'label' => 'Seller Profile', 'icon' => $icon['building']],
-                    ['route' => 'saler.subscriptions.index', 'label' => 'Subscriptions', 'icon' => $icon['credit-card']],
-                    ['route' => 'saler.payment-settings.edit', 'label' => 'Payment Settings', 'icon' => $icon['banknotes']],
+                    ['route' => 'saler.subscriptions.index', 'label' => 'Subscriptions', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],
+                    ['route' => 'saler.payment-settings.edit', 'label' => 'Payment Settings', 'icon' => $icon['banknotes'], 'permission' => 'payments.manage'],
                     ['route' => 'saler.payouts.index', 'label' => 'Payouts', 'icon' => $icon['wallet']],
                 ],
             ],

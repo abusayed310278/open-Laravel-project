@@ -51,3 +51,8 @@ dialog::backdrop {
     backdrop-filter: blur(3px) !important;
 }
 
+/* Hide Alpine x-cloak elements before JS mounts */
+[x-cloak] {
+    display: none !important;
+}
+

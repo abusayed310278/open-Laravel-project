@@ -7,6 +7,8 @@ use App\Models\ChatMessage;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ChatService
 {
@@ -36,12 +38,45 @@ class ChatService
 
     public function sendMessage(ChatConversation $conversation, User $sender, ?string $body, ?UploadedFile $attachment = null): ChatMessage
     {
-        abort_if(blank($body) && ! $attachment, 422, 'Message cannot be empty.');
+        $pathname = $attachment?->getPathname();
+        $realPath = $attachment?->getRealPath();
+        $filePath = ($realPath && file_exists($realPath)) ? $realPath : (($pathname && file_exists($pathname)) ? $pathname : null);
+
+        $hasAttachment = $attachment
+            && $attachment->isValid()
+            && $filePath !== null;
+
+        abort_if(blank($body) && ! $hasAttachment, 422, 'Message cannot be empty.');
+
+        $attachmentPath = null;
+        if ($hasAttachment) {
+            $extension = strtolower($attachment->getClientOriginalExtension() ?: $attachment->guessExtension() ?: 'bin');
+            $filename = Str::random(40) . '.' . $extension;
+
+            if ($filePath && is_readable($filePath)) {
+                $stream = @fopen($filePath, 'rb');
+                if ($stream !== false) {
+                    Storage::disk('local')->put('chat-attachments/' . $filename, $stream);
+                    if (is_resource($stream)) {
+                        fclose($stream);
+                    }
+                    $attachmentPath = 'chat-attachments/' . $filename;
+                }
+            }
+
+            if (! $attachmentPath) {
+                $content = $attachment->getContent();
+                if ($content !== false && $content !== '') {
+                    Storage::disk('local')->put('chat-attachments/' . $filename, $content);
+                    $attachmentPath = 'chat-attachments/' . $filename;
+                }
+            }
+        }
 
         $message = $conversation->messages()->create([
             'sender_id' => $sender->id,
             'body' => $body,
-            'attachment_path' => $attachment?->store('chat-attachments', 'local'),
+            'attachment_path' => $attachmentPath,
         ]);
 
         $conversation->update(['last_message_at' => now()]);

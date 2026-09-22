@@ -72,7 +72,7 @@ class RbacAndFeatureSettingsSeeder extends Seeder
         $roles['business']->permissions()->sync(
             Permission::whereIn('slug', [
                 'products.manage', 'categories.manage', 'brands.manage', 'inventory.manage',
-                'orders.manage', 'payments.manage', 'chat.access', 'support.manage', 'reviews.manage'
+                'orders.manage', 'payments.manage', 'subscriptions.manage', 'chat.access', 'support.manage', 'reviews.manage'
             ])->pluck('id')->toArray()
         );
 
@@ -80,7 +80,7 @@ class RbacAndFeatureSettingsSeeder extends Seeder
         $roles['saler']->permissions()->sync(
             Permission::whereIn('slug', [
                 'products.manage', 'categories.manage', 'brands.manage', 'inventory.manage',
-                'orders.manage', 'payments.manage', 'verifications.inspect', 'chat.access', 'support.manage', 'reviews.manage'
+                'orders.manage', 'payments.manage', 'subscriptions.manage', 'verifications.inspect', 'chat.access', 'support.manage', 'reviews.manage'
             ])->pluck('id')->toArray()
         );
 
@@ -143,7 +143,8 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                 ['title' => 'Products Catalog', 'route_name' => 'admin.products.index', 'group_name' => 'CATALOG', 'permission_slug' => 'products.manage', 'icon' => 'box', 'sort_order' => 6],
                 ['title' => 'Categories Builder', 'route_name' => 'admin.categories.builder', 'group_name' => 'CATALOG', 'permission_slug' => 'categories.manage', 'icon' => 'sliders', 'sort_order' => 7],
                 ['title' => 'Brands', 'route_name' => 'admin.brands.index', 'group_name' => 'CATALOG', 'permission_slug' => 'brands.manage', 'icon' => 'tag', 'sort_order' => 8],
-                ['title' => 'Manage Inventory', 'route_name' => 'admin.inventory.index', 'group_name' => 'CATALOG', 'permission_slug' => 'inventory.manage', 'icon' => 'box', 'sort_order' => 9],
+                ['title' => 'Promotional Banners', 'route_name' => 'admin.banners.index', 'group_name' => 'CATALOG', 'permission_slug' => 'site.manage', 'icon' => 'sliders', 'sort_order' => 9],
+                ['title' => 'Manage Inventory', 'route_name' => 'admin.inventory.index', 'group_name' => 'CATALOG', 'permission_slug' => 'inventory.manage', 'icon' => 'box', 'sort_order' => 10],
                 ['title' => 'Orders List', 'route_name' => 'admin.orders.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'orders.manage', 'icon' => 'shopping-bag', 'sort_order' => 10],
                 ['title' => 'Invoices', 'route_name' => 'admin.invoices.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'orders.manage', 'icon' => 'banknotes', 'sort_order' => 11],
                 ['title' => 'Manual Payments', 'route_name' => 'admin.payment-verifications.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'payments.manage', 'icon' => 'credit-card', 'sort_order' => 12],
@@ -151,7 +152,10 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                 ['title' => 'Subscription Plans', 'route_name' => 'admin.subscriptions.plans.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'subscriptions.manage', 'icon' => 'credit-card', 'sort_order' => 14],
                 ['title' => 'User KYC Verifications', 'route_name' => 'admin.verifications.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'verifications.manage', 'icon' => 'shield', 'sort_order' => 15],
                 ['title' => 'KYC Requirements Setup', 'route_name' => 'admin.verification-requirements.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'verifications.manage', 'icon' => 'shield-check', 'sort_order' => 16],
-                ['title' => 'Warehouses & Stock', 'route_name' => 'admin.warehouses.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'inventory.manage', 'icon' => 'building', 'sort_order' => 17],
+                ['title' => 'Verifiers Staff', 'route_name' => 'admin.verifiers.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'verifications.manage', 'icon' => 'users', 'sort_order' => 17],
+                ['title' => 'Inspection Locations', 'route_name' => 'admin.verification-locations.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'verifications.manage', 'icon' => 'map-pin', 'sort_order' => 18],
+                ['title' => 'Verification Checklists', 'route_name' => 'admin.verification-checklists.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'verifications.manage', 'icon' => 'sliders', 'sort_order' => 19],
+                ['title' => 'Warehouses & Stock', 'route_name' => 'admin.warehouses.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'inventory.manage', 'icon' => 'building', 'sort_order' => 20],
                 ['title' => 'Chat Messenger', 'route_name' => 'admin.chat.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 18],
                 ['title' => 'Support Tickets', 'route_name' => 'admin.support.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 19],
                 ['title' => 'Reviews Moderation', 'route_name' => 'admin.reviews.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'reviews.manage', 'icon' => 'star', 'sort_order' => 20],
@@ -162,7 +166,7 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                 ['title' => 'Dashboard', 'route_name' => 'business.dashboard', 'group_name' => 'OVERVIEW', 'permission_slug' => null, 'icon' => 'home', 'sort_order' => 1],
                 ['title' => 'My Store Profile', 'route_name' => 'business.store.edit', 'group_name' => 'STORE', 'permission_slug' => null, 'icon' => 'building', 'sort_order' => 2],
                 ['title' => 'Verification Status', 'route_name' => 'business.verification.index', 'group_name' => 'STORE', 'permission_slug' => null, 'icon' => 'shield', 'sort_order' => 3],
-                ['title' => 'Subscription Plan', 'route_name' => 'business.subscription.index', 'group_name' => 'STORE', 'permission_slug' => null, 'icon' => 'credit-card', 'sort_order' => 4],
+                ['title' => 'Subscription Plan', 'route_name' => 'business.subscription.index', 'group_name' => 'STORE', 'permission_slug' => 'subscriptions.manage', 'icon' => 'credit-card', 'sort_order' => 4],
                 ['title' => 'Products', 'route_name' => 'business.products.index', 'group_name' => 'CATALOG', 'permission_slug' => 'products.manage', 'icon' => 'box', 'sort_order' => 5],
                 ['title' => 'Category Builder', 'route_name' => 'business.categories.builder', 'group_name' => 'CATALOG', 'permission_slug' => 'categories.manage', 'icon' => 'sliders', 'sort_order' => 6],
                 ['title' => 'Brands', 'route_name' => 'business.brands.index', 'group_name' => 'CATALOG', 'permission_slug' => 'brands.manage', 'icon' => 'tag', 'sort_order' => 7],
@@ -180,16 +184,18 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                 ['title' => 'Dashboard', 'route_name' => 'saler.dashboard', 'group_name' => 'OVERVIEW', 'permission_slug' => null, 'icon' => 'home', 'sort_order' => 1],
                 ['title' => 'Seller Store Profile', 'route_name' => 'saler.store.edit', 'group_name' => 'PROFILE', 'permission_slug' => null, 'icon' => 'building', 'sort_order' => 2],
                 ['title' => 'Verification Status', 'route_name' => 'saler.verification.index', 'group_name' => 'PROFILE', 'permission_slug' => null, 'icon' => 'shield', 'sort_order' => 3],
-                ['title' => 'Products', 'route_name' => 'saler.products.index', 'group_name' => 'CATALOG', 'permission_slug' => 'products.manage', 'icon' => 'box', 'sort_order' => 4],
-                ['title' => 'Category Builder', 'route_name' => 'saler.categories.builder', 'group_name' => 'CATALOG', 'permission_slug' => 'categories.manage', 'icon' => 'sliders', 'sort_order' => 5],
-                ['title' => 'Brands', 'route_name' => 'saler.brands.index', 'group_name' => 'CATALOG', 'permission_slug' => 'brands.manage', 'icon' => 'tag', 'sort_order' => 6],
-                ['title' => 'Manage Inventory', 'route_name' => 'saler.inventory.index', 'group_name' => 'CATALOG', 'permission_slug' => 'inventory.manage', 'icon' => 'box', 'sort_order' => 7],
-                ['title' => 'Inspection Queue', 'route_name' => 'saler.appointments.index', 'group_name' => 'INSPECTIONS & DEPOSITS', 'permission_slug' => 'verifications.inspect', 'icon' => 'shield-check', 'sort_order' => 8],
-                ['title' => 'Warehouse Deposit', 'route_name' => 'saler.warehouse.index', 'group_name' => 'INSPECTIONS & DEPOSITS', 'permission_slug' => 'inventory.manage', 'icon' => 'building', 'sort_order' => 9],
-                ['title' => 'Orders', 'route_name' => 'saler.orders.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'orders.manage', 'icon' => 'shopping-bag', 'sort_order' => 10],
-                ['title' => 'Payouts & Wallet', 'route_name' => 'saler.payouts.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'payments.manage', 'icon' => 'wallet', 'sort_order' => 11],
-                ['title' => 'Messages', 'route_name' => 'saler.messages.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 12],
-                ['title' => 'Support Tickets', 'route_name' => 'saler.support.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 13],
+                ['title' => 'Subscription Plan', 'route_name' => 'saler.subscriptions.index', 'group_name' => 'PROFILE', 'permission_slug' => 'subscriptions.manage', 'icon' => 'credit-card', 'sort_order' => 4],
+                ['title' => 'Products', 'route_name' => 'saler.products.index', 'group_name' => 'CATALOG', 'permission_slug' => 'products.manage', 'icon' => 'box', 'sort_order' => 5],
+                ['title' => 'Category Builder', 'route_name' => 'saler.categories.builder', 'group_name' => 'CATALOG', 'permission_slug' => 'categories.manage', 'icon' => 'sliders', 'sort_order' => 6],
+                ['title' => 'Brands', 'route_name' => 'saler.brands.index', 'group_name' => 'CATALOG', 'permission_slug' => 'brands.manage', 'icon' => 'tag', 'sort_order' => 7],
+                ['title' => 'Manage Inventory', 'route_name' => 'saler.inventory.index', 'group_name' => 'CATALOG', 'permission_slug' => 'inventory.manage', 'icon' => 'box', 'sort_order' => 8],
+                ['title' => 'Inspection Queue', 'route_name' => 'saler.appointments.index', 'group_name' => 'INSPECTIONS & DEPOSITS', 'permission_slug' => 'verifications.inspect', 'icon' => 'shield-check', 'sort_order' => 9],
+                ['title' => 'Warehouse Deposit', 'route_name' => 'saler.warehouse.index', 'group_name' => 'INSPECTIONS & DEPOSITS', 'permission_slug' => 'inventory.manage', 'icon' => 'building', 'sort_order' => 10],
+                ['title' => 'Orders', 'route_name' => 'saler.orders.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'orders.manage', 'icon' => 'shopping-bag', 'sort_order' => 11],
+                ['title' => 'Payment Settings', 'route_name' => 'saler.payment-settings.edit', 'group_name' => 'COMMERCE', 'permission_slug' => 'payments.manage', 'icon' => 'credit-card', 'sort_order' => 12],
+                ['title' => 'Payouts & Wallet', 'route_name' => 'saler.payouts.index', 'group_name' => 'COMMERCE', 'permission_slug' => 'payments.manage', 'icon' => 'wallet', 'sort_order' => 13],
+                ['title' => 'Messages', 'route_name' => 'saler.messages.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 14],
+                ['title' => 'Support Tickets', 'route_name' => 'saler.support.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 15],
             ],
 
             // Verifier Menus

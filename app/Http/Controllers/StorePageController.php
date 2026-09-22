@@ -33,7 +33,7 @@ class StorePageController extends Controller
             'coverImage' => $profile->cover_image,
             'bio' => $profile->description,
             'location' => trim(implode(', ', array_filter([$profile->city, $profile->country]))),
-            'isVerified' => $profile->user->isKycApproved(),
+            'isVerified' => $profile->user->isKycApproved() || $profile->user->hasActiveSubscription(),
             'products' => $this->products($request, $profile->user_id),
         ]);
     }
@@ -52,7 +52,7 @@ class StorePageController extends Controller
             'coverImage' => $profile->cover_image,
             'bio' => $profile->bio,
             'location' => $profile->location ?: trim(implode(', ', array_filter([$profile->city, $profile->country]))),
-            'isVerified' => $profile->user->isKycApproved(),
+            'isVerified' => $profile->user->isKycApproved() || $profile->user->hasActiveSubscription(),
             'products' => $this->products($request, $profile->user_id),
         ]);
     }

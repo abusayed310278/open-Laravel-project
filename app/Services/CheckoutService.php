@@ -64,7 +64,9 @@ class CheckoutService
             || (filled($this->settingsService->get('paypal_client_id')) && $this->settingsService->has('paypal_client_secret'))
             || filled(config('services.paypal.client_id'));
 
-        if ($group['route'] === 'openbox') {
+        $platformBankEnabled = filled($this->settingsService->get('bank_details'));
+
+        if ($group['route'] === 'openbox' || $group['seller']->isAdmin()) {
             $methods = [PaymentMethod::Cod];
 
             if ($platformStripeEnabled) {
@@ -75,7 +77,7 @@ class CheckoutService
                 $methods[] = PaymentMethod::Paypal;
             }
 
-            if (filled($this->settingsService->get('bank_details'))) {
+            if ($platformBankEnabled) {
                 $methods[] = PaymentMethod::ManualBank;
             }
 
@@ -83,30 +85,25 @@ class CheckoutService
         }
 
         $settings = $group['seller']->paymentSettings;
-        $codEnabled = $settings ? $settings->cod_enabled : true;
-        $manualBankEnabled = $settings && $settings->manual_bank_enabled && filled($settings->bank_details);
         $vendorStripeEnabled = $settings ? (bool) $settings->stripe_enabled : false;
         $vendorPaypalEnabled = $settings ? (bool) $settings->paypal_enabled : false;
+        $vendorBankEnabled = $settings && $settings->manual_bank_enabled && filled($settings->bank_details);
 
-        $methods = [];
+        $methods = [PaymentMethod::Cod];
 
-        if ($codEnabled) {
-            $methods[] = PaymentMethod::Cod;
-        }
-
-        if ($platformStripeEnabled || $vendorStripeEnabled) {
+        if ($vendorStripeEnabled || $platformStripeEnabled) {
             $methods[] = PaymentMethod::Stripe;
         }
 
-        if ($platformPaypalEnabled || $vendorPaypalEnabled) {
+        if ($vendorPaypalEnabled || $platformPaypalEnabled) {
             $methods[] = PaymentMethod::Paypal;
         }
 
-        if ($manualBankEnabled) {
+        if ($vendorBankEnabled || $platformBankEnabled) {
             $methods[] = PaymentMethod::ManualBank;
         }
 
-        return $methods;
+        return array_values(array_unique($methods, SORT_REGULAR));
     }
 
     /**

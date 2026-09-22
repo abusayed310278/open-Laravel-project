@@ -57,7 +57,9 @@ class ChatController extends Controller
     {
         $this->authorizeParticipant($conversation);
 
-        $this->chat->sendMessage($conversation, Auth::user(), $request->string('body')->value() ?: null, $request->file('attachment'));
+        $attachment = $request->hasFile('attachment') ? $request->file('attachment') : null;
+
+        $this->chat->sendMessage($conversation, Auth::user(), $request->string('body')->value() ?: null, $attachment);
 
         return back();
     }
@@ -82,7 +84,11 @@ class ChatController extends Controller
             'sender_name' => $m->sender->name,
             'body' => $m->body,
             'attachment_url' => $m->attachment_path ? route('chat.attachment', $m) : null,
+            'attachment_name' => $m->attachmentName(),
+            'attachment_ext' => $m->attachmentExtension(),
             'is_image' => $m->isImage(),
+            'is_pdf' => $m->isPdf(),
+            'is_document' => $m->isDocument(),
             'created_at' => $m->created_at->format('g:i A'),
         ]));
     }

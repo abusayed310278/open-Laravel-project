@@ -183,7 +183,9 @@ class HomeController extends Controller
             'isNew' => $product->condition->value === 'new',
             'image' => $product->primaryImageUrl(),
             'href' => route('products.show', $product),
-            'keyFeatures' => $product->keyFeatures(3),
+            'isVerified' => $product->isVerified() || $product->verification_status?->value === 'verified',
+            'isAdminApproved' => $product->approval_status?->value === 'approved' || $product->approval_status === 'approved' || $product->approval_status === \App\Enums\ProductApprovalStatus::Approved,
         ])->values()->all();
     }
+
 }

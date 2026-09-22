@@ -19,14 +19,20 @@
                     <div class="lg:col-span-2 space-y-6">
                         @php
                             $hasAddresses = $addresses->isNotEmpty();
-                            $defaultAddressId = $hasAddresses ? (old('shipping_address_id') !== null && old('shipping_address_id') !== '' ? old('shipping_address_id') : (string)$addresses->first()->id) : 'new';
+                            $defaultAddressId = $hasAddresses ? (string)$addresses->first()->id : 'new';
+                            if (old('shipping_address_id') !== null && old('shipping_address_id') !== '' && old('shipping_address_id') !== 'new') {
+                                $defaultAddressId = (string)old('shipping_address_id');
+                            } elseif (old('shipping_address_id') === 'new' || old('shipping.line1') !== null) {
+                                $defaultAddressId = 'new';
+                            }
                         @endphp
 
                         <x-card title="Shipping Address" x-data="{ selectedAddress: '{{ $defaultAddressId }}' }">
                             @if ($hasAddresses)
                                 <div class="space-y-3 mb-4">
-                                    @foreach ($addresses as $address)
+                                     @foreach ($addresses as $address)
                                         <label class="flex items-start gap-3 border border-gray-200 rounded-lg p-3.5 cursor-pointer transition-all duration-150"
+                                               @click="selectedAddress = '{{ $address->id }}'"
                                                :class="{ 'border-brand-500 ring-1 ring-brand-500 bg-brand-50/10': selectedAddress == '{{ $address->id }}' }">
                                             <input type="radio" name="shipping_address_id" value="{{ $address->id }}" 
                                                    x-model="selectedAddress"
@@ -45,8 +51,9 @@
                                     @endforeach
 
                                     <label class="flex items-center gap-3 border border-dashed border-gray-300 rounded-lg p-3.5 cursor-pointer transition-all duration-150 hover:bg-gray-50"
+                                           @click="selectedAddress = 'new'"
                                            :class="{ 'border-brand-500 ring-1 ring-brand-500 bg-brand-50/10': selectedAddress === 'new' || selectedAddress === '' }">
-                                        <input type="radio" name="shipping_address_id" value="" 
+                                        <input type="radio" name="shipping_address_id" value="new" 
                                                x-model="selectedAddress"
                                                class="accent-brand-500">
                                         <span class="text-sm font-medium text-gray-800">+ Use a new address</span>
@@ -55,14 +62,14 @@
                             @endif
 
                             <div x-show="selectedAddress === 'new' || selectedAddress === '' || !{{ $hasAddresses ? 'true' : 'false' }}" x-cloak class="grid sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
-                                <x-input label="Full name" name="shipping[name]" type="text" :value="old('shipping.name')" />
-                                <x-input label="Phone" name="shipping[phone]" type="tel" :value="old('shipping.phone')" />
-                                <x-input label="Address line 1" name="shipping[line1]" type="text" class="sm:col-span-2" :value="old('shipping.line1')" />
-                                <x-input label="Address line 2 (optional)" name="shipping[line2]" type="text" class="sm:col-span-2" :value="old('shipping.line2')" />
-                                <x-input label="City" name="shipping[city]" type="text" :value="old('shipping.city')" />
-                                <x-input label="State/Area (optional)" name="shipping[state]" type="text" :value="old('shipping.state')" />
-                                <x-input label="Country" name="shipping[country]" type="text" :value="old('shipping.country', 'United States')" />
-                                <x-input label="Postal code (optional)" name="shipping[postal_code]" type="text" :value="old('shipping.postal_code')" />
+                                <x-input label="Full name" name="shipping[name]" type="text" placeholder="Enter your full name" :value="old('shipping.name')" />
+                                <x-input label="Phone" name="shipping[phone]" type="tel" placeholder="e.g. +880 1700-000000" :value="old('shipping.phone')" />
+                                <x-input label="Address line 1" name="shipping[line1]" type="text" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" :value="old('shipping.line1')" />
+                                <x-input label="Address line 2 (optional)" name="shipping[line2]" type="text" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" :value="old('shipping.line2')" />
+                                <x-input label="City" name="shipping[city]" type="text" placeholder="e.g. Dhaka" :value="old('shipping.city')" />
+                                <x-input label="State/Area (optional)" name="shipping[state]" type="text" placeholder="e.g. Dhaka Division" :value="old('shipping.state')" />
+                                <x-input label="Country" name="shipping[country]" type="text" placeholder="e.g. Bangladesh" :value="old('shipping.country', 'United States')" />
+                                <x-input label="Postal code (optional)" name="shipping[postal_code]" type="text" placeholder="e.g. 1207" :value="old('shipping.postal_code')" />
                             </div>
                         </x-card>
 

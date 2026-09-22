@@ -28,10 +28,13 @@
         <x-table :headers="['Image', 'Title', 'Position', 'Order', 'Status', 'Schedule', 'Actions']" id="admin-banners-table">
             @forelse ($banners as $banner)
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    {{-- Image Thumbnail --}}
+                    {{-- Image / Video Thumbnail --}}
                     <td class="px-4 py-3">
                         <div class="w-24 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-100 bg-gray-50 relative flex items-center justify-center">
-                            @if ($banner->image_url)
+                            @if ($banner->video_url)
+                                <video src="{{ $banner->video_url }}" muted class="w-full h-full object-cover"></video>
+                                <span class="absolute top-1 right-1 bg-black/70 text-white font-bold text-[9px] px-1 py-0.2 rounded uppercase">Video</span>
+                            @elseif ($banner->image_url)
                                 <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.parentElement.querySelector('.img-fallback').classList.remove('hidden');">
                                 <div class="img-fallback hidden w-full h-full text-gray-400 flex items-center justify-center bg-gray-100">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -154,12 +157,22 @@
                 <x-input label="Ends At (Optional)" name="ends_at" type="datetime-local" />
             </div>
 
-            <x-file-upload
-                name="image"
-                label="Banner Image *"
-                hint="Recommended size: 1600x500px or 1200x400px (Max 4MB)"
-                required
-            />
+            <div class="grid sm:grid-cols-2 gap-4">
+                <x-file-upload
+                    name="image"
+                    label="Banner Image"
+                    accept="image/*"
+                    hint="Recommended size: 1600x500px or 1200x400px (Max 20MB)"
+                />
+
+                <x-file-upload
+                    name="video"
+                    label="Banner Video (Optional)"
+                    accept="video/*"
+                    hint="Supports all video formats: MP4, WEBM, MOV, AVI, MKV, WMV, etc. (Max 500MB)"
+                    :isVideo="true"
+                />
+            </div>
 
             <div class="flex items-center gap-2 pt-1">
                 <input type="checkbox" name="is_active" id="add_is_active" value="1" checked class="w-4 h-4 rounded accent-brand-500 border-gray-300">
@@ -182,9 +195,11 @@
         {{-- View Banner Modal --}}
         <x-modal id="view-banner-modal-{{ $banner->id }}" title="Banner Details" maxWidth="max-w-2xl">
             <div class="space-y-4">
-                {{-- Banner Full Image Preview --}}
+                {{-- Banner Full Image/Video Preview --}}
                 <div class="w-full rounded-lg overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center relative min-h-[140px] max-h-72">
-                    @if ($banner->image_url)
+                    @if ($banner->video_url)
+                        <video src="{{ $banner->video_url }}" controls autoplay loop muted playsinline class="w-full h-full max-h-72 object-cover"></video>
+                    @elseif ($banner->image_url)
                         <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" class="w-full h-full max-h-72 object-cover" onerror="this.classList.add('hidden'); this.parentElement.querySelector('.view-fallback').classList.remove('hidden');">
                         <div class="view-fallback hidden w-full h-40 text-gray-400 flex items-center justify-center bg-gray-100">
                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -267,12 +282,24 @@
                     <x-input label="Ends At (Optional)" name="ends_at" type="datetime-local" :value="old('ends_at', $banner->ends_at?->format('Y-m-d\TH:i'))" />
                 </div>
 
-                <x-file-upload
-                    name="image"
-                    label="Banner Image"
-                    hint="Leave empty to keep existing image (Max 4MB)"
-                    :value="$banner->image_url"
-                />
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <x-file-upload
+                        name="image"
+                        label="Banner Image"
+                        accept="image/*"
+                        hint="Leave empty to keep existing image (Max 20MB)"
+                        :value="$banner->image_url"
+                    />
+
+                    <x-file-upload
+                        name="video"
+                        label="Banner Video (Optional)"
+                        accept="video/*"
+                        hint="Leave empty to keep existing video (Max 500MB)"
+                        :value="$banner->video_url"
+                        :isVideo="true"
+                    />
+                </div>
 
                 <div class="flex items-center gap-2 pt-1">
                     <input type="hidden" name="is_active" value="0">

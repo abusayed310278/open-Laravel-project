@@ -429,6 +429,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::patch('/products/{product}/toggle-publish', [AdminProductController::class, 'togglePublish'])->name('products.toggle-publish');
         Route::post('/products/{product}/approve', [AdminProductController::class, 'approve'])->name('products.approve');
         Route::post('/products/{product}/reject', [AdminProductController::class, 'reject'])->name('products.reject');
+        Route::delete('/products/bulk-delete', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
         Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
 
         Route::get('/verification-locations', [VerificationLocationController::class, 'index'])->name('verification-locations.index');
@@ -442,7 +443,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::put('/verifiers/{user}', [VerifierController::class, 'update'])->name('verifiers.update');
         Route::patch('/verifiers/{user}/toggle-status', [VerifierController::class, 'toggleStatus'])->name('verifiers.toggle-status');
         Route::delete('/verifiers/{user}', [VerifierController::class, 'destroy'])->name('verifiers.destroy');
-        Route::patch('/verifiers/{verifierProfile}/location', [VerifierController::class, 'assignLocation'])->name('verifiers.assign-location');
+        Route::patch('/verifiers/{user}/location', [VerifierController::class, 'assignLocation'])->name('verifiers.assign-location');
 
         Route::get('/verification-checklists', [VerificationChecklistController::class, 'index'])->name('verification-checklists.index');
         Route::post('/verification-checklists', [VerificationChecklistController::class, 'store'])->name('verification-checklists.store');
@@ -473,6 +474,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::delete('/subscriptions/plans/{subscriptionPlan}', [SubscriptionPlanController::class, 'destroy'])->name('subscriptions.plans.destroy');
 
         Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('/subscriptions', [AdminSubscriptionController::class, 'store'])->name('subscriptions.store');
+        Route::patch('/subscriptions/{subscription}/toggle-status', [AdminSubscriptionController::class, 'toggleStatus'])->name('subscriptions.toggle-status');
 
         Route::get('/payment-verifications', [AdminPaymentVerificationController::class, 'index'])->name('payment-verifications.index');
         Route::post('/payment-verifications/{submission}/verify', [AdminPaymentVerificationController::class, 'verify'])->name('payment-verifications.verify');
@@ -576,6 +579,12 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
         Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
         Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
         Route::post('/subscription/{plan}', [SubscriptionController::class, 'store'])->name('subscription.store');
+        Route::get('/subscription/{subscription}/stripe-portal', [SubscriptionController::class, 'stripePortal'])->name('subscription.stripe-portal');
+        Route::post('/subscription/{subscription}/stripe-confirm', [SubscriptionController::class, 'stripeConfirm'])->name('subscription.stripe-confirm');
+        Route::get('/subscription/{subscription}/stripe-success', [SubscriptionController::class, 'stripeSuccess'])->name('subscription.stripe-success');
+        Route::get('/subscription/{subscription}/paypal-portal', [SubscriptionController::class, 'paypalPortal'])->name('subscription.paypal-portal');
+        Route::post('/subscription/{subscription}/paypal-confirm', [SubscriptionController::class, 'paypalConfirm'])->name('subscription.paypal-confirm');
+        Route::get('/subscription/{subscription}/bank-portal', [SubscriptionController::class, 'bankPortal'])->name('subscription.bank-portal');
 
         $sellerProductRoutes();
         $sellerCategoryRoutes();
@@ -601,6 +610,12 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
         Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('/subscriptions/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
         Route::post('/subscriptions/{plan}', [SubscriptionController::class, 'store'])->name('subscriptions.store');
+        Route::get('/subscriptions/{subscription}/stripe-portal', [SubscriptionController::class, 'stripePortal'])->name('subscriptions.stripe-portal');
+        Route::post('/subscriptions/{subscription}/stripe-confirm', [SubscriptionController::class, 'stripeConfirm'])->name('subscriptions.stripe-confirm');
+        Route::get('/subscriptions/{subscription}/stripe-success', [SubscriptionController::class, 'stripeSuccess'])->name('subscriptions.stripe-success');
+        Route::get('/subscriptions/{subscription}/paypal-portal', [SubscriptionController::class, 'paypalPortal'])->name('subscriptions.paypal-portal');
+        Route::post('/subscriptions/{subscription}/paypal-confirm', [SubscriptionController::class, 'paypalConfirm'])->name('subscriptions.paypal-confirm');
+        Route::get('/subscriptions/{subscription}/bank-portal', [SubscriptionController::class, 'bankPortal'])->name('subscriptions.bank-portal');
 
         $sellerProductRoutes();
         $sellerCategoryRoutes();

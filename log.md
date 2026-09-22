@@ -617,4 +617,11 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
   - Registered `checkout.stripe-portal`, `checkout.stripe-confirm`, and `checkout.stripe-success` routes in [`routes/web.php`](file:///c:/laragon/www/open/routes/web.php).
   - Dynamically updated the checkout submit button text to **"Proceed to Stripe Payment"** when Stripe is selected.
 
+---
+
+### 46. Verifier Location Assignment Route Parameter Binding Repair (`routes/web.php`, `VerifierController.php`, `admin/verifiers/index.blade.php`)
+- **Route Model Binding Optimization**:
+  - Updated route `admin.verifiers.assign-location` from `/verifiers/{verifierProfile}/location` to `/verifiers/{user}/location` in [`routes/web.php`](file:///c:/laragon/www/open/routes/web.php).
+  - Resolved `UrlGenerationException: Missing required parameter` error occurring when listing verifiers whose `verifierProfile` relation was null or uninitialized.
+  - Configured `VerifierController::assignLocation()` to accept `User $user` and invoke `updateOrCreate` on `verifierProfile()`, ensuring location assignment creates or updates profiles safely.
 

@@ -15,12 +15,10 @@
                 </div>
 
                 {{-- Main Headline --}}
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-950 tracking-tight leading-none mb-1">
-                    Premium Electronics
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-5">
+                    <span class="block text-[#18182b]">Premium Electronics</span>
+                    <span class="block text-[#b45309]" style="color: rgb(180, 83, 9);">Marketplace</span>
                 </h1>
-                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-950 tracking-tight mb-5">
-                    Marketplace
-                </h2>
 
                 {{-- Subheading --}}
                 <p class="text-gray-500 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
@@ -91,11 +89,15 @@
 
     @if (feature_enabled('home_banners') && isset($banners) && $banners->isNotEmpty())
         {{-- PROMOTIONAL BANNERS --}}
-        <section class="py-4 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="grid grid-cols-1 md:grid-cols-{{ min($banners->count(), 2) }} gap-5">
+        <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-{{ min($banners->count(), 2) }} gap-6">
                 @foreach ($banners as $b)
-                    <a href="{{ $b->link ?: '#' }}" class="block rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-shadow group relative border border-gray-100">
-                        <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="w-full h-44 sm:h-52 object-cover group-hover:scale-[1.01] transition-transform duration-300" onerror="this.parentElement.style.display='none'">
+                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 bg-gray-900">
+                        @if ($b->video_url)
+                            <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
+                        @else
+                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
+                        @endif
                     </a>
                 @endforeach
             </div>
@@ -129,6 +131,8 @@
                         :key-features="$product['keyFeatures'] ?? []"
                         :image="$product['image'] ?? null"
                         :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
                     />
                 @endforeach
             </div>
@@ -165,6 +169,8 @@
                         :key-features="$product['keyFeatures'] ?? []"
                         :image="$product['image'] ?? null"
                         :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
                     />
                 @endforeach
             </div>
@@ -289,6 +295,8 @@
                         :key-features="$product['keyFeatures'] ?? []"
                         :image="$product['image'] ?? null"
                         :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
                     />
                 @endforeach
             </div>
@@ -380,6 +388,8 @@
                         :key-features="$product['keyFeatures'] ?? []"
                         :image="$product['image'] ?? null"
                         :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
                     />
                 @endforeach
             </div>

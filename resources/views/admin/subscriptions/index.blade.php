@@ -4,14 +4,27 @@
 
 @section('content')
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    @session('status')
+        <x-alert type="success" class="mb-5">{{ $value }}</x-alert>
+    @endsession
+
+    @session('error')
+        <x-alert type="danger" class="mb-5">{{ $value }}</x-alert>
+    @endsession
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h1 class="text-xl sm:text-2xl font-black text-gray-950 tracking-tight">Subscriptions</h1>
             <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Manage seller and business plan subscriptions across the marketplace.</p>
         </div>
+        <div class="flex items-center gap-2">
+            <x-button type="button" data-modal-open="grant-subscription-modal" size="sm">
+                + Grant Subscription
+            </x-button>
+        </div>
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <x-stat-card
             label="Active Subscriptions"
             :value="number_format($statusCounts->get('active', 0))"
@@ -58,7 +71,8 @@
                         <th class="px-5 py-3">Status</th>
                         <th class="px-5 py-3">Started</th>
                         <th class="px-5 py-3">Ends</th>
-                        <th class="px-5 py-3 text-right">Auto-renew</th>
+                        <th class="px-5 py-3 text-center">Auto-renew</th>
+                        <th class="px-5 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -70,7 +84,10 @@
                                         {{ strtoupper(substr($subscription->user->name, 0, 2)) }}
                                     </div>
                                     <div>
-                                        <p class="font-bold text-gray-950 leading-tight">{{ $subscription->user->name }}</p>
+                                        <div class="flex items-center gap-1.5">
+                                            <p class="font-bold text-gray-950 leading-tight">{{ $subscription->user->name }}</p>
+                                            <x-badge color="gray" class="text-[9px] px-1.5 py-0">{{ $subscription->user->role->label() }}</x-badge>
+                                        </div>
                                         <p class="text-[10px] text-gray-400">{{ $subscription->user->email }}</p>
                                     </div>
                                 </div>
@@ -81,17 +98,32 @@
                             </td>
                             <td class="px-5 py-3.5 text-gray-400 whitespace-nowrap">{{ $subscription->starts_at?->format('M j, Y') ?? '—' }}</td>
                             <td class="px-5 py-3.5 text-gray-400 whitespace-nowrap">{{ $subscription->ends_at?->format('M j, Y') ?? 'Never' }}</td>
-                            <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
                                 @if ($subscription->auto_renew)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-600">Yes</span>
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-500">No</span>
                                 @endif
                             </td>
+                            <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                                <form method="POST" action="{{ route('admin.subscriptions.toggle-status', $subscription) }}" class="inline-block m-0">
+                                    @csrf
+                                    @method('PATCH')
+                                    @if ($subscription->status === \App\Enums\SubscriptionStatus::Active)
+                                        <button type="submit" class="p-1.5 text-emerald-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition cursor-pointer" title="Active (Click to Deactivate)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </button>
+                                    @else
+                                        <button type="submit" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition cursor-pointer" title="Inactive (Click to Activate & Grant Checkmark)">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                        </button>
+                                    @endif
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-5 py-10 text-center text-gray-400 text-xs">No subscriptions yet.</td>
+                            <td colspan="7" class="px-5 py-10 text-center text-gray-400 text-xs">No subscriptions yet.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -100,4 +132,46 @@
 
         <x-pagination :paginator="$subscriptions" />
     </x-card>
+
+    {{-- Grant Subscription Modal --}}
+    <x-modal id="grant-subscription-modal" title="Grant Subscription Plan & Verified Status" maxWidth="max-w-xl">
+        <form method="POST" action="{{ route('admin.subscriptions.store') }}" class="space-y-4">
+            @csrf
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select User / Seller <span class="text-red-500">*</span></label>
+                <select name="user_id" required class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs cursor-pointer p-2.5">
+                    <option value="">Select a user account...</option>
+                    @foreach ($users as $u)
+                        <option value="{{ $u->id }}">
+                            {{ $u->name }} ({{ $u->email }}) — {{ $u->role->label() }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select Subscription Plan <span class="text-red-500">*</span></label>
+                <select name="plan_id" required class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs cursor-pointer p-2.5">
+                    <option value="">Select a plan...</option>
+                    @foreach ($plans as $p)
+                        <option value="{{ $p->id }}">
+                            {{ $p->name }} (${{ number_format($p->price, 2) }}) — Target: {{ ucfirst($p->type->value) }} — {{ $p->listing_credits ? $p->listing_credits . ' credits' : ($p->max_products ? $p->max_products . ' products' : 'Unlimited') }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <p class="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                Granting a subscription plan will activate the seller/store profile, enable listing credits, and display the verified checkmark badge across their store and products.
+            </p>
+
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
+                    Cancel
+                </button>
+                <x-button type="submit" class="whitespace-nowrap px-4 py-2 text-xs font-semibold">Grant Plan & Activate Checkmark</x-button>
+            </div>
+        </form>
+    </x-modal>
 @endsection

@@ -31,18 +31,22 @@ class SubscriptionService
      * this becomes "create a pending subscription + checkout session" and
      * a webhook flips it to active instead of doing so synchronously here.
      */
-    public function purchase(User $user, SubscriptionPlan $plan): Subscription
+    public function purchase(User $user, SubscriptionPlan $plan, ?string $paymentMethod = 'stripe', ?array $paymentDetails = []): Subscription
     {
-        return DB::transaction(function () use ($user, $plan) {
+        return DB::transaction(function () use ($user, $plan, $paymentMethod, $paymentDetails) {
             $endsAt = match ($plan->billing_cycle) {
                 BillingCycle::OneTime => $plan->duration_days ? now()->addDays($plan->duration_days) : null,
                 BillingCycle::Monthly => now()->addMonth(),
                 BillingCycle::Yearly => now()->addYear(),
             };
 
+            $status = in_array($paymentMethod, ['stripe', 'paypal', 'manual_bank', 'bank_transfer'], true) && (float) $plan->price > 0
+                ? SubscriptionStatus::Pending
+                : SubscriptionStatus::Active;
+
             $subscription = $user->subscriptions()->create([
                 'plan_id' => $plan->id,
-                'status' => SubscriptionStatus::Active,
+                'status' => $status,
                 'starts_at' => now(),
                 'ends_at' => $endsAt,
                 'billing_cycle' => $plan->billing_cycle,
@@ -50,22 +54,75 @@ class SubscriptionService
                 'next_billing_at' => $plan->billing_cycle === BillingCycle::OneTime ? null : $endsAt,
             ]);
 
-            if ($plan->type === SubscriptionType::Saler && $plan->listing_credits) {
-                $subscription->credits()->create([
-                    'user_id' => $user->id,
-                    'total_credits' => $plan->listing_credits,
-                    'used_credits' => 0,
-                    'remaining_credits' => $plan->listing_credits,
-                    'expires_at' => $endsAt,
-                ]);
+            if ($status === SubscriptionStatus::Active) {
+                $this->grantActiveSubscriptionBenefits($subscription, $user, $plan, $endsAt);
             }
 
-            $user->notify(new SubscriptionActivated($subscription));
-
-            ActivityLog::record('subscription.purchased', $subscription, ['plan' => $plan->name]);
+            ActivityLog::record('subscription.purchased', $subscription, [
+                'plan' => $plan->name,
+                'payment_method' => $paymentMethod,
+                'reference' => $paymentDetails['reference'] ?? null,
+            ]);
 
             return $subscription;
         });
+    }
+
+    /**
+     * Activate a pending subscription after payment confirmation.
+     */
+    public function activate(Subscription $subscription, ?string $paymentMethod = null, ?array $paymentDetails = []): Subscription
+    {
+        return DB::transaction(function () use ($subscription, $paymentMethod, $paymentDetails) {
+            $user = $subscription->user;
+            $plan = $subscription->plan;
+
+            $subscription->update([
+                'status' => SubscriptionStatus::Active,
+                'starts_at' => now(),
+                'ends_at' => match ($plan->billing_cycle) {
+                    BillingCycle::OneTime => $plan->duration_days ? now()->addDays($plan->duration_days) : null,
+                    BillingCycle::Monthly => now()->addMonth(),
+                    BillingCycle::Yearly => now()->addYear(),
+                },
+            ]);
+
+            $this->grantActiveSubscriptionBenefits($subscription, $user, $plan, $subscription->ends_at);
+
+            ActivityLog::record('subscription.activated', $subscription, [
+                'plan' => $plan->name,
+                'payment_method' => $paymentMethod,
+                'reference' => $paymentDetails['reference'] ?? null,
+            ]);
+
+            return $subscription;
+        });
+    }
+
+    private function grantActiveSubscriptionBenefits(Subscription $subscription, User $user, SubscriptionPlan $plan, ?\Carbon\Carbon $endsAt): void
+    {
+        if ($plan->type === SubscriptionType::Saler || $user->role === UserRole::Saler) {
+            $creditsCount = $plan->listing_credits ?: 50;
+            $subscription->credits()->updateOrCreate(
+                ['subscription_id' => $subscription->id],
+                [
+                    'user_id' => $user->id,
+                    'total_credits' => $creditsCount,
+                    'used_credits' => 0,
+                    'remaining_credits' => $creditsCount,
+                    'expires_at' => $endsAt,
+                ]
+            );
+        }
+
+        if ($user->salerProfile) {
+            $user->salerProfile->update(['is_store_active' => true]);
+        }
+        if ($user->businessProfile) {
+            $user->businessProfile->update(['is_store_active' => true]);
+        }
+
+        $user->notify(new SubscriptionActivated($subscription));
     }
 
     public function cancel(Subscription $subscription): Subscription
@@ -93,9 +150,17 @@ class SubscriptionService
         }
 
         if ($seller->role === UserRole::Saler) {
-            $credits = $seller->activeSubscription?->credits;
+            $subscription = $seller->activeSubscription;
+            if (! $subscription) {
+                return false;
+            }
 
-            return (bool) $credits?->hasCredits();
+            $credits = $subscription->credits;
+            if ($credits) {
+                return (bool) $credits->hasCredits();
+            }
+
+            return true;
         }
 
         if ($seller->role === UserRole::Business) {

@@ -198,6 +198,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Subscription::class)->where('status', SubscriptionStatus::Active)->latestOfMany();
     }
 
+    public function hasActiveSubscription(): bool
+    {
+        $sub = $this->activeSubscription;
+        return $sub !== null && $sub->isActive();
+    }
+
     public function latestVerification(): HasOne
     {
         return $this->hasOne(UserVerification::class)->latestOfMany();

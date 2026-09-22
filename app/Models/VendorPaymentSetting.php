@@ -10,7 +10,11 @@ class VendorPaymentSetting extends Model
     protected $fillable = [
         'user_id',
         'stripe_enabled',
+        'stripe_publishable_key',
+        'stripe_secret_key',
         'paypal_enabled',
+        'paypal_client_id',
+        'paypal_client_secret',
         'cod_enabled',
         'manual_bank_enabled',
         'bank_details',
@@ -25,6 +29,16 @@ class VendorPaymentSetting extends Model
             'manual_bank_enabled' => 'boolean',
             'bank_details' => 'array',
         ];
+    }
+
+    public function hasStripeConnected(): bool
+    {
+        return filled($this->stripe_publishable_key) && filled($this->stripe_secret_key);
+    }
+
+    public function hasPaypalConnected(): bool
+    {
+        return filled($this->paypal_client_id) && filled($this->paypal_client_secret);
     }
 
     public function user(): BelongsTo

@@ -117,11 +117,14 @@ class VerifierController extends Controller
         return back()->with('status', 'Verifier account removed.');
     }
 
-    public function assignLocation(VerifierProfile $verifierProfile): RedirectResponse
+    public function assignLocation(User $user): RedirectResponse
     {
-        $verifierProfile->update([
-            'assigned_location_id' => request()->integer('assigned_location_id') ?: null,
-        ]);
+        abort_unless($user->role === UserRole::Verifier, 404);
+
+        $user->verifierProfile()->updateOrCreate(
+            ['user_id' => $user->id],
+            ['assigned_location_id' => request()->integer('assigned_location_id') ?: null]
+        );
 
         return back()->with('status', 'Verifier location updated.');
     }

@@ -189,6 +189,22 @@ class ProductService
     }
 
     /**
+     * @param array<int> $productIds
+     */
+    public function bulkDelete(array $productIds): int
+    {
+        $products = Product::query()->whereIn('id', $productIds)->with('images')->get();
+        $count = 0;
+
+        foreach ($products as $product) {
+            $this->delete($product);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Admin-owned/warehouse-stored inventory always settles through the
      * Openbox gateway; everything else settles through the seller's own.
      */

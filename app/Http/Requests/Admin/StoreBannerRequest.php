@@ -18,10 +18,14 @@ class StoreBannerRequest extends FormRequest
     public function rules(): array
     {
         $isUpdate = $this->route('banner') !== null || $this->isMethod('PUT') || $this->isMethod('PATCH');
+        $hasVideo = $this->hasFile('video');
 
         return [
             'title' => ['required', 'string', 'max:150'],
-            'image' => [$isUpdate ? 'nullable' : 'required', 'image', 'max:4096'],
+            'image' => [($isUpdate || $hasVideo) ? 'nullable' : 'required', 'nullable', 'file', 'image', 'max:20480'],
+            'video' => ['nullable', 'file', 'max:512000'],
+            'remove_image' => ['nullable', 'boolean'],
+            'remove_video' => ['nullable', 'boolean'],
             'link' => ['nullable', 'string', 'max:255'],
             'position' => ['required', 'string', 'max:50'],
             'sort_order' => ['nullable', 'integer'],

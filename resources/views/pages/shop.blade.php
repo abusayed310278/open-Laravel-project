@@ -88,6 +88,7 @@
                         @foreach ($products as $product)
                             <x-product-card
                                 :id="$product->id"
+                                :product="$product"
                                 :title="$product->title"
                                 :category="$product->category?->name ?? $product->brand?->name ?? 'Electronics'"
                                 :brand="$product->brand?->name"

@@ -144,6 +144,9 @@
                 <div class="space-y-0.5">
                     @foreach ($group['items'] as $item)
                         @php
+                            if (isset($item['permission']) && !user_can($item['permission'])) {
+                                continue;
+                            }
                             if (isset($item['route']) && \Illuminate\Support\Facades\Route::has($item['route'])) {
                                 $href = route($item['route']);
                                 $isActive = request()->routeIs($item['route'] . '*');

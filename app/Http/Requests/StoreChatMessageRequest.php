@@ -18,8 +18,8 @@ class StoreChatMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => ['nullable', 'string', 'max:2000', 'required_without:attachment'],
-            'attachment' => ['nullable', 'file', 'max:5120'],
+            'body' => ['nullable', 'string', 'max:5000', 'required_without:attachment'],
+            'attachment' => ['nullable', 'file', 'max:102400'],
         ];
     }
 }

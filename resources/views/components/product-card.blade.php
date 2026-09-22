@@ -14,6 +14,9 @@
     'isNew' => false,
     'image' => null,
     'href' => '#',
+    'isVerified' => null,
+    'isAdminApproved' => null,
+    'product' => null,
 ])
 
 @php
@@ -23,6 +26,22 @@
         : null;
     $description = $keyFeatures instanceof \Illuminate\Support\Collection ? $keyFeatures->all() : $keyFeatures;
     $description = $description ? implode(', ', $description) : null;
+
+    // Resolve Verifier Badge (1st Badge — Physical Verifier Inspection)
+    $showVerifierBadge = true;
+    if ($isVerified !== null) {
+        $showVerifierBadge = (bool) $isVerified;
+    } elseif ($product instanceof \App\Models\Product) {
+        $showVerifierBadge = $product->isVerified() || $product->verification_status?->value === 'verified' || $product->verification_status === 'verified';
+    }
+
+    // Resolve Openbox Admin Badge (2nd Badge — Admin Approval)
+    $showAdminBadge = true;
+    if ($isAdminApproved !== null) {
+        $showAdminBadge = (bool) $isAdminApproved;
+    } elseif ($product instanceof \App\Models\Product) {
+        $showAdminBadge = $product->approval_status === \App\Enums\ProductApprovalStatus::Approved || $product->approval_status?->value === 'approved' || $product->approval_status === 'approved';
+    }
 @endphp
 
 <div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
@@ -113,29 +132,39 @@
         @endif
     </div>
 
-    {{-- Rating & Trust Badges --}}
-    @if ($rating)
+    {{-- Rating & Trust Badges (1st: Physical Verifier Badge, 2nd: Openbox Admin Badge) --}}
+    @if ($rating || $showVerifierBadge || $showAdminBadge)
         <div class="flex items-center gap-1.5 mb-3">
-            <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
-                <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
-            </svg>
-            <span class="text-xs font-semibold text-gray-800">{{ number_format($rating, 1) }}</span>
-            @if ($ratingCount)
-                <span class="text-xs text-gray-400">({{ $ratingCount }})</span>
+            @if ($rating)
+                <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
+                </svg>
+                <span class="text-xs font-semibold text-gray-800">{{ number_format($rating, 1) }}</span>
+                @if ($ratingCount)
+                    <span class="text-xs text-gray-400">({{ $ratingCount }})</span>
+                @endif
             @endif
 
-            <span class="inline-flex text-blue-500" title="Verified Seller">
-                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-            </span>
-            <span class="inline-flex text-emerald-500" title="Condition Verified">
-                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                </svg>
-            </span>
+            {{-- 1st Badge: Verifier Badge (Blue Checkmark) --}}
+            @if ($showVerifierBadge)
+                <span class="inline-flex text-blue-500 shrink-0" title="Verifier Checked (Physical Inspection Verified)">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </span>
+            @endif
+
+            {{-- 2nd Badge: Openbox Admin Badge (Green Checkmark) --}}
+            @if ($showAdminBadge)
+                <span class="inline-flex text-emerald-500 shrink-0" title="Openbox Admin Approved">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </span>
+            @endif
         </div>
     @endif
+
 
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-2.5 flex items-center justify-between gap-2">

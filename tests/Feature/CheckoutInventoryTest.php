@@ -57,8 +57,27 @@ test('checkout rejects an unavailable payment method', function () {
     $cart = app(CartService::class)->forUser($customer);
     app(CartService::class)->add($cart, $product, 1);
 
-    // Seller-route items default to COD-only (no VendorPaymentSetting row),
-    // so Stripe should never be an option yet.
+    // No vendor stripe and no platform stripe configured -> Stripe is unavailable.
     expect(fn () => app(CheckoutService::class)->placeOrder($customer, $cart->fresh(), $address, $address, PaymentMethod::Stripe))
         ->toThrow(HttpException::class);
+});
+
+test('cod is always available and admin platform stripe acts as fallback when seller has no stripe settings', function () {
+    $product = Product::factory()->live()->create(['quantity' => 5]);
+    $customer = User::factory()->create();
+
+    $cart = app(CartService::class)->forUser($customer);
+    app(CartService::class)->add($cart, $product, 1);
+
+    $available = app(CheckoutService::class)->availablePaymentMethods($cart->fresh());
+
+    // COD is always available
+    expect($available)->toContain(PaymentMethod::Cod);
+
+    // Enable platform stripe in config
+    config(['services.stripe.key' => 'pk_test_sample', 'services.stripe.secret' => 'sk_test_sample']);
+
+    $availableWithStripe = app(CheckoutService::class)->availablePaymentMethods($cart->fresh());
+    expect($availableWithStripe)->toContain(PaymentMethod::Cod);
+    expect($availableWithStripe)->toContain(PaymentMethod::Stripe);
 });

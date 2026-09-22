@@ -23,6 +23,16 @@ class ProductController extends Controller
         $products = Product::query()
             ->with(['user', 'category', 'brand', 'images'])
             ->when($request->filled('status'), fn ($query) => $query->where('approval_status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->string('search'));
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -129,5 +139,17 @@ class ProductController extends Controller
         $this->products->delete($product);
 
         return redirect()->route('admin.products.index')->with('status', 'Product deleted.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:products,id'],
+        ]);
+
+        $count = $this->products->bulkDelete($validated['ids']);
+
+        return redirect()->back()->with('status', "{$count} product(s) deleted successfully.");
     }
 }

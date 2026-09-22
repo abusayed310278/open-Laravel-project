@@ -53,8 +53,20 @@ class SubscriptionPlanController extends Controller
 
     public function destroy(SubscriptionPlan $subscriptionPlan): RedirectResponse
     {
-        $subscriptionPlan->delete();
+        try {
+            if ($subscriptionPlan->subscriptions()->exists()) {
+                $subscriptionPlan->update(['is_active' => false]);
 
-        return back()->with('status', 'Plan removed.');
+                return back()->with('status', 'Plan has existing subscriber history, so it was deactivated to preserve user records instead of deleted.');
+            }
+
+            $subscriptionPlan->delete();
+
+            return back()->with('status', 'Plan removed.');
+        } catch (\Throwable $e) {
+            $subscriptionPlan->update(['is_active' => false]);
+
+            return back()->with('status', 'Plan deactivated (cannot delete plan linked to active records).');
+        }
     }
 }

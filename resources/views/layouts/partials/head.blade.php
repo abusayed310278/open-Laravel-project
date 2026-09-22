@@ -25,6 +25,9 @@
 @include('layouts.partials.branding-style')
 
 <style>
+    [x-cloak] {
+        display: none !important;
+    }
     /* Hide scrollbars globally */
     html, body, *, ::-webkit-scrollbar {
         -ms-overflow-style: none !important;
