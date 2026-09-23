@@ -10,17 +10,18 @@
 @php
     $error = $error ?? $errors->first(str_replace([']', '['], ['', '.'], $name));
     $selected = old($name, $selected);
+    $id = $attributes->get('id', $name);
 @endphp
 
 <div>
     @if ($label)
-        <label for="{{ $name }}" class="block text-sm font-medium text-gray-700 mb-1.5">{{ $label }}</label>
+        <label for="{{ $id }}" class="block text-sm font-medium text-gray-700 mb-1.5">{{ $label }}</label>
     @endif
 
     <select
         name="{{ $name }}"
-        id="{{ $name }}"
         {{ $attributes->merge([
+            'id' => $id,
             'class' => 'w-full border rounded-md px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent '
                 . ($error ? 'border-red-300' : 'border-gray-200'),
         ]) }}

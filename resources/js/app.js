@@ -100,6 +100,118 @@ document.querySelectorAll('[data-confirm]').forEach((el) => {
     });
 });
 
+// Quick-approve KYC verification — top-middle confirm card, AJAX submit, top-middle result card
+(function () {
+    const confirmCard = document.getElementById('kyc-approve-confirm-card');
+    const resultCard = document.getElementById('kyc-approve-result-card');
+    if (!confirmCard || !resultCard) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const badgeColors = {
+        green: 'bg-green-50 text-green-600',
+        blue: 'bg-blue-50 text-blue-600',
+        amber: 'bg-brand-50 text-brand-600',
+        red: 'bg-red-50 text-red-500',
+        gray: 'bg-gray-100 text-gray-500',
+    };
+    let resultTimeout = null;
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    }
+
+    function hideConfirmCard() {
+        confirmCard.classList.add('hidden');
+        confirmCard.innerHTML = '';
+    }
+
+    function showResultCard(message, tone) {
+        clearTimeout(resultTimeout);
+        const styles = tone === 'error'
+            ? 'bg-red-50 border-red-200 text-red-800 shadow-xl'
+            : 'bg-emerald-50 border-emerald-200 text-emerald-800 shadow-xl';
+
+        const icon = tone === 'error'
+            ? `<svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+            : `<svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+        resultCard.innerHTML = `
+            <div class="flex items-start gap-3 border rounded-xl p-4 text-sm font-semibold ${styles}">
+                ${icon}
+                <div class="flex-1 leading-snug">${escapeHtml(message)}</div>
+                <button type="button" data-result-close class="text-current opacity-50 hover:opacity-100 transition p-0.5 rounded cursor-pointer leading-none">&times;</button>
+            </div>
+        `;
+        resultCard.classList.remove('hidden');
+        resultTimeout = setTimeout(() => resultCard.classList.add('hidden'), 4000);
+    }
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('[data-result-close]')) {
+            clearTimeout(resultTimeout);
+            resultCard.classList.add('hidden');
+            return;
+        }
+
+        const btn = e.target.closest('[data-approve-btn]');
+        if (!btn) return;
+
+        const { approveUrl, approveName, approveRow } = btn.dataset;
+
+        confirmCard.innerHTML = `
+            <div class="border border-gray-200 rounded-md px-4 py-3.5 text-sm bg-white shadow-lg">
+                <p class="text-gray-800">Approve KYC verification for <span class="font-semibold">${escapeHtml(approveName)}</span>?</p>
+                <div class="flex items-center justify-end gap-2 mt-3">
+                    <button type="button" data-approve-cancel class="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition cursor-pointer">Cancel</button>
+                    <button type="button" data-approve-confirm class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition cursor-pointer">Confirm Approve</button>
+                </div>
+            </div>
+        `;
+        confirmCard.classList.remove('hidden');
+
+        confirmCard.querySelector('[data-approve-cancel]').addEventListener('click', hideConfirmCard);
+
+        confirmCard.querySelector('[data-approve-confirm]').addEventListener('click', async (evt) => {
+            const confirmBtn = evt.currentTarget;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Approving…';
+
+            try {
+                const response = await fetch(approveUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Something went wrong.');
+                }
+
+                hideConfirmCard();
+                showResultCard(data.message, 'success');
+
+                const statusCell = document.getElementById(`verification-status-${approveRow}`);
+                if (statusCell) {
+                    const colorClass = badgeColors[data.badge_color] || badgeColors.gray;
+                    statusCell.innerHTML = `<span class="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded ${colorClass}">${escapeHtml(data.status_label)}</span>`;
+                }
+
+                btn.remove();
+            } catch (err) {
+                hideConfirmCard();
+                showResultCard(err.message || 'Failed to approve verification.', 'error');
+            }
+        });
+    });
+})();
+
 // Password show/hide toggle — <button data-password-toggle="field-id">
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-password-toggle]');

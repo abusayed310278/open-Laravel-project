@@ -18,11 +18,16 @@ class BusinessProfile extends Model
         'vat_number',
         'tax_number',
         'address',
+        'latitude',
+        'longitude',
         'city',
+        'state',
         'country',
         'phone',
         'website',
         'social_links',
+        'business_hours',
+        'timezone',
         'is_store_active',
         'profile_completed',
     ];
@@ -31,6 +36,7 @@ class BusinessProfile extends Model
     {
         return [
             'social_links' => 'array',
+            'business_hours' => 'array',
             'is_store_active' => 'boolean',
             'profile_completed' => 'boolean',
         ];

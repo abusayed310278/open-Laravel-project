@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\RejectKycRequest;
 use App\Models\UserVerification;
 use App\Models\VerificationDocument;
 use App\Services\KycService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,11 +40,22 @@ class VerificationController extends Controller
         ]);
     }
 
-    public function approve(Request $request, UserVerification $verification): RedirectResponse
+    public function approve(Request $request, UserVerification $verification): RedirectResponse|JsonResponse
     {
         $this->kyc->approve($verification, $request->user());
 
-        return back()->with('status', "{$verification->user->name}'s KYC verification was approved successfully.");
+        $message = "{$verification->user->name}'s KYC verification was approved successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'status' => $verification->status->value,
+                'status_label' => $verification->status->label(),
+                'badge_color' => $verification->status->badgeColor(),
+            ]);
+        }
+
+        return back()->with('status', $message);
     }
 
     public function reject(RejectKycRequest $request, UserVerification $verification): RedirectResponse

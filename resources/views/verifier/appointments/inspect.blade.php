@@ -45,8 +45,21 @@
         {{-- Left: Product Profile & Seller Info --}}
         <div class="lg:col-span-1 space-y-5 lg:sticky lg:top-6 self-start">
             <div class="bg-white border border-gray-100 rounded-2xl shadow-2xs overflow-hidden">
-                <div class="relative bg-gray-50">
-                    <img src="{{ $verification->product->primaryImageUrl() }}" alt="{{ $verification->product->title }}" class="w-full h-48 object-cover">
+                <div class="relative bg-gray-50 h-48 flex items-center justify-center overflow-hidden">
+                    @if ($verification->product?->primaryImageUrl())
+                        <img src="{{ $verification->product->primaryImageUrl() }}" alt="{{ $verification->product->title }}" class="w-full h-48 object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="hidden w-full h-48 flex items-center justify-center text-gray-400 bg-gray-100">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                            </svg>
+                        </div>
+                    @else
+                        <div class="w-full h-48 flex items-center justify-center text-gray-400 bg-gray-100">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                            </svg>
+                        </div>
+                    @endif
                     <div class="absolute top-3 left-3 flex items-center gap-1.5">
                         <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-bold bg-white/90 backdrop-blur-xs text-gray-800 shadow-2xs">
                             {{ $verification->product->category?->name ?? 'Electronics' }}

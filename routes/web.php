@@ -286,6 +286,8 @@ $sellerCategoryRoutes = function () {
 Route::middleware(['auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/profile', [OnboardingController::class, 'profile'])->name('profile');
     Route::post('/profile', [OnboardingController::class, 'updateProfile'])->name('profile.store');
+    Route::get('/address', [OnboardingController::class, 'address'])->name('address');
+    Route::post('/address', [OnboardingController::class, 'storeAddress'])->name('address.store');
 });
 
 /*
@@ -635,6 +637,13 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Verifier->value])
 
         Route::get('/products', [VerifierProductController::class, 'index'])->name('products.index');
         Route::get('/products/{product}', [VerifierProductController::class, 'show'])->name('products.show');
+        Route::get('/products/{product}/edit', [VerifierProductController::class, 'edit'])->name('products.edit');
+        Route::put('/products/{product}', [VerifierProductController::class, 'update'])->name('products.update');
+        Route::patch('/products/{product}/toggle-status', [VerifierProductController::class, 'toggleStatus'])->name('products.toggle-status');
+        Route::post('/products/{product}/publish', [VerifierProductController::class, 'publish'])->name('products.publish');
+        Route::post('/products/{product}/unpublish', [VerifierProductController::class, 'unpublish'])->name('products.unpublish');
+        Route::post('/products/{product}/approve', [VerifierProductController::class, 'approve'])->name('products.approve');
+        Route::post('/products/{product}/reject', [VerifierProductController::class, 'reject'])->name('products.reject');
         Route::post('/products/{product}/verify', [VerifierProductController::class, 'verify'])->name('products.verify');
 
         Route::get('/appointments', [VerifierAppointmentController::class, 'index'])->name('appointments.index');

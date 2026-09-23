@@ -17,7 +17,7 @@ enum KycDocumentType: string
     public function label(): string
     {
         return match ($this) {
-            self::Nid => 'National ID',
+            self::Nid => 'ID',
             self::Passport => 'Passport',
             self::DrivingLicense => 'Driving License',
             self::TradeLicense => 'Trade License',

@@ -1,6 +1,6 @@
 @extends('layouts.verifier')
 
-@section('title', 'Seller Products & Verification')
+@section('title', 'Seller Product Inventory')
 
 @section('content')
     @session('status')
@@ -10,7 +10,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-gray-950">Seller Product Inventory</h1>
-            <p class="text-xs sm:text-sm text-gray-500">Browse all seller marketplace listings, perform verification, and assign certified grades.</p>
+            <p class="text-xs sm:text-sm text-gray-500">Browse all seller marketplace listings (active and inactive), perform verification, and assign certified grades.</p>
         </div>
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-800 text-xs font-semibold">
@@ -21,13 +21,40 @@
     </div>
 
     {{-- Metric Stat Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <a href="{{ route('verifier.products.index') }}" class="block group">
             <x-stat-card
                 label="Total Listings"
                 :value="$totalCount"
-                hint="Across all sellers"
+                hint="All seller products"
                 icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>'
+            />
+        </a>
+
+        <a href="{{ route('verifier.products.index', ['status' => 'active']) }}" class="block group">
+            <x-stat-card
+                label="Active Products"
+                :value="$activeCount"
+                hint="Live & Published"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            />
+        </a>
+
+        <a href="{{ route('verifier.products.index', ['status' => 'inactive']) }}" class="block group">
+            <x-stat-card
+                label="Inactive / Draft"
+                :value="$inactiveCount"
+                hint="Drafts & Offline"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>'
+            />
+        </a>
+
+        <a href="{{ route('verifier.products.index', ['verification_status' => 'pending_queue']) }}" class="block group">
+            <x-stat-card
+                label="Pending Queue"
+                :value="$pendingCount"
+                hint="Awaiting check"
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
             />
         </a>
 
@@ -36,25 +63,7 @@
                 label="Verified & Graded"
                 :value="$verifiedCount"
                 hint="Certified & Locked"
-                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
-            />
-        </a>
-
-        <a href="{{ route('verifier.products.index', ['verification_status' => 'pending_queue']) }}" class="block group">
-            <x-stat-card
-                label="Pending Queue"
-                :value="$pendingCount"
-                hint="Awaiting physical check"
-                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-            />
-        </a>
-
-        <a href="{{ route('verifier.products.index', ['verification_status' => 'not_requested']) }}" class="block group">
-            <x-stat-card
-                label="Not Requested"
-                :value="$unverifiedCount"
-                hint="Direct seller pre-owned"
-                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                icon='<svg class="w-5 h-5 group-hover:scale-110 transition-transform text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
             />
         </a>
     </div>
@@ -62,7 +71,7 @@
     {{-- Filter Toolbar --}}
     <x-card>
         <form method="GET" action="{{ route('verifier.products.index') }}" class="flex flex-wrap items-center gap-3">
-            <div class="flex-1 min-w-[220px]">
+            <div class="flex-1 min-w-[200px]">
                 <div class="relative">
                     <input
                         type="text"
@@ -77,7 +86,7 @@
                 </div>
             </div>
 
-            <div class="w-40">
+            <div class="w-36">
                 <select name="category_id" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
                     <option value="">All Categories</option>
                     @foreach ($categories as $cat)
@@ -86,6 +95,20 @@
                 </select>
             </div>
 
+            {{-- Product Active / Inactive Status Filter (Like Admin) --}}
+            <div class="w-40">
+                <select name="status" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <option value="">All Product States</option>
+                    <option value="active" {{ $selectedProductStatus === 'active' ? 'selected' : '' }}>Active / Live</option>
+                    <option value="inactive" {{ $selectedProductStatus === 'inactive' ? 'selected' : '' }}>Inactive / Offline</option>
+                    <option value="draft" {{ $selectedProductStatus === 'draft' ? 'selected' : '' }}>Draft</option>
+                    <option value="pending_approval" {{ $selectedProductStatus === 'pending_approval' ? 'selected' : '' }}>Pending Approval</option>
+                    <option value="approved" {{ $selectedProductStatus === 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="suspended" {{ $selectedProductStatus === 'suspended' ? 'selected' : '' }}>Suspended</option>
+                </select>
+            </div>
+
+            {{-- Verification Status Filter --}}
             <div class="w-44">
                 <select name="verification_status" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
                     <option value="">All Verification States</option>
@@ -112,7 +135,7 @@
                 Filter
             </button>
 
-            @if ($search || $selectedCategory || $selectedStatus || $selectedCondition)
+            @if ($search || $selectedCategory || $selectedProductStatus || $selectedStatus || $selectedCondition)
                 <a href="{{ route('verifier.products.index') }}" class="text-xs text-gray-500 hover:text-red-600 underline">
                     Reset
                 </a>
@@ -121,25 +144,37 @@
     </x-card>
 
     <x-card>
-        <x-table :headers="['Product Details', 'Seller', 'Price', 'Condition', 'Verification Status', 'Action']" id="verifier-products-table">
+        <x-table :headers="['Product Details', 'Seller', 'Price', 'Status', 'Verification Status', 'Action']" id="verifier-products-table">
             @forelse ($products as $product)
                 @php
                     $imgUrl = $product->primaryImageUrl();
                     $isVerified = $product->isVerified();
+                    $isActive = ($product->status?->value === 'published' || $product->approval_status?->value === 'approved');
                 @endphp
                 <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                     {{-- Product Details --}}
                     <td class="px-4 py-3.5 font-medium text-gray-900">
                         <div class="flex items-center gap-3">
                             <div class="w-11 h-11 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-gray-400 border border-gray-100">
-                                <img src="{{ $imgUrl }}" alt="{{ $product->title }}" class="w-full h-full object-cover">
+                                @if ($imgUrl)
+                                    <img src="{{ $imgUrl }}" alt="{{ $product->title }}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                                    <div class="hidden w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                        </svg>
+                                    </div>
+                                @else
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                    </svg>
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <a href="{{ route('verifier.products.show', $product) }}" class="text-sm font-semibold text-gray-900 hover:text-amber-600 transition-colors block truncate max-w-xs" title="{{ $product->title }}">
                                     {{ $product->title }}
                                 </a>
                                 <p class="text-xs text-gray-400 mt-0.5">
-                                    {{ $product->category->name }}
+                                    {{ $product->category?->name ?? 'Uncategorized' }}
                                     @if ($product->sku)
                                         · <span class="font-mono text-gray-500">{{ $product->sku }}</span>
                                     @endif
@@ -162,11 +197,25 @@
                         ${{ number_format($product->price, 2) }}
                     </td>
 
-                    {{-- Condition --}}
+                    {{-- Product Active / Inactive Status --}}
                     <td class="px-4 py-3.5 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                            {{ $product->condition->label() }}
-                        </span>
+                        <form method="POST" action="{{ route('verifier.products.toggle-status', $product) }}" class="inline-block">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="cursor-pointer group" title="Click to toggle Active / Inactive state">
+                                @if ($isActive)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 group-hover:bg-red-50 group-hover:text-red-700 group-hover:border-red-200 transition">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 group-hover:bg-red-500"></span>
+                                        Active
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 group-hover:border-emerald-200 transition">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-emerald-500"></span>
+                                        {{ $product->status?->label() ?? 'Inactive' }}
+                                    </span>
+                                @endif
+                            </button>
+                        </form>
                     </td>
 
                     {{-- Verification Status --}}
@@ -209,10 +258,48 @@
                                 </form>
                             @endif
 
-                            {{-- View / Inspect Full Details --}}
-                            <a href="{{ route('verifier.products.show', $product) }}" class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="View device details & specs">
+                            {{-- Live Website Preview Icon --}}
+                            <a href="{{ route('products.show', $product) }}" target="_blank" rel="noopener noreferrer" class="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-gray-200 transition" title="Preview Live Website Listing">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>
+
+                            {{-- Active / Inactive Status Toggle Icon (Like Admin) --}}
+                            @if ($product->publication_status?->value === 'published' || $product->status?->value === 'published')
+                                <form method="POST" action="{{ route('verifier.products.toggle-status', $product) }}" class="inline-block m-0">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="p-1.5 text-emerald-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg border border-gray-200 transition cursor-pointer" title="Active / Published (Click to Deactivate)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('verifier.products.toggle-status', $product) }}" class="inline-block m-0">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-gray-200 transition cursor-pointer" title="Inactive / Unpublished (Click to Activate)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endif
+
+                            {{-- Edit Product (Admin Privileges) --}}
+                            <a href="{{ route('verifier.products.edit', $product) }}" class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg border border-gray-200 transition" title="Edit Product Details">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </a>
+
+                            {{-- Approve (If Pending Approval) --}}
+                            @if ($product->approval_status?->value === 'pending_approval')
+                                <form method="POST" action="{{ route('verifier.products.approve', $product) }}" class="inline-block">
+                                    @csrf
+                                    <button type="submit" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition cursor-pointer" title="Approve Product">
+                                        Approve
+                                    </button>
+                                </form>
+                            @endif
 
                             {{-- Verification Action --}}
                             @if ($isVerified)
@@ -240,7 +327,7 @@
                             @endif
                             <div class="min-w-0">
                                 <p class="text-xs font-semibold text-gray-900 truncate">{{ $product->title }}</p>
-                                <p class="text-[11px] text-gray-500">Seller: <strong class="text-gray-800">{{ $product->user->name ?? 'Unknown' }}</strong> · {{ $product->category->name }}</p>
+                                <p class="text-[11px] text-gray-500">Seller: <strong class="text-gray-800">{{ $product->user->name ?? 'Unknown' }}</strong> · {{ $product->category?->name ?? 'Uncategorized' }}</p>
                                 <p class="text-[11px] text-amber-700 font-medium">⚠️ Once certified, this product is locked from seller modification.</p>
                             </div>
                         </div>
@@ -248,85 +335,59 @@
                         <div>
                             <label class="block text-xs font-semibold text-gray-800 mb-2">Certification Decision</label>
                             <div class="grid grid-cols-2 gap-3">
-                                <label class="border border-gray-200 has-checked:border-emerald-500 has-checked:bg-emerald-50/40 rounded-xl p-3 flex items-center gap-2.5 cursor-pointer transition-all">
-                                    <input type="radio" name="decision" value="pass" checked class="accent-emerald-600" onchange="toggleVerifyDecisionModal(this, '{{ $product->id }}')">
+                                <label class="border border-gray-200 rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-emerald-500 transition-colors">
+                                    <input type="radio" name="decision" value="pass" checked class="text-emerald-600 focus:ring-emerald-500">
                                     <div>
-                                        <p class="text-xs font-bold text-gray-900">Pass & Certify</p>
-                                        <p class="text-[10px] text-gray-500">Assign Grade & Lock</p>
+                                        <p class="text-xs font-bold text-gray-900">Pass / Certified</p>
+                                        <p class="text-[10px] text-gray-500">Meets condition standard</p>
                                     </div>
                                 </label>
-
-                                <label class="border border-gray-200 has-checked:border-red-500 has-checked:bg-red-50/40 rounded-xl p-3 flex items-center gap-2.5 cursor-pointer transition-all">
-                                    <input type="radio" name="decision" value="fail" class="accent-red-600" onchange="toggleVerifyDecisionModal(this, '{{ $product->id }}')">
+                                <label class="border border-gray-200 rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-red-500 transition-colors">
+                                    <input type="radio" name="decision" value="fail" class="text-red-600 focus:ring-red-500">
                                     <div>
-                                        <p class="text-xs font-bold text-gray-900">Fail & Reject</p>
-                                        <p class="text-[10px] text-gray-500">Unmet standards</p>
+                                        <p class="text-xs font-bold text-gray-900">Fail / Reject</p>
+                                        <p class="text-[10px] text-gray-500">Failed physical check</p>
                                     </div>
                                 </label>
                             </div>
-                        </div>
-
-                        <div id="modal-pass-fields-{{ $product->id }}" class="space-y-3 p-3.5 bg-emerald-50/30 rounded-xl border border-emerald-100">
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Cosmetic Grade *</label>
-                                    <select name="grade" class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                        <option value="A" {{ ($product->grade ?? 'A') === 'A' ? 'selected' : '' }}>Grade A (Like New)</option>
-                                        <option value="B" {{ ($product->grade ?? '') === 'B' ? 'selected' : '' }}>Grade B (Good)</option>
-                                        <option value="C" {{ ($product->grade ?? '') === 'C' ? 'selected' : '' }}>Grade C (Fair)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Battery Health (%)</label>
-                                    <input type="number" name="battery_health" min="0" max="100" placeholder="e.g. 92" class="w-full py-2 px-3 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="modal-fail-fields-{{ $product->id }}" class="hidden space-y-1.5 p-3.5 bg-red-50/30 rounded-xl border border-red-100">
-                            <label class="block text-xs font-semibold text-red-900">Rejection Reason *</label>
-                            <textarea name="reason" rows="2" placeholder="State reason for verification rejection..." class="w-full py-2 px-3 bg-white border border-red-200 rounded-xl text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Internal Notes (Optional)</label>
-                            <textarea name="notes" rows="2" placeholder="Add any certificate or inspector comments..." class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">{{ $product->grade_notes }}</textarea>
+                            <label class="block text-xs font-semibold text-gray-800 mb-1">Assigned Grade</label>
+                            <select name="grade" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800">
+                                <option value="A">Grade A — Like New / Excellent</option>
+                                <option value="B">Grade B — Very Good / Minor Scratches</option>
+                                <option value="C">Grade C — Acceptable / Visible Wear</option>
+                            </select>
                         </div>
 
-                        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
-                            <button type="button" data-modal-close class="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
-                                Cancel
-                            </button>
-                            <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg shadow-xs transition cursor-pointer">
-                                Confirm & Submit
-                            </button>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-800 mb-1">Battery Health (%) (Optional)</label>
+                            <input type="number" name="battery_health" min="0" max="100" placeholder="e.g. 92" class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-800 mb-1">Verification Inspection Notes</label>
+                            <textarea name="notes" rows="3" placeholder="Enter physical check observations..." class="w-full py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800"></textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                            <button type="button" data-modal-close="verify-modal-{{ $product->id }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl shadow-xs">Submit Certification</button>
                         </div>
                     </form>
                 </x-modal>
             @empty
                 <tr>
                     <td colspan="6" class="px-4 py-12 text-center text-gray-400 text-sm">
-                        <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                        No seller products found matching your filters.
+                        No seller products found matching your search and filter criteria.
                     </td>
                 </tr>
             @endforelse
         </x-table>
 
         <div class="mt-4">
-            <x-pagination :paginator="$products" />
+            {{ $products->links() }}
         </div>
     </x-card>
-
-    <script>
-        function toggleVerifyDecisionModal(radio, id) {
-            const passFields = document.getElementById(`modal-pass-fields-${id}`);
-            const failFields = document.getElementById(`modal-fail-fields-${id}`);
-            if (passFields && failFields) {
-                const isPass = radio.value === 'pass';
-                passFields.classList.toggle('hidden', !isPass);
-                failFields.classList.toggle('hidden', isPass);
-            }
-        }
-    </script>
 @endsection

@@ -38,7 +38,7 @@ class ProductPageController extends Controller
 
     public function show(Product $product): View
     {
-        $canPreview = auth()->user()?->isAdmin() || (auth()->check() && auth()->id() === $product->user_id);
+        $canPreview = auth()->user()?->isAdmin() || auth()->user()?->isVerifier() || (auth()->check() && auth()->id() === $product->user_id);
 
         abort_unless($product->publication_status->value === 'published' || $canPreview, 404);
 

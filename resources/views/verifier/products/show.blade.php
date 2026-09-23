@@ -15,14 +15,32 @@
         {{-- Product Summary & Specifications --}}
         <div class="lg:col-span-1 space-y-6">
             <x-card title="Product Gallery">
-                <div class="rounded-xl overflow-hidden border border-gray-100 mb-3 bg-gray-50">
-                    <img id="verifier-main-image" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-56 object-cover">
+                <div class="rounded-xl overflow-hidden border border-gray-100 mb-3 bg-gray-50 relative min-h-[14rem] flex items-center justify-center">
+                    @if ($product->primaryImageUrl())
+                        <img id="verifier-main-image" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-56 object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="hidden w-full h-56 flex items-center justify-center text-gray-400 bg-gray-100">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                            </svg>
+                        </div>
+                    @else
+                        <div class="w-full h-56 flex items-center justify-center text-gray-400 bg-gray-100">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                            </svg>
+                        </div>
+                    @endif
                 </div>
                 @if ($product->images->count() > 1)
                     <div class="flex gap-2 overflow-x-auto pb-1">
                         @foreach ($product->images as $img)
-                            <button type="button" onclick="document.getElementById('verifier-main-image').src='{{ $img->url() }}'" class="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 hover:border-amber-400 flex-shrink-0 transition">
-                                <img src="{{ $img->url() }}" class="w-full h-full object-cover">
+                            <button type="button" onclick="const main = document.getElementById('verifier-main-image'); if(main){ main.src='{{ $img->url() }}'; main.classList.remove('hidden'); if(main.nextElementSibling) main.nextElementSibling.classList.add('hidden'); }" class="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 hover:border-amber-400 flex-shrink-0 transition bg-gray-50 flex items-center justify-center">
+                                <img src="{{ $img->url() }}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                                <div class="hidden w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                    </svg>
+                                </div>
                             </button>
                         @endforeach
                     </div>

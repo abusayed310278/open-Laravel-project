@@ -36,16 +36,24 @@ class RegisteredUserController extends Controller
 
         $user = $this->registrationService->register($request->validated());
 
-        event(new Registered($user));
-
         Auth::login($user);
 
         if ($sessionId) {
             $this->carts->mergeGuestCartIntoUser($sessionId, $user);
         }
 
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         if (in_array($user->role, [UserRole::Business, UserRole::Saler], strict: true)) {
             return redirect()->route('onboarding.profile');
+        }
+
+        if ($user->role === UserRole::Customer) {
+            return redirect()->route('onboarding.address');
         }
 
         return redirect()->route($user->role->dashboardRoute());

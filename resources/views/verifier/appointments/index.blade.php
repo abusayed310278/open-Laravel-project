@@ -80,7 +80,20 @@
                     <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                         <td class="px-4 py-3.5 font-medium text-gray-900">
                             <div class="flex items-center gap-3">
-                                <img src="{{ $appointment->product->primaryImageUrl() }}" alt="{{ $appointment->product->title }}" class="w-11 h-11 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                                <div class="w-11 h-11 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center text-gray-400 border border-gray-100">
+                                @if ($appointment->product?->primaryImageUrl())
+                                    <img src="{{ $appointment->product->primaryImageUrl() }}" alt="{{ $appointment->product->title }}" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                                    <div class="hidden w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                        </svg>
+                                    </div>
+                                @else
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                    </svg>
+                                @endif
+                            </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-900 line-clamp-1">{{ $appointment->product->title }}</p>
                                     <p class="text-xs text-gray-400 mt-0.5">

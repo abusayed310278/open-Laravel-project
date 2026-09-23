@@ -153,6 +153,7 @@ class CheckoutController extends Controller
         }
 
         $validated = $request->validate([
+            "{$prefix}.label" => ['nullable', 'string', 'max:50'],
             "{$prefix}.name" => ['required', 'string', 'max:255'],
             "{$prefix}.phone" => ['required', 'string', 'max:30'],
             "{$prefix}.line1" => ['required', 'string', 'max:255'],
@@ -163,6 +164,13 @@ class CheckoutController extends Controller
             "{$prefix}.postal_code" => ['nullable', 'string', 'max:20'],
         ])[$prefix];
 
-        return Auth::user()->addresses()->create($validated);
+        $address = Auth::user()->addresses()->create($validated);
+
+        if ($request->boolean("{$prefix}.is_default") || Auth::user()->addresses()->count() === 1) {
+            Address::where('user_id', Auth::id())->update(['is_default' => false]);
+            $address->update(['is_default' => true]);
+        }
+
+        return $address;
     }
 }

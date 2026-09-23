@@ -28,6 +28,11 @@ class AppointmentController extends Controller
                 $q->where('location_id', $locationId)
                   ->orWhere('verifier_id', $verifier->id);
             });
+        } else {
+            $baseQuery->where(function ($q) use ($verifier) {
+                $q->whereNull('location_id')
+                  ->orWhere('verifier_id', $verifier->id);
+            });
         }
 
         $todayAppointmentsCount = (clone $baseQuery)
@@ -59,7 +64,6 @@ class AppointmentController extends Controller
             ->with(['product.images', 'product.category', 'seller', 'location'])
             ->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending])
             ->orderBy('scheduled_at')
-            ->limit(10)
             ->get();
 
         $recentInspections = (clone $baseQuery)
@@ -96,11 +100,16 @@ class AppointmentController extends Controller
                 $q->where('location_id', $locationId)
                   ->orWhere('verifier_id', $verifier->id);
             });
+        } else {
+            $query->where(function ($q) use ($verifier) {
+                $q->whereNull('location_id')
+                  ->orWhere('verifier_id', $verifier->id);
+            });
         }
 
         if ($request->filled('status')) {
             $statusVal = $request->query('status');
-            if (in_array($statusVal, ['pending', 'pending_queue', 'queue'], true)) {
+            if (in_array($statusVal, ['pending', 'pending_queue', 'queue', 'scheduled', 'inspecting'], true)) {
                 $query->whereIn('status', [VerificationStatus::Scheduled, VerificationStatus::Inspecting, VerificationStatus::Pending]);
             } else {
                 $query->where('status', $statusVal);
@@ -122,6 +131,11 @@ class AppointmentController extends Controller
         if ($locationId) {
             $calendarQuery->where(function ($q) use ($verifier, $locationId) {
                 $q->where('location_id', $locationId)
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        } else {
+            $calendarQuery->where(function ($q) use ($verifier) {
+                $q->whereNull('location_id')
                   ->orWhere('verifier_id', $verifier->id);
             });
         }
@@ -166,9 +180,21 @@ class AppointmentController extends Controller
 
         $query = ProductVerification::query()
             ->with(['product.images', 'seller', 'location', 'gradeAssignment', 'verifier'])
-            ->whereIn('status', [VerificationStatus::Verified, VerificationStatus::Rejected])
-            ->where('location_id', $locationId)
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->query('status')))
+            ->whereIn('status', [VerificationStatus::Verified, VerificationStatus::Rejected]);
+
+        if ($locationId) {
+            $query->where(function ($q) use ($verifier, $locationId) {
+                $q->where('location_id', $locationId)
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        } else {
+            $query->where(function ($q) use ($verifier) {
+                $q->whereNull('location_id')
+                  ->orWhere('verifier_id', $verifier->id);
+            });
+        }
+
+        $query->when($request->filled('status'), fn ($q) => $q->where('status', $request->query('status')))
             ->when($request->filled('grade'), function ($q) use ($request) {
                 $q->whereHas('gradeAssignment', fn ($gq) => $gq->where('grade', $request->query('grade')));
             })

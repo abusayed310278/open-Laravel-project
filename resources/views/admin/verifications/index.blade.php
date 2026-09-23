@@ -3,6 +3,9 @@
 @section('title', 'KYC Verifications')
 
 @section('content')
+    <x-top-card id="kyc-approve-confirm-card" />
+    <x-top-card id="kyc-approve-result-card" position="top-right" />
+
     @include('admin.verifications._tabs')
 
     @session('status')
@@ -26,7 +29,7 @@
 
         <x-table :headers="['Applicant', 'Role', 'Documents', 'Status', 'Submitted', '']" id="verifications-table">
             @forelse ($applications as $application)
-                <tr class="border-b border-gray-50 hover:bg-gray-50/80 transition-colors">
+                <tr id="verification-row-{{ $application->id }}" class="border-b border-gray-50 hover:bg-gray-50/80 transition-colors">
                     <td class="px-4 py-3.5">
                         <p class="font-semibold text-gray-900">{{ $application->user->name }}</p>
                         <p class="text-xs text-gray-400">{{ $application->user->email }}</p>
@@ -46,26 +49,26 @@
                             <span class="text-xs text-gray-400">0 docs</span>
                         @endif
                     </td>
-                    <td class="px-4 py-3.5">
+                    <td id="verification-status-{{ $application->id }}" class="px-4 py-3.5">
                         <x-badge :color="$application->status->badgeColor()">{{ $application->status->label() }}</x-badge>
                     </td>
                     <td class="px-4 py-3.5 text-sm text-gray-500">
                         {{ $application->submitted_at?->format('M j, Y') ?? '—' }}
                     </td>
                     <td class="px-4 py-3.5 text-right whitespace-nowrap">
-                        <div class="flex items-center justify-end gap-2">
+                        <div id="verification-actions-{{ $application->id }}" class="flex items-center justify-end gap-2">
                             @if ($application->status->value !== 'approved')
-                                <form method="POST" action="{{ route('admin.verifications.approve', $application) }}" class="inline-block m-0">
-                                    @csrf
-                                    <button
-                                        type="submit"
-                                        onclick="return confirm('Quick Approve KYC verification for {{ $application->user->name }}?')"
-                                        class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs"
-                                        title="Quick Approve KYC"
-                                    >
-                                        Approve
-                                    </button>
-                                </form>
+                                <button
+                                    type="button"
+                                    data-approve-btn
+                                    data-approve-url="{{ route('admin.verifications.approve', $application) }}"
+                                    data-approve-name="{{ $application->user->name }}"
+                                    data-approve-row="{{ $application->id }}"
+                                    class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-2xs"
+                                    title="Quick Approve KYC"
+                                >
+                                    Approve
+                                </button>
                             @endif
 
                             <a href="{{ route('admin.verifications.show', $application) }}" class="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 px-2.5 py-1 rounded-lg bg-brand-50 hover:bg-brand-100 transition">

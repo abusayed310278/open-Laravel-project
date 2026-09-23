@@ -15,8 +15,14 @@ class SalerProfile extends Model
         'cover_image',
         'bio',
         'location',
+        'latitude',
+        'longitude',
         'city',
+        'state',
         'country',
+        'social_links',
+        'business_hours',
+        'timezone',
         'is_store_active',
         'profile_completed',
     ];
@@ -24,13 +30,22 @@ class SalerProfile extends Model
     protected function casts(): array
     {
         return [
+            'social_links' => 'array',
+            'business_hours' => 'array',
             'is_store_active' => 'boolean',
             'profile_completed' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getLogoAttribute(): ?string
+    {
+        return $this->profile_photo;
     }
 }

@@ -17,14 +17,24 @@ class EnsureProfileIsComplete
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        $profile = match ($user->role) {
-            UserRole::Business => $user->businessProfile,
-            UserRole::Saler => $user->salerProfile,
-            default => null,
-        };
+        if (! $user) {
+            return $next($request);
+        }
 
-        if ($profile && ! $profile->profile_completed && ! $request->routeIs('onboarding.*')) {
-            return redirect()->route('onboarding.profile');
+        if ($user->role === UserRole::Customer) {
+            if ($user->addresses()->count() === 0 && ! $request->routeIs('onboarding.*') && ! $request->routeIs('logout')) {
+                return redirect()->route('onboarding.address');
+            }
+        } else {
+            $profile = match ($user->role) {
+                UserRole::Business => $user->businessProfile,
+                UserRole::Saler => $user->salerProfile,
+                default => null,
+            };
+
+            if ($profile && ! $profile->profile_completed && ! $request->routeIs('onboarding.*') && ! $request->routeIs('logout')) {
+                return redirect()->route('onboarding.profile');
+            }
         }
 
         return $next($request);

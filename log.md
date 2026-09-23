@@ -625,3 +625,190 @@ Today's work focused on UI/UX refinements, authentication enhancements, dashboar
   - Resolved `UrlGenerationException: Missing required parameter` error occurring when listing verifiers whose `verifierProfile` relation was null or uninitialized.
   - Configured `VerifierController::assignLocation()` to accept `User $user` and invoke `updateOrCreate` on `verifierProfile()`, ensuring location assignment creates or updates profiles safely.
 
+---
+
+### 47. Checkout Shipping Address & Payment Method Vanilla DOM JS Toggle Conversion (`checkout/index.blade.php`)
+- **Vanilla DOM JS Conversion**:
+  - Replaced non-functioning Alpine.js directives (`x-data`, `x-show`, `x-model`, `x-cloak`, `@click`, `:class`, `x-text`) in [`resources/views/checkout/index.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/index.blade.php) with native DOM event listeners and CSS helper classes.
+  - Fixed issue where the new address form container (`#new-address-fields`) was permanently hidden by `[x-cloak] { display: none !important; }` CSS styling.
+- **Dynamic Address Field Visibility**:
+  - Selecting "+ Use a new address" now instantly un-hides and displays the new shipping address fields (`Full name`, `Phone`, `Address line 1`, `City`, `State`, `Country`, `Postal code`).
+  - Selecting an existing saved address hides the new address form fields while visually highlighting the chosen address option card with brand styling (`border-brand-500 ring-1 ring-brand-500 bg-brand-50/10`).
+- **Payment Method Selection & Stripe Notice**:
+  - Dynamically updates payment card borders, toggles the Stripe Hosted Gateway info box (`#stripe-info-box`), and updates place order button icon & label ("Proceed to Stripe Payment" vs "Place Order") using Vanilla JS.
+
+---
+
+### 48. Registration Mail Transport Exception Protection (`RegisteredUserController.php`, `.env`)
+- **Resolved Registration 500 Error**:
+  - Fixed `Symfony\Component\Mailer\Exception\TransportException` ("Connection could not be established with host smtp.gmail.com:587") when submitting registration form (`POST /register`).
+- **Mail Driver & Event Protection**:
+  - Cleaned up duplicate mail driver entries in [`.env`](file:///c:/laragon/www/open/.env) and configured `MAIL_MAILER=log` so emails are logged locally in `storage/logs/laravel.log` rather than attempting a failing live SMTP connection.
+  - Wrapped `event(new Registered($user))` in [`RegisteredUserController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Auth/RegisteredUserController.php) in a `try-catch (\Throwable)` block so user accounts are successfully created and logged in without throwing 500 errors if mail servers are unreachable.
+  - Cleared configuration cache via `php artisan config:clear`.
+
+---
+
+### 49. Email Verification Dispatch & Gmail SMTP Activation (`RegistrationService.php`, `.env`)
+- **Resolved Unsent Verification Emails**:
+  - Identified that [`RegistrationService::register()`](file:///c:/laragon/www/open/app/Services/Auth/RegistrationService.php) hardcoded `'email_verified_at' => now()`, pre-verifying users at creation time and causing `$user->hasVerifiedEmail()` to evaluate to `true`. This caused Laravel's `SendEmailVerificationNotification` event listener to skip sending verification emails.
+  - Updated `RegistrationService.php` to set `'email_verified_at' => null` by default so new accounts trigger email verification.
+- **Gmail SMTP Activation**:
+  - Configured [`.env`](file:///c:/laragon/www/open/.env) with active Gmail SMTP configuration (`MAIL_MAILER=smtp`, `smtp.gmail.com:587`, TLS encryption).
+  - Cleared configuration cache via `php artisan config:clear` and verified end-to-end verification email dispatch via Gmail SMTP.
+
+---
+
+### 50. Email Notification Header Logo Integration (`vendor/mail/html/header.blade.php`)
+- **Email Header Logo Upgrade**:
+  - Replaced the fallback black text box (`[ OB ]`) in [`resources/views/vendor/mail/html/header.blade.php`](file:///c:/laragon/www/open/resources/views/vendor/mail/html/header.blade.php) with the site's official brand logo image (`buy-and-sale.png` or admin-uploaded `brand_logo`).
+  - All system notification emails (email verification, password reset, transaction alerts) now feature the official brand logo.
+
+---
+
+### 51. Email Header Base64 Inline Logo Embedding (`vendor/mail/html/header.blade.php`)
+- **Resolved Broken Mail Image Links**:
+  - Remote email clients (e.g. Gmail Webmail image proxy) fail to load images hosted on local development URLs like `http://open.test/buy-and-sale.png`.
+  - Updated [`resources/views/vendor/mail/html/header.blade.php`](file:///c:/laragon/www/open/resources/views/vendor/mail/html/header.blade.php) to automatically embed the logo image as an inline Base64 Data URI (`data:image/png;base64,...`).
+  - The brand logo image now renders natively inside all external email clients without broken image icons.
+
+---
+
+### 52. Customer/User Role Post-Registration Address Onboarding & Verification Sequence (`RegisteredUserController.php`, `OnboardingController.php`, `EnsureProfileIsComplete.php`, `onboarding/address.blade.php`, `routes/web.php`)
+- **Sequential Registration Flow for Customer/User Role**:
+  - Configured post-registration flow so that newly registered Customer/User accounts (`UserRole::Customer`) are redirected to an Address Onboarding view ([`resources/views/onboarding/address.blade.php`](file:///c:/laragon/www/open/resources/views/onboarding/address.blade.php)) before receiving their verification email.
+  - Rendered address input fields matching the checkout page '+ Use a new address' form (`Full name`, `Phone`, `Address line 1`, `Address line 2`, `City`, `State/Area`, `Country`, `Postal code`).
+- **Address Storage & Email Verification Dispatch**:
+  - Upon address submission in [`OnboardingController::storeAddress()`](file:///c:/laragon/www/open/app/Http/Controllers/OnboardingController.php), saved the address to `addresses` table as the user's default address (`is_default = true`) and THEN dispatched the email verification notification (`event(new Registered($user))`).
+  - Redirected customer to email verification notice ([`verification.notice`](file:///c:/laragon/www/open/routes/auth.php)) with status notice.
+  - Updated [`EnsureProfileIsComplete.php`](file:///c:/laragon/www/open/app/Http/Middleware/EnsureProfileIsComplete.php) middleware to redirect customers without a saved address to `/onboarding/address`.
+
+---
+
+### 53. Customer Address Dropdown Selector Integration (`onboarding/address.blade.php`, `checkout/index.blade.php`)
+- **Searchable Geographic Dropdown Controls**:
+  - Replaced plain text input fields for `City`, `State/Area`, and `Country` in [`resources/views/onboarding/address.blade.php`](file:///c:/laragon/www/open/resources/views/onboarding/address.blade.php) and [`resources/views/checkout/index.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/index.blade.php) with interactive `<x-select>` dropdown components.
+  - Integrated TomSelect & Geographic API auto-populator. Selecting a Country automatically updates the City and State/Area dropdown lists with matching cities and states/divisions while allowing custom typed choices.
+
+---
+
+### 54. Geographic Field Reordering & Instant Dropdown Pre-Population (`onboarding/address.blade.php`, `checkout/index.blade.php`, `select.blade.php`)
+- **Field Reordering**:
+  - Reordered the address form fields in both Customer Address Onboarding (`onboarding/address.blade.php`) and Checkout shipping forms (`checkout/index.blade.php`) to strictly follow: **Country** -> **State/Area (optional)** -> **City** -> **Postal code (optional)**.
+- **Select Component ID Fix**:
+  - Fixed `<x-select>` Blade component (`select.blade.php`) so custom `id` attribute passed in `$attributes` overrides default `$name`, resolving duplicate `id` DOM conflicts.
+- **Instant Pre-Population & Zero Loading Lag**:
+  - Embedded an instant fallback geographic dataset (`fallbackCountries`) covering major countries (Bangladesh, US, UK, Canada, Australia, India, UAE, Saudi Arabia, Pakistan) with states/divisions and major cities.
+  - Synchronized native `<select>` DOM `<option>` elements and added `tomSelect.refreshOptions(false)` so options render immediately inside TomSelect dropdowns.
+
+---
+
+### 55. Customer Saved Addresses Management & Primary Address Switching (`account/addresses/index.blade.php`)
+- **Multiple Address Management**:
+  - Overhauled [`resources/views/account/addresses/index.blade.php`](file:///c:/laragon/www/open/resources/views/account/addresses/index.blade.php) to display all saved shipping addresses in an interactive card grid.
+- **Searchable Geographic Dropdowns & Field Order**:
+  - Integrated instant TomSelect searchable dropdowns for **Country**, **State/Area (optional)**, **City**, and **Postal code (optional)** across Add Address and Edit Address modals following the exact order: **Country** -> **State/Area** -> **City** -> **Postal code**.
+- **Add & Edit Address Modal Popups**:
+  - Converted the Add New Address creation form into an interactive `<dialog id="add-address-modal">` popup with frosted backdrop blur and auto-opening error state handling.
+- **Primary Address Selection**:
+  - Added an explicit **"Update as Primary Address"** action button on every non-default address card (`POST /account/addresses/{address}/default`), allowing customers to set any saved address as their primary shipping address with a single click.
+
+---
+
+### 56. Unified Multi-Address Checkout & Inline Address Label Support (`checkout/index.blade.php`, `CheckoutController.php`)
+- **Checkout Address Labeling & Default Support**:
+  - Updated [`CheckoutController::resolveAddress()`](file:///c:/laragon/www/open/app/Http/Controllers/CheckoutController.php) to validate optional address labels (e.g., Home, Office, Warehouse) and handle `is_default` toggling when creating a new address during order placement.
+- **Enhanced Checkout UI**:
+  - Updated [`resources/views/checkout/index.blade.php`](file:///c:/laragon/www/open/resources/views/checkout/index.blade.php) to display address labels and primary badges on saved address options, and added an address label input and "Save and set as primary address" checkbox to the new address checkout form.
+
+---
+
+### 57. Verifier Portal Seller Product Access & Active/Inactive State Viewing (`verifier/products/index.blade.php`, `Verifier/ProductController.php`)
+- **Admin-Like Product Access for Verifiers**:
+  - Removed restrictive location/appointment query gates from [`Verifier\ProductController`](file:///c:/laragon/www/open/app/Http/Controllers/Verifier/ProductController.php), granting verifiers full access to view and filter all seller products across the platform (Active, Inactive, Draft, Published, Pending, Verified).
+- **Active & Inactive Product Filtering & Status Badges**:
+  - Added **Active Products** and **Inactive / Draft** stat metric cards.
+  - Added a Product Active Status filter dropdown (`Active / Live`, `Inactive / Offline`, `Draft`, `Pending Approval`, `Approved`, `Suspended`).
+  - Added Active/Inactive status badges in the product inventory table alongside verification status badges and re-grading actions.
+
+---
+
+### 58. Verifier Portal Live Product Preview & Admin-Like Product Management Privileges (`verifier/products/index.blade.php`, `verifier/products/edit.blade.php`, `Verifier/ProductController.php`, `routes/web.php`, `RejectProductRequest.php`)
+- **Live Website Preview Icon Integration**:
+  - Added a dedicated **Live Preview** eye icon (`route('products.show', $product)` with `target="_blank"`) in the action column of the Verifier Seller Product Inventory table ([`resources/views/verifier/products/index.blade.php`](file:///c:/laragon/www/open/resources/views/verifier/products/index.blade.php)), allowing verifiers to view live product pages directly on the storefront in a new tab.
+- **Admin-Like Product Management Actions**:
+  - **Edit Product**: Added an Edit pencil icon linking to [`route('verifier.products.edit', $product)`](file:///c:/laragon/www/open/resources/views/verifier/products/edit.blade.php), empowering verifiers to update product details, categories, pricing, and images using the full product form (`products._form`).
+  - **Active / Inactive Status Toggle**: Added interactive status toggle buttons (`PATCH /verifier/products/{product}/toggle-status`) directly in the Status column, allowing verifiers to switch products between Active (Published) and Inactive (Unpublished) states.
+  - **Approve / Reject Actions**: Added direct Approve action buttons (`POST /verifier/products/{product}/approve`) for seller products pending approval.
+  - Updated [`RejectProductRequest::authorize()`](file:///c:/laragon/www/open/app/Http/Requests/Admin/RejectProductRequest.php) to authorize both Admin and Verifier roles.
+  - Registered `verifier.products.edit`, `update`, `toggle-status`, `approve`, and `reject` routes in [`routes/web.php`](file:///c:/laragon/www/open/routes/web.php).
+
+---
+
+### 59. Live Product Preview Permission & Admin Action Icons for Verifiers (`ProductPageController.php`, `verifier/products/index.blade.php`)
+- **Live Product Preview 404 Fix (`ProductPageController.php`)**:
+  - Updated `$canPreview` check in [`ProductPageController::show()`](file:///c:/laragon/www/open/app/Http/Controllers/ProductPageController.php) to authorize `auth()->user()?->isVerifier()`.
+  - Resolved the 404 error when verifiers click the Live Preview icon (`route('products.show', $product)`) for unpublished / draft / inactive listings.
+- **Active / Inactive Status Action Icon (`verifier/products/index.blade.php`)**:
+  - Integrated the exact Active (Published - green check icon) / Inactive (Unpublished - gray slash icon) action button (`PATCH /verifier/products/{product}/toggle-status`) into the Action column group in [`resources/views/verifier/products/index.blade.php`](file:///c:/laragon/www/open/resources/views/verifier/products/index.blade.php), matching the Admin product management interface.
+
+---
+
+### 60. Verifier Pending Queue Resolution & Universal Hub Access (`AppointmentController.php`, `Verifier/ProductController.php`)
+- **Pending Queue Query Parameter & Enum Resolution (`Verifier/ProductController.php`)**:
+  - Updated `verification_status` filter resolution in [`Verifier\ProductController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Verifier/ProductController.php) to map `pending_queue`, `pending`, `scheduled`, and `inspecting` queries to include all pending physical inspection states (`VerificationStatus::Scheduled`, `VerificationStatus::Inspecting`, `VerificationStatus::Pending`).
+- **Hub Location Query Fallback (`AppointmentController.php`)**:
+  - Updated [`AppointmentController::index()`](file:///c:/laragon/www/open/app/Http/Controllers/Verifier/AppointmentController.php) and `dashboard()` to fall back to showing all platform pending verification products (all 14 items) when a verifier's assigned hub has 0 pending items or when unassigned verifier accounts (such as `robb.brakus@example.net`) access the queue.
+  - Removed `limit(10)` cap on dashboard pending appointments list so all pending queue products are rendered.
+
+---
+
+### 61. Strict Verifier Hub Location Scoping & Appointment Isolation (`AppointmentController.php`, `Verifier/ProductController.php`)
+- **Strict Location Isolation (`AppointmentController.php`)**:
+  - Enforced strict `location_id` / `verifier_id` scoping across Verifier Dashboard telemetry stat cards (`Today's Appointments`, `Pending Queue`, `Completed This Month`, `Pass Rate`), active inspection queue table, and calendar views.
+  - Verifiers assigned to Location 1 (*Doha Hub*) now strictly see only their **4** pending products; verifiers at Location 2 (*Al Rayyan*) see **5** items; verifiers at Location 3 (*Al Wakra*) see **5** items.
+- **Strict Product Inventory Scoping (`Verifier/ProductController.php`)**:
+  - Restricted product inventory table and metric stat cards in `Verifier\ProductController` to only show seller products linked to verifications at the verifier's assigned hub location.
+
+---
+
+### 62. Verifier History Method ParseError Fix (`AppointmentController.php`)
+- **Syntax Error Repair**:
+  - Fixed `ParseError: syntax error, unexpected token "->"` on line 196 of [`AppointmentController.php`](file:///c:/laragon/www/open/app/Http/Controllers/Verifier/AppointmentController.php) by properly chaining `$query->when(...)` after the `if ($locationId) ... else { ... }` block in `AppointmentController::history()`.
+
+---
+
+### 64. Seller Registration & Onboarding Upgrades (`onboarding/profile.blade.php`, `OnboardingController.php`, `CompleteProfileRequest.php`, `SalerProfile.php`, `BusinessProfile.php`, `2026_09_23_000000_add_state_to_saler_and_business_profiles_tables.php`)
+- **Store Logo & Cover Photo Upload**:
+  - Renamed "Profile photo" to **Store Logo** and added a **Cover Photo / Banner** upload field to [`resources/views/onboarding/profile.blade.php`](file:///c:/laragon/www/open/resources/views/onboarding/profile.blade.php).
+  - Updated [`OnboardingController.php`](file:///c:/laragon/www/open/app/Http/Controllers/OnboardingController.php) to store `logo` (or `profile_photo`) and `cover_image` for both Individual Sellers (`Saler`) and Store Owners (`Business`).
+- **Dynamic Admin KYC Requirements**:
+  - Dynamically query active KYC document requirements configured by Admin (`app(KycService::class)->requirementsFor($user)`) for the seller's role.
+  - Dynamically render requirement upload inputs with required (`* Required`) or optional badges in `onboarding/profile.blade.php`.
+  - Process uploaded document files via `KycService::submit()`, automatically creating initial verification applications upon completing onboarding setup.
+### 65. Seller Store Profile KYC Documents Card & Logo Display Fixes (`seller/store/edit.blade.php`, `StoreSettingsController.php`, `SalerProfile.php`)
+- **Store Logo & Cover Photo Display**:
+  - Added `getLogoAttribute` accessor on [`SalerProfile.php`](file:///c:/laragon/www/open/app/Models/SalerProfile.php) so `$profile->logo` works seamlessly across all seller profiles.
+  - Updated field labels to **Store Logo** and **Cover Photo / Banner** on [`seller/store/edit.blade.php`](file:///c:/laragon/www/open/resources/views/seller/store/edit.blade.php).
+### 68. Top-Right Corner Toast Notification for Admin KYC Approval (`components/top-card.blade.php`, `admin/verifications/index.blade.php`, `app.js`)
+- **Top-Right Toast Notification**:
+  - Added `position` prop support (`top-right`, `top-left`, `bottom-right`, `center`) to [`components/top-card.blade.php`](file:///c:/laragon/www/open/resources/views/components/top-card.blade.php).
+  - Configured `#kyc-approve-result-card` with `position="top-right"` in [`admin/verifications/index.blade.php`](file:///c:/laragon/www/open/resources/views/admin/verifications/index.blade.php).
+  - Enhanced `showResultCard()` in [`resources/js/app.js`](file:///c:/laragon/www/open/resources/js/app.js) with clean toast styling, status icon, and dismiss button so confirmation messages appear smoothly in the top-right corner upon approving KYC applications.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

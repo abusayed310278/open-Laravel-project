@@ -8,6 +8,7 @@
     'isVideo' => false,
     'removeName' => null,
     'deleteUrl' => null,
+    'fill' => false,
 ])
 
 @php
@@ -39,16 +40,16 @@
         </div>
 
         <!-- Inside-Box Preview Area -->
-        <div class="js-box-preview w-full flex flex-col items-center justify-center gap-2 relative {{ $value ? '' : 'hidden' }}">
-            <div class="relative max-h-36 max-w-full flex items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-gray-50/50 p-1 group/img">
+        <div class="js-box-preview {{ $fill ? 'absolute inset-0' : 'w-full flex flex-col items-center justify-center gap-2 relative' }} {{ $value ? '' : 'hidden' }}">
+            <div class="{{ $fill ? 'relative w-full h-full' : 'relative max-h-36 max-w-full flex items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-gray-50/50 p-1' }} group/img">
                 <img
                     src="{{ !$isMediaVideo ? ($value ?? '') : '' }}"
                     alt="Preview"
-                    class="js-box-preview-img max-h-32 w-auto object-contain rounded {{ $isMediaVideo ? 'hidden' : '' }}"
+                    class="js-box-preview-img {{ $fill ? 'w-full h-full object-cover' : 'max-h-32 w-auto object-contain' }} rounded {{ $isMediaVideo ? 'hidden' : '' }}"
                 >
                 <video
                     src="{{ $isMediaVideo ? ($value ?? '') : '' }}"
-                    class="js-box-preview-video max-h-32 w-auto object-contain rounded {{ $isMediaVideo ? '' : 'hidden' }}"
+                    class="js-box-preview-video {{ $fill ? 'w-full h-full object-cover' : 'max-h-32 w-auto object-contain' }} rounded {{ $isMediaVideo ? '' : 'hidden' }}"
                     muted
                     controls
                     playsinline
@@ -59,7 +60,7 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 text-xs">
+            <div class="{{ $fill ? 'absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2' : 'flex items-center gap-2' }} text-xs">
                 <span class="js-preview-badge inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold {{ $value ? 'bg-gray-200 text-gray-700' : 'bg-emerald-100 text-emerald-800' }} rounded-full">
                     {{ $value ? ($isMediaVideo ? 'Current Video' : 'Current Image') : 'New File Selected' }}
                 </span>
