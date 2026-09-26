@@ -116,6 +116,8 @@ Route::patch('/cart/items/{item}', [CartController::class, 'update'])->name('car
 Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.remove');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/editor/upload-image', [\App\Http\Controllers\EditorMediaController::class, 'upload'])->name('editor.upload-image');
+
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/{product}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/wishlist/{product}/move-to-cart', [WishlistController::class, 'moveToCart'])->name('wishlist.move-to-cart');

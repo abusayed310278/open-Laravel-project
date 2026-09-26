@@ -179,7 +179,9 @@ class HomeController extends Controller
             'ratingCount' => rand(15, 60),
             'location' => 'Dhaka',
             'condition' => $product->condition->value,
-            'seller' => $product->user->name,
+            'seller' => $product->user->isAdmin()
+                ? config('app.name', 'Openbox') . ' Official'
+                : ($product->user->businessProfile?->business_name ?? $product->user->salerProfile?->display_name ?? $product->user->name),
             'isNew' => $product->condition->value === 'new',
             'image' => $product->primaryImageUrl(),
             'href' => route('products.show', $product),

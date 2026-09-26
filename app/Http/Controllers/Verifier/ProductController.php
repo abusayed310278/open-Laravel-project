@@ -193,6 +193,11 @@ class ProductController extends Controller
             array_map('intval', $request->input('delete_images', []))
         );
 
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && str_starts_with($redirectTo, url('/')) && ! str_contains($redirectTo, '/edit')) {
+            return redirect($redirectTo)->with('status', "\"{$product->title}\" was updated successfully.");
+        }
+
         return redirect()->route('verifier.products.index')->with('status', "\"{$product->title}\" was updated successfully.");
     }
 

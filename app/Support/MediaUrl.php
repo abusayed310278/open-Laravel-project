@@ -52,10 +52,36 @@ class MediaUrl
             $activeDisk = 'public';
         }
 
-        // 1. If active driver is Cloudinary or R2, resolve via active remote storage driver
-        if (in_array($activeDisk, ['cloudinary', 'r2'], true)) {
+        $cdnUrl = config('filesystems.disks.public.cdn_url') ?: (function_exists('setting') ? setting('storage_cdn_url') : null);
+        $baseUrl = ! empty($cdnUrl) ? rtrim($cdnUrl, '/') . '/storage/' : rtrim(asset('storage'), '/') . '/';
+
+        // 1. If physical file exists on local disk, serve locally regardless of active default disk
+        try {
+            if ($cleanPath && Storage::disk('public')->exists($cleanPath)) {
+                return $baseUrl . $cleanPath;
+            }
+        } catch (\Throwable) {
+            // Ignore storage check exceptions
+        }
+
+        // 2. If original path is a full Cloudinary or R2 URL, return it directly if no local file override
+        if ($isCloudinaryUrl || $isR2Url) {
+            return $path;
+        }
+
+        // 3. If file is not on local disk, check remote disks (Cloudinary / R2) continuously
+        $remoteDisks = array_unique(array_filter([
+            in_array($activeDisk, ['cloudinary', 'r2'], true) ? $activeDisk : null,
+            ! empty(config('filesystems.disks.cloudinary.cloud_name')) || ! empty(env('CLOUDINARY_URL')) ? 'cloudinary' : null,
+            ! empty(config('filesystems.disks.r2.bucket')) || ! empty(env('R2_BUCKET')) ? 'r2' : null,
+        ]));
+
+        foreach ($remoteDisks as $disk) {
+            if (! $cleanPath) {
+                continue;
+            }
             try {
-                $remoteUrl = Storage::disk($activeDisk)->url($cleanPath);
+                $remoteUrl = Storage::disk($disk)->url($cleanPath);
                 if (str_starts_with($remoteUrl, 'http://') || str_starts_with($remoteUrl, 'https://')) {
                     return $remoteUrl;
                 }
@@ -63,25 +89,8 @@ class MediaUrl
             }
         }
 
-        // 2. Local public disk: Check if custom CDN URL is configured for Local Storage
-        $cdnUrl = config('filesystems.disks.public.cdn_url') ?: (function_exists('setting') ? setting('storage_cdn_url') : null);
-        $baseUrl = ! empty($cdnUrl) ? rtrim($cdnUrl, '/') . '/storage/' : rtrim(asset('storage'), '/') . '/';
-
-        try {
-            if (Storage::disk('public')->exists($cleanPath)) {
-                return $baseUrl . $cleanPath;
-            }
-        } catch (\Throwable) {
-            // Ignore storage check exceptions
-        }
-
-        // 3. Fallback for remote URLs if active disk is public but local file is not present
-        if ($isCloudinaryUrl || $isR2Url) {
-            return $path;
-        }
-
-        // 4. Default asset resolution (via local or custom CDN URL)
-        return $baseUrl . $cleanPath;
+        // 4. Default fallback asset resolution
+        return $baseUrl . ($cleanPath ?: $path);
     }
 
     /**

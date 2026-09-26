@@ -50,31 +50,31 @@
 
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ $product->title }}</h1>
 
-                <div class="flex flex-wrap items-center gap-6 bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 mb-4 text-sm">
-                    <div class="flex items-baseline gap-1.5">
+                <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
+                    <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
                         <span class="text-gray-400">Price:</span>
                         <span class="font-semibold text-gray-900">${{ number_format($product->price, 2) }}</span>
                     </div>
                     @if ($product->compare_price)
-                        <div class="flex items-baseline gap-1.5">
+                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
                             <span class="text-gray-400">Regular Price:</span>
                             <span class="font-semibold text-gray-900">${{ number_format($product->compare_price, 2) }}</span>
                         </div>
                     @endif
-                    <div class="flex items-baseline gap-1.5">
+                    <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
                         <span class="text-gray-400">Status:</span>
                         <span class="font-semibold {{ $product->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
                             {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
                         </span>
                     </div>
                     @if ($product->sku)
-                        <div class="flex items-baseline gap-1.5">
+                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
                             <span class="text-gray-400">Product Code:</span>
                             <span class="font-semibold text-gray-900">{{ $product->sku }}</span>
                         </div>
                     @endif
                     @if ($product->brand)
-                        <div class="flex items-baseline gap-1.5">
+                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
                             <span class="text-gray-400">Brand:</span>
                             <span class="font-semibold text-gray-900">{{ $product->brand->name }}</span>
                         </div>
@@ -106,30 +106,38 @@
 
                 {{-- Seller card --}}
                 @if (feature_enabled('product_seller_box'))
-                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6">
+                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6 bg-white shadow-2xs">
                         <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
-                            <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center flex-shrink-0">
-                                {{ Str::upper(Str::substr($sellerName, 0, 1)) }}
+                            <div class="w-10 h-10 rounded-full bg-amber-50 border border-gray-200 text-amber-700 font-bold flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                @if (!empty($sellerLogoUrl))
+                                    <img src="{{ $sellerLogoUrl }}" alt="{{ $sellerName }}" class="w-full h-full object-cover">
+                                @else
+                                    <span>{{ Str::upper(Str::substr($sellerName, 0, 1)) }}</span>
+                                @endif
                             </div>
                             <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
                                     <span class="text-sm font-semibold text-gray-900 truncate">{{ $sellerName }}</span>
-                                    @if ($product->user->isKycApproved() || $product->user->hasActiveSubscription())
+                                    @if (($isAdminProduct ?? false) || $product->user->isKycApproved() || $product->user->hasActiveSubscription())
                                         <x-verified-badge />
                                     @endif
                                 </div>
                                 <p class="text-xs text-gray-400">
-                                    @if ($sellerReviewCount > 0)
-                                        ★ {{ number_format($sellerRating, 1) }}
-                                    @endif
-                                    @if ($sellerLocation)
-                                        · {{ $sellerLocation }}
+                                    @if ($isAdminProduct ?? false)
+                                        Official Platform Store
+                                    @else
+                                        @if ($sellerReviewCount > 0)
+                                            ★ {{ number_format($sellerRating, 1) }}
+                                        @endif
+                                        @if ($sellerLocation)
+                                            · {{ $sellerLocation }}
+                                        @endif
                                     @endif
                                 </p>
                             </div>
                         </a>
 
-                        @if (feature_enabled('product_chat_widget'))
+                        @if (!($isAdminProduct ?? false) && feature_enabled('product_chat_widget'))
                             @auth
                                 @if (auth()->id() !== $product->user_id)
                                     <form method="POST" action="{{ route('chat.start', $product) }}">

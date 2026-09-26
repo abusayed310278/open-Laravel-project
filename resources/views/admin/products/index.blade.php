@@ -158,22 +158,49 @@
                             @endif
 
                             {{-- 4. Edit Icon --}}
-                            <a href="{{ route('admin.products.edit', $product) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Edit product">
+                            <a href="{{ route('admin.products.edit', [$product, 'redirect_to' => request()->fullUrl()]) }}" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition cursor-pointer" title="Edit product">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </a>
 
-                            {{-- 5. Delete Icon --}}
-                            <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="inline-block m-0">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" data-confirm="Are you sure you want to delete this product?" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete product">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </form>
+                            {{-- 5. Delete Icon (Triggers Centered Delete Modal) --}}
+                            <button type="button" data-modal-open="delete-product-modal-{{ $product->id }}" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" title="Delete product">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+
+                            {{-- Centered Delete Product Confirmation Modal --}}
+                            <x-modal :id="'delete-product-modal-'.$product->id" title="Delete Product" maxWidth="max-w-md">
+                                <div class="text-center py-2 space-y-4">
+                                    <div class="w-12 h-12 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto text-red-600">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-base font-semibold text-gray-900 mb-1">Are you sure?</h4>
+                                        <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                                            Do you really want to delete <strong class="text-gray-900 font-semibold">{{ $product->title }}</strong>? This action cannot be undone.
+                                        </p>
+                                    </div>
+
+                                    <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="redirect_to" value="{{ request()->fullUrl() }}">
+
+                                        <button type="button" data-modal-close class="px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-2xs transition cursor-pointer">
+                                            Yes, Delete Product
+                                        </button>
+                                    </form>
+                                </div>
+                            </x-modal>
 
                             @if ($product->status->value === 'pending_approval')
                                 <form method="POST" action="{{ route('admin.products.approve', $product) }}" class="inline-block m-0">
@@ -268,7 +295,7 @@
                                 @endif
 
                                 <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
-                                    <a href="{{ route('admin.products.edit', $product) }}" class="inline-flex items-center gap-1.5 text-xs font-medium bg-gray-900 hover:bg-black text-white px-3 py-2 rounded-md transition">
+                                    <a href="{{ route('admin.products.edit', [$product, 'redirect_to' => request()->fullUrl()]) }}" class="inline-flex items-center gap-1.5 text-xs font-medium bg-gray-900 hover:bg-black text-white px-3 py-2 rounded-md transition">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                         Edit Product
                                     </a>

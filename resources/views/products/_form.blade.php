@@ -359,6 +359,42 @@
                 ]
             });
 
+            function sendEditorImage(file, $editor) {
+                const data = new FormData();
+                data.append("image", file);
+                data.append("_token", "{{ csrf_token() }}");
+
+                $.ajax({
+                    url: "{{ route('editor.upload-image') }}",
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    type: "POST",
+                    success: function(response) {
+                        if (response && response.url) {
+                            $editor.summernote('insertImage', response.url, function ($image) {
+                                $image.addClass('max-w-full h-auto rounded-lg my-3 shadow-2xs');
+                            });
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        let errMsg = 'Failed to upload image.';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            errMsg = jqXHR.responseJSON.message;
+                        } else if (jqXHR.responseJSON && jqXHR.responseJSON.errors && jqXHR.responseJSON.errors.image) {
+                            errMsg = jqXHR.responseJSON.errors.image[0];
+                        }
+                        alert(errMsg);
+                    }
+                });
+            }
+
             $('#description').summernote({
                 placeholder: 'Add detailed product specifications, overview, and information...',
                 tabsize: 2,
@@ -373,7 +409,14 @@
                     ['table', ['table']],
                     ['insert', ['link', 'picture', 'video', 'hr']],
                     ['view', ['fullscreen', 'codeview', 'help']]
-                ]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        for (let i = 0; i < files.length; i++) {
+                            sendEditorImage(files[i], $(this));
+                        }
+                    }
+                }
             });
         }
     });

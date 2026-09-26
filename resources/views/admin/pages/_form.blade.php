@@ -46,7 +46,42 @@
 
 <script>
     (function () {
-        function initSummernote() {
+            function sendEditorImage(file, $editor) {
+                const data = new FormData();
+                data.append("image", file);
+                data.append("_token", "{{ csrf_token() }}");
+
+                window.jQuery.ajax({
+                    url: "{{ route('editor.upload-image') }}",
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    type: "POST",
+                    success: function(response) {
+                        if (response && response.url) {
+                            $editor.summernote('insertImage', response.url, function ($image) {
+                                $image.addClass('max-w-full h-auto rounded-lg my-3 shadow-2xs');
+                            });
+                        }
+                    },
+                    error: function(jqXHR) {
+                        let errMsg = 'Failed to upload image.';
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            errMsg = jqXHR.responseJSON.message;
+                        } else if (jqXHR.responseJSON && jqXHR.responseJSON.errors && jqXHR.responseJSON.errors.image) {
+                            errMsg = jqXHR.responseJSON.errors.image[0];
+                        }
+                        alert(errMsg);
+                    }
+                });
+            }
+
             if (window.jQuery && window.jQuery.fn && window.jQuery.fn.summernote) {
                 window.jQuery('#summernote-content').summernote({
                     placeholder: 'Type or paste page content here...',
@@ -62,7 +97,14 @@
                         ['table', ['table']],
                         ['insert', ['link', 'picture', 'video', 'hr']],
                         ['view', ['fullscreen', 'codeview', 'help']]
-                    ]
+                    ],
+                    callbacks: {
+                        onImageUpload: function(files) {
+                            for (let i = 0; i < files.length; i++) {
+                                sendEditorImage(files[i], window.jQuery(this));
+                            }
+                        }
+                    }
                 });
             } else {
                 setTimeout(initSummernote, 100);

@@ -42,6 +42,17 @@
     } elseif ($product instanceof \App\Models\Product) {
         $showAdminBadge = $product->approval_status === \App\Enums\ProductApprovalStatus::Approved || $product->approval_status?->value === 'approved' || $product->approval_status === 'approved';
     }
+
+    // Resolve Seller Name (Store Name for sellers, Official Store for admin)
+    $sellerName = $seller;
+    if ($product instanceof \App\Models\Product) {
+        $u = $product->user;
+        $sp = $u?->businessProfile ?? $u?->salerProfile;
+        $sellerName = match (true) {
+            $u?->isAdmin() => config('app.name', 'Openbox') . ' Official',
+            default => $sp?->business_name ?? $sp?->display_name ?? $u?->name ?? 'Openbox',
+        };
+    }
 @endphp
 
 <div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
@@ -168,7 +179,7 @@
 
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-2.5 flex items-center justify-between gap-2">
-        <span class="text-xs text-gray-500 truncate">{{ $seller }}</span>
+        <span class="text-xs text-gray-500 truncate">{{ $sellerName ?: $seller }}</span>
         <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-all active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

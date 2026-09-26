@@ -59,21 +59,37 @@ class ProductPageController extends Controller
 
         $seller = $product->user;
         $sellerProfile = $seller->businessProfile ?? $seller->salerProfile;
+        $isAdminProduct = $seller->isAdmin();
+
+        $sellerName = match (true) {
+            $isAdminProduct => config('app.name', 'Openbox') . ' Official',
+            default => $sellerProfile->business_name ?? $sellerProfile->display_name ?? $seller->name,
+        };
+
+        $sellerLogoUrl = match (true) {
+            $isAdminProduct => \App\Support\MediaUrl::resolve(setting('site_icon') ?: setting('brand_logo')) ?: asset('buy-and-sale.png'),
+            default => $sellerProfile?->logoUrl(),
+        };
+
+        $sellerUrl = match (true) {
+            $isAdminProduct => route('home'),
+            ! $sellerProfile => null,
+            $seller->isBusiness() => route('stores.business', $sellerProfile->slug),
+            $seller->isSaler() => route('stores.saler', $sellerProfile->slug),
+            default => null,
+        };
 
         return view('pages.product', [
             'product' => $product,
             'isPreview' => $product->publication_status->value !== 'published' && $canPreview,
             'sellerProfile' => $sellerProfile,
-            'sellerName' => $sellerProfile->business_name ?? $sellerProfile->display_name ?? $seller->name,
+            'sellerName' => $sellerName,
+            'sellerLogoUrl' => $sellerLogoUrl,
+            'isAdminProduct' => $isAdminProduct,
             'sellerLocation' => $sellerProfile->city ?? null,
             'sellerRating' => (float) $seller->approvedReviewsAsSeller()->avg('rating'),
             'sellerReviewCount' => $seller->approvedReviewsAsSeller()->count(),
-            'sellerUrl' => match (true) {
-                ! $sellerProfile => null,
-                $seller->isBusiness() => route('stores.business', $sellerProfile->slug),
-                $seller->isSaler() => route('stores.saler', $sellerProfile->slug),
-                default => null,
-            },
+            'sellerUrl' => $sellerUrl,
             'related' => Product::query()
                 ->live()
                 ->where('category_id', $product->category_id)

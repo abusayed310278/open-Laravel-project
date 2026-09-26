@@ -16,6 +16,13 @@
                     <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
                 @endforeach
             </select>
+
+            <select name="payment_route" onchange="this.form.submit()" class="border border-gray-200 rounded-md px-4 py-2.5 text-sm bg-white">
+                <option value="">All routes</option>
+                @foreach ($paymentRoutes as $route)
+                    <option value="{{ $route->value }}" @selected(request('payment_route') === $route->value)>{{ $route->name }}</option>
+                @endforeach
+            </select>
         </form>
 
         <x-table :headers="['Order', 'Vendor', 'Requested by', 'Amount', 'Reason', 'Status', '']" id="refunds-table">

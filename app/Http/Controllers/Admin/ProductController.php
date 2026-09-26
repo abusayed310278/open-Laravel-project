@@ -90,6 +90,11 @@ class ProductController extends Controller
             array_map('intval', $request->input('delete_images', []))
         );
 
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && str_starts_with($redirectTo, url('/')) && ! str_contains($redirectTo, '/edit')) {
+            return redirect($redirectTo)->with('status', 'Product updated.');
+        }
+
         return redirect()->route('admin.products.index')->with('status', 'Product updated.');
     }
 
@@ -134,11 +139,16 @@ class ProductController extends Controller
         return back()->with('status', "\"{$product->title}\" was rejected.");
     }
 
-    public function destroy(Product $product): RedirectResponse
+    public function destroy(Product $product, Request $request): RedirectResponse
     {
         $this->products->delete($product);
 
-        return redirect()->route('admin.products.index')->with('status', 'Product deleted.');
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && str_starts_with($redirectTo, url('/')) && ! str_contains($redirectTo, '/edit')) {
+            return redirect($redirectTo)->with('status', 'Product deleted.');
+        }
+
+        return redirect()->back()->with('status', 'Product deleted.');
     }
 
     public function bulkDestroy(Request $request): RedirectResponse

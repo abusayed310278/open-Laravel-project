@@ -99,6 +99,11 @@ class ProductController extends Controller
             $this->products->submitForApproval($product);
         }
 
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && str_starts_with($redirectTo, url('/')) && ! str_contains($redirectTo, '/edit')) {
+            return redirect($redirectTo)->with('status', 'Listing updated.');
+        }
+
         return redirect()->route($this->indexRoute())->with('status', 'Listing updated.');
     }
 
@@ -153,13 +158,18 @@ class ProductController extends Controller
         return $this->publish($product);
     }
 
-    public function destroy(Product $product): RedirectResponse
+    public function destroy(Product $product, Request $request): RedirectResponse
     {
         $this->authorize('delete', $product);
 
         $this->products->delete($product);
 
-        return redirect()->route($this->indexRoute())->with('status', 'Listing deleted.');
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && str_starts_with($redirectTo, url('/')) && ! str_contains($redirectTo, '/edit')) {
+            return redirect($redirectTo)->with('status', 'Listing deleted.');
+        }
+
+        return redirect()->back()->with('status', 'Listing deleted.');
     }
 
     private function indexRoute(): string

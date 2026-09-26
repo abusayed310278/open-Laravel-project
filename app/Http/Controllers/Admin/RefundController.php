@@ -19,7 +19,7 @@ class RefundController extends Controller
     {
         $refunds = Refund::query()
             ->with(['vendorOrder.vendor', 'order', 'requestedBy'])
-            ->whereHas('vendorOrder', fn ($query) => $query->where('payment_route', PaymentRoute::Openbox))
+            ->when($request->filled('payment_route'), fn ($query) => $query->whereHas('vendorOrder', fn ($q) => $q->where('payment_route', $request->string('payment_route'))))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->latest()
             ->paginate(20)
@@ -28,13 +28,12 @@ class RefundController extends Controller
         return view('admin.refunds.index', [
             'refunds' => $refunds,
             'statuses' => RefundStatus::cases(),
+            'paymentRoutes' => PaymentRoute::cases(),
         ]);
     }
 
     public function approve(Request $request, Refund $refund): RedirectResponse
     {
-        abort_unless($refund->vendorOrder->payment_route === PaymentRoute::Openbox, 403);
-
         $this->payments->approveRefund($refund, $request->user());
 
         return back()->with('status', 'Refund approved.');
@@ -42,8 +41,6 @@ class RefundController extends Controller
 
     public function reject(Request $request, Refund $refund): RedirectResponse
     {
-        abort_unless($refund->vendorOrder->payment_route === PaymentRoute::Openbox, 403);
-
         $this->payments->rejectRefund($refund, $request->user());
 
         return back()->with('status', 'Refund rejected.');
