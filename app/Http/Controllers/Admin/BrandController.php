@@ -42,7 +42,7 @@ class BrandController extends Controller
         $data = $request->safe()->except(['logo', 'remove_logo']);
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $this->storeUploadedFile($request->file('logo'), 'brands', 'public');
+            $data['logo'] = \App\Helpers\FileUploadHelper::store($request->file('logo'), 'brands');
         }
 
         Brand::query()->create($data);
@@ -71,15 +71,15 @@ class BrandController extends Controller
 
         if ($request->boolean('remove_logo')) {
             if ($brand->logo) {
-                Storage::disk('public')->delete($brand->logo);
+                \App\Support\MediaUrl::delete($brand->logo);
             }
             $data['logo'] = null;
         } elseif ($request->hasFile('logo')) {
             if ($brand->logo) {
-                Storage::disk('public')->delete($brand->logo);
+                \App\Support\MediaUrl::delete($brand->logo);
             }
 
-            $data['logo'] = $this->storeUploadedFile($request->file('logo'), 'brands', 'public');
+            $data['logo'] = \App\Helpers\FileUploadHelper::store($request->file('logo'), 'brands');
         }
 
         $brand->update($data);
@@ -93,40 +93,12 @@ class BrandController extends Controller
         return redirect()->route($prefix . 'brands.index')->with('status', 'Brand updated.');
     }
 
-    /**
-     * Store an uploaded file safely, handling PHP 8.4 / Windows temp file paths.
-     */
-    private function storeUploadedFile(\Illuminate\Http\UploadedFile $file, string $directory = 'brands', string $disk = 'public'): string
-    {
-        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png';
-        $filename = \Illuminate\Support\Str::random(40) . '.' . strtolower($extension);
-        $targetPath = trim($directory, '/') . '/' . $filename;
-
-        $sourcePath = $file->getRealPath() ?: $file->getPathname();
-
-        if (!empty($sourcePath) && file_exists($sourcePath)) {
-            $stream = @fopen($sourcePath, 'r');
-            if ($stream !== false) {
-                try {
-                    Storage::disk($disk)->put($targetPath, $stream);
-                    return $targetPath;
-                } finally {
-                    if (is_resource($stream)) {
-                        fclose($stream);
-                    }
-                }
-            }
-        }
-
-        return $file->store($directory, $disk);
-    }
-
     public function destroy(Request $request, Brand $brand): RedirectResponse
     {
         abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
 
         if ($brand->logo) {
-            Storage::disk('public')->delete($brand->logo);
+            \App\Support\MediaUrl::delete($brand->logo);
         }
 
         $brand->delete();
@@ -141,7 +113,7 @@ class BrandController extends Controller
         abort_unless($request->user()?->isAdmin(), 403, 'Sellers and store owners cannot modify existing brands.');
 
         if ($brand->logo) {
-            Storage::disk('public')->delete($brand->logo);
+            \App\Support\MediaUrl::delete($brand->logo);
             $brand->update(['logo' => null]);
         }
 

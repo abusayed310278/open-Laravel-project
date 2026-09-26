@@ -19,8 +19,8 @@ class BannerController extends Controller
 
     public function store(StoreBannerRequest $request): RedirectResponse
     {
-        $imagePath = $request->hasFile('image') ? $this->storeUploadedFile($request->file('image'), 'banners', 'public') : null;
-        $videoPath = $request->hasFile('video') ? $this->storeUploadedFile($request->file('video'), 'banners', 'public') : null;
+        $imagePath = $request->hasFile('image') ? \App\Helpers\FileUploadHelper::store($request->file('image'), 'banners') : null;
+        $videoPath = $request->hasFile('video') ? \App\Helpers\FileUploadHelper::store($request->file('video'), 'banners') : null;
 
         Banner::create([
             ...$request->safe()->except(['image', 'video']),
@@ -42,60 +42,32 @@ class BannerController extends Controller
         ];
 
         if ($request->boolean('remove_image')) {
-            if ($banner->image && !str_starts_with($banner->image, 'http')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+            if ($banner->image) {
+                \App\Support\MediaUrl::delete($banner->image);
             }
             $data['image'] = null;
         } elseif ($request->hasFile('image')) {
-            if ($banner->image && !str_starts_with($banner->image, 'http')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+            if ($banner->image) {
+                \App\Support\MediaUrl::delete($banner->image);
             }
-            $data['image'] = $this->storeUploadedFile($request->file('image'), 'banners', 'public');
+            $data['image'] = \App\Helpers\FileUploadHelper::store($request->file('image'), 'banners');
         }
 
         if ($request->boolean('remove_video')) {
-            if ($banner->video && !str_starts_with($banner->video, 'http')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
+            if ($banner->video) {
+                \App\Support\MediaUrl::delete($banner->video);
             }
             $data['video'] = null;
         } elseif ($request->hasFile('video')) {
-            if ($banner->video && !str_starts_with($banner->video, 'http')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
+            if ($banner->video) {
+                \App\Support\MediaUrl::delete($banner->video);
             }
-            $data['video'] = $this->storeUploadedFile($request->file('video'), 'banners', 'public');
+            $data['video'] = \App\Helpers\FileUploadHelper::store($request->file('video'), 'banners');
         }
 
         $banner->update($data);
 
         return back()->with('status', 'Banner updated.');
-    }
-
-    /**
-     * Store an uploaded file safely, handling PHP 8.4 / Windows temp file paths.
-     */
-    private function storeUploadedFile(\Illuminate\Http\UploadedFile $file, string $directory = 'banners', string $disk = 'public'): string
-    {
-        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'png';
-        $filename = \Illuminate\Support\Str::random(40) . '.' . strtolower($extension);
-        $targetPath = trim($directory, '/') . '/' . $filename;
-
-        $sourcePath = $file->getRealPath() ?: $file->getPathname();
-
-        if (!empty($sourcePath) && file_exists($sourcePath)) {
-            $stream = @fopen($sourcePath, 'r');
-            if ($stream !== false) {
-                try {
-                    \Illuminate\Support\Facades\Storage::disk($disk)->put($targetPath, $stream);
-                    return $targetPath;
-                } finally {
-                    if (is_resource($stream)) {
-                        fclose($stream);
-                    }
-                }
-            }
-        }
-
-        return $file->store($directory, $disk);
     }
 
     public function toggleActive(Banner $banner): RedirectResponse
@@ -109,11 +81,11 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner): RedirectResponse
     {
-        if ($banner->image && !str_starts_with($banner->image, 'http')) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+        if ($banner->image) {
+            \App\Support\MediaUrl::delete($banner->image);
         }
-        if ($banner->video && !str_starts_with($banner->video, 'http')) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->video);
+        if ($banner->video) {
+            \App\Support\MediaUrl::delete($banner->video);
         }
 
         $banner->delete();

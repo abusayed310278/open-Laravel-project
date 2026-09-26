@@ -26,7 +26,7 @@
                     @php
                         $other = $conversation->otherParty(auth()->user());
                         $otherName = $other?->name ?? 'Support';
-                        $avatarUrl = $other?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($other->profile->avatar) : null;
+                        $avatarUrl = \App\Support\MediaUrl::resolve($other?->profile?->avatar);
                         $initials = strtoupper(substr($otherName, 0, 2));
                     @endphp
                     <a href="{{ route($routePrefix.'chat.show', $conversation) }}" class="flex items-center justify-between py-4 px-3 -mx-1 hover:bg-amber-50/40 rounded-xl transition-all group">

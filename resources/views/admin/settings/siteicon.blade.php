@@ -52,9 +52,10 @@
 
                     {{-- Active Tab --}}
                     <div class="bg-white px-4 py-2 rounded-t-lg border-t border-x border-gray-200 shadow-xs flex items-center gap-2.5 min-w-[200px] max-w-[260px]">
+                        @php $resolvedFaviconUrl = \App\Support\MediaUrl::resolve($favicon); @endphp
                         <div id="mock-tab-icon" class="w-4 h-4 flex items-center justify-center shrink-0">
-                            @if (!empty($favicon) && is_string($favicon) && trim($favicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($favicon))
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" alt="Site Icon" class="w-4 h-4 object-contain">
+                            @if (!empty($resolvedFaviconUrl))
+                                <img src="{{ $resolvedFaviconUrl }}" alt="Site Icon" class="w-4 h-4 object-contain">
                             @else
                                 <img src="{{ asset('icon.png') }}" alt="Openbox" class="w-4 h-4 object-contain">
                             @endif
@@ -89,8 +90,8 @@
                     <div class="border border-gray-100 rounded-lg p-3 text-center bg-gray-50/50">
                         <div class="h-14 flex items-center justify-center">
                             <div class="w-4 h-4 preview-box flex items-center justify-center">
-                                @if (!empty($favicon) && is_string($favicon) && trim($favicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($favicon))
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" class="w-4 h-4 object-contain">
+                                @if (!empty($resolvedFaviconUrl))
+                                    <img src="{{ $resolvedFaviconUrl }}" class="w-4 h-4 object-contain">
                                 @else
                                     <img src="{{ asset('icon.png') }}" class="w-4 h-4 object-contain">
                                 @endif
@@ -103,8 +104,8 @@
                     <div class="border border-gray-100 rounded-lg p-3 text-center bg-gray-50/50">
                         <div class="h-14 flex items-center justify-center">
                             <div class="w-8 h-8 preview-box flex items-center justify-center">
-                                @if (!empty($favicon) && is_string($favicon) && trim($favicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($favicon))
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" class="w-8 h-8 object-contain">
+                                @if (!empty($resolvedFaviconUrl))
+                                    <img src="{{ $resolvedFaviconUrl }}" class="w-8 h-8 object-contain">
                                 @else
                                     <img src="{{ asset('icon.png') }}" class="w-8 h-8 object-contain">
                                 @endif
@@ -117,8 +118,8 @@
                     <div class="border border-gray-100 rounded-lg p-3 text-center bg-gray-50/50">
                         <div class="h-14 flex items-center justify-center">
                             <div class="w-12 h-12 preview-box flex items-center justify-center">
-                                @if (!empty($favicon) && is_string($favicon) && trim($favicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($favicon))
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" class="w-12 h-12 object-contain">
+                                @if (!empty($resolvedFaviconUrl))
+                                    <img src="{{ $resolvedFaviconUrl }}" class="w-12 h-12 object-contain">
                                 @else
                                     <img src="{{ asset('icon.png') }}" class="w-12 h-12 object-contain">
                                 @endif
@@ -131,8 +132,8 @@
                     <div class="border border-gray-100 rounded-lg p-3 text-center bg-gray-50/50">
                         <div class="h-14 flex items-center justify-center">
                             <div class="w-14 h-14 preview-box flex items-center justify-center">
-                                @if (!empty($favicon) && is_string($favicon) && trim($favicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($favicon))
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" class="w-14 h-14 object-contain">
+                                @if (!empty($resolvedFaviconUrl))
+                                    <img src="{{ $resolvedFaviconUrl }}" class="w-14 h-14 object-contain">
                                 @else
                                     <img src="{{ asset('icon.png') }}" class="w-14 h-14 object-contain">
                                 @endif

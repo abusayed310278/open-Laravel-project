@@ -5,10 +5,7 @@
 <title>@yield('title', config('app.name'))</title>
 
 @php
-    $customFavicon = setting('brand_favicon');
-    $faviconUrl = (!empty($customFavicon) && is_string($customFavicon) && trim($customFavicon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($customFavicon))
-        ? \Illuminate\Support\Facades\Storage::disk('public')->url($customFavicon)
-        : asset('icon.png');
+    $faviconUrl = \App\Support\MediaUrl::resolve(setting('brand_favicon')) ?: asset('icon.png');
 @endphp
 <link rel="icon" type="image/png" href="{{ $faviconUrl }}">
 <link rel="shortcut icon" href="{{ $faviconUrl }}">

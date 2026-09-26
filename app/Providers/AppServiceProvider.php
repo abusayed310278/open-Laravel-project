@@ -29,6 +29,13 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\Auth::guard('web')->setRememberDuration(43200); // 30 days (30 * 24 * 60)
         }
 
+        \Illuminate\Support\Facades\Storage::extend('cloudinary', function ($app, array $config) {
+            $adapter = new \App\Support\CloudinaryAdapter($config);
+            $flysystem = new \League\Flysystem\Filesystem($adapter, $config);
+
+            return new \Illuminate\Filesystem\FilesystemAdapter($flysystem, $adapter, $config);
+        });
+
         $this->applyRuntimeSettings();
     }
 
@@ -40,13 +47,6 @@ class AppServiceProvider extends ServiceProvider
      */
     private function applyRuntimeSettings(): void
     {
-        if ($this->app->runningInConsole() && ! $this->app->runningUnitTests()) {
-            // Artisan commands (migrate, key:generate, etc.) run before the
-            // settings table necessarily exists — skip there, HTTP requests
-            // and queued jobs still get the override via the service.
-            return;
-        }
-
         try {
             if (! Schema::hasTable('settings')) {
                 return;
@@ -71,24 +71,47 @@ class AppServiceProvider extends ServiceProvider
             ]);
         }
 
-        if ($settings->has('r2_access_key_id')) {
+        $r2Bucket = $settings->get('r2_bucket') ?: (config('filesystems.disks.r2.bucket') ?: 'r2-bucket');
+        $r2Key = $settings->get('r2_access_key_id') ?: config('filesystems.disks.r2.key', '');
+        $r2Secret = $settings->has('r2_secret_access_key') ? $settings->getDecrypted('r2_secret_access_key') : config('filesystems.disks.r2.secret', '');
+        $r2Endpoint = $settings->get('r2_endpoint') ?: config('filesystems.disks.r2.endpoint');
+        $r2Url = $settings->get('r2_url') ?: config('filesystems.disks.r2.url');
+
+        config([
+            'filesystems.disks.r2' => [
+                'driver' => 's3',
+                'key' => (string) $r2Key,
+                'secret' => (string) $r2Secret,
+                'region' => $settings->get('r2_region', 'auto'),
+                'bucket' => (string) $r2Bucket,
+                'url' => $r2Url,
+                'endpoint' => $r2Endpoint,
+                'use_path_style_endpoint' => false,
+                'throw' => false,
+            ],
+        ]);
+
+        if ($settings->has('cloudinary_cloud_name')) {
+            $cloudName = $settings->get('cloudinary_cloud_name');
+            $customUrl = $settings->get('cloudinary_url');
             config([
-                'filesystems.disks.r2' => [
-                    'driver' => 's3',
-                    'key' => $settings->get('r2_access_key_id'),
-                    'secret' => $settings->has('r2_secret_access_key') ? $settings->getDecrypted('r2_secret_access_key') : null,
-                    'region' => $settings->get('r2_region', 'auto'),
-                    'bucket' => $settings->get('r2_bucket'),
-                    'url' => $settings->get('r2_url'),
-                    'endpoint' => $settings->get('r2_endpoint'),
-                    'use_path_style_endpoint' => false,
-                    'throw' => false,
+                'filesystems.disks.cloudinary' => [
+                    'driver' => 'cloudinary',
+                    'cloud_name' => $cloudName,
+                    'api_key' => $settings->get('cloudinary_api_key'),
+                    'api_secret' => $settings->has('cloudinary_api_secret') ? $settings->getDecrypted('cloudinary_api_secret') : null,
+                    'url' => $customUrl ?: "https://res.cloudinary.com/{$cloudName}/image/upload",
                 ],
             ]);
+        }
 
-            if ($settings->get('storage_disk') === 'r2') {
-                config(['filesystems.default' => 'r2']);
-            }
+        if ($settings->has('storage_cdn_url')) {
+            config(['filesystems.disks.public.cdn_url' => $settings->get('storage_cdn_url')]);
+        }
+
+        $activeDisk = $settings->get('storage_disk', 'public');
+        if (in_array($activeDisk, ['public', 'r2', 'cloudinary'], true)) {
+            config(['filesystems.default' => $activeDisk]);
         }
     }
 }

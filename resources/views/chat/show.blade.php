@@ -6,7 +6,7 @@
     @php
         $other = $conversation->otherParty(auth()->user());
         $otherName = $other?->name ?? 'Support';
-        $avatarUrl = $other?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($other->profile->avatar) : null;
+        $avatarUrl = \App\Support\MediaUrl::resolve($other?->profile?->avatar);
         $initials = strtoupper(substr($otherName, 0, 2));
         $lastId = $messages->last()?->id ?? 0;
     @endphp

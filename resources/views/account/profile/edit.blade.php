@@ -18,14 +18,14 @@
         $initials = 'U';
     }
 
-    $avatarUrl = $user?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($user->profile->avatar) : null;
+    $avatarUrl = \App\Support\MediaUrl::resolve($user?->profile?->avatar);
 
     $company = $user?->profile?->company ?? ($user?->businessProfile?->business_name ?? ($user?->salerProfile?->display_name ?? ''));
     $location = $user?->profile?->location ?? ($user?->salerProfile?->location ?? '');
-    $designation = $user?->profile?->designation ?? match($user?->role?->value) {
+    $designation = match($user?->role?->value) {
         'admin' => 'Admin',
-        'business' => 'Business Owner',
-        'saler' => 'Individual Seller',
+        'business' => 'Store Owner',
+        'saler' => 'Seller',
         'verifier' => 'Verifier',
         default => 'Customer',
     };
@@ -173,15 +173,23 @@
                         @enderror
                     </div>
 
-                    {{-- Designation --}}
+                    {{-- Designation (Locked System Role) --}}
                     <div>
-                        <label for="designation" class="block text-xs font-semibold text-gray-700 mb-1.5">Designation</label>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="designation" class="block text-xs font-semibold text-gray-700">Designation</label>
+                            <span class="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                Locked
+                            </span>
+                        </div>
                         <input
                             type="text"
                             id="designation"
-                            name="designation"
-                            value="{{ old('designation', $designation) }}"
-                            class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent transition-all"
+                            value="{{ $designation }}"
+                            readonly
+                            disabled
+                            tabindex="-1"
+                            class="w-full border border-gray-200 bg-gray-50/80 text-gray-500 rounded-lg px-4 py-2.5 text-sm cursor-not-allowed select-none focus:outline-none"
                         >
                     </div>
 

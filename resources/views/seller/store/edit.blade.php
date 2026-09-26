@@ -39,27 +39,13 @@
             <div class="grid sm:grid-cols-2 gap-5">
                 @php
                     $currentPhoto = $profile->logo ?? $profile->profile_photo ?? null;
-                    $getStorageUrl = function ($path) {
-                        if (empty($path)) return null;
-                        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                            return $path;
-                        }
-                        $path = ltrim($path, '/');
-                        if (str_starts_with($path, 'public/')) {
-                            $path = substr($path, 7);
-                        }
-                        if (str_starts_with($path, 'storage/')) {
-                            return asset($path);
-                        }
-                        return Illuminate\Support\Facades\Storage::disk('public')->url($path);
-                    };
                 @endphp
                 <div class="max-w-[220px]">
                     <x-file-upload
                         :name="$isBusiness ? 'logo' : 'profile_photo'"
                         label="Store Logo"
                         hint="Recommended 400×400 square image"
-                        :value="$getStorageUrl($currentPhoto)"
+                        :value="\App\Support\MediaUrl::resolve($currentPhoto)"
                         fill
                     />
                 </div>

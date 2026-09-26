@@ -307,4 +307,9 @@ class Category extends Model
 
         return false;
     }
+
+    public function imageUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->image);
+    }
 }

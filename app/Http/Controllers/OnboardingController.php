@@ -63,9 +63,9 @@ class OnboardingController extends Controller
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             if ($file && $file->isValid() && filled($file->getRealPath()) && file_exists($file->getRealPath())) {
-                $path = $file->store(
-                    $user->role === UserRole::Business ? 'business-logos' : 'saler-photos',
-                    'public',
+                $path = \App\Helpers\FileUploadHelper::store(
+                    $file,
+                    $user->role === UserRole::Business ? 'business-logos' : 'saler-photos'
                 );
 
                 if ($path) {
@@ -78,9 +78,9 @@ class OnboardingController extends Controller
         if ($request->hasFile('cover_image')) {
             $cFile = $request->file('cover_image');
             if ($cFile && $cFile->isValid() && filled($cFile->getRealPath()) && file_exists($cFile->getRealPath())) {
-                $cPath = $cFile->store(
-                    $user->role === UserRole::Business ? 'business-covers' : 'saler-covers',
-                    'public',
+                $cPath = \App\Helpers\FileUploadHelper::store(
+                    $cFile,
+                    $user->role === UserRole::Business ? 'business-covers' : 'saler-covers'
                 );
 
                 if ($cPath) {

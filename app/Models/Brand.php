@@ -37,4 +37,9 @@ class Brand extends Model
     {
         return $query->where('status', PublishStatus::Active);
     }
+
+    public function logoUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->logo);
+    }
 }

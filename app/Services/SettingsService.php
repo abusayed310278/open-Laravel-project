@@ -19,6 +19,7 @@ class SettingsService
     private const ENCRYPTED_KEYS = [
         'mail_password',
         'r2_secret_access_key',
+        'cloudinary_api_secret',
         'stripe_secret_key',
         'paypal_client_secret',
     ];
@@ -53,7 +54,17 @@ class SettingsService
     {
         $value = $this->get($key);
 
-        return $value !== null ? Crypt::decryptString($value) : null;
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (Throwable $e) {
+            Log::warning("Failed decrypting setting '{$key}': ".$e->getMessage());
+
+            return $value;
+        }
     }
 
     public function has(string $key): bool

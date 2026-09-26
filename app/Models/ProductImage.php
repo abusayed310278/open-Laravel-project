@@ -36,9 +36,6 @@ class ProductImage extends Model
 
     public function url(): string
     {
-        if (str_starts_with($this->path, 'http')) {
-            return $this->path;
-        }
-        return asset('storage/'.ltrim($this->path, '/'));
+        return \App\Support\MediaUrl::resolve($this->path) ?? asset('assets/images/default.jpg');
     }
 }

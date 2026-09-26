@@ -63,15 +63,7 @@ class Post extends Model
 
     public function featuredImageUrl(): ?string
     {
-        if (! $this->featured_image) {
-            return null;
-        }
-
-        if (str_starts_with($this->featured_image, 'http://') || str_starts_with($this->featured_image, 'https://')) {
-            return $this->featured_image;
-        }
-
-        return asset('storage/'.ltrim($this->featured_image, '/'));
+        return \App\Support\MediaUrl::resolve($this->featured_image);
     }
 
     public function getFeaturedImageUrlAttribute(): ?string

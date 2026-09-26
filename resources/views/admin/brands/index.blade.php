@@ -24,7 +24,7 @@
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                     <td class="px-4 py-3 flex items-center gap-3">
                         @if ($brand->logo)
-                            <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($brand->logo) }}" alt="{{ $brand->name }}" class="w-8 h-8 rounded object-contain bg-gray-50">
+                            <img src="{{ $brand->logoUrl() }}" alt="{{ $brand->name }}" class="w-8 h-8 rounded object-contain bg-gray-50">
                         @endif
                         <span class="font-medium text-gray-900">{{ $brand->name }}</span>
                     </td>

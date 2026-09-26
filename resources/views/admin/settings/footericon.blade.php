@@ -44,9 +44,10 @@
             <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-2xs">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
                     <div class="flex items-center gap-3">
+                        @php $resolvedFooterIconUrl = \App\Support\MediaUrl::resolve($footerIcon); @endphp
                         <div id="footer-icon-preview" class="h-7 w-auto flex items-center justify-center shrink-0">
-                            @if (!empty($footerIcon) && is_string($footerIcon) && trim($footerIcon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($footerIcon))
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($footerIcon) }}" alt="Footer Icon" class="h-7 w-auto max-h-7 object-contain">
+                            @if (!empty($resolvedFooterIconUrl))
+                                <img src="{{ $resolvedFooterIconUrl }}" alt="Footer Icon" class="h-7 w-auto max-h-7 object-contain">
                             @else
                                 <img src="{{ asset('icon.png') }}" alt="Openbox" class="h-7 w-auto max-h-7 object-contain">
                             @endif

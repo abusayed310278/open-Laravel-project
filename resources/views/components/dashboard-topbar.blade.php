@@ -29,7 +29,7 @@
         'saler' => Route::has('saler.store.edit') ? route('saler.store.edit') : (Route::has('saler.settings.index') ? route('saler.settings.index') : '#'),
         default => Route::has('account.profile.edit') ? route('account.profile.edit') : '#',
     };
-    $avatarUrl = $user?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($user->profile->avatar) : null;
+    $avatarUrl = $user?->profile?->avatarUrl();
 @endphp
 
 <header class="bg-white border-b border-gray-100 flex items-center justify-between px-6 lg:px-8 py-3 sticky top-0 z-40 shadow-xs">

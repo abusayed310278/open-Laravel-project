@@ -315,6 +315,28 @@ class SettingsController extends Controller
 
     public function storage(): View
     {
+        $defaultCloudName = 'w36cggya';
+        $defaultApiKey = '146238954648692';
+        $defaultApiSecret = 'BEuXx-vqfq-tPmWMTaRbJd6SyH8';
+        $defaultUrl = 'cloudinary://146238954648692:BEuXx-vqfq-tPmWMTaRbJd6SyH8@w36cggya';
+
+        // Auto-seed default user Cloudinary credentials if not saved yet
+        if (! $this->settings->has('cloudinary_cloud_name')) {
+            $this->settings->setMany([
+                'cloudinary_cloud_name' => $defaultCloudName,
+                'cloudinary_api_key' => $defaultApiKey,
+                'cloudinary_url' => $defaultUrl,
+            ], 'storage');
+            $this->settings->set('cloudinary_api_secret', $defaultApiSecret, 'storage');
+        }
+
+        $historyLogs = ActivityLog::query()
+            ->with('user')
+            ->where('action', 'like', 'settings.storage%')
+            ->latest('id')
+            ->paginate(5, ['*'], 'history_page')
+            ->fragment('storage-history');
+
         return view('admin.settings.storage', [
             'values' => [
                 'r2_access_key_id' => $this->settings->get('r2_access_key_id'),
@@ -322,20 +344,151 @@ class SettingsController extends Controller
                 'r2_endpoint' => $this->settings->get('r2_endpoint'),
                 'r2_url' => $this->settings->get('r2_url'),
                 'r2_region' => $this->settings->get('r2_region', 'auto'),
-                'storage_disk' => $this->settings->get('storage_disk', 'public'),
+                'cloudinary_cloud_name' => $this->settings->get('cloudinary_cloud_name', $defaultCloudName),
+                'cloudinary_api_key' => $this->settings->get('cloudinary_api_key', $defaultApiKey),
+                'cloudinary_url' => $this->settings->get('cloudinary_url', $defaultUrl),
+                'storage_disk' => $this->settings->get('storage_disk', $this->settings->has('cloudinary_cloud_name') ? 'cloudinary' : 'public'),
+                'storage_cdn_url' => $this->settings->get('storage_cdn_url'),
             ],
-            'hasSecret' => $this->settings->has('r2_secret_access_key'),
+            'hasR2Secret' => $this->settings->has('r2_secret_access_key'),
+            'hasCloudinarySecret' => $this->settings->has('cloudinary_api_secret') || ! empty($defaultApiSecret),
+            'historyLogs' => $historyLogs,
         ]);
+    }
+
+    public function clearStorageHistory(): RedirectResponse
+    {
+        ActivityLog::query()
+            ->where('action', 'like', 'settings.storage%')
+            ->delete();
+
+        ActivityLog::record('settings.storage.history_cleared');
+
+        return redirect()->route('admin.settings.storage')->with('status', 'Storage settings change history cleared successfully.');
+    }
+
+    public function updateActiveStorage(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'storage_disk' => ['required', 'string', 'in:public,r2,cloudinary'],
+            'storage_cdn_url' => ['nullable', 'url', 'max:500'],
+        ]);
+
+        $previousDisk = $this->settings->get('storage_disk', 'public');
+        $newDisk = $validated['storage_disk'];
+        $cdnUrl = trim((string) ($validated['storage_cdn_url'] ?? ''));
+
+        $this->settings->set('storage_disk', $newDisk, 'storage');
+        $this->settings->set('storage_cdn_url', $cdnUrl ?: null, 'storage');
+        config(['filesystems.default' => $newDisk]);
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:sync-urls', ['--disk' => $newDisk]);
+        } catch (\Throwable) {
+            // Ignore if background task fails
+        }
+
+        ActivityLog::record('settings.storage.active_disk_changed', null, [
+            'from_disk' => $previousDisk,
+            'to_disk' => $newDisk,
+        ]);
+
+        return back()->with('status', 'Active storage driver updated to '.strtoupper($newDisk).' and database URLs synced.');
+    }
+
+    public function updateCloudinaryStorage(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'cloudinary_cloud_name' => ['nullable', 'string', 'max:255'],
+            'cloudinary_api_key' => ['nullable', 'string', 'max:255'],
+            'cloudinary_api_secret' => ['nullable', 'string', 'max:255'],
+            'cloudinary_url' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $cloudName = trim((string) ($validated['cloudinary_cloud_name'] ?? ''));
+        $apiKey = trim((string) ($validated['cloudinary_api_key'] ?? ''));
+        $apiSecret = trim((string) ($validated['cloudinary_api_secret'] ?? ''));
+        $cloudinaryUrl = trim((string) ($validated['cloudinary_url'] ?? ''));
+
+        // Auto-parse CLOUDINARY_URL string if provided (e.g. cloudinary://API_KEY:API_SECRET@CLOUD_NAME)
+        if (str_starts_with($cloudinaryUrl, 'cloudinary://') && preg_match('#^cloudinary://([^:]+):([^@]+)@(.+)$#i', $cloudinaryUrl, $matches)) {
+            if (empty($apiKey)) {
+                $apiKey = $matches[1];
+            }
+            if (empty($apiSecret)) {
+                $apiSecret = $matches[2];
+            }
+            if (empty($cloudName)) {
+                $cloudName = $matches[3];
+            }
+        } elseif (str_starts_with($cloudName, 'cloudinary://') && preg_match('#^cloudinary://([^:]+):([^@]+)@(.+)$#i', $cloudName, $matches)) {
+            $apiKey = $matches[1];
+            $apiSecret = $matches[2];
+            $cloudName = $matches[3];
+            $cloudinaryUrl = "cloudinary://{$apiKey}:{$apiSecret}@{$cloudName}";
+        }
+
+        $this->settings->setMany([
+            'cloudinary_cloud_name' => $cloudName ?: null,
+            'cloudinary_api_key' => $apiKey ?: null,
+            'cloudinary_url' => $cloudinaryUrl ?: null,
+            'storage_disk' => 'cloudinary',
+        ], 'storage');
+
+        if (! empty($apiSecret)) {
+            $this->settings->set('cloudinary_api_secret', $apiSecret, 'storage');
+        }
+
+        ActivityLog::record('settings.storage.cloudinary_updated', null, [
+            'cloud_name' => $cloudName,
+            'has_api_key' => ! empty($apiKey),
+        ]);
+
+        return back()->with('status', 'Cloudinary storage settings saved and set as Active Driver.');
+    }
+
+    public function updateR2Storage(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'r2_access_key_id' => ['nullable', 'string', 'max:255'],
+            'r2_secret_access_key' => ['nullable', 'string', 'max:255'],
+            'r2_bucket' => ['nullable', 'string', 'max:255'],
+            'r2_endpoint' => ['nullable', 'url', 'max:255'],
+            'r2_url' => ['nullable', 'url', 'max:255'],
+            'r2_region' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $this->settings->setMany([
+            'r2_access_key_id' => $validated['r2_access_key_id'] ?? null,
+            'r2_bucket' => $validated['r2_bucket'] ?? null,
+            'r2_endpoint' => $validated['r2_endpoint'] ?? null,
+            'r2_url' => $validated['r2_url'] ?? null,
+            'r2_region' => $validated['r2_region'] ?? 'auto',
+            'storage_disk' => 'r2',
+        ], 'storage');
+
+        if ($request->filled('r2_secret_access_key')) {
+            $this->settings->set('r2_secret_access_key', $request->string('r2_secret_access_key')->value(), 'storage');
+        }
+
+        ActivityLog::record('settings.storage.r2_updated', null, [
+            'bucket' => $validated['r2_bucket'] ?? null,
+        ]);
+
+        return back()->with('status', 'Cloudflare R2 storage settings saved and set as Active Driver.');
     }
 
     public function updateStorage(UpdateStorageRequest $request): RedirectResponse
     {
         $this->settings->setMany([
-            'r2_access_key_id' => $request->string('r2_access_key_id')->value(),
-            'r2_bucket' => $request->string('r2_bucket')->value(),
-            'r2_endpoint' => $request->string('r2_endpoint')->value(),
+            'r2_access_key_id' => $request->string('r2_access_key_id')->value() ?: null,
+            'r2_bucket' => $request->string('r2_bucket')->value() ?: null,
+            'r2_endpoint' => $request->string('r2_endpoint')->value() ?: null,
             'r2_url' => $request->string('r2_url')->value() ?: null,
             'r2_region' => $request->string('r2_region')->value() ?: 'auto',
+            'cloudinary_cloud_name' => $request->string('cloudinary_cloud_name')->value() ?: null,
+            'cloudinary_api_key' => $request->string('cloudinary_api_key')->value() ?: null,
+            'cloudinary_url' => $request->string('cloudinary_url')->value() ?: null,
             'storage_disk' => $request->string('storage_disk')->value(),
         ], 'storage');
 
@@ -343,24 +496,84 @@ class SettingsController extends Controller
             $this->settings->set('r2_secret_access_key', $request->string('r2_secret_access_key')->value(), 'storage');
         }
 
+        if ($request->filled('cloudinary_api_secret')) {
+            $this->settings->set('cloudinary_api_secret', $request->string('cloudinary_api_secret')->value(), 'storage');
+        }
+
         ActivityLog::record('settings.storage.updated');
 
         return back()->with('status', 'Storage settings updated.');
     }
 
-    public function testStorage(): RedirectResponse
+    public function testStorage(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        try {
-            $path = 'openbox-connection-test.txt';
-            Storage::disk('r2')->put($path, 'Openbox R2 connection test — '.now());
-            Storage::disk('r2')->delete($path);
-        } catch (Throwable $e) {
-            return back()->withErrors(['r2_access_key_id' => 'Connection failed: '.$e->getMessage()]);
+        $targetDisk = $request->input('disk', $this->settings->get('storage_disk', 'r2'));
+        if (! in_array($targetDisk, ['r2', 'cloudinary'], true)) {
+            $targetDisk = 'r2';
         }
 
-        ActivityLog::record('settings.storage.tested');
+        if ($targetDisk === 'cloudinary') {
+            Storage::extend('cloudinary', function ($app, array $config) {
+                $adapter = new \App\Support\CloudinaryAdapter($config);
+                $flysystem = new \League\Flysystem\Filesystem($adapter, $config);
 
-        return back()->with('status', 'Successfully connected to Cloudflare R2.');
+                return new \Illuminate\Filesystem\FilesystemAdapter($flysystem, $adapter, $config);
+            });
+
+            config([
+                'filesystems.disks.cloudinary' => [
+                    'driver' => 'cloudinary',
+                    'cloud_name' => $this->settings->get('cloudinary_cloud_name', 'w36cggya'),
+                    'api_key' => $this->settings->get('cloudinary_api_key', '146238954648692'),
+                    'api_secret' => $this->settings->getDecrypted('cloudinary_api_secret') ?: 'BEuXx-vqfq-tPmWMTaRbJd6SyH8',
+                    'url' => $this->settings->get('cloudinary_url', 'cloudinary://146238954648692:BEuXx-vqfq-tPmWMTaRbJd6SyH8@w36cggya'),
+                ],
+            ]);
+        } elseif ($targetDisk === 'r2') {
+            config([
+                'filesystems.disks.r2' => [
+                    'driver' => 's3',
+                    'key' => $this->settings->get('r2_access_key_id'),
+                    'secret' => $this->settings->has('r2_secret_access_key') ? $this->settings->getDecrypted('r2_secret_access_key') : null,
+                    'region' => $this->settings->get('r2_region', 'auto'),
+                    'bucket' => $this->settings->get('r2_bucket'),
+                    'url' => $this->settings->get('r2_url'),
+                    'endpoint' => $this->settings->get('r2_endpoint'),
+                    'use_path_style_endpoint' => false,
+                    'throw' => false,
+                ],
+            ]);
+        }
+
+        try {
+            $path = 'openbox-connection-test.txt';
+            Storage::disk($targetDisk)->put($path, 'Openbox '.$targetDisk.' connection test — '.now());
+            Storage::disk($targetDisk)->delete($path);
+        } catch (\Throwable $e) {
+            $fieldKey = $targetDisk === 'cloudinary' ? 'cloudinary_cloud_name' : 'r2_access_key_id';
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Connection failed: '.$e->getMessage(),
+                ], 422);
+            }
+
+            return back()->withErrors([$fieldKey => 'Connection failed: '.$e->getMessage()]);
+        }
+
+        ActivityLog::record('settings.storage.tested', null, ['disk' => $targetDisk]);
+
+        $diskLabel = $targetDisk === 'cloudinary' ? 'Cloudinary' : 'Cloudflare R2';
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully connected to '.$diskLabel.'.',
+            ]);
+        }
+
+        return back()->with('status', 'Successfully connected to '.$diskLabel.'.');
     }
 
     public function payments(): View

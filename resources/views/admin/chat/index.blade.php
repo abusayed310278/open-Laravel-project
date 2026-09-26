@@ -128,7 +128,7 @@
             <x-table :headers="['User', 'Role', 'Email', 'Phone', 'Joined', 'Action']" id="admin-users-chat-table">
                 @forelse ($users as $user)
                     @php
-                        $avatarUrl = $user->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($user->profile->avatar) : null;
+                        $avatarUrl = \App\Support\MediaUrl::resolve($user->profile?->avatar);
                         $initials = strtoupper(substr($user->name, 0, 2));
                     @endphp
                     <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
@@ -209,8 +209,8 @@
             <x-table :headers="['Participant 1', 'Participant 2', 'Product', 'Last Activity', 'Action']" id="admin-chat-table">
                 @forelse ($conversations as $conversation)
                     @php
-                        $buyerAvatar = $conversation->buyer->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($conversation->buyer->profile->avatar) : null;
-                        $sellerAvatar = $conversation->seller->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($conversation->seller->profile->avatar) : null;
+                        $buyerAvatar = \App\Support\MediaUrl::resolve($conversation->buyer->profile?->avatar);
+                        $sellerAvatar = \App\Support\MediaUrl::resolve($conversation->seller->profile?->avatar);
                     @endphp
                     <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
                         {{-- Buyer / Initiator --}}

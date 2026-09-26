@@ -40,13 +40,15 @@ class CustomerProfileController extends Controller
         ]);
 
         $profileData = [
-            'company' => $data['company'] ?? null,
-            'location' => $data['location'] ?? null,
-            'designation' => $data['designation'] ?? null,
+            'company' => array_key_exists('company', $data) ? $data['company'] : null,
+            'location' => array_key_exists('location', $data) ? $data['location'] : null,
         ];
 
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-            $profileData['avatar'] = \App\Helpers\FileUploadHelper::store($request->file('avatar'), 'avatars', 'public');
+            if ($user->profile?->avatar) {
+                \App\Support\MediaUrl::delete($user->profile->avatar);
+            }
+            $profileData['avatar'] = \App\Helpers\FileUploadHelper::store($request->file('avatar'), 'avatars');
         }
 
         $user->profile()->updateOrCreate(

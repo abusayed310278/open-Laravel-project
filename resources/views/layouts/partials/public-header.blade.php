@@ -109,7 +109,7 @@
                         'verifier' => route('verifier.dashboard'),
                         default => route('account.dashboard'),
                     };
-                    $avatarUrl = $headerUser->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($headerUser->profile->avatar) : null;
+                    $avatarUrl = \App\Support\MediaUrl::resolve($headerUser->profile?->avatar);
                 @endphp
                 <a
                     href="{{ $dashboardUrl }}"

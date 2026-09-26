@@ -95,10 +95,10 @@
         <footer class="mt-auto border-t border-gray-100 bg-white px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
             <div class="flex items-center gap-3">
                 @php
-                    $footerIcon = setting('brand_footer_icon');
+                    $footerIconUrl = \App\Support\MediaUrl::resolve(setting('brand_footer_icon'));
                 @endphp
-                @if (!empty($footerIcon) && is_string($footerIcon) && trim($footerIcon) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($footerIcon))
-                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($footerIcon) }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
+                @if (!empty($footerIconUrl))
+                    <img src="{{ $footerIconUrl }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
                 @else
                     <img src="{{ asset('icon.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
                 @endif

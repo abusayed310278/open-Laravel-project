@@ -48,9 +48,10 @@
                         <span class="text-gray-300">#FFFFFF</span>
                     </div>
                     <div class="h-20 bg-gray-50/60 rounded-md border border-dashed border-gray-200 flex items-center justify-between px-6">
+                        @php $resolvedLogoUrl = \App\Support\MediaUrl::resolve($logo); @endphp
                         <div id="preview-logo-light">
-                            @if (!empty($logo) && is_string($logo) && trim($logo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
+                            @if (!empty($resolvedLogoUrl))
+                                <img src="{{ $resolvedLogoUrl }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">
                                     <img src="{{ asset('buy-and-sale.png') }}" alt="Openbox" class="h-9 w-auto object-contain">
@@ -73,8 +74,8 @@
                     </div>
                     <div class="h-20 bg-gray-900/80 rounded-md border border-dashed border-gray-800 flex items-center justify-between px-6">
                         <div id="preview-logo-dark">
-                            @if (!empty($logo) && is_string($logo) && trim($logo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo))
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
+                            @if (!empty($resolvedLogoUrl))
+                                <img src="{{ $resolvedLogoUrl }}" alt="Current Logo" class="h-9 max-w-[180px] object-contain">
                             @else
                                 <div class="flex items-center gap-2">
                                     <img src="{{ asset('buy-and-sale.png') }}" alt="Openbox" class="h-9 w-auto object-contain">

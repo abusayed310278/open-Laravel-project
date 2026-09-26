@@ -27,7 +27,7 @@
     name="image"
     label="Image"
     hint="PNG or JPG, square recommended"
-    :value="$category->image ? Illuminate\Support\Facades\Storage::disk('public')->url($category->image) : null"
+    :value="$category->imageUrl()"
 />
 
 <div class="grid sm:grid-cols-2 gap-5">

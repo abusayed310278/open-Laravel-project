@@ -57,7 +57,7 @@
                                 ['bg' => '#fef3c7', 'text' => '#b45309', 'border' => '#fde68a'], // Amber
                             ];
                             $avatarColor = $palette[abs(crc32($user->email ?: $user->name)) % count($palette)];
-                            $userAvatarUrl = $user->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($user->profile->avatar) : null;
+                            $userAvatarUrl = \App\Support\MediaUrl::resolve($user->profile?->avatar);
                         @endphp
                         <div class="flex items-center gap-3">
                             @if ($userAvatarUrl)

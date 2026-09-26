@@ -29,4 +29,9 @@ class UserProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function avatarUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->avatar);
+    }
 }

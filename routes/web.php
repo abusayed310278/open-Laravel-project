@@ -354,7 +354,11 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
 
         Route::get('/settings/storage', [SettingsController::class, 'storage'])->name('settings.storage');
         Route::post('/settings/storage', [SettingsController::class, 'updateStorage'])->name('settings.storage.update');
+        Route::post('/settings/storage/active', [SettingsController::class, 'updateActiveStorage'])->name('settings.storage.update-active');
+        Route::post('/settings/storage/cloudinary', [SettingsController::class, 'updateCloudinaryStorage'])->name('settings.storage.update-cloudinary');
+        Route::post('/settings/storage/r2', [SettingsController::class, 'updateR2Storage'])->name('settings.storage.update-r2');
         Route::post('/settings/storage/test', [SettingsController::class, 'testStorage'])->name('settings.storage.test');
+        Route::delete('/settings/storage/history', [SettingsController::class, 'clearStorageHistory'])->name('settings.storage.clear-history');
 
         Route::get('/settings/system', [MaintenanceController::class, 'index'])->name('settings.system');
         Route::post('/settings/system/{action}', [MaintenanceController::class, 'run'])->name('settings.system.run');

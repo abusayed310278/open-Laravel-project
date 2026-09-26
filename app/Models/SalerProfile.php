@@ -48,4 +48,14 @@ class SalerProfile extends Model
     {
         return $this->profile_photo;
     }
+
+    public function logoUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->profile_photo);
+    }
+
+    public function coverImageUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->cover_image);
+    }
 }

@@ -8,7 +8,7 @@
         'color' => ['label' => 'Color', 'route' => 'admin.settings.color'],
         'cache' => ['label' => 'Cache Clear', 'route' => 'admin.settings.cache'],
         'mail' => ['label' => 'Mail (SMTP)', 'route' => 'admin.settings.mail'],
-        'storage' => ['label' => 'Storage (R2)', 'route' => 'admin.settings.storage'],
+        'storage' => ['label' => 'Storage', 'route' => 'admin.settings.storage'],
         'payments' => ['label' => 'Payments', 'route' => 'admin.settings.payments'],
         'system' => ['label' => 'System', 'route' => 'admin.settings.system'],
     ];

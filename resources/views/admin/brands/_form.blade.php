@@ -11,7 +11,7 @@
     name="logo"
     label="Logo"
     hint="PNG, JPG or SVG"
-    :value="$brand->logo ? Illuminate\Support\Facades\Storage::disk('public')->url($brand->logo) : null"
+    :value="$brand->logoUrl()"
     :delete-url="$brand->exists && $brand->logo ? route('admin.brands.logo.remove', $brand) : null"
 />
 

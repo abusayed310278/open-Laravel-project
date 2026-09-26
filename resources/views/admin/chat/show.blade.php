@@ -6,7 +6,7 @@
     @php
         $isAdminParticipant = ($conversation->buyer_id === auth()->id() || $conversation->seller_id === auth()->id());
         $other = $isAdminParticipant ? $conversation->otherParty(auth()->user()) : null;
-        $otherAvatar = $other?->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($other->profile->avatar) : null;
+        $otherAvatar = \App\Support\MediaUrl::resolve($other?->profile?->avatar);
         $otherInitials = $other ? strtoupper(substr($other->name, 0, 2)) : '';
         $lastId = $messages->last()?->id ?? 0;
     @endphp
@@ -68,7 +68,7 @@
             @forelse ($messages as $message)
                 @php
                     $isMine = $message->sender_id === auth()->id();
-                    $senderAvatar = $message->sender->profile?->avatar ? \Illuminate\Support\Facades\Storage::url($message->sender->profile->avatar) : null;
+                    $senderAvatar = \App\Support\MediaUrl::resolve($message->sender->profile?->avatar);
                     $senderInitials = strtoupper(substr($message->sender->name, 0, 2));
                 @endphp
                 <div class="flex {{ $isMine ? 'justify-end' : 'justify-start items-end gap-2.5' }}">

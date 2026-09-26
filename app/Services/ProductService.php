@@ -83,9 +83,7 @@ class ProductService
             if (! empty($deleteImageIds)) {
                 $imagesToDelete = $product->images()->whereIn('id', $deleteImageIds)->get();
                 foreach ($imagesToDelete as $img) {
-                    if ($img->path && ! str_starts_with($img->path, 'http')) {
-                        Storage::disk('public')->delete($img->path);
-                    }
+                    \App\Support\MediaUrl::delete($img->path);
                     $img->delete();
                 }
             }
@@ -182,7 +180,7 @@ class ProductService
     public function delete(Product $product): void
     {
         foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->path);
+            \App\Support\MediaUrl::delete($image->path);
         }
 
         $product->delete();
@@ -276,9 +274,20 @@ class ProductService
             $extension = $image->guessExtension() ?: $image->getClientOriginalExtension() ?: 'jpg';
             $filename = Str::random(40).'.'.$extension;
 
-            $storedPath = Storage::disk('public')->putFileAs('products', $filePath, $filename);
+            $disk = config('filesystems.default', 'public');
+            if ($disk === 'local') {
+                $disk = 'public';
+            }
+
+            $storedPath = Storage::disk($disk)->putFileAs('products', $filePath, $filename);
 
             if ($storedPath) {
+                if (in_array($disk, ['cloudinary', 'r2'], true)) {
+                    $urlToSave = Storage::disk($disk)->url($storedPath);
+                } else {
+                    $urlToSave = 'products/' . $filename;
+                }
+
                 $isPrimary = ($primaryIndex !== null && (int) $primaryIndex === $index) || (! $hasPrimary && $index === 0);
 
                 if ($isPrimary) {
@@ -288,7 +297,7 @@ class ProductService
                 }
 
                 $product->images()->create([
-                    'path' => $storedPath,
+                    'path' => $urlToSave,
                     'sort_order' => $nextSort + $index,
                     'is_primary' => $isPrimary,
                 ]);

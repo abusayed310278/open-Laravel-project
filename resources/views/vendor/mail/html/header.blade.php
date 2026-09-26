@@ -2,11 +2,17 @@
 @php
     $logoSrc = null;
     $customLogo = setting('brand_logo');
-    if (!empty($customLogo) && is_string($customLogo) && trim($customLogo) !== '' && \Illuminate\Support\Facades\Storage::disk('public')->exists($customLogo)) {
-        $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path($customLogo);
-        if (file_exists($fullPath)) {
-            $mime = mime_content_type($fullPath) ?: 'image/png';
-            $logoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
+    $resolvedUrl = \App\Support\MediaUrl::resolve($customLogo);
+    if (!empty($resolvedUrl)) {
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists(ltrim(parse_url($customLogo, PHP_URL_PATH) ?: $customLogo, '/'))) {
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('public')->path(ltrim(parse_url($customLogo, PHP_URL_PATH) ?: $customLogo, '/'));
+            if (file_exists($fullPath)) {
+                $mime = mime_content_type($fullPath) ?: 'image/png';
+                $logoSrc = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
+            }
+        }
+        if (!$logoSrc) {
+            $logoSrc = $resolvedUrl;
         }
     }
 

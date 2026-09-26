@@ -46,4 +46,14 @@ class BusinessProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function logoUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->logo);
+    }
+
+    public function coverImageUrl(): ?string
+    {
+        return \App\Support\MediaUrl::resolve($this->cover_image);
+    }
 }

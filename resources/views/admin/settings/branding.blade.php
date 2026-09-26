@@ -18,7 +18,7 @@
                     <x-file-upload name="logo" label="Logo" hint="PNG or SVG, transparent background recommended" />
                     @if ($logo)
                         <div class="flex items-center gap-2 mt-3">
-                            <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Current logo" class="w-10 h-10 rounded border border-gray-100 object-contain bg-white">
+                            <img src="{{ \App\Support\MediaUrl::resolve($logo) }}" alt="Current logo" class="w-10 h-10 rounded border border-gray-100 object-contain bg-white">
                             <span class="text-xs text-gray-400">Current logo</span>
                         </div>
                     @endif
@@ -28,7 +28,7 @@
                     <x-file-upload name="favicon" label="Site icon (favicon)" hint="Square PNG or ICO, at least 32×32" />
                     @if ($favicon)
                         <div class="flex items-center gap-2 mt-3">
-                            <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($favicon) }}" alt="Current favicon" class="w-8 h-8 rounded border border-gray-100 object-contain bg-white">
+                            <img src="{{ \App\Support\MediaUrl::resolve($favicon) }}" alt="Current favicon" class="w-8 h-8 rounded border border-gray-100 object-contain bg-white">
                             <span class="text-xs text-gray-400">Current favicon</span>
                         </div>
                     @endif

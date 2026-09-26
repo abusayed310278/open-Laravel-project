@@ -50,6 +50,37 @@
 
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ $product->title }}</h1>
 
+                <div class="flex flex-wrap items-center gap-6 bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 mb-4 text-sm">
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-gray-400">Price:</span>
+                        <span class="font-semibold text-gray-900">${{ number_format($product->price, 2) }}</span>
+                    </div>
+                    @if ($product->compare_price)
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-gray-400">Regular Price:</span>
+                            <span class="font-semibold text-gray-900">${{ number_format($product->compare_price, 2) }}</span>
+                        </div>
+                    @endif
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-gray-400">Status:</span>
+                        <span class="font-semibold {{ $product->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
+                            {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+                        </span>
+                    </div>
+                    @if ($product->sku)
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-gray-400">Product Code:</span>
+                            <span class="font-semibold text-gray-900">{{ $product->sku }}</span>
+                        </div>
+                    @endif
+                    @if ($product->brand)
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-gray-400">Brand:</span>
+                            <span class="font-semibold text-gray-900">{{ $product->brand->name }}</span>
+                        </div>
+                    @endif
+                </div>
+
                 @if ($product->short_description)
                     <div class="prose prose-sm max-w-none text-gray-600 mb-4 leading-relaxed">
                         {!! $product->short_description !!}

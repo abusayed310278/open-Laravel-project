@@ -44,15 +44,7 @@ class Banner extends Model
 
     public function imageUrl(): ?string
     {
-        if (! $this->image) {
-            return null;
-        }
-
-        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
-            return $this->image;
-        }
-
-        return asset('storage/'.ltrim($this->image, '/'));
+        return \App\Support\MediaUrl::resolve($this->image);
     }
 
     public function getImageUrlAttribute(): ?string
@@ -62,15 +54,7 @@ class Banner extends Model
 
     public function videoUrl(): ?string
     {
-        if (! $this->video) {
-            return null;
-        }
-
-        if (str_starts_with($this->video, 'http://') || str_starts_with($this->video, 'https://')) {
-            return $this->video;
-        }
-
-        return asset('storage/'.ltrim($this->video, '/'));
+        return \App\Support\MediaUrl::resolve($this->video);
     }
 
     public function getVideoUrlAttribute(): ?string

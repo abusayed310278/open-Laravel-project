@@ -4,23 +4,8 @@
 
 @section('content')
 @php
-    $getStorageUrl = function ($path) {
-        if (empty($path)) return null;
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-        $path = ltrim($path, '/');
-        if (str_starts_with($path, 'public/')) {
-            $path = substr($path, 7);
-        }
-        if (str_starts_with($path, 'storage/')) {
-            return asset($path);
-        }
-        return Illuminate\Support\Facades\Storage::disk('public')->url($path);
-    };
-
-    $resolvedCover = $getStorageUrl($coverImage) ?? asset('images/default-cover.svg');
-    $resolvedLogo = $getStorageUrl($logo);
+    $resolvedCover = \App\Support\MediaUrl::resolve($coverImage) ?? asset('images/default-cover.svg');
+    $resolvedLogo = \App\Support\MediaUrl::resolve($logo);
 @endphp
 
     <div class="h-44 sm:h-64 relative overflow-hidden bg-gray-900">

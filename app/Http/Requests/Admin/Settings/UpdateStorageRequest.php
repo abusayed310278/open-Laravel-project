@@ -19,13 +19,17 @@ class UpdateStorageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'r2_access_key_id' => ['required', 'string', 'max:255'],
+            'r2_access_key_id' => ['nullable', 'required_if:storage_disk,r2', 'string', 'max:255'],
             'r2_secret_access_key' => ['nullable', 'string', 'max:255'],
-            'r2_bucket' => ['required', 'string', 'max:255'],
-            'r2_endpoint' => ['required', 'url', 'max:255'],
+            'r2_bucket' => ['nullable', 'required_if:storage_disk,r2', 'string', 'max:255'],
+            'r2_endpoint' => ['nullable', 'required_if:storage_disk,r2', 'url', 'max:255'],
             'r2_url' => ['nullable', 'url', 'max:255'],
             'r2_region' => ['nullable', 'string', 'max:50'],
-            'storage_disk' => ['required', Rule::in(['public', 'r2'])],
+            'cloudinary_cloud_name' => ['nullable', 'required_if:storage_disk,cloudinary', 'string', 'max:255'],
+            'cloudinary_api_key' => ['nullable', 'required_if:storage_disk,cloudinary', 'string', 'max:255'],
+            'cloudinary_api_secret' => ['nullable', 'string', 'max:255'],
+            'cloudinary_url' => ['nullable', 'url', 'max:255'],
+            'storage_disk' => ['required', Rule::in(['public', 'r2', 'cloudinary'])],
         ];
     }
 }
