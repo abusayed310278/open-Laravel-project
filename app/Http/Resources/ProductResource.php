@@ -11,11 +11,11 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         $sellerLogo = null;
-        if ($this->seller) {
-            if ($this->seller->isBusiness() && $this->seller->businessProfile?->logo) {
-                $sellerLogo = MediaUrl::resolve($this->seller->businessProfile->logo);
-            } elseif ($this->seller->isSaler() && $this->seller->sellerProfile?->logo) {
-                $sellerLogo = MediaUrl::resolve($this->seller->sellerProfile->logo);
+        if ($this->user) {
+            if ($this->user->isBusiness() && $this->user->businessProfile?->logo) {
+                $sellerLogo = MediaUrl::resolve($this->user->businessProfile->logo);
+            } elseif ($this->user->isSaler() && $this->user->salerProfile?->logo) {
+                $sellerLogo = MediaUrl::resolve($this->user->salerProfile->logo);
             }
         }
 
@@ -26,11 +26,11 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price' => (float) $this->price,
             'compare_price' => $this->compare_price ? (float) $this->compare_price : null,
-            'stock' => (int) $this->stock,
+            'stock' => (int) ($this->quantity ?? 0),
             'sku' => $this->sku,
-            'image' => MediaUrl::resolve($this->featured_image ?? $this->image),
-            'gallery' => collect($this->gallery ?? [])->map(fn ($img) => MediaUrl::resolve($img))->values()->toArray(),
-            'rating' => (float) ($this->reviews_avg_rating ?? $this->rating ?? 0),
+            'image' => MediaUrl::resolve($this->primaryImageUrl()),
+            'gallery' => collect($this->images ?? [])->map(fn ($img) => MediaUrl::resolve($img->image_path))->values()->toArray(),
+            'rating' => (float) ($this->reviews_avg_rating ?? 0),
             'reviews_count' => (int) ($this->reviews_count ?? 0),
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
@@ -42,11 +42,11 @@ class ProductResource extends JsonResource
                 'name' => $this->brand->name,
                 'slug' => $this->brand->slug,
             ]),
-            'seller' => $this->whenLoaded('seller', fn () => [
-                'id' => $this->seller->id,
-                'name' => $this->seller->name,
-                'role' => $this->seller->role->value,
-                'role_label' => $this->seller->role->label(),
+            'seller' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user->id,
+                'name' => $this->user->name,
+                'role' => $this->user->role->value,
+                'role_label' => $this->user->role->label(),
                 'logo_url' => $sellerLogo,
             ]),
             'created_at' => $this->created_at?->toIso8601String(),
