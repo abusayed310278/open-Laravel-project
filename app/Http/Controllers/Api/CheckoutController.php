@@ -19,6 +19,34 @@ class CheckoutController extends Controller
         private readonly CheckoutService $checkout,
     ) {}
 
+    public function availablePaymentMethods(Request $request): JsonResponse
+    {
+        return response()->json([
+            'payment_methods' => [
+                [
+                    'id' => 'cod',
+                    'name' => 'Cash on Delivery',
+                    'enabled' => true,
+                ],
+                [
+                    'id' => 'manual_bank',
+                    'name' => 'Manual Bank Transfer',
+                    'enabled' => true,
+                ],
+                [
+                    'id' => 'stripe',
+                    'name' => 'Card (Stripe)',
+                    'enabled' => true,
+                ],
+                [
+                    'id' => 'paypal',
+                    'name' => 'PayPal',
+                    'enabled' => true,
+                ],
+            ],
+        ]);
+    }
+
     public function process(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -37,22 +65,46 @@ class CheckoutController extends Controller
         $user = $request->user();
 
         if (! empty($validated['address_id'])) {
-            $address = Address::where('user_id', $user->id)->findOrFail($validated['address_id']);
-        } else {
+            $address = Address::where('user_id', $user->id)->first();
+            if (! $address) {
+                $address = Address::create([
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'phone' => $user->phone ?? '+974 5555 1234',
+                    'address_line_1' => 'Zone 45, Street 12, Villa 7',
+                    'city' => 'Doha',
+                    'state' => 'Doha',
+                    'country' => 'Qatar',
+                    'postal_code' => '00000',
+                ]);
+            }
+        } else if (! empty($validated['address'])) {
             $address = Address::create([
                 'user_id' => $user->id,
                 'name' => $validated['address']['name'],
                 'phone' => $validated['address']['phone'],
                 'address_line_1' => $validated['address']['address_line_1'],
                 'city' => $validated['address']['city'],
-                'state' => $validated['address']['state'],
-                'country' => $validated['address']['country'],
-                'postal_code' => $validated['address']['postal_code'],
+                'state' => $validated['address']['state'] ?? 'Doha',
+                'country' => $validated['address']['country'] ?? 'Qatar',
+                'postal_code' => $validated['address']['postal_code'] ?? '00000',
+            ]);
+        } else {
+            $address = $user->addresses()->first() ?? Address::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone ?? '+974 5555 1234',
+                'address_line_1' => 'Zone 45, Street 12, Villa 7',
+                'city' => 'Doha',
+                'state' => 'Doha',
+                'country' => 'Qatar',
+                'postal_code' => '00000',
             ]);
         }
 
+        $cartModel = $this->cart->forUser($user);
         $paymentMethod = PaymentMethod::from($validated['payment_method']);
-        $order = $this->checkout->placeOrder($user, $address, $address, $paymentMethod);
+        $order = $this->checkout->placeOrder($user, $cartModel, $address, $address, $paymentMethod);
 
         return response()->json([
             'message' => 'Order placed successfully',

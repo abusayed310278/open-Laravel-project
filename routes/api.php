@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/verify-email', [AuthController::class, 'verifyEmailOtp']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
 Route::get('/products', [ProductController::class, 'index']);
@@ -28,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/profile', [AuthController::class, 'updateProfile']);
     });
 
     Route::prefix('cart')->group(function () {
@@ -37,6 +43,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/remove/{product}', [CartController::class, 'remove']);
     });
 
+    Route::prefix('addresses')->group(function () {
+        Route::get('/', [AddressController::class, 'index']);
+        Route::post('/', [AddressController::class, 'store']);
+        Route::post('/{id}/default', [AddressController::class, 'setDefault']);
+        Route::delete('/{id}', [AddressController::class, 'destroy']);
+    });
+
+    Route::get('/checkout/payment-methods', [CheckoutController::class, 'availablePaymentMethods']);
     Route::post('/checkout', [CheckoutController::class, 'process']);
 
     Route::prefix('orders')->group(function () {

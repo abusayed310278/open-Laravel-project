@@ -11,6 +11,32 @@ use Illuminate\Support\Str;
 
 class CartService
 {
+    public function resolveCart(?User $user): Cart
+    {
+        if ($user) {
+            return $this->forUser($user);
+        }
+        $headerSession = request()->header('X-Session-ID');
+        $sessionId = $headerSession ?: $this->sessionId();
+        return $this->forGuest($sessionId);
+    }
+
+    public function getCart(?User $user): array
+    {
+        $cart = $this->resolveCart($user);
+        $items = $cart->items()->with('product')->get();
+        $subtotal = (float) $items->sum(fn ($i) => $i->price * $i->quantity);
+        $shipping = $items->isEmpty() ? 0.0 : 25.0;
+        $total = $subtotal + $shipping;
+
+        return [
+            'items' => $items,
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
+            'total' => $total,
+        ];
+    }
+
     public function forUser(User $user): Cart
     {
         return Cart::query()->firstOrCreate(['user_id' => $user->id]);
@@ -21,33 +47,62 @@ class CartService
         return Cart::query()->firstOrCreate(['session_id' => $sessionId, 'user_id' => null]);
     }
 
-    public function add(Cart $cart, Product $product, int $quantity = 1): CartItem
+    public function add($userOrCart, Product $product, int $quantity = 1): CartItem
     {
+        $cart = ($userOrCart instanceof Cart)
+            ? $userOrCart
+            : $this->resolveCart($userOrCart instanceof User ? $userOrCart : null);
+
         $item = $cart->items()->firstOrNew(['product_id' => $product->id, 'variant_id' => null]);
 
         $item->quantity = ($item->exists ? $item->quantity : 0) + $quantity;
         $item->price = $product->price;
-        $item->payment_route = $product->payment_route;
+        $item->payment_route = $product->payment_route ?? 'cod';
         $item->cart_id = $cart->id;
         $item->save();
 
         return $item;
     }
 
-    public function updateQuantity(CartItem $item, int $quantity): void
+    public function updateQuantity($userOrItem, $productOrQuantity, ?int $quantity = null): void
     {
-        if ($quantity <= 0) {
+        if ($userOrItem instanceof CartItem) {
+            $item = $userOrItem;
+            $qty = (int) $productOrQuantity;
+        } else {
+            $user = $userOrItem instanceof User ? $userOrItem : null;
+            $product = $productOrQuantity;
+            $qty = $quantity ?? 0;
+            $cart = $this->resolveCart($user);
+            $item = $cart->items()->where('product_id', $product->id)->first();
+        }
+
+        if (! $item) {
+            return;
+        }
+
+        if ($qty <= 0) {
             $item->delete();
 
             return;
         }
 
-        $item->update(['quantity' => $quantity]);
+        $item->update(['quantity' => $qty]);
     }
 
-    public function remove(CartItem $item): void
+    public function remove($userOrItem, ?Product $product = null): void
     {
-        $item->delete();
+        if ($userOrItem instanceof CartItem) {
+            $userOrItem->delete();
+
+            return;
+        }
+
+        $user = $userOrItem instanceof User ? $userOrItem : null;
+        $cart = $this->resolveCart($user);
+        if ($product) {
+            $cart->items()->where('product_id', $product->id)->delete();
+        }
     }
 
     /**
@@ -89,7 +144,7 @@ class CartService
 
                 return [
                     'seller' => $seller,
-                    'route' => $items->first()->payment_route->value,
+                    'route' => $items->first()->payment_route->value ?? 'cod',
                     'items' => $items,
                     'subtotal' => (float) $items->sum(fn (CartItem $i) => $i->price * $i->quantity),
                     'shipping' => $this->shippingFor($items),
@@ -107,7 +162,9 @@ class CartService
         return (float) $items->sum(function (CartItem $item) {
             $product = $item->product;
 
-            return match ($product->shipping_type->value) {
+            $shippingType = is_object($product->shipping_type) ? ($product->shipping_type->value ?? 'free') : $product->shipping_type;
+
+            return match ($shippingType) {
                 'flat_rate' => (float) ($product->shipping_flat_rate ?? 0),
                 default => 0.0,
             };
