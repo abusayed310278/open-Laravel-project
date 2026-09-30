@@ -43,22 +43,23 @@ class _StoreScreenState extends State<StoreScreen> {
     final productProvider = context.read<ProductProvider>();
 
     try {
-      final results = await Future.wait([
-        productProvider.fetchProductsBySeller(sellerId),
-        productProvider.fetchSellerDetail(sellerId),
-      ]);
+      final productsFuture = productProvider.fetchProductsBySeller(sellerId);
+      final sellerFuture = productProvider.fetchSellerDetail(sellerId);
+
+      final products = await productsFuture.catchError((_) => <Product>[]);
+      final updatedSeller = await sellerFuture.catchError((_) => null);
 
       if (!mounted) return;
-
-      final products = results[0] as List<Product>;
-      final updatedSeller = results[1] as Seller?;
 
       setState(() {
         _products = products;
         if (updatedSeller != null) {
-          _seller = updatedSeller;
+          _seller = updatedSeller.bannerUrl.isEmpty && _seller.bannerUrl.isNotEmpty
+              ? updatedSeller.copyWith(bannerUrl: _seller.bannerUrl)
+              : updatedSeller;
         } else if (products.isNotEmpty && products.first.seller != null) {
-          _seller = products.first.seller!;
+          final pSeller = products.first.seller!;
+          _seller = pSeller.bannerUrl.isNotEmpty || _seller.bannerUrl.isEmpty ? pSeller : _seller;
         }
         _isLoading = false;
       });
@@ -72,6 +73,10 @@ class _StoreScreenState extends State<StoreScreen> {
     final avatar = _seller.avatarUrl.isNotEmpty
         ? _seller.avatarUrl
         : (_seller.name.toLowerCase().contains('admin') ? ApiConfig.appIconUrl : '');
+
+    final effectiveBanner = _seller.bannerUrl.isNotEmpty
+        ? _seller.bannerUrl
+        : ApiConfig.appBannerUrl;
 
     final locationText = _seller.city.isNotEmpty ? _seller.city : 'Doha, Qatar';
     final memberText = _seller.memberSince.isNotEmpty ? ' · Member since ${_seller.memberSince}' : '';
@@ -91,19 +96,36 @@ class _StoreScreenState extends State<StoreScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  if (_seller.bannerUrl.isNotEmpty)
+                  if (effectiveBanner.isNotEmpty)
                     Image.network(
-                      _seller.bannerUrl,
+                      effectiveBanner,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [AppColors.brand600, AppColors.brand400],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      errorBuilder: (context, error, stackTrace) {
+                        if (effectiveBanner != ApiConfig.appBannerUrl && ApiConfig.appBannerUrl.isNotEmpty) {
+                          return Image.network(
+                            ApiConfig.appBannerUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [AppColors.brand600, AppColors.brand400],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.brand600, AppColors.brand400],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     )
                   else
                     Container(
@@ -120,8 +142,8 @@ class _StoreScreenState extends State<StoreScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          _seller.bannerUrl.isNotEmpty ? const Color(0x59000000) : const Color(0x00000000),
-                          _seller.bannerUrl.isNotEmpty ? const Color(0xBF000000) : const Color(0x40000000),
+                          effectiveBanner.isNotEmpty ? const Color(0x59000000) : const Color(0x00000000),
+                          effectiveBanner.isNotEmpty ? const Color(0xBF000000) : const Color(0x40000000),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

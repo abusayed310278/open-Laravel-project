@@ -61,8 +61,8 @@ class Seller {
         json['cover']?.toString();
 
     String formattedBanner = Product.formatImageUrl(rawBanner);
-    if (formattedBanner.isEmpty && nameStr.toLowerCase().contains('admin')) {
-      formattedBanner = '${ApiConfig.baseUrl}/banner image.png';
+    if (formattedBanner.isEmpty) {
+      formattedBanner = ApiConfig.appBannerUrl;
     }
 
     String initial = 'S';
@@ -88,6 +88,36 @@ class Seller {
       city: json['city']?.toString() ?? json['location']?.toString() ?? json['address']?.toString() ?? '',
       productCount: (json['product_count'] is num) ? (json['product_count'] as num).toInt() : 0,
       memberSince: json['member_since']?.toString() ?? json['created_at']?.toString().split('T').first ?? '',
+    );
+  }
+
+  Seller copyWith({
+    String? id,
+    String? name,
+    SellerType? type,
+    String? avatarInitial,
+    String? avatarUrl,
+    String? bannerUrl,
+    bool? isVerified,
+    double? rating,
+    int? reviewCount,
+    String? city,
+    int? productCount,
+    String? memberSince,
+  }) {
+    return Seller(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      avatarInitial: avatarInitial ?? this.avatarInitial,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      isVerified: isVerified ?? this.isVerified,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      city: city ?? this.city,
+      productCount: productCount ?? this.productCount,
+      memberSince: memberSince ?? this.memberSince,
     );
   }
 }

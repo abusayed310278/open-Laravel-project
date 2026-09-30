@@ -32,6 +32,9 @@ class ApiConfig {
   /// Backend App Icon URL
   static String get appIconUrl => '$backendHost/icon.png';
 
+  /// Backend App Banner URL (admin fallback banner)
+  static String get appBannerUrl => '$backendHost/banner%20image.png';
+
   /// Known legacy or local host variations that may be present in database image/media URLs
   static const List<String> legacyHosts = [
     'http://localhost:8000',

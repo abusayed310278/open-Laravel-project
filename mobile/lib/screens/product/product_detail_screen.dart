@@ -592,6 +592,8 @@ class _SellerCard extends StatelessWidget {
         ? seller.avatarUrl
         : (seller.name.toLowerCase().contains('admin') ? ApiConfig.appIconUrl : '');
 
+
+
     return Row(
       children: [
         ClipOval(

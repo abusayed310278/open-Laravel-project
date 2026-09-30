@@ -30,14 +30,29 @@ class ProductResource extends JsonResource
                 $sellerLogo = $brandLogo ? MediaUrl::resolve($brandLogo) : MediaUrl::resolve('icon.png');
             }
 
+            $adminBannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
+            $adminBannerUrl = $adminBannerSetting
+                ? MediaUrl::resolve($adminBannerSetting)
+                : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
+
+            $bannerUrl = null;
             if ($this->user->isAdmin()) {
-                $bannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
-                $bannerUrl = $bannerSetting ? MediaUrl::resolve($bannerSetting) : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
-            } elseif ($this->user->isBusiness() && $this->user->businessProfile?->cover_image) {
-                $bannerUrl = MediaUrl::resolve($this->user->businessProfile->cover_image);
-            } elseif ($this->user->isSaler() && $this->user->salerProfile?->cover_image) {
-                $bannerUrl = MediaUrl::resolve($this->user->salerProfile->cover_image);
+                $bannerUrl = $adminBannerUrl;
+            } else {
+                $sellerCover = null;
+                if ($this->user->isBusiness() && $this->user->businessProfile?->cover_image) {
+                    $sellerCover = $this->user->businessProfile->cover_image;
+                } elseif ($this->user->isSaler() && $this->user->salerProfile?->cover_image) {
+                    $sellerCover = $this->user->salerProfile->cover_image;
+                }
+
+                if ($sellerCover) {
+                    $bannerUrl = MediaUrl::resolve($sellerCover);
+                } else {
+                    $bannerUrl = $adminBannerUrl;
+                }
             }
+
             if (! $bannerUrl && file_exists(public_path('banner image.png'))) {
                 $bannerUrl = asset('banner image.png');
             }

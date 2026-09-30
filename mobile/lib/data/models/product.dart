@@ -178,24 +178,24 @@ class Product {
     trimmed = ApiConfig.sanitizeUrl(trimmed);
 
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return trimmed;
+      return trimmed.contains(' ') ? trimmed.replaceAll(' ', '%20') : trimmed;
     }
 
+    String result;
     if (trimmed.startsWith('products/')) {
-      return '$backendHost/storage/$trimmed';
-    }
-    if (trimmed.startsWith('/products/')) {
-      return '$backendHost/storage$trimmed';
-    }
-    if (trimmed.startsWith('storage/')) {
-      return '$backendHost/$trimmed';
-    }
-    if (trimmed.startsWith('/storage/')) {
-      return '$backendHost$trimmed';
+      result = '$backendHost/storage/$trimmed';
+    } else if (trimmed.startsWith('/products/')) {
+      result = '$backendHost/storage$trimmed';
+    } else if (trimmed.startsWith('storage/')) {
+      result = '$backendHost/$trimmed';
+    } else if (trimmed.startsWith('/storage/')) {
+      result = '$backendHost$trimmed';
+    } else {
+      final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+      result = '$backendHost$cleanPath';
     }
 
-    final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
-    return '$backendHost$cleanPath';
+    return result.contains(' ') ? result.replaceAll(' ', '%20') : result;
   }
 
   static String extractSingleImageUrl(dynamic raw) {

@@ -62,14 +62,27 @@ class ProductController extends Controller
             $sellerLogo = $brandLogo ? \App\Support\MediaUrl::resolve($brandLogo) : \App\Support\MediaUrl::resolve('icon.png');
         }
 
+        $adminBannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
+        $adminBannerUrl = $adminBannerSetting
+            ? \App\Support\MediaUrl::resolve($adminBannerSetting)
+            : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
+
         $bannerUrl = null;
         if ($user->isAdmin()) {
-            $bannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
-            $bannerUrl = $bannerSetting ? \App\Support\MediaUrl::resolve($bannerSetting) : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
-        } elseif ($user->isBusiness() && $user->businessProfile?->cover_image) {
-            $bannerUrl = \App\Support\MediaUrl::resolve($user->businessProfile->cover_image);
-        } elseif ($user->isSaler() && $user->salerProfile?->cover_image) {
-            $bannerUrl = \App\Support\MediaUrl::resolve($user->salerProfile->cover_image);
+            $bannerUrl = $adminBannerUrl;
+        } else {
+            $sellerCover = null;
+            if ($user->isBusiness() && $user->businessProfile?->cover_image) {
+                $sellerCover = $user->businessProfile->cover_image;
+            } elseif ($user->isSaler() && $user->salerProfile?->cover_image) {
+                $sellerCover = $user->salerProfile->cover_image;
+            }
+
+            if ($sellerCover) {
+                $bannerUrl = \App\Support\MediaUrl::resolve($sellerCover);
+            } else {
+                $bannerUrl = $adminBannerUrl;
+            }
         }
         if (! $bannerUrl && file_exists(public_path('banner image.png'))) {
             $bannerUrl = asset('banner image.png');
@@ -79,8 +92,12 @@ class ProductController extends Controller
             ?: ($user->businessProfile?->city ?: ($user->salerProfile?->city ?: 'Doha, Qatar'));
 
         $sellerProductIds = Product::where('user_id', $user->id)->pluck('id');
-        $reviewsCount = \App\Models\Review::whereIn('product_id', $sellerProductIds)->count();
-        $avgRating = \App\Models\Review::whereIn('product_id', $sellerProductIds)->avg('rating');
+        $reviewsCount = \App\Models\Review::where('reviewable_type', Product::class)
+            ->whereIn('reviewable_id', $sellerProductIds)
+            ->count();
+        $avgRating = \App\Models\Review::where('reviewable_type', Product::class)
+            ->whereIn('reviewable_id', $sellerProductIds)
+            ->avg('rating');
         if (! $avgRating) {
             $avgRating = 4.8;
         }
