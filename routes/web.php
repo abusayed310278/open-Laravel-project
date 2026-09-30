@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\CommissionRuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GitSettingsController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
@@ -371,6 +372,11 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
 
         Route::get('/settings/payments', [SettingsController::class, 'payments'])->name('settings.payments');
         Route::post('/settings/payments', [SettingsController::class, 'updatePayments'])->name('settings.payments.update');
+
+        Route::get('/settings/git', [GitSettingsController::class, 'index'])->name('settings.git');
+        Route::post('/settings/git/pull', [GitSettingsController::class, 'pull'])->name('settings.git.pull');
+        Route::post('/settings/git/fetch', [GitSettingsController::class, 'fetch'])->name('settings.git.fetch');
+        Route::post('/settings/git/discard', [GitSettingsController::class, 'discard'])->name('settings.git.discard');
 
         Route::get('/verifications', [AdminVerificationController::class, 'index'])->name('verifications.index');
         Route::get('/verifications/{verification}', [AdminVerificationController::class, 'show'])->name('verifications.show');

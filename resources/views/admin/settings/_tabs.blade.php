@@ -12,6 +12,7 @@
         'storage' => ['label' => 'Storage', 'route' => 'admin.settings.storage'],
         'payments' => ['label' => 'Payments', 'route' => 'admin.settings.payments'],
         'system' => ['label' => 'System', 'route' => 'admin.settings.system'],
+        'git' => ['label' => 'Git', 'route' => 'admin.settings.git'],
     ];
 @endphp
 
