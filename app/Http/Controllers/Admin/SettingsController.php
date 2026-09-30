@@ -77,6 +77,48 @@ class SettingsController extends Controller
         return back()->with('status', 'Custom logo removed. Default Openbox logo restored.');
     }
 
+    public function banner(): View
+    {
+        return view('admin.settings.banner', [
+            'banner' => $this->settings->get('brand_banner') ?: $this->settings->get('brand_cover_image'),
+        ]);
+    }
+
+    public function updateBanner(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'banner' => ['required', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:5120'],
+        ]);
+
+        // Delete old custom banner file if exists
+        $oldBanner = $this->settings->get('brand_banner') ?: $this->settings->get('brand_cover_image');
+        if (!empty($oldBanner) && is_string($oldBanner) && trim($oldBanner) !== '' && Storage::disk('public')->exists($oldBanner)) {
+            Storage::disk('public')->delete($oldBanner);
+        }
+
+        $path = $this->storeUploadedFile($request->file('banner'), 'branding', 'public');
+        $this->settings->set('brand_banner', $path, 'branding');
+        $this->settings->set('brand_cover_image', $path, 'branding');
+
+        ActivityLog::record('settings.banner.updated');
+
+        return back()->with('status', 'Store banner / cover image updated successfully.');
+    }
+
+    public function removeBanner(): RedirectResponse
+    {
+        $oldBanner = $this->settings->get('brand_banner') ?: $this->settings->get('brand_cover_image');
+        if (!empty($oldBanner) && is_string($oldBanner) && trim($oldBanner) !== '' && Storage::disk('public')->exists($oldBanner)) {
+            Storage::disk('public')->delete($oldBanner);
+        }
+
+        $this->settings->set('brand_banner', null, 'branding');
+        $this->settings->set('brand_cover_image', null, 'branding');
+        ActivityLog::record('settings.banner.removed');
+
+        return back()->with('status', 'Custom banner removed. Default banner restored.');
+    }
+
     public function siteicon(): View
     {
         return view('admin.settings.siteicon', [

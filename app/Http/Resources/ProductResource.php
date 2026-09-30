@@ -11,6 +11,7 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         $sellerLogo = null;
+        $bannerUrl = null;
         if ($this->user) {
             if ($this->user->isBusiness() && $this->user->businessProfile?->logo) {
                 $sellerLogo = MediaUrl::resolve($this->user->businessProfile->logo);
@@ -25,7 +26,20 @@ class ProductResource extends JsonResource
 
             // Fallback for Admin account without uploaded avatar
             if (! $sellerLogo && $this->user->isAdmin()) {
-                $sellerLogo = MediaUrl::resolve('icon.png');
+                $brandLogo = setting('brand_logo');
+                $sellerLogo = $brandLogo ? MediaUrl::resolve($brandLogo) : MediaUrl::resolve('icon.png');
+            }
+
+            if ($this->user->isAdmin()) {
+                $bannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
+                $bannerUrl = $bannerSetting ? MediaUrl::resolve($bannerSetting) : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
+            } elseif ($this->user->isBusiness() && $this->user->businessProfile?->cover_image) {
+                $bannerUrl = MediaUrl::resolve($this->user->businessProfile->cover_image);
+            } elseif ($this->user->isSaler() && $this->user->salerProfile?->cover_image) {
+                $bannerUrl = MediaUrl::resolve($this->user->salerProfile->cover_image);
+            }
+            if (! $bannerUrl && file_exists(public_path('banner image.png'))) {
+                $bannerUrl = asset('banner image.png');
             }
         }
 
@@ -52,7 +66,7 @@ class ProductResource extends JsonResource
                 'name' => $this->brand->name,
                 'slug' => $this->brand->slug,
             ]),
-            'seller' => $this->whenLoaded('user', function () use ($sellerLogo) {
+            'seller' => $this->whenLoaded('user', function () use ($sellerLogo, $bannerUrl) {
                 $city = $this->user->profile?->location 
                     ?: ($this->user->businessProfile?->city ?: ($this->user->salerProfile?->city ?: 'Doha, Qatar'));
                 $productCount = (int) ($this->user->products_count ?? $this->user->products()->count());
@@ -64,6 +78,8 @@ class ProductResource extends JsonResource
                     'role_label' => $this->user->role->label(),
                     'logo_url' => $sellerLogo,
                     'avatar_url' => $sellerLogo,
+                    'banner_url' => $bannerUrl,
+                    'cover_url' => $bannerUrl,
                     'city' => $city,
                     'rating' => 4.8,
                     'review_count' => $productCount > 0 ? $productCount * 3 : 0,

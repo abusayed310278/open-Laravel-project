@@ -332,6 +332,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/settings/logo', [SettingsController::class, 'updateLogo'])->name('settings.logo.update');
         Route::delete('/settings/logo', [SettingsController::class, 'removeLogo'])->name('settings.logo.remove');
 
+        Route::get('/settings/banner', [SettingsController::class, 'banner'])->name('settings.banner');
+        Route::post('/settings/banner', [SettingsController::class, 'updateBanner'])->name('settings.banner.update');
+        Route::delete('/settings/banner', [SettingsController::class, 'removeBanner'])->name('settings.banner.remove');
+
         Route::get('/settings/siteicon', [SettingsController::class, 'siteicon'])->name('settings.siteicon');
         Route::post('/settings/siteicon', [SettingsController::class, 'updateSiteicon'])->name('settings.siteicon.update');
         Route::delete('/settings/siteicon', [SettingsController::class, 'removeSiteicon'])->name('settings.siteicon.remove');

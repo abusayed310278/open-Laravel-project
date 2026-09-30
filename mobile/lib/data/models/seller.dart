@@ -10,6 +10,7 @@ class Seller {
     required this.type,
     this.avatarInitial = 'S',
     this.avatarUrl = '',
+    this.bannerUrl = '',
     this.isVerified = false,
     this.rating = 0,
     this.reviewCount = 0,
@@ -23,6 +24,7 @@ class Seller {
   final SellerType type;
   final String avatarInitial;
   final String avatarUrl;
+  final String bannerUrl;
   final bool isVerified;
   final double rating;
   final int reviewCount;
@@ -52,6 +54,17 @@ class Seller {
       formattedAvatar = ApiConfig.appIconUrl;
     }
 
+    final rawBanner = json['banner_url']?.toString() ??
+        json['banner']?.toString() ??
+        json['cover_url']?.toString() ??
+        json['cover_image']?.toString() ??
+        json['cover']?.toString();
+
+    String formattedBanner = Product.formatImageUrl(rawBanner);
+    if (formattedBanner.isEmpty && nameStr.toLowerCase().contains('admin')) {
+      formattedBanner = '${ApiConfig.baseUrl}/banner image.png';
+    }
+
     String initial = 'S';
     if (nameStr.isNotEmpty) {
       final words = nameStr.trim().split(RegExp(r'\s+'));
@@ -68,6 +81,7 @@ class Seller {
       type: SellerType.business,
       avatarInitial: initial,
       avatarUrl: formattedAvatar,
+      bannerUrl: formattedBanner,
       isVerified: json['is_verified'] == true || json['verified'] == true || json['is_verified'] == 1,
       rating: (json['rating'] is num) ? (json['rating'] as num).toDouble() : 4.5,
       reviewCount: (json['review_count'] is num) ? (json['review_count'] as num).toInt() : 0,

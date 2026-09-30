@@ -88,61 +88,94 @@ class _StoreScreenState extends State<StoreScreen> {
             expandedHeight: 200,
             backgroundColor: AppColors.brand600,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.brand600, AppColors.brand400],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: Colors.white,
-                          backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
-                          child: avatar.isEmpty
-                              ? Text(
-                                  _seller.avatarInitial,
-                                  style: const TextStyle(
-                                    color: AppColors.brand700,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 18,
-                                  ),
-                                )
-                              : null,
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (_seller.bannerUrl.isNotEmpty)
+                    Image.network(
+                      _seller.bannerUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppColors.brand600, AppColors.brand400],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            Text(
-                              _seller.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            if (_seller.isVerified) ...[
-                              const SizedBox(width: 6),
-                              const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
-                            ],
-                          ],
+                      ),
+                    )
+                  else
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.brand600, AppColors.brand400],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        Text(
-                          subtitle,
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
+                      ),
+                    ),
+                  // Gradient overlay for crisp readability of text & avatar
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          _seller.bannerUrl.isNotEmpty ? const Color(0x59000000) : const Color(0x00000000),
+                          _seller.bannerUrl.isNotEmpty ? const Color(0xBF000000) : const Color(0x40000000),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
-                ),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: Colors.white,
+                            backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+                            child: avatar.isEmpty
+                                ? Text(
+                                    _seller.avatarInitial,
+                                    style: const TextStyle(
+                                      color: AppColors.brand700,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 18,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            children: [
+                              Text(
+                                _seller.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              if (_seller.isVerified) ...[
+                                const SizedBox(width: 6),
+                                const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
+                              ],
+                            ],
+                          ),
+                          Text(
+                            subtitle,
+                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             actions: [

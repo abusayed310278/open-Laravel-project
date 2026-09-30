@@ -58,13 +58,35 @@ class ProductController extends Controller
             $sellerLogo = \App\Support\MediaUrl::resolve($user->profile->avatar);
         }
         if (! $sellerLogo && $user->isAdmin()) {
-            $sellerLogo = \App\Support\MediaUrl::resolve('icon.png');
+            $brandLogo = setting('brand_logo');
+            $sellerLogo = $brandLogo ? \App\Support\MediaUrl::resolve($brandLogo) : \App\Support\MediaUrl::resolve('icon.png');
+        }
+
+        $bannerUrl = null;
+        if ($user->isAdmin()) {
+            $bannerSetting = setting('brand_banner') ?: setting('brand_cover_image');
+            $bannerUrl = $bannerSetting ? \App\Support\MediaUrl::resolve($bannerSetting) : (file_exists(public_path('banner image.png')) ? asset('banner image.png') : null);
+        } elseif ($user->isBusiness() && $user->businessProfile?->cover_image) {
+            $bannerUrl = \App\Support\MediaUrl::resolve($user->businessProfile->cover_image);
+        } elseif ($user->isSaler() && $user->salerProfile?->cover_image) {
+            $bannerUrl = \App\Support\MediaUrl::resolve($user->salerProfile->cover_image);
+        }
+        if (! $bannerUrl && file_exists(public_path('banner image.png'))) {
+            $bannerUrl = asset('banner image.png');
         }
 
         $city = $user->profile?->location 
             ?: ($user->businessProfile?->city ?: ($user->salerProfile?->city ?: 'Doha, Qatar'));
 
-        $reviewsCount = $reviewsCount > 0 ? (int) $reviewsCount : ($user->products_count * 3);
+        $sellerProductIds = Product::where('user_id', $user->id)->pluck('id');
+        $reviewsCount = \App\Models\Review::whereIn('product_id', $sellerProductIds)->count();
+        $avgRating = \App\Models\Review::whereIn('product_id', $sellerProductIds)->avg('rating');
+        if (! $avgRating) {
+            $avgRating = 4.8;
+        }
+        if ($reviewsCount === 0) {
+            $reviewsCount = $user->products_count * 3;
+        }
 
         return response()->json([
             'seller' => [
@@ -74,8 +96,10 @@ class ProductController extends Controller
                 'role_label' => $user->role->label(),
                 'logo_url' => $sellerLogo,
                 'avatar_url' => $sellerLogo,
+                'banner_url' => $bannerUrl,
+                'cover_url' => $bannerUrl,
                 'city' => $city,
-                'rating' => $avgRating ? round((float) $avgRating, 1) : 4.8,
+                'rating' => round((float) $avgRating, 1),
                 'review_count' => (int) $reviewsCount,
                 'product_count' => (int) $user->products_count,
                 'is_verified' => $user->isAdmin() || $user->isKycApproved(),

@@ -1,6 +1,7 @@
 @php
     $tabs = [
         'logo' => ['label' => 'Logo', 'route' => 'admin.settings.logo'],
+        'banner' => ['label' => 'Banner', 'route' => 'admin.settings.banner'],
         'siteicon' => ['label' => 'Site Icon', 'route' => 'admin.settings.siteicon'],
         'footericon' => ['label' => 'Footer Icon', 'route' => 'admin.settings.footericon'],
         'font' => ['label' => 'Font', 'route' => 'admin.settings.font'],
