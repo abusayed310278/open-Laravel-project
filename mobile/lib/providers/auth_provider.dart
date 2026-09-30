@@ -39,7 +39,19 @@ class AuthProvider extends ChangeNotifier {
 
       final response = await _apiClient.get(ApiConfig.me);
       if (response is Map<String, dynamic> && response.containsKey('user')) {
-        _user = User.fromJson(response['user']);
+        final userData = response['user'] as Map<String, dynamic>;
+        final role = (userData['role'] ?? '').toString().toLowerCase();
+
+        // Mobile app is restricted to Customer / User role only
+        if (role.isNotEmpty && role != 'customer' && role != 'user') {
+          _state = AuthState.unauthenticated;
+          _user = null;
+          await storage.clearToken();
+          notifyListeners();
+          return;
+        }
+
+        _user = User.fromJson(userData);
         final cachedUserJson = storage.getUserData();
         if (cachedUserJson != null && cachedUserJson.isNotEmpty) {
           try {
@@ -51,6 +63,7 @@ class AuthProvider extends ChangeNotifier {
                 email: _user!.email,
                 phone: cached.phone ?? _user!.phone,
                 avatar: cached.avatar ?? _user!.avatar,
+                role: _user!.role,
               );
             }
           } catch (_) {}
@@ -85,6 +98,13 @@ class AuthProvider extends ChangeNotifier {
         final userData = response['user'] as Map<String, dynamic>?;
 
         if (token != null && userData != null) {
+          final role = (userData['role'] ?? '').toString().toLowerCase();
+
+          // Reject non-customer roles (Admin, Seller, Store Owner)
+          if (role.isNotEmpty && role != 'customer' && role != 'user') {
+            throw ApiException('Access denied. Only customer accounts can sign in to the mobile app.');
+          }
+
           final storage = await StorageService.getInstance();
           await storage.saveToken(token);
 
@@ -284,6 +304,7 @@ class AuthProvider extends ChangeNotifier {
         email: _user!.email,
         phone: phone ?? _user!.phone,
         avatar: avatar ?? _user!.avatar,
+        role: _user!.role,
       );
       notifyListeners();
 

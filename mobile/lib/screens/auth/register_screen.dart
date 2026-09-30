@@ -8,8 +8,6 @@ import '../../providers/auth_provider.dart';
 
 import 'verify_otp_screen.dart';
 
-enum _AccountType { customer, business, saler }
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -18,7 +16,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  _AccountType _type = _AccountType.customer;
   bool _obscure = true;
   bool _agreed = false;
 
@@ -97,30 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('I want to sign up as', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
               const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  _TypeChip(
-                    label: 'User',
-                    selected: _type == _AccountType.customer,
-                    onTap: () => setState(() => _type = _AccountType.customer),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  _TypeChip(
-                    label: 'Store Owner',
-                    selected: _type == _AccountType.business,
-                    onTap: () => setState(() => _type = _AccountType.business),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  _TypeChip(
-                    label: 'Seller',
-                    selected: _type == _AccountType.saler,
-                    onTap: () => setState(() => _type = _AccountType.saler),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xl),
               const _FieldLabel('Full name'),
               TextField(
                 controller: _nameController,
@@ -195,41 +169,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     : const Text('Create account'),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TypeChip extends StatelessWidget {
-  const _TypeChip({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? AppColors.brand50 : AppColors.slate50,
-            border: Border.all(color: selected ? AppColors.brand500 : AppColors.slate200),
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: selected ? AppColors.brand700 : AppColors.slate500,
-            ),
           ),
         ),
       ),
