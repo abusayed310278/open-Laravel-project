@@ -5,6 +5,7 @@ import 'dart:io';
 class AppHttpOverrides extends HttpOverrides {
   static final Map<String, String> _dnsCache = {
     'res.cloudinary.com': '104.16.78.6',
+    'images.unsplash.com': '151.101.66.208',
     'picsum.photos': '104.26.5.30',
     'fastly.picsum.photos': '151.101.65.91',
     'loremflickr.com': '188.40.30.104',

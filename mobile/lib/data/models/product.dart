@@ -280,9 +280,8 @@ class Product {
       }
     }
 
-    final pid = json['id']?.toString() ?? 'prod';
     if (formattedMainImage.isEmpty) {
-      formattedMainImage = 'https://picsum.photos/seed/$pid/600/600';
+      formattedMainImage = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80';
     }
 
     final List<String> galleryList = [];

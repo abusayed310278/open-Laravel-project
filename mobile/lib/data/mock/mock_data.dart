@@ -67,7 +67,7 @@ abstract final class MockData {
     Product(
       id: 'p1',
       title: 'iPhone 14 Pro 128GB — Deep Purple',
-      imageUrl: 'https://picsum.photos/seed/p1/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
       price: 2699,
       compareAtPrice: 3299,
       categoryId: 'phones',
@@ -78,9 +78,9 @@ abstract final class MockData {
       rating: 4.8,
       reviewCount: 96,
       gallery: [
-        'https://picsum.photos/seed/p1/600/600',
-        'https://picsum.photos/seed/p1b/600/600',
-        'https://picsum.photos/seed/p1c/600/600',
+        'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80',
       ],
       shortDescription: '• 48MP Main Camera with Quad-Pixel Sensor\n• Dynamic Island & Always-On Super Retina XDR Display\n• A16 Bionic Chip with 6-core CPU\n• All-day battery life with certified 90%+ health',
       description:
@@ -95,7 +95,7 @@ abstract final class MockData {
     Product(
       id: 'p2',
       title: 'MacBook Air M2 13" 256GB',
-      imageUrl: 'https://picsum.photos/seed/p2/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
       price: 3899,
       compareAtPrice: 4499,
       categoryId: 'laptops',
@@ -105,7 +105,10 @@ abstract final class MockData {
       isWarehoused: true,
       rating: 4.9,
       reviewCount: 64,
-      gallery: ['https://picsum.photos/seed/p2/600/600', 'https://picsum.photos/seed/p2b/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• Apple M2 chip with 8-core CPU & 8-core GPU\n• 13.6-inch Liquid Retina display with True Tone\n• 8GB unified memory, 256GB SSD storage\n• 1080p FaceTime HD camera & 4-speaker sound',
       description: 'Space Gray MacBook Air M2, verified and grade-A certified. Includes original charger.',
       specs: {'Chip': 'Apple M2', 'RAM': '8GB', 'Storage': '256GB SSD', 'Condition': 'Grade A · Like New'},
@@ -113,14 +116,17 @@ abstract final class MockData {
     Product(
       id: 'p3',
       title: 'Samsung Galaxy Watch 6 44mm',
-      imageUrl: 'https://picsum.photos/seed/p3/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
       price: 899,
       categoryId: 'watches',
       sellerId: 'techhub',
       isNew: true,
       rating: 4.6,
       reviewCount: 28,
-      gallery: ['https://picsum.photos/seed/p3/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• Advanced sleep tracking & personalized HR zones\n• Sapphire crystal glass with 20% larger display\n• Body Composition Analysis & BIA sensor',
       description: 'Brand new, sealed box. 1-year manufacturer warranty via TechHub Electronics.',
       specs: {'Case size': '44mm', 'Color': 'Graphite', 'Connectivity': 'Bluetooth'},
@@ -128,7 +134,7 @@ abstract final class MockData {
     Product(
       id: 'p4',
       title: 'Sony WH-1000XM5 Wireless Headphones',
-      imageUrl: 'https://picsum.photos/seed/p4/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
       price: 1099,
       compareAtPrice: 1399,
       categoryId: 'audio',
@@ -136,7 +142,10 @@ abstract final class MockData {
       isNew: true,
       rating: 4.8,
       reviewCount: 152,
-      gallery: ['https://picsum.photos/seed/p4/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• Auto NC Optimizer with 8 microphones & 2 processors\n• Ultra-clear hands-free calling with Precise Voice Pickup\n• Up to 30-hour battery life with quick charging',
       description: 'Industry-leading noise cancellation. Brand new, sealed.',
       specs: {'Type': 'Over-ear', 'Battery life': '30 hrs', 'Color': 'Black'},
@@ -144,7 +153,7 @@ abstract final class MockData {
     Product(
       id: 'p5',
       title: 'iPad Air 5th Gen 64GB Wi-Fi',
-      imageUrl: 'https://picsum.photos/seed/p5/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80',
       price: 2199,
       compareAtPrice: 2599,
       categoryId: 'tablets',
@@ -154,7 +163,10 @@ abstract final class MockData {
       isWarehoused: true,
       rating: 4.5,
       reviewCount: 41,
-      gallery: ['https://picsum.photos/seed/p5/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1561154464-82e9adf32764?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• Apple M1 chip with Neural Engine\n• 10.9-inch Liquid Retina display with True Tone\n• 12MP Ultra Wide front camera with Center Stage',
       description: 'Light cosmetic marks, fully functional and battery-tested above 85%.',
       specs: {'Storage': '64GB', 'Color': 'Space Gray', 'Condition': 'Grade B · Good'},
@@ -162,13 +174,16 @@ abstract final class MockData {
     Product(
       id: 'p6',
       title: 'PlayStation 5 Slim Console',
-      imageUrl: 'https://picsum.photos/seed/p6/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
       price: 2299,
       categoryId: 'gaming',
       sellerId: 'ahmed',
       rating: 4.7,
       reviewCount: 19,
-      gallery: ['https://picsum.photos/seed/p6/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• Ultra-high speed 1TB SSD storage\n• 4K-TV gaming with up to 120fps output\n• Tempest 3D AudioTech & DualSense haptic feedback',
       description: 'Used for 3 months, excellent condition, all original accessories included.',
       specs: {'Storage': '1TB', 'Edition': 'Disc'},
@@ -176,7 +191,7 @@ abstract final class MockData {
     Product(
       id: 'p7',
       title: 'Canon EOS R50 Mirrorless Camera',
-      imageUrl: 'https://picsum.photos/seed/p7/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
       price: 3299,
       compareAtPrice: 3699,
       categoryId: 'cameras',
@@ -184,7 +199,10 @@ abstract final class MockData {
       isNew: true,
       rating: 4.6,
       reviewCount: 12,
-      gallery: ['https://picsum.photos/seed/p7/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?auto=format&fit=crop&w=800&q=80',
+      ],
       shortDescription: '• 24.2 Megapixel CMOS (APS-C) Sensor\n• Uncropped 4K video at up to 30 fps oversampled from 6K\n• Dual Pixel CMOS AF II with Subject Detection',
       description: 'Brand new with 18-45mm kit lens. Full manufacturer warranty.',
       specs: {'Sensor': 'APS-C 24.2MP', 'Video': '4K 30fps'},
@@ -192,7 +210,7 @@ abstract final class MockData {
     Product(
       id: 'p8',
       title: 'Samsung Galaxy S23 256GB',
-      imageUrl: 'https://picsum.photos/seed/p8/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
       price: 2399,
       compareAtPrice: 2899,
       categoryId: 'phones',
@@ -202,14 +220,17 @@ abstract final class MockData {
       isWarehoused: true,
       rating: 4.7,
       reviewCount: 58,
-      gallery: ['https://picsum.photos/seed/p8/600/600'],
+      gallery: [
+        'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
+      ],
       description: 'Certified refurbished, like-new condition, 92% battery health.',
       specs: {'Storage': '256GB', 'Color': 'Phantom Black', 'Condition': 'Grade A · Like New'},
     ),
     Product(
       id: 'd1',
       title: 'DateUp 50GB Monthly Data Pass',
-      imageUrl: 'https://picsum.photos/seed/dateup1/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80',
       price: 149,
       compareAtPrice: 199,
       categoryId: 'dateup',
@@ -217,7 +238,7 @@ abstract final class MockData {
       isVerified: true,
       rating: 4.9,
       reviewCount: 42,
-      gallery: ['https://picsum.photos/seed/dateup1/600/600'],
+      gallery: ['https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80'],
       shortDescription: '• 50GB High-Speed 5G Data\n• Valid for 30 Days from activation\n• Instant Digital Activation & eSIM ready',
       description: 'DateUp 50GB monthly data package. Active validity starting from activation date with full speed 5G coverage.',
       specs: {
@@ -231,7 +252,7 @@ abstract final class MockData {
     Product(
       id: 'd2',
       title: 'DateUp Unlimited 5G Pass (7 Days)',
-      imageUrl: 'https://picsum.photos/seed/dateup2/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=800&q=80',
       price: 79,
       compareAtPrice: 99,
       categoryId: 'dateup',
@@ -239,7 +260,7 @@ abstract final class MockData {
       isNew: true,
       rating: 4.8,
       reviewCount: 35,
-      gallery: ['https://picsum.photos/seed/dateup2/600/600'],
+      gallery: ['https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=800&q=80'],
       shortDescription: '• Unlimited 5G Data for 7 days\n• No speed throttling\n• Hotspot sharing enabled',
       description: '7-day unlimited DateUp data package with unthrottled high-speed 5G network access.',
       specs: {
@@ -253,14 +274,14 @@ abstract final class MockData {
     Product(
       id: 'd3',
       title: 'DateUp Global eSIM Roaming 15GB',
-      imageUrl: 'https://picsum.photos/seed/dateup3/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=800&q=80',
       price: 199,
       categoryId: 'dateup',
       sellerId: 'openbox',
       isVerified: true,
       rating: 4.7,
       reviewCount: 19,
-      gallery: ['https://picsum.photos/seed/dateup3/600/600'],
+      gallery: ['https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=800&q=80'],
       shortDescription: '• 15GB Global Data in 120+ countries\n• Valid for 15 Days\n• QR Code instant installation',
       description: 'Travel hassle-free with DateUp Global eSIM. Instant QR delivery and auto-activation upon arrival.',
       specs: {
@@ -274,7 +295,7 @@ abstract final class MockData {
     Product(
       id: 'd4',
       title: 'DateUp Annual Starter Pass 100GB',
-      imageUrl: 'https://picsum.photos/seed/dateup4/600/600',
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80',
       price: 399,
       compareAtPrice: 499,
       categoryId: 'dateup',
@@ -282,7 +303,7 @@ abstract final class MockData {
       isVerified: true,
       rating: 4.9,
       reviewCount: 68,
-      gallery: ['https://picsum.photos/seed/dateup4/600/600'],
+      gallery: ['https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80'],
       shortDescription: '• 100GB rollover data valid for 365 days\n• Auto date extension upon top-up\n• Dual SIM & Tablet compatible',
       description: 'Long validity DateUp annual package. Use data at your own pace for a full year with automated date extensions.',
       specs: {
@@ -323,7 +344,7 @@ abstract final class MockData {
       total: 2699,
       trackingNumber: 'OB-TRK-88213',
       items: const [
-        OrderItem(productTitle: 'iPhone 14 Pro 128GB — Deep Purple', imageUrl: 'https://picsum.photos/seed/p1/200/200', price: 2699, quantity: 1, sellerName: 'Openbox Certified'),
+        OrderItem(productTitle: 'iPhone 14 Pro 128GB — Deep Purple', imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80', price: 2699, quantity: 1, sellerName: 'Openbox Certified'),
       ],
     ),
     Order(
@@ -332,7 +353,7 @@ abstract final class MockData {
       status: OrderStatus.delivered,
       total: 1099,
       items: const [
-        OrderItem(productTitle: 'Sony WH-1000XM5 Wireless Headphones', imageUrl: 'https://picsum.photos/seed/p4/200/200', price: 1099, quantity: 1, sellerName: 'TechHub Electronics'),
+        OrderItem(productTitle: 'Sony WH-1000XM5 Wireless Headphones', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80', price: 1099, quantity: 1, sellerName: 'TechHub Electronics'),
       ],
     ),
     Order(
@@ -341,7 +362,7 @@ abstract final class MockData {
       status: OrderStatus.cancelled,
       total: 899,
       items: const [
-        OrderItem(productTitle: 'Samsung Galaxy Watch 6 44mm', imageUrl: 'https://picsum.photos/seed/p3/200/200', price: 899, quantity: 1, sellerName: 'TechHub Electronics'),
+        OrderItem(productTitle: 'Samsung Galaxy Watch 6 44mm', imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80', price: 899, quantity: 1, sellerName: 'TechHub Electronics'),
       ],
     ),
   ];
