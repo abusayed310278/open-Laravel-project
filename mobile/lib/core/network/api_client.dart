@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'api_config.dart';
 import 'storage_service.dart';
 
 class ApiException implements Exception {
@@ -19,6 +20,17 @@ class ApiClient {
   final http.Client _client;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
+
+  Uri _resolveUri(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return Uri.parse(url);
+    }
+    final base = ApiConfig.baseUrl.endsWith('/')
+        ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
+        : ApiConfig.baseUrl;
+    final path = url.startsWith('/') ? url : '/$url';
+    return Uri.parse('$base$path');
+  }
 
   Future<Map<String, String>> _getHeaders({bool isMultipart = false}) async {
     String? token;
@@ -45,67 +57,71 @@ class ApiClient {
   }
 
   Future<dynamic> get(String url) async {
-    debugPrint('🌐 [API GET Request] ➔ $url');
+    final uri = _resolveUri(url);
+    debugPrint('🌐 [API GET Request] ➔ $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.get(Uri.parse(url), headers: headers);
-      _logResponse('GET', url, response);
+      final response = await _client.get(uri, headers: headers);
+      _logResponse('GET', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('❌ [API GET Error] ➔ $url | Error: $e');
+      debugPrint('❌ [API GET Error] ➔ $uri | Error: $e');
       _handleError(e);
     }
   }
 
   Future<dynamic> post(String url, {Map<String, dynamic>? body}) async {
-    debugPrint('🌐 [API POST Request] ➔ $url');
+    final uri = _resolveUri(url);
+    debugPrint('🌐 [API POST Request] ➔ $uri');
     if (body != null) {
       debugPrint('📤 [API POST Payload] ➔ ${jsonEncode(body)}');
     }
     try {
       final headers = await _getHeaders();
       final response = await _client.post(
-        Uri.parse(url),
+        uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
       );
-      _logResponse('POST', url, response);
+      _logResponse('POST', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('❌ [API POST Error] ➔ $url | Error: $e');
+      debugPrint('❌ [API POST Error] ➔ $uri | Error: $e');
       _handleError(e);
     }
   }
 
   Future<dynamic> put(String url, {Map<String, dynamic>? body}) async {
-    debugPrint('🌐 [API PUT Request] ➔ $url');
+    final uri = _resolveUri(url);
+    debugPrint('🌐 [API PUT Request] ➔ $uri');
     if (body != null) {
       debugPrint('📤 [API PUT Payload] ➔ ${jsonEncode(body)}');
     }
     try {
       final headers = await _getHeaders();
       final response = await _client.put(
-        Uri.parse(url),
+        uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
       );
-      _logResponse('PUT', url, response);
+      _logResponse('PUT', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('❌ [API PUT Error] ➔ $url | Error: $e');
+      debugPrint('❌ [API PUT Error] ➔ $uri | Error: $e');
       _handleError(e);
     }
   }
 
   Future<dynamic> delete(String url) async {
-    debugPrint('🌐 [API DELETE Request] ➔ $url');
+    final uri = _resolveUri(url);
+    debugPrint('🌐 [API DELETE Request] ➔ $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(Uri.parse(url), headers: headers);
-      _logResponse('DELETE', url, response);
+      final response = await _client.delete(uri, headers: headers);
+      _logResponse('DELETE', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('❌ [API DELETE Error] ➔ $url | Error: $e');
+      debugPrint('❌ [API DELETE Error] ➔ $uri | Error: $e');
       _handleError(e);
     }
   }
@@ -116,10 +132,11 @@ class ApiClient {
     required String fileParamName,
     Map<String, String>? fields,
   }) async {
-    debugPrint('🌐 [API Multipart Request] ➔ $url | File: ${file.path}');
+    final uri = _resolveUri(url);
+    debugPrint('🌐 [API Multipart Request] ➔ $uri | File: ${file.path}');
     try {
       final headers = await _getHeaders(isMultipart: true);
-      final request = http.MultipartRequest('POST', Uri.parse(url));
+      final request = http.MultipartRequest('POST', uri);
       request.headers.addAll(headers);
 
       if (fields != null) {
@@ -138,10 +155,10 @@ class ApiClient {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      _logResponse('MULTIPART POST', url, response);
+      _logResponse('MULTIPART POST', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('❌ [API Multipart Error] ➔ $url | Error: $e');
+      debugPrint('❌ [API Multipart Error] ➔ $uri | Error: $e');
       _handleError(e);
     }
   }

@@ -108,7 +108,7 @@ class CheckoutController extends Controller
 
     public function stripePortal(Order $order): View
     {
-        abort_unless($order->customer_id === Auth::id(), 403);
+        $this->authorizeOrderAccess($order);
 
         return view('checkout.stripe-portal', [
             'order' => $order->load('vendorOrders.items'),
@@ -117,7 +117,7 @@ class CheckoutController extends Controller
 
     public function stripeConfirm(Order $order): RedirectResponse
     {
-        abort_unless($order->customer_id === Auth::id(), 403);
+        $this->authorizeOrderAccess($order);
 
         foreach ($order->vendorOrders as $vendorOrder) {
             app(PaymentService::class)->confirmCodCollected($vendorOrder);
@@ -128,7 +128,7 @@ class CheckoutController extends Controller
 
     public function stripeSuccess(Order $order): RedirectResponse
     {
-        abort_unless($order->customer_id === Auth::id(), 403);
+        $this->authorizeOrderAccess($order);
 
         foreach ($order->vendorOrders as $vendorOrder) {
             app(PaymentService::class)->confirmCodCollected($vendorOrder);
@@ -139,7 +139,7 @@ class CheckoutController extends Controller
 
     public function confirmation(Order $order): View
     {
-        abort_unless($order->customer_id === Auth::id(), 403);
+        $this->authorizeOrderAccess($order);
 
         return view('checkout.confirmation', [
             'order' => $order->load('vendorOrders.items'),
@@ -172,5 +172,14 @@ class CheckoutController extends Controller
         }
 
         return $address;
+    }
+
+    private function authorizeOrderAccess(Order $order): void
+    {
+        $token = request()->query('token');
+        $validToken = sha1($order->id . $order->order_number . config('app.key'));
+        $hasValidToken = $token && hash_equals($validToken, (string) $token);
+
+        abort_unless($order->customer_id === Auth::id() || $hasValidToken, 403);
     }
 }

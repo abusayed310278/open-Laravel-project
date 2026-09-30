@@ -174,19 +174,8 @@ class Product {
       return '';
     }
 
-    final backendHost = ApiConfig.baseUrl.replaceAll('/api', '');
-
-    trimmed = trimmed
-        .replaceAll('http://localhost:8000', backendHost)
-        .replaceAll('http://127.0.0.1:8000', backendHost)
-        .replaceAll('http://localhost/open/public', backendHost)
-        .replaceAll('http://127.0.0.1/open/public', backendHost)
-        .replaceAll('http://open.test/open/public', backendHost)
-        .replaceAll('https://open.test/open/public', backendHost)
-        .replaceAll('http://open.test', backendHost)
-        .replaceAll('https://open.test', backendHost)
-        .replaceAll('http://localhost', backendHost)
-        .replaceAll('http://127.0.0.1', backendHost);
+    final backendHost = ApiConfig.backendHost;
+    trimmed = ApiConfig.sanitizeUrl(trimmed);
 
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;

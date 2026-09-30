@@ -78,9 +78,11 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-          child: Column(
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
@@ -129,7 +131,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Future<void> _handleSave(User? user) async {

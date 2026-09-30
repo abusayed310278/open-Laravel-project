@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../core/network/api_client.dart';
+import '../core/network/api_config.dart';
 import '../data/mock/mock_data.dart';
 import '../data/models/address.dart';
 
@@ -45,7 +46,7 @@ class AddressProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiClient.get('/addresses');
+      final response = await _apiClient.get(ApiConfig.addresses);
       if (response is Map<String, dynamic> && response.containsKey('addresses')) {
         final list = response['addresses'] as List;
         final fetched = list.map((item) {
@@ -84,7 +85,7 @@ class AddressProvider extends ChangeNotifier {
 
     try {
       final response = await _apiClient.post(
-        '/addresses',
+        ApiConfig.addresses,
         body: {
           'label': label,
           'recipient': recipient,
@@ -173,7 +174,7 @@ class AddressProvider extends ChangeNotifier {
     if (parsedId != null) {
       try {
         await _apiClient.put(
-          '/addresses/$parsedId',
+          ApiConfig.addressDetail(parsedId),
           body: {
             'label': label,
             'recipient': recipient,
@@ -202,7 +203,7 @@ class AddressProvider extends ChangeNotifier {
     final parsedId = int.tryParse(id);
     if (parsedId != null) {
       try {
-        await _apiClient.post('/addresses/$parsedId/default');
+        await _apiClient.post(ApiConfig.setDefaultAddress(parsedId));
       } catch (_) {}
     }
   }
@@ -225,7 +226,7 @@ class AddressProvider extends ChangeNotifier {
     final parsedId = int.tryParse(id);
     if (parsedId != null) {
       try {
-        await _apiClient.delete('/addresses/$parsedId');
+        await _apiClient.delete(ApiConfig.addressDetail(parsedId));
       } catch (_) {}
     }
   }

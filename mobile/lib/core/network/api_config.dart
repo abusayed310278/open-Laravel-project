@@ -4,21 +4,66 @@ import 'package:flutter/foundation.dart';
 class ApiConfig {
   ApiConfig._();
 
-  /// Laragon local web server endpoint:
-  /// - `http://10.0.2.2/open/public/api` for Android Emulator
-  /// - `http://localhost/open/public/api` for Windows / Web / Desktop
-  static String get baseUrl {
+  /// Primary domain name (handles https://openboxo.com/ or https://openboxo.com)
+  static const String domain = 'https://openboxo.com';
+
+  /// Toggle between live server and local development environment:
+  /// - `true`: Connects to [domain] (e.g. https://openboxo.com)
+  /// - `false`: Connects to local Laragon / Android emulator loopback
+  static const bool isProduction = true;
+
+  /// Root host/domain URL without trailing slash (e.g. `https://openboxo.com`)
+  static String get backendHost {
+    if (isProduction) {
+      return domain.replaceAll(RegExp(r'/+$'), '');
+    }
     if (kIsWeb) {
-      return 'http://localhost/open/public/api';
+      return 'http://localhost/open/public';
     }
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2/open/public/api';
+      return 'http://10.0.2.2/open/public';
     }
-    return 'http://localhost/open/public/api';
+    return 'http://localhost/open/public';
   }
 
-  /// Backend App Icon URL from Laragon backend public directory
-  static String get appIconUrl => '${baseUrl.replaceAll('/api', '')}/icon.png';
+  /// Base API endpoint (e.g. `https://openboxo.com/api`)
+  static String get baseUrl => '$backendHost/api';
+
+  /// Backend App Icon URL
+  static String get appIconUrl => '$backendHost/icon.png';
+
+  /// Known legacy or local host variations that may be present in database image/media URLs
+  static const List<String> legacyHosts = [
+    'http://localhost:8000',
+    'https://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://127.0.0.1:8000',
+    'http://localhost/open/public',
+    'https://localhost/open/public',
+    'http://127.0.0.1/open/public',
+    'https://127.0.0.1/open/public',
+    'http://open.test/open/public',
+    'https://open.test/open/public',
+    'http://open.test',
+    'https://open.test',
+    'http://openbox.test',
+    'https://openbox.test',
+    'http://openboxo.com',
+    'https://openboxo.com',
+    'http://localhost',
+    'http://127.0.0.1',
+  ];
+
+  /// Normalizes and replaces any legacy/local host with the active [backendHost]
+  static String sanitizeUrl(String url) {
+    String sanitized = url.trim();
+    for (final host in legacyHosts) {
+      if (host != backendHost) {
+        sanitized = sanitized.replaceAll(host, backendHost);
+      }
+    }
+    return sanitized;
+  }
 
   // Auth endpoints
   static String get login => '$baseUrl/auth/login';
@@ -45,8 +90,14 @@ class ApiConfig {
 
   // Checkout & Orders
   static String get checkout => '$baseUrl/checkout';
+  static String get paymentMethods => '$baseUrl/checkout/payment-methods';
   static String get orders => '$baseUrl/orders';
   static String orderDetail(int orderId) => '$baseUrl/orders/$orderId';
+
+  // Addresses
+  static String get addresses => '$baseUrl/addresses';
+  static String addressDetail(dynamic addressId) => '$baseUrl/addresses/$addressId';
+  static String setDefaultAddress(dynamic addressId) => '$baseUrl/addresses/$addressId/default';
 
   // Vendor Orders Actions
   static String submitPaymentProof(int vendorOrderId) =>

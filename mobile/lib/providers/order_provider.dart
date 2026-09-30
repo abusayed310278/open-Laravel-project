@@ -23,7 +23,7 @@ class OrderProvider extends ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> fetchPaymentMethods() async {
     try {
-      final response = await _apiClient.get('/checkout/payment-methods');
+      final response = await _apiClient.get(ApiConfig.paymentMethods);
       if (response is Map<String, dynamic> && response.containsKey('payment_methods')) {
         final list = response['payment_methods'] as List;
         _paymentMethods = list.map((m) => Map<String, dynamic>.from(m as Map)).toList();
@@ -77,6 +77,7 @@ class OrderProvider extends ChangeNotifier {
     int? addressId,
     Map<String, dynamic>? addressData,
     required String paymentMethod,
+    List<Map<String, dynamic>>? items,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -90,6 +91,9 @@ class OrderProvider extends ChangeNotifier {
         body['address_id'] = addressId;
       } else if (addressData != null) {
         body['address'] = addressData;
+      }
+      if (items != null && items.isNotEmpty) {
+        body['items'] = items;
       }
 
       final response = await _apiClient.post(

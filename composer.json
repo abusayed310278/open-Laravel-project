@@ -98,7 +98,6 @@
             "php-http/discovery": true
         },
         "platform": {
-            "php": "8.3.33"
         },
         "platform-check": false
     },

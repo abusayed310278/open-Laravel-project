@@ -41,6 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/add', [CartController::class, 'add']);
         Route::put('/update/{product}', [CartController::class, 'update']);
         Route::delete('/remove/{product}', [CartController::class, 'remove']);
+        Route::delete('/', [CartController::class, 'clear']);
+        Route::post('/clear', [CartController::class, 'clear']);
     });
 
     Route::prefix('addresses')->group(function () {

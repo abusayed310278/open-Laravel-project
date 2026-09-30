@@ -697,10 +697,6 @@ Route::middleware(['auth', 'verified'])
 Route::middleware('auth')->group(function () {
     Route::get('/account/profile', [CustomerProfileController::class, 'edit'])->name('account.profile.edit');
     Route::patch('/account/profile', [CustomerProfileController::class, 'update'])->name('account.profile.update');
-
-    Route::get('/chat/attachment/{message}', [ChatController::class, 'attachment'])->name('chat.attachment');
-    Route::post('/chat/start-admin', [ChatController::class, 'startWithAdmin'])->name('chat.start-admin');
-    Route::post('/chat/start/{product}', [ChatController::class, 'startFromProduct'])->name('chat.start');
 });
 
 require __DIR__.'/auth.php';

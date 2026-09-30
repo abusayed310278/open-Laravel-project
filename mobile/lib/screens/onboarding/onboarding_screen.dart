@@ -21,19 +21,19 @@ class _OnboardPage {
 
 final _pages = [
   _OnboardPage(
-    imageUrl: '${ApiConfig.baseUrl.replaceAll('/api', '')}/storage/branding/5chHVsfI4FhME3cNIsVRtl2KbCOciMOr4tzAK8ln.png',
+    imageUrl: '${ApiConfig.backendHost}/storage/branding/5chHVsfI4FhME3cNIsVRtl2KbCOciMOr4tzAK8ln.png',
     fallbackIcon: Icons.verified_rounded,
     title: 'Every item, physically verified',
     body: 'Openbox inspectors check every refurbished product across 40+ checkpoints before it reaches you.',
   ),
   _OnboardPage(
-    imageUrl: '${ApiConfig.baseUrl.replaceAll('/api', '')}/storage/branding/GMHl4m8eVhHCvszz6mc7yFHpsg7iwaqzbY0X5UjS.png',
+    imageUrl: '${ApiConfig.backendHost}/storage/branding/GMHl4m8eVhHCvszz6mc7yFHpsg7iwaqzbY0X5UjS.png',
     fallbackIcon: Icons.grade_rounded,
     title: 'Transparent condition grading',
     body: 'Grade A, B, or C — know exactly what you\'re buying, with battery health and cosmetic condition disclosed upfront.',
   ),
   _OnboardPage(
-    imageUrl: '${ApiConfig.baseUrl.replaceAll('/api', '')}/buy-and-sale.png',
+    imageUrl: '${ApiConfig.backendHost}/buy-and-sale.png',
     fallbackIcon: Icons.storefront_rounded,
     title: 'Shop new & refurbished, one place',
     body: 'Browse trusted businesses, individual sellers, and Openbox-warehoused certified deals side by side.',

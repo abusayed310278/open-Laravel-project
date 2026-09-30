@@ -38,11 +38,11 @@
                 <span class="font-mono text-indigo-300 font-semibold">{{ $order->order_number }}</span>
             </div>
 
-            <form method="POST" action="{{ route('checkout.stripe-confirm', $order) }}" class="space-y-4">
+            <form method="POST" action="{{ route('checkout.stripe-confirm', $order) . (request()->has('token') ? '?token=' . request()->query('token') : '') }}" class="space-y-4">
                 @csrf
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Email</label>
-                    <input type="email" value="{{ auth()->user()->email }}" readonly class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none">
+                    <input type="email" value="{{ $order->customer?->email ?? auth()->user()?->email ?? '' }}" readonly class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none">
                 </div>
 
                 <div>
@@ -64,7 +64,7 @@
 
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Name on Card</label>
-                    <input type="text" value="{{ auth()->user()->name }}" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                    <input type="text" value="{{ $order->shippingAddress?->name ?? $order->customer?->name ?? auth()->user()?->name ?? 'Customer' }}" required class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div>

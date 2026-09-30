@@ -13,6 +13,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
 import '../account/add_address_dialog.dart';
 import 'order_confirmation_screen.dart';
+import 'payment_webview_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -29,6 +30,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      if (!mounted) return;
       context.read<AddressProvider>().fetchAddresses();
       context.read<OrderProvider>().fetchPaymentMethods();
     });
@@ -52,6 +54,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final addressData = {
       'name': activeAddress.recipient,
       'phone': activeAddress.phone,
+      'line1': activeAddress.line1,
       'address_line_1': activeAddress.line1,
       'city': activeAddress.city,
       'state': 'Doha',
@@ -59,14 +62,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'postal_code': '00000',
     };
 
+    final cartItems = cartProvider.items.map((i) => {
+      'product_id': int.tryParse(i.product.id) ?? i.product.id,
+      'quantity': i.quantity,
+    }).toList();
+
+    final parsedAddressId = int.tryParse(activeAddress.id);
+
     try {
       final response = await orderProvider.placeOrder(
+        addressId: parsedAddressId,
         addressData: addressData,
         paymentMethod: _payment,
+        items: cartItems,
       );
-
-      await cartProvider.clear();
-      CartStore.instance.clear();
 
       if (!mounted) return;
 
@@ -74,20 +83,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ? response['order']['order_number']?.toString() ?? 'OB-${10000 + DateTime.now().millisecond}'
           : 'OB-${10000 + DateTime.now().millisecond}';
 
-      AppSnackbar.showSuccess(context, 'Order placed successfully!');
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => OrderConfirmationScreen(orderId: orderNumber)),
-      );
+      final String? paymentUrl = response != null ? response['payment_url']?.toString() : null;
+
+      if (paymentUrl != null && paymentUrl.isNotEmpty && (_payment == 'stripe' || _payment == 'paypal')) {
+        final paymentTitle = _payment == 'stripe' ? 'Stripe Card Payment' : 'PayPal Payment';
+        final isPaid = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => PaymentWebViewScreen(
+              paymentUrl: paymentUrl,
+              orderId: orderNumber,
+              title: paymentTitle,
+            ),
+          ),
+        );
+
+        if (isPaid == true) {
+          await cartProvider.clear();
+          CartStore.instance.clear();
+          if (!mounted) return;
+          AppSnackbar.showSuccess(context, 'Payment completed successfully!');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => OrderConfirmationScreen(orderId: orderNumber)),
+          );
+        } else {
+          if (!mounted) return;
+          AppSnackbar.showError(context, 'Payment was not completed. Your order remains pending.');
+        }
+      } else {
+        await cartProvider.clear();
+        CartStore.instance.clear();
+
+        if (!mounted) return;
+        AppSnackbar.showSuccess(context, 'Order placed successfully!');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => OrderConfirmationScreen(orderId: orderNumber)),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
-      // Fallback for demo/offline
-      final fallbackId = 'OB-${10000 + DateTime.now().millisecond}';
-      await cartProvider.clear();
-      CartStore.instance.clear();
-      AppSnackbar.showSuccess(context, 'Order placed successfully!');
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => OrderConfirmationScreen(orderId: fallbackId)),
-      );
+      AppSnackbar.showError(context, e.toString());
     }
   }
 

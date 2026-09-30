@@ -364,7 +364,7 @@ class _GalleryState extends State<_Gallery> {
   }
 
   void _share(BuildContext context, Rect? origin) {
-    final link = '${ApiConfig.baseUrl.replaceAll('/api', '')}/products/${widget.product.slug}';
+    final link = '${ApiConfig.backendHost}/products/${widget.product.slug}';
     SharePlus.instance.share(
       ShareParams(
         subject: widget.product.title,

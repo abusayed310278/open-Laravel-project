@@ -68,4 +68,13 @@ class CartController extends Controller
             'message' => 'Item removed from cart',
         ]);
     }
+    public function clear(Request $request): JsonResponse
+    {
+        $cart = $this->cart->resolveCart($request->user());
+        $cart->items()->delete();
+
+        return response()->json([
+            'message' => 'Cart cleared',
+        ]);
+    }
 }
