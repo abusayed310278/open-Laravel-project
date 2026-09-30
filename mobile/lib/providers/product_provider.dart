@@ -3,6 +3,7 @@ import '../core/network/api_client.dart';
 import '../core/network/api_config.dart';
 import '../data/models/category.dart';
 import '../data/models/product.dart';
+import '../data/models/seller.dart';
 
 class ProductProvider extends ChangeNotifier {
   final ApiClient _apiClient;
@@ -91,5 +92,26 @@ class ProductProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {}
+  }
+
+  Future<List<Product>> fetchProductsBySeller(String sellerId) async {
+    try {
+      final response = await _apiClient.get('${ApiConfig.products}?seller_id=$sellerId');
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final list = response['data'] as List;
+        return list.map((item) => Product.fromJson(item)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  Future<Seller?> fetchSellerDetail(String sellerId) async {
+    try {
+      final response = await _apiClient.get(ApiConfig.sellerDetail(sellerId));
+      if (response is Map<String, dynamic> && response.containsKey('seller')) {
+        return Seller.fromJson(response['seller']);
+      }
+    } catch (_) {}
+    return null;
   }
 }

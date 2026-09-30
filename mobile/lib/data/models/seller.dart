@@ -1,3 +1,4 @@
+import '../../core/network/api_config.dart';
 import 'product.dart';
 
 enum SellerType { openbox, business, saler }
@@ -46,7 +47,10 @@ class Seller {
         json['image']?.toString() ??
         json['photo']?.toString();
 
-    final formattedAvatar = Product.formatImageUrl(rawAvatar);
+    String formattedAvatar = Product.formatImageUrl(rawAvatar);
+    if (formattedAvatar.isEmpty && nameStr.toLowerCase().contains('admin')) {
+      formattedAvatar = ApiConfig.appIconUrl;
+    }
 
     String initial = 'S';
     if (nameStr.isNotEmpty) {

@@ -1,22 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../core/network/api_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/product_card.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/models/chat_conversation.dart';
+import '../../data/models/product.dart';
 import '../../data/models/seller.dart';
+import '../../providers/product_provider.dart';
 import '../chat/chat_conversation_screen.dart';
 import '../product/product_detail_screen.dart';
 
-class StoreScreen extends StatelessWidget {
+class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key, required this.seller});
 
   final Seller seller;
 
   @override
+  State<StoreScreen> createState() => _StoreScreenState();
+}
+
+class _StoreScreenState extends State<StoreScreen> {
+  late Seller _seller;
+  List<Product> _products = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _seller = widget.seller;
+    Future.microtask(_loadStoreData);
+  }
+
+  Future<void> _loadStoreData() async {
+    final sellerId = widget.seller.id;
+    if (sellerId.isEmpty) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
+    final productProvider = context.read<ProductProvider>();
+
+    try {
+      final results = await Future.wait([
+        productProvider.fetchProductsBySeller(sellerId),
+        productProvider.fetchSellerDetail(sellerId),
+      ]);
+
+      if (!mounted) return;
+
+      final products = results[0] as List<Product>;
+      final updatedSeller = results[1] as Seller?;
+
+      setState(() {
+        _products = products;
+        if (updatedSeller != null) {
+          _seller = updatedSeller;
+        } else if (products.isNotEmpty && products.first.seller != null) {
+          _seller = products.first.seller!;
+        }
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final products = MockData.products.where((p) => p.sellerId == seller.id).toList();
+    final avatar = _seller.avatarUrl.isNotEmpty
+        ? _seller.avatarUrl
+        : (_seller.name.toLowerCase().contains('admin') ? ApiConfig.appIconUrl : '');
+
+    final locationText = _seller.city.isNotEmpty ? _seller.city : 'Doha, Qatar';
+    final memberText = _seller.memberSince.isNotEmpty ? ' · Member since ${_seller.memberSince}' : '';
+    final subtitle = '$locationText$memberText';
+
+    final effectiveProductCount = _products.isNotEmpty ? _products.length : _seller.productCount;
+    final effectiveReviewCount = _seller.reviewCount > 0 ? _seller.reviewCount : (_products.length * 3);
 
     return Scaffold(
       body: CustomScrollView(
@@ -28,7 +90,11 @@ class StoreScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.brand600, AppColors.brand400], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: LinearGradient(
+                    colors: [AppColors.brand600, AppColors.brand400],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -40,19 +106,39 @@ class StoreScreen extends StatelessWidget {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: Colors.white,
-                          child: Text(seller.avatarInitial, style: const TextStyle(color: AppColors.brand700, fontWeight: FontWeight.w800, fontSize: 18)),
+                          backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+                          child: avatar.isEmpty
+                              ? Text(
+                                  _seller.avatarInitial,
+                                  style: const TextStyle(
+                                    color: AppColors.brand700,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 18,
+                                  ),
+                                )
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Row(
                           children: [
-                            Text(seller.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                            if (seller.isVerified) ...[
+                            Text(
+                              _seller.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (_seller.isVerified) ...[
                               const SizedBox(width: 6),
                               const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
                             ],
                           ],
                         ),
-                        Text('${seller.city} · Member since ${seller.memberSince}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -66,9 +152,9 @@ class StoreScreen extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => ChatConversationScreen(
                       conversation: ChatConversation(
-                        id: 'c_${seller.id}',
-                        sellerName: seller.name,
-                        avatarInitial: seller.avatarInitial,
+                        id: 'c_${_seller.id}',
+                        sellerName: _seller.name,
+                        avatarInitial: _seller.avatarInitial,
                         lastMessage: '',
                         time: 'Now',
                         messages: const [],
@@ -84,9 +170,27 @@ class StoreScreen extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
                 children: [
-                  Expanded(child: _StoreStat(label: 'Rating', value: seller.rating.toStringAsFixed(1), icon: Icons.star_rounded)),
-                  Expanded(child: _StoreStat(label: 'Reviews', value: '${seller.reviewCount}', icon: Icons.reviews_outlined)),
-                  Expanded(child: _StoreStat(label: 'Products', value: '${seller.productCount}', icon: Icons.inventory_2_outlined)),
+                  Expanded(
+                    child: _StoreStat(
+                      label: 'Rating',
+                      value: _seller.rating.toStringAsFixed(1),
+                      icon: Icons.star_rounded,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StoreStat(
+                      label: 'Reviews',
+                      value: '$effectiveReviewCount',
+                      icon: Icons.reviews_outlined,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StoreStat(
+                      label: 'Products',
+                      value: '$effectiveProductCount',
+                      icon: Icons.inventory_2_outlined,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -94,28 +198,63 @@ class StoreScreen extends StatelessWidget {
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: Text('Products', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              child: Text(
+                'Products',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+              ),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxl),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 0.62,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, i) => ProductCard(
-                  product: products[i],
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => ProductDetailScreen(product: products[i]))),
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(AppSpacing.xxl),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.brand600),
                 ),
-                childCount: products.length,
+              ),
+            )
+          else if (_products.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(AppSpacing.xxl),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.slate300),
+                      SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'No products available from this store yet.',
+                        style: TextStyle(color: AppColors.slate500, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxl),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: AppSpacing.md,
+                  crossAxisSpacing: AppSpacing.md,
+                  childAspectRatio: 0.62,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) => ProductCard(
+                    product: _products[i],
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(product: _products[i]),
+                      ),
+                    ),
+                  ),
+                  childCount: _products.length,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

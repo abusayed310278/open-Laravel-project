@@ -28,6 +28,7 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::get('/categories', [ProductController::class, 'categories']);
 Route::get('/brands', [ProductController::class, 'brands']);
+Route::get('/sellers/{id}', [ProductController::class, 'seller']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {

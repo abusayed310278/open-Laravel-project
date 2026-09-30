@@ -76,9 +76,10 @@ class ApiConfig {
   static String get updateProfile => '$baseUrl/auth/profile';
   static String get logout => '$baseUrl/auth/logout';
 
-  // Products & Categories
+  // Products & Categories & Sellers
   static String get products => '$baseUrl/products';
   static String productDetail(String slug) => '$baseUrl/products/$slug';
+  static String sellerDetail(dynamic sellerId) => '$baseUrl/sellers/$sellerId';
   static String get categories => '$baseUrl/categories';
   static String get brands => '$baseUrl/brands';
 

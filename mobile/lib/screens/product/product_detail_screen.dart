@@ -588,6 +588,10 @@ class _SellerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatar = seller.avatarUrl.isNotEmpty
+        ? seller.avatarUrl
+        : (seller.name.toLowerCase().contains('admin') ? ApiConfig.appIconUrl : '');
+
     return Row(
       children: [
         ClipOval(
@@ -595,9 +599,9 @@ class _SellerCard extends StatelessWidget {
             width: 44,
             height: 44,
             color: AppColors.brand100,
-            child: seller.avatarUrl.isNotEmpty
+            child: avatar.isNotEmpty
                 ? Image.network(
-                    seller.avatarUrl,
+                    avatar,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Center(
                       child: Text(
