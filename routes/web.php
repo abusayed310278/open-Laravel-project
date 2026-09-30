@@ -376,6 +376,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/settings/git', [GitSettingsController::class, 'index'])->name('settings.git');
         Route::post('/settings/git/pull', [GitSettingsController::class, 'pull'])->name('settings.git.pull');
         Route::post('/settings/git/fetch', [GitSettingsController::class, 'fetch'])->name('settings.git.fetch');
+        Route::post('/settings/git/checkout', [GitSettingsController::class, 'checkout'])->name('settings.git.checkout');
         Route::post('/settings/git/discard', [GitSettingsController::class, 'discard'])->name('settings.git.discard');
 
         Route::get('/verifications', [AdminVerificationController::class, 'index'])->name('verifications.index');
