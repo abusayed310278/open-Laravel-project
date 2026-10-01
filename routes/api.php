@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/checkout/payment-methods', [CheckoutController::class, 'availablePaymentMethods']);
     Route::post('/checkout', [CheckoutController::class, 'process']);
+    Route::post('/checkout/stripe-confirm/{order}', [CheckoutController::class, 'confirmStripe']);
 
     Route::prefix('orders')->group(function () {
         Route::get('/', [CustomerOrderController::class, 'index']);

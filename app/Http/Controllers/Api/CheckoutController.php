@@ -6,8 +6,10 @@ use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\Order;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\PaymentService;
 use App\Services\SettingsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -149,14 +151,48 @@ class CheckoutController extends Controller
         $paymentUrl = null;
         $orderToken = sha1($order->id . $order->order_number . config('app.key'));
 
+        $stripeData = null;
+
         if ($paymentMethod === PaymentMethod::Stripe) {
             $firstVendor = $order->vendorOrders()->with('vendor.paymentSettings')->first()?->vendor;
             $vendorStripeKey = $firstVendor?->paymentSettings?->stripe_secret_key;
             $secretKey = filled($vendorStripeKey)
                 ? $vendorStripeKey
                 : (app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret'));
+            $publishableKey = config('services.stripe.key');
 
             if (filled($secretKey)) {
+                // 1. Create Stripe PaymentIntent for native mobile Stripe PaymentSheet
+                try {
+                    $piResponse = Http::withBasicAuth($secretKey, '')
+                        ->asForm()
+                        ->post('https://api.stripe.com/v1/payment_intents', [
+                            'amount' => (int) round($order->total * 100),
+                            'currency' => 'usd',
+                            'payment_method_types' => ['card'],
+                            'description' => 'Order #' . $order->order_number,
+                            'metadata' => [
+                                'order_id' => $order->id,
+                                'order_number' => $order->order_number,
+                            ],
+                        ]);
+
+                    if ($piResponse->successful() && isset($piResponse->json()['client_secret'])) {
+                        $stripeData = [
+                            'publishable_key' => $publishableKey,
+                            'client_secret' => $piResponse->json()['client_secret'],
+                            'payment_intent_id' => $piResponse->json()['id'],
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                        ];
+                    } else {
+                        Log::info('Stripe PaymentIntent note: ' . $piResponse->body());
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('Stripe PaymentIntent creation failed: ' . $e->getMessage());
+                }
+
+                // 2. Fallback to Stripe Checkout session if PaymentIntent was not created
                 try {
                     $response = Http::withBasicAuth($secretKey, '')
                         ->asForm()
@@ -198,6 +234,35 @@ class CheckoutController extends Controller
             'message' => 'Order placed successfully',
             'order' => new OrderResource($order->load('vendorOrders.items', 'vendorOrders.vendor', 'shippingAddress')),
             'payment_url' => $paymentUrl,
+            'stripe' => $stripeData,
         ], 201);
+    }
+
+    public function confirmStripe(Request $request, Order $order): JsonResponse
+    {
+        $token = $request->input('token') ?? $request->query('token');
+        $validToken = sha1($order->id . $order->order_number . config('app.key'));
+        $user = $request->user();
+
+        $authorized = false;
+        if ($user && $order->customer_id === $user->id) {
+            $authorized = true;
+        } elseif ($token && hash_equals($validToken, (string) $token)) {
+            $authorized = true;
+        }
+
+        if (! $authorized) {
+            return response()->json(['message' => 'Unauthorized access to order.'], 403);
+        }
+
+        foreach ($order->vendorOrders as $vendorOrder) {
+            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment completed via Stripe!',
+            'order' => new OrderResource($order->load('vendorOrders.items', 'vendorOrders.vendor', 'shippingAddress')),
+        ]);
     }
 }
