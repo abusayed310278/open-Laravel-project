@@ -15,34 +15,105 @@ class CmsPagesSeeder extends Seeder
                 'title' => 'Help Center',
                 'slug' => 'help-center',
                 'content' => '
-                    <div class="space-y-6">
-                        <p class="text-lg font-medium text-gray-800">Welcome to the Openbox Help Center. Find answers to common questions about buying, selling, and account verification.</p>
-                        
-                        <div class="grid md:grid-cols-2 gap-6 mt-6">
-                            <div class="p-5 border border-gray-200 rounded-lg bg-white shadow-xs">
-                                <h3 class="text-base font-bold text-gray-900 mb-2">📦 Buying on Openbox</h3>
-                                <p class="text-sm text-gray-600">Learn about our device grading standards, doorstep inspection process, and escrow protection before completing your purchase.</p>
-                            </div>
-                            <div class="p-5 border border-gray-200 rounded-lg bg-white shadow-xs">
-                                <h3 class="text-base font-bold text-gray-900 mb-2">🏷️ Selling & Warehousing</h3>
-                                <p class="text-sm text-gray-600">Discover how to register as an individual seller or store owner, deposit devices into our certified warehouses, and get paid fast.</p>
-                            </div>
-                        </div>
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-6 rounded-2xl bg-gradient-to-r from-brand-50 to-amber-50/50 border border-brand-100 text-gray-900">
+        <h2 class="text-xl font-extrabold text-gray-950 mb-2">Welcome to Openbox Support & Knowledge Base</h2>
+        <p class="text-gray-600">Everything you need to know about buying certified electronics, selling securely with escrow protection, and understanding our 40-point verification standards in Bangladesh.</p>
+    </div>
 
-                        <div class="mt-8 space-y-4">
-                            <h3 class="text-lg font-bold text-gray-900">Frequently Asked Questions</h3>
-                            <details class="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                                <summary class="font-semibold text-gray-800 cursor-pointer">How does Openbox verify electronic devices?</summary>
-                                <p class="mt-2 text-sm text-gray-600">Every device passes a 40-point technical checklist conducted by certified verifiers at our designated inspection hubs.</p>
-                            </details>
-                            <details class="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                                <summary class="font-semibold text-gray-800 cursor-pointer">What is the payment protection policy?</summary>
-                                <p class="mt-2 text-sm text-gray-600">Your payments are held securely in escrow until you inspect and approve your received item.</p>
-                            </details>
-                        </div>
-                    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-lg mb-2">📦</div>
+            <h3 class="text-base font-bold text-gray-900">Buyer Guide & Doorstep Inspection</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Every smartphone, laptop, and smartwatch listed on Openbox is certified with an official condition grade (Like New, Excellent, Good, or Fair). When your package arrives, you receive full rights to perform a doorstep inspection before approving payment release from our Escrow Vault.
+            </p>
+        </div>
+
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg mb-2">🏷️</div>
+            <h3 class="text-base font-bold text-gray-900">Seller Portal & Warehousing</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Individual sellers and verified store owners can list devices, schedule drop-offs at our certified inspection locations, and store verified inventory in secure Openbox custody warehouses. Payouts are transferred automatically to your bKash, Nagad, or Bank account upon buyer acceptance.
+            </p>
+        </div>
+
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-lg mb-2">🔍</div>
+            <h3 class="text-base font-bold text-gray-900">40-Point Diagnostic Checklist</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Our certified hardware technicians inspect display touch response, camera sensors, biometric security (Face ID/Fingerprint), speaker acoustics, microphone input, charging port integrity, battery health cycles, and anti-theft IMEI cross-verification.
+            </p>
+        </div>
+
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-2">🛡️</div>
+            <h3 class="text-base font-bold text-gray-900">Escrow Vault & 7-Day Guarantee</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Your payment never goes directly to an unverified stranger. It is deposited into our protected Escrow Vault and held securely. If the device does not match the certified checklist report, our 7-Day Money-Back Guarantee ensures a swift refund.
+            </p>
+        </div>
+    </div>
+
+    <section class="space-y-4">
+        <h3 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">Frequently Asked Questions (FAQ)</h3>
+        
+        <div class="space-y-3">
+            <details class="group p-4 border border-gray-200 rounded-xl bg-gray-50/50 open:bg-white open:shadow-xs transition-colors">
+                <summary class="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center">
+                    <span>How does Openbox verify device condition and authenticity?</span>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
+                </summary>
+                <div class="mt-3 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                    <p>When a seller submits a device, it is physically delivered to one of our certified inspection locations. Verifier engineers run comprehensive hardware tests and cross-examine the serial number and IMEI against official manufacturer warranty logs and anti-theft databases.</p>
+                </div>
+            </details>
+
+            <details class="group p-4 border border-gray-200 rounded-xl bg-gray-50/50 open:bg-white open:shadow-xs transition-colors">
+                <summary class="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center">
+                    <span>What is the Doorstep Inspection procedure?</span>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
+                </summary>
+                <div class="mt-3 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                    <p>When the delivery rider arrives with your order, you are given up to 10 minutes to unbox and power on the device, test basic touchscreen response, and verify the physical condition against the inspection checklist printed on the packaging before confirming acceptance.</p>
+                </div>
+            </details>
+
+            <details class="group p-4 border border-gray-200 rounded-xl bg-gray-50/50 open:bg-white open:shadow-xs transition-colors">
+                <summary class="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center">
+                    <span>How does the Escrow Payment Vault work?</span>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
+                </summary>
+                <div class="mt-3 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                    <p>Buyers pay using bKash, Nagad, debit/credit cards, or bank transfer. The funds are held in our designated escrow account. Only after the buyer accepts delivery and the 7-day initial inspection window concludes does Openbox disburse payment to the seller\'s balance.</p>
+                </div>
+            </details>
+
+            <details class="group p-4 border border-gray-200 rounded-xl bg-gray-50/50 open:bg-white open:shadow-xs transition-colors">
+                <summary class="font-semibold text-gray-900 cursor-pointer list-none flex justify-between items-center">
+                    <span>How do sellers withdraw their earnings?</span>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform">&darr;</span>
+                </summary>
+                <div class="mt-3 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                    <p>Sellers can submit a payout request anytime through their Seller Dashboard under <em>Commerce &rarr; Payout Requests</em>. Payouts to bKash and Nagad are processed within 12–24 business hours, and electronic bank transfers (BEFTN/NPSB) settle within 1–2 banking days.</p>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <div class="p-5 border border-brand-200 rounded-xl bg-brand-50/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h4 class="font-bold text-gray-900 text-sm">Still have questions or need assistance?</h4>
+            <p class="text-xs text-gray-600">Our customer care team is available daily from 9:00 AM to 9:00 PM.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="mailto:support@openbox.com.bd" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors shadow-xs">Email Support</a>
+            <a href="tel:+8809610000111" class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-xs">Call Helpline</a>
+        </div>
+    </div>
+</div>
                 ',
-                'meta_title' => 'Help Center & Knowledge Base — Openbox',
+                'meta_title' => 'Help Center & Knowledge Base — Openbox Bangladesh',
                 'meta_description' => 'Find guides, FAQs, and support articles on buying, selling, and verifying electronics on Openbox.',
                 'status' => ContentStatus::Published,
             ],
@@ -180,43 +251,146 @@ class CmsPagesSeeder extends Seeder
                 'title' => 'Terms of Service',
                 'slug' => 'terms-of-service',
                 'content' => '
-                    <div class="space-y-6">
-                        <p class="text-lg font-medium text-gray-800">Please read these Terms of Service carefully before using the Openbox platform.</p>
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800">
+        <strong>Last Updated: October 2026</strong>. Please read these Terms of Service ("Terms") carefully. By creating an account, browsing, buying, or listing items on Openbox ("Platform", "we", "us"), you agree to be bound by these Terms and our related operating policies.
+    </div>
 
-                        <div class="space-y-4 text-sm text-gray-700">
-                            <h3 class="text-base font-bold text-gray-900">1. Account Terms</h3>
-                            <p>You must provide accurate account information and maintain the security of your credentials. Users under 18 must have parental or legal guardian consent.</p>
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">1. The Openbox Marketplace & Role Architecture</h2>
+        <p>Openbox operates an authenticated multi-role recommerce ecosystem connecting Buyers, Individual Sellers ("Salers"), Commercial Store Owners ("Business Sellers"), and certified Verifier Staff.</p>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs">
+            <li><strong>Buyers:</strong> Individuals purchasing pre-owned, open-box, or refurbished electronics protected by our Escrow Vault and Doorstep Inspection guarantee.</li>
+            <li><strong>Sellers:</strong> Must undergo Identity (NID) and KYC verification before publishing product listings or depositing hardware.</li>
+            <li><strong>Verification Staff:</strong> Certified technical engineers who physically inspect, test, and assign condition grades to devices at designated hubs.</li>
+        </ul>
+    </section>
 
-                            <h3 class="text-base font-bold text-gray-900">2. Seller Obligations</h3>
-                            <p>All devices listed for sale must belong to the seller lawfully and accurately match the condition disclosed during verification submission.</p>
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">2. Hardware Inspection & Official Grading Standards</h2>
+        <p>All items sold through Openbox undergo an obligatory 40-point technical checklist. Openbox assigns one of the following official condition tiers:</p>
+        <div class="grid sm:grid-cols-2 gap-3 text-xs my-2">
+            <div class="p-3 border border-emerald-200 rounded-lg bg-emerald-50/50">
+                <span class="font-bold text-emerald-950 block">Grade A+ (Like New)</span>
+                Flawless cosmetic condition, zero visible scratches, 90%+ battery health, all original hardware components functioning as new.
+            </div>
+            <div class="p-3 border border-sky-200 rounded-lg bg-sky-50/50">
+                <span class="font-bold text-sky-950 block">Grade A (Excellent)</span>
+                Minimal micro-scratches invisible from arm\'s length, 85%+ battery health, 100% verified functional components.
+            </div>
+            <div class="p-3 border border-amber-200 rounded-lg bg-amber-50/50">
+                <span class="font-bold text-amber-950 block">Grade B (Good)</span>
+                Normal signs of light wear or subtle scuffs, 80%+ battery health, fully tested hardware with zero functional defects.
+            </div>
+            <div class="p-3 border border-gray-300 rounded-lg bg-gray-100/70">
+                <span class="font-bold text-gray-900 block">Grade C (Fair)</span>
+                Noticeable cosmetic wear, denting, or replaced screens/batteries fully disclosed on the inspection certificate.
+            </div>
+        </div>
+        <p class="text-xs text-gray-600">Openbox reserves full authority to downgrade or reject any submitted device that fails battery cycle testing, exhibits motherboard tampering, or fails anti-theft IMEI verification.</p>
+    </section>
 
-                            <h3 class="text-base font-bold text-gray-900">3. Verification &amp; Grading</h3>
-                            <p>Openbox reserves the right to assign or adjust device grades based on physical and technical inspection findings.</p>
-                        </div>
-                    </div>
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">3. Escrow Vault Payment & Settlement Terms</h2>
+        <p>To eliminate scams and non-delivery, all buyer payments are deposited directly into the Openbox Escrow Vault via SSLCommerz, bKash, Nagad, or approved banking channels.</p>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs">
+            <li><strong>Release Trigger:</strong> Escrow funds are only released to the seller after the buyer accepts doorstep delivery and the 7-day return guarantee expires.</li>
+            <li><strong>Platform Commission:</strong> Openbox deducts an agreed platform commission per transaction according to the seller\'s subscription tier or commission rule table.</li>
+            <li><strong>Payouts:</strong> Sellers can request wallet disbursements to verified bKash, Nagad, or bank accounts once funds clear the escrow hold period.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">4. Doorstep Inspection & 7-Day Money-Back Guarantee</h2>
+        <p>Buyers are entitled to 10 minutes of physical inspection upon delivery by our authorized courier partner. If the device differs from the certified condition report, the buyer may reject the parcel on the spot at zero penalty.</p>
+        <p>Following delivery, buyers retain a <strong>7-Day Warranty Window</strong> against internal hardware defects (motherboard failure, unexpected shutdowns, speaker failure) not documented in the original inspection report.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">5. Anti-Theft, Stolen Property & Law Enforcement Cooperation</h2>
+        <p>Openbox maintains a zero-tolerance policy against stolen electronics, counterfeit items, and blacklisted IMEIs. All serial numbers are recorded in our audit database. Any user attempting to list stolen hardware will face immediate account termination and reporting to the Bangladesh Police Criminal Investigation Department (CID).</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">6. Governing Law & Dispute Resolution</h2>
+        <p>These Terms are governed by and construed in accordance with the laws of the People\'s Republic of Bangladesh. Any dispute arising out of or in connection with this platform shall be subject to the exclusive jurisdiction of the competent courts of Dhaka, Bangladesh.</p>
+    </section>
+</div>
                 ',
-                'meta_title' => 'Terms of Service — Openbox',
-                'meta_description' => 'Review the official Terms of Service governing Openbox platform usage and sales.',
+                'meta_title' => 'Terms of Service — Openbox Bangladesh',
+                'meta_description' => 'Review the official Terms of Service governing Openbox platform usage, device grading, and escrow protection.',
                 'status' => ContentStatus::Published,
             ],
             [
                 'title' => 'Privacy Policy',
                 'slug' => 'privacy-policy',
                 'content' => '
-                    <div class="space-y-6">
-                        <p class="text-lg font-medium text-gray-800">Openbox is committed to protecting your personal data and privacy.</p>
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800">
+        <strong>Privacy Commitment:</strong> Openbox ("we", "us", "our") is dedicated to maintaining the confidentiality, integrity, and security of your personal data. This Privacy Policy details the information we collect, how it is used to safeguard transactions, and your rights under the Information and Communication Technology (ICT) Act of Bangladesh.
+    </div>
 
-                        <div class="space-y-4 text-sm text-gray-700">
-                            <h3 class="text-base font-bold text-gray-900">Information We Collect</h3>
-                            <p>We collect essential account information (name, phone, email, address), verification details for sellers, and transaction history required to process orders securely.</p>
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">1. Information We Collect</h2>
+        <div class="grid sm:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 border border-gray-200 rounded-lg bg-white space-y-1">
+                <span class="font-bold text-gray-900 block">Personal Profile Data</span>
+                <p class="text-gray-600">Full name, verified mobile number, email address, physical delivery addresses, and login credentials.</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg bg-white space-y-1">
+                <span class="font-bold text-gray-900 block">Seller KYC & Identity Proof</span>
+                <p class="text-gray-600">National ID (NID) photos, Trade Licenses (for store owners), utility bills for location verification, and store photos.</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg bg-white space-y-1">
+                <span class="font-bold text-gray-900 block">Device Hardware Telemetry</span>
+                <p class="text-gray-600">IMEI numbers, device serial numbers, battery health percentages, component diagnostics, and model identifiers recorded during hub inspection.</p>
+            </div>
+            <div class="p-4 border border-gray-200 rounded-lg bg-white space-y-1">
+                <span class="font-bold text-gray-900 block">Financial & Escrow Records</span>
+                <p class="text-gray-600">bKash/Nagad wallet numbers, bank account numbers for payouts, transaction IDs, invoice logs, and escrow authorization timestamps.</p>
+            </div>
+        </div>
+    </section>
 
-                            <h3 class="text-base font-bold text-gray-900">Data Security</h3>
-                            <p>All sensitive credentials and personal data are encrypted at rest and transmitted over secure SSL/TLS channels.</p>
-                        </div>
-                    </div>
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">2. How We Use Your Information</h2>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs">
+            <li><strong>Order Fulfillment & Delivery:</strong> Dispatching verified devices with authorized couriers for doorstep inspection.</li>
+            <li><strong>Anti-Theft Protection:</strong> Cross-referencing IMEI numbers against lost/stolen device registries to safeguard buyers.</li>
+            <li><strong>Escrow Vault Management:</strong> Securing payments until physical item verification and buyer sign-off.</li>
+            <li><strong>Seller KYC Auditing:</strong> Preventing fictitious commercial listings and establishing legitimate recommerce channels.</li>
+            <li><strong>Security Alerts:</strong> Sending SMS OTP verification codes, order status updates, and login notices.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">3. Third-Party Data Sharing & Protection</h2>
+        <p>We do not sell, rent, or trade your personal data to marketing third parties. Disclosures occur strictly on a need-to-know operational basis:</p>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs text-gray-600">
+            <li><strong>Logistics Partners:</strong> Sharing recipient name, contact number, and address strictly for doorstep delivery and inspection.</li>
+            <li><strong>Payment Gateways (bKash, Nagad, SSLCommerz):</strong> Processing encrypted checkout transactions and payout disbursements.</li>
+            <li><strong>Law Enforcement & Regulators:</strong> Complying with court orders, Bangladesh BTRC directives, or CID anti-fraud investigations.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">4. Data Encryption & Security Measures</h2>
+        <p>All user communication is encrypted via 256-bit SSL/TLS protocol in transit. Sensitive credentials and passwords are encrypted using one-way cryptographic hashing algorithms. Our database infrastructure is maintained behind secured firewalls with role-based internal access controls.</p>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">5. Your Rights & Account Deletion</h2>
+        <p>You possess full authority over your personal information, including the right to access your stored records, rectify outdated details, and request complete account termination under our <a href="/pages/delete-policy" class="text-brand-600 underline font-medium hover:text-brand-700">Account & Data Deletion Policy</a>.</p>
+    </section>
+
+    <section class="space-y-2 pt-2 border-t border-gray-100 text-xs">
+        <h3 class="font-bold text-gray-900">Privacy Inquiries</h3>
+        <p class="text-gray-600">If you have inquiries regarding our data processing policies, please email our Data Protection Officer at <strong>privacy@openbox.com.bd</strong>.</p>
+    </section>
+</div>
                 ',
-                'meta_title' => 'Privacy Policy — Openbox',
-                'meta_description' => 'Understand how Openbox collects, uses, and safeguards your personal data.',
+                'meta_title' => 'Privacy Policy — Openbox Bangladesh',
+                'meta_description' => 'Understand how Openbox collects, uses, and safeguards your personal data under Bangladesh regulations.',
                 'status' => ContentStatus::Published,
             ],
             [
