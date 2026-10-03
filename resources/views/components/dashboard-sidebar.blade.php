@@ -129,6 +129,37 @@
                     ];
                 }
             }
+
+            // Ensure CONTENT section is always available for admin even if dynamic DB records are missing or cached
+            if ($userRoleSlug === 'admin') {
+                $contentGroupIndex = null;
+                foreach ($effectiveGroups as $idx => $g) {
+                    if (strtoupper($g['label'] ?? '') === 'CONTENT') {
+                        $contentGroupIndex = $idx;
+                        break;
+                    }
+                }
+
+                $contentDefaults = [
+                    ['route' => 'admin.blog.comments.index', 'url' => null, 'label' => 'Blog Comments', 'icon' => $iconPaths['chat'] ?? ($iconPaths['box'] ?? '')],
+                    ['route' => 'admin.pages.index', 'url' => null, 'label' => 'Pages', 'icon' => $iconPaths['document'] ?? ($iconPaths['box'] ?? '')],
+                    ['route' => 'admin.blog.index', 'url' => null, 'label' => 'Blog Posts', 'icon' => $iconPaths['newspaper'] ?? ($iconPaths['box'] ?? '')],
+                ];
+
+                if ($contentGroupIndex === null) {
+                    $effectiveGroups[] = [
+                        'label' => 'CONTENT',
+                        'items' => $contentDefaults,
+                    ];
+                } else {
+                    $existingRoutes = collect($effectiveGroups[$contentGroupIndex]['items'])->pluck('route')->filter()->all();
+                    foreach ($contentDefaults as $def) {
+                        if (!in_array($def['route'], $existingRoutes)) {
+                            $effectiveGroups[$contentGroupIndex]['items'][] = $def;
+                        }
+                    }
+                }
+            }
         } else {
             $effectiveGroups = $navGroups;
         }
