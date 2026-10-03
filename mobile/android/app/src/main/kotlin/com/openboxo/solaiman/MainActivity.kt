@@ -1,4 +1,4 @@
-package com.example.mobile
+﻿package com.openboxo.solaiman
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

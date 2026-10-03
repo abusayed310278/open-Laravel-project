@@ -9,24 +9,41 @@ class OrderProvider extends ChangeNotifier {
 
   List<Order> _orders = [];
   List<Map<String, dynamic>> _paymentMethods = [];
+  bool _isMultiVendor = false;
+  String _vendorName = 'Openbox Platform';
   Order? _selectedOrder;
   bool _isLoading = false;
   String? _errorMessage;
 
   List<Order> get orders => List.unmodifiable(_orders);
   List<Map<String, dynamic>> get paymentMethods => List.unmodifiable(_paymentMethods);
+  bool get isMultiVendor => _isMultiVendor;
+  String get vendorName => _vendorName;
   Order? get selectedOrder => _selectedOrder;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
   OrderProvider({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<Map<String, dynamic>>> fetchPaymentMethods() async {
+  Future<List<Map<String, dynamic>>> fetchPaymentMethods({List<Map<String, dynamic>>? items}) async {
     try {
-      final response = await _apiClient.get(ApiConfig.paymentMethods);
-      if (response is Map<String, dynamic> && response.containsKey('payment_methods')) {
-        final list = response['payment_methods'] as List;
-        _paymentMethods = list.map((m) => Map<String, dynamic>.from(m as Map)).toList();
+      final dynamic response;
+      if (items != null && items.isNotEmpty) {
+        response = await _apiClient.post(ApiConfig.paymentMethods, body: {'items': items});
+      } else {
+        response = await _apiClient.get(ApiConfig.paymentMethods);
+      }
+      if (response is Map<String, dynamic>) {
+        if (response.containsKey('is_multivendor')) {
+          _isMultiVendor = response['is_multivendor'] == true;
+        }
+        if (response.containsKey('vendor_name')) {
+          _vendorName = response['vendor_name']?.toString() ?? 'Openbox Platform';
+        }
+        if (response.containsKey('payment_methods')) {
+          final list = response['payment_methods'] as List;
+          _paymentMethods = list.map((m) => Map<String, dynamic>.from(m as Map)).toList();
+        }
         notifyListeners();
         return _paymentMethods;
       }

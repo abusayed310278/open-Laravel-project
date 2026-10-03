@@ -8,14 +8,12 @@ import '../../core/widgets/app_snackbar.dart';
 import '../../data/mock/app_state.dart';
 import '../../data/models/address.dart';
 import '../../providers/address_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/order_provider.dart';
 import '../account/add_address_dialog.dart';
 import '../../core/services/stripe_service.dart';
 import 'order_confirmation_screen.dart';
 import 'payment_webview_screen.dart';
-import 'stripe_checkout_bottom_sheet.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -34,8 +32,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Future.microtask(() {
       if (!mounted) return;
       context.read<AddressProvider>().fetchAddresses();
-      context.read<OrderProvider>().fetchPaymentMethods();
+      final cartItems = context.read<CartProvider>().items.map((i) => {
+        'product_id': int.tryParse(i.product.id) ?? i.product.id,
+        'quantity': i.quantity,
+      }).toList();
+      context.read<OrderProvider>().fetchPaymentMethods(items: cartItems.isNotEmpty ? cartItems : null);
     });
+  }
+
+  Future<void> _openAddAddressModal({Address? initialAddress}) async {
+    await AddAddressModal.show(context, initialAddress: initialAddress);
+    if (!mounted) return;
+    final addrs = context.read<AddressProvider>().addresses;
+    if (addrs.isNotEmpty) {
+      setState(() {
+        _selectedAddress = context.read<AddressProvider>().defaultAddress ?? addrs.last;
+      });
+    }
   }
 
   Future<void> _placeOrder(
@@ -43,12 +56,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     double totalAmount = 0.0,
     String formattedTotal = '',
   }) async {
+    debugPrint('--> _placeOrder button tapped! activeAddress=$activeAddress');
     final cartProvider = context.read<CartProvider>();
     final orderProvider = context.read<OrderProvider>();
 
     if (activeAddress == null) {
       AppSnackbar.showError(context, 'Please add a delivery address first');
-      AddAddressModal.show(context);
+      _openAddAddressModal();
       return;
     }
 
@@ -98,37 +112,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ? Map<String, dynamic>.from(response['stripe'])
           : null;
 
-      // Handle Stripe: Show official Stripe Bottom Sheet
+      // Handle Stripe: Show official native Stripe PaymentSheet bottom sheet
       if (_payment == 'stripe') {
-        bool paymentCompleted = false;
+        final clientSecret = stripeData != null ? stripeData['client_secret']?.toString() : null;
+        final publishableKey = stripeData != null ? stripeData['publishable_key']?.toString() : null;
 
-        // 1. Try official native Stripe PaymentSheet SDK if client_secret is returned
-        if (stripeData != null && stripeData['client_secret'] != null) {
-          try {
-            if (stripeData['publishable_key'] != null) {
-              await StripeService.instance.init(
-                publishableKey: stripeData['publishable_key'].toString(),
-              );
-            }
-            paymentCompleted = await StripeService.instance.presentOfficialPaymentSheet(
-              clientSecret: stripeData['client_secret'].toString(),
-              merchantDisplayName: 'Openbox Marketplace',
-            );
-          } catch (e) {
-            debugPrint('Native Stripe PaymentSheet error, falling back to Stripe checkout sheet: $e');
-          }
+        if (clientSecret == null || clientSecret.isEmpty) {
+          if (!mounted) return;
+          AppSnackbar.showError(
+            context,
+            'Unable to initialize Stripe Payment Sheet. Please verify Stripe configuration on the server.',
+          );
+          return;
         }
 
-        // 2. If native sheet didn't run or wasn't available, open Stripe Checkout in a modal Bottom Sheet
-        if (!paymentCompleted && paymentUrl != null && paymentUrl.isNotEmpty) {
-          if (!mounted) return;
-          final isPaid = await StripeCheckoutBottomSheet.show(
-            context: context,
-            paymentUrl: paymentUrl,
-            orderId: orderNumber,
-            title: 'Stripe Secure Checkout',
+        bool paymentCompleted = false;
+        try {
+          if (publishableKey != null && publishableKey.isNotEmpty) {
+            await StripeService.instance.init(publishableKey: publishableKey);
+          }
+          paymentCompleted = await StripeService.instance.presentOfficialPaymentSheet(
+            clientSecret: clientSecret,
+            merchantDisplayName: 'Openbox Marketplace',
           );
-          paymentCompleted = isPaid == true;
+        } catch (e) {
+          if (!mounted) return;
+          AppSnackbar.showError(
+            context,
+            'Stripe payment failed: ${e.toString().replaceAll("Exception: ", "")}',
+          );
+          return;
         }
 
         if (paymentCompleted) {
@@ -144,7 +157,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           );
         } else {
           if (!mounted) return;
-          AppSnackbar.showError(context, 'Payment was not completed. Your order remains pending.');
+          AppSnackbar.showError(context, 'Payment was cancelled. Your order remains pending.');
         }
         return;
       }
@@ -210,15 +223,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().user;
     final addressProvider = context.watch<AddressProvider>();
-
-    if (user != null && addressProvider.addresses.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        addressProvider.syncWithUser(user.name, user.phone);
-      });
-    }
-
     final addresses = addressProvider.addresses;
     final activeAddress = _selectedAddress != null && addresses.any((a) => a.id == _selectedAddress!.id)
         ? _selectedAddress!
@@ -231,14 +236,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final total = subtotal + shipping;
     final isLoading = orderProvider.isLoading;
 
-    final availableMethods = orderProvider.paymentMethods.isNotEmpty
-        ? orderProvider.paymentMethods
+    final activePaymentGateways = orderProvider.paymentMethods
+        .where((m) => m['enabled'] == true)
+        .toList();
+    final methodsToShow = activePaymentGateways.isNotEmpty
+        ? activePaymentGateways
         : [
             {'id': 'cod', 'name': 'Cash on Delivery', 'enabled': true},
-            {'id': 'manual_bank', 'name': 'Manual Bank Transfer', 'enabled': true},
-            {'id': 'stripe', 'name': 'Card (Stripe)', 'enabled': true},
-            {'id': 'paypal', 'name': 'PayPal', 'enabled': true},
           ];
+
+    if (!methodsToShow.any((m) => m['id'] == _payment)) {
+      _payment = methodsToShow.first['id']?.toString() ?? 'cod';
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
@@ -264,7 +273,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Text('Please add your shipping address to proceed', style: TextStyle(fontSize: 11, color: AppColors.slate500)),
                   const SizedBox(height: AppSpacing.sm),
                   ElevatedButton.icon(
-                    onPressed: () => AddAddressModal.show(context),
+                    onPressed: () => _openAddAddressModal(),
                     icon: const Icon(Icons.add_location_alt_outlined, size: 16),
                     label: const Text('Add Delivery Address', style: TextStyle(fontSize: 12)),
                     style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
@@ -278,17 +287,49 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 address: address,
                 selected: activeAddress != null && address.id == activeAddress.id,
                 onTap: () => setState(() => _selectedAddress = address),
+                onEdit: () => _openAddAddressModal(initialAddress: address),
               ),
             ),
             TextButton.icon(
-              onPressed: () => AddAddressModal.show(context),
+              onPressed: () => _openAddAddressModal(),
               icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Add new address'),
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
           const _SectionTitle('Payment Method'),
-          ...availableMethods.map((m) {
+          Container(
+            margin: const EdgeInsets.only(bottom: AppSpacing.md),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: orderProvider.isMultiVendor ? AppColors.brand50 : AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              border: Border.all(color: orderProvider.isMultiVendor ? AppColors.brand200 : AppColors.slate200),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  orderProvider.isMultiVendor ? Icons.shield_outlined : Icons.storefront_outlined,
+                  size: 16,
+                  color: orderProvider.isMultiVendor ? AppColors.brand700 : AppColors.slate500,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    orderProvider.isMultiVendor
+                        ? 'Multi-Store Cart — Processed via Platform Central Gateway'
+                        : 'Store Gateway: ${orderProvider.vendorName}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: orderProvider.isMultiVendor ? AppColors.brand800 : AppColors.slate700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ...methodsToShow.map((m) {
             final id = m['id']?.toString() ?? 'cod';
             final title = switch (id) {
               'manual_bank' => 'Manual Bank Transfer',
@@ -315,7 +356,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               subtitle: subtitle,
               icon: icon,
               selected: _payment == id,
-              enabled: m['enabled'] != false,
+              enabled: true,
               onTap: () => setState(() => _payment = id),
             );
           }),
@@ -377,10 +418,17 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _AddressTile extends StatelessWidget {
-  const _AddressTile({required this.address, required this.selected, required this.onTap});
+  const _AddressTile({
+    required this.address,
+    required this.selected,
+    required this.onTap,
+    this.onEdit,
+  });
+
   final Address address;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +472,7 @@ class _AddressTile extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.slate500),
-                onPressed: () => AddAddressModal.show(context, initialAddress: address),
+                onPressed: onEdit ?? () => AddAddressModal.show(context, initialAddress: address),
               ),
             ],
           ),

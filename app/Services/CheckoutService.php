@@ -26,10 +26,45 @@ class CheckoutService
     ) {}
 
     /**
-     * Payment methods usable for the whole order: the intersection of what
-     * every seller group in the cart accepts. Stripe/PayPal are left out
-     * entirely until real gateway credentials make them functional — only
-     * Cash on Delivery and Manual Bank Transfer can actually settle today.
+     * Active payment methods enabled on the central Admin platform gateway.
+     */
+    public function platformMethods(): array
+    {
+        $settings = $this->settingsService;
+
+        $platformStripeEnabled = ($settings->get('stripe_enabled') === '1' || filled(config('services.stripe.secret')))
+            && ($settings->has('stripe_secret_key') || filled(config('services.stripe.secret')));
+
+        $platformPaypalEnabled = ($settings->get('paypal_enabled') === '1' || filled(config('services.paypal.client_secret')))
+            && ($settings->has('paypal_client_secret') || filled(config('services.paypal.client_secret')));
+
+        $platformBankEnabled = filled($settings->get('bank_details'));
+
+        $methods = [PaymentMethod::Cod];
+
+        if ($platformStripeEnabled) {
+            $methods[] = PaymentMethod::Stripe;
+        }
+
+        if ($platformPaypalEnabled) {
+            $methods[] = PaymentMethod::Paypal;
+        }
+
+        if ($platformBankEnabled) {
+            $methods[] = PaymentMethod::ManualBank;
+        }
+
+        return $methods;
+    }
+
+    /**
+     * Determine which payment methods are offered at checkout.
+     *
+     * - Multi-vendor cart (items from 2+ sellers): Customer always pays through
+     *   the central Admin Platform Gateway. Platform settles seller wallets.
+     * - Single-vendor cart (items from 1 seller): Show that seller's active
+     *   gateways (from VendorPaymentSetting). If none configured, fall back to
+     *   Admin platform gateway.
      *
      * @return array<int, PaymentMethod>
      */
@@ -38,17 +73,53 @@ class CheckoutService
         $groups = $this->cartService->groupedBySeller($cart);
 
         if ($groups === []) {
-            return [];
+            return $this->platformMethods();
         }
 
-        $perGroup = array_map(
-            fn (array $group) => array_map(fn (PaymentMethod $m) => $m->value, $this->methodsForGroup($group)),
-            $groups,
-        );
+        // Multi-vendor cart: route through Admin Platform Gateway
+        if (count($groups) > 1) {
+            return $this->platformMethods();
+        }
 
-        $common = array_intersect(...$perGroup);
+        // Single-vendor cart
+        return $this->methodsForGroup($groups[0]);
+    }
 
-        return array_map(fn (string $value) => PaymentMethod::from($value), array_values($common));
+    /**
+     * @return array<int, PaymentMethod>
+     */
+    public function methodsForSeller(?\App\Models\User $seller): array
+    {
+        $platformMethods = $this->platformMethods();
+
+        if (! $seller || $seller->isAdmin()) {
+            return $platformMethods;
+        }
+
+        $settings = $seller->paymentSettings;
+        if (! $settings) {
+            return $platformMethods;
+        }
+
+        $vendorMethods = [];
+        if ($settings->cod_enabled) {
+            $vendorMethods[] = PaymentMethod::Cod;
+        }
+        if ($settings->stripe_enabled && $settings->hasStripeConnected()) {
+            $vendorMethods[] = PaymentMethod::Stripe;
+        }
+        if ($settings->paypal_enabled && $settings->hasPaypalConnected()) {
+            $vendorMethods[] = PaymentMethod::Paypal;
+        }
+        if ($settings->manual_bank_enabled && filled($settings->bank_details)) {
+            $vendorMethods[] = PaymentMethod::ManualBank;
+        }
+
+        if ($vendorMethods !== []) {
+            return array_values(array_unique($vendorMethods, SORT_REGULAR));
+        }
+
+        return $platformMethods;
     }
 
     /**
@@ -56,54 +127,11 @@ class CheckoutService
      */
     private function methodsForGroup(array $group): array
     {
-        $platformStripeEnabled = $this->settingsService->get('stripe_enabled') === '1'
-            || (filled($this->settingsService->get('stripe_publishable_key')) && $this->settingsService->has('stripe_secret_key'))
-            || (filled(config('services.stripe.key')) && filled(config('services.stripe.secret')));
-
-        $platformPaypalEnabled = $this->settingsService->get('paypal_enabled') === '1'
-            || (filled($this->settingsService->get('paypal_client_id')) && $this->settingsService->has('paypal_client_secret'))
-            || filled(config('services.paypal.client_id'));
-
-        $platformBankEnabled = filled($this->settingsService->get('bank_details'));
-
         if ($group['route'] === 'openbox' || $group['seller']->isAdmin()) {
-            $methods = [PaymentMethod::Cod];
-
-            if ($platformStripeEnabled) {
-                $methods[] = PaymentMethod::Stripe;
-            }
-
-            if ($platformPaypalEnabled) {
-                $methods[] = PaymentMethod::Paypal;
-            }
-
-            if ($platformBankEnabled) {
-                $methods[] = PaymentMethod::ManualBank;
-            }
-
-            return $methods;
+            return $this->platformMethods();
         }
 
-        $settings = $group['seller']->paymentSettings;
-        $vendorStripeEnabled = $settings ? (bool) $settings->stripe_enabled : false;
-        $vendorPaypalEnabled = $settings ? (bool) $settings->paypal_enabled : false;
-        $vendorBankEnabled = $settings && $settings->manual_bank_enabled && filled($settings->bank_details);
-
-        $methods = [PaymentMethod::Cod];
-
-        if ($vendorStripeEnabled || $platformStripeEnabled) {
-            $methods[] = PaymentMethod::Stripe;
-        }
-
-        if ($vendorPaypalEnabled || $platformPaypalEnabled) {
-            $methods[] = PaymentMethod::Paypal;
-        }
-
-        if ($vendorBankEnabled || $platformBankEnabled) {
-            $methods[] = PaymentMethod::ManualBank;
-        }
-
-        return array_values(array_unique($methods, SORT_REGULAR));
+        return $this->methodsForSeller($group['seller']);
     }
 
     /**

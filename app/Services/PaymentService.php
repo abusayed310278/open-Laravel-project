@@ -106,16 +106,25 @@ class PaymentService
         return $submission;
     }
 
-    public function confirmCodCollected(VendorOrder $vendorOrder): void
+    public function confirmPayment(VendorOrder $vendorOrder, string $provider = 'stripe'): void
     {
         Transaction::query()
             ->where('vendor_order_id', $vendorOrder->id)
             ->where('status', TransactionStatus::Pending)
-            ->update(['status' => TransactionStatus::Completed]);
+            ->update([
+                'status' => TransactionStatus::Completed,
+                'provider' => $provider,
+            ]);
 
         $this->invoiceService->markPaid($vendorOrder);
         $this->commissionService->recordSaleForVendorOrder($vendorOrder);
 
+        ActivityLog::record('payment.confirmed', $vendorOrder, ['provider' => $provider]);
+    }
+
+    public function confirmCodCollected(VendorOrder $vendorOrder): void
+    {
+        $this->confirmPayment($vendorOrder, 'cod');
         ActivityLog::record('payment.cod_collected', $vendorOrder);
     }
 

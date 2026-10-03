@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../data/models/address.dart';
 import '../../providers/address_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class AddAddressModal extends StatefulWidget {
   const AddAddressModal({super.key, this.initialAddress});
@@ -46,11 +47,12 @@ class _AddAddressModalState extends State<AddAddressModal> {
       _phoneController = TextEditingController(text: addr.phone);
       _isDefault = addr.isDefault;
     } else {
-      _labelController = TextEditingController();
-      _recipientController = TextEditingController();
+      final user = context.read<AuthProvider>().user;
+      _labelController = TextEditingController(text: 'Home');
+      _recipientController = TextEditingController(text: user?.name ?? '');
       _line1Controller = TextEditingController();
-      _cityController = TextEditingController();
-      _phoneController = TextEditingController();
+      _cityController = TextEditingController(text: 'Doha, Qatar');
+      _phoneController = TextEditingController(text: user?.phone ?? '');
       _isDefault = false;
     }
   }
@@ -65,7 +67,7 @@ class _AddAddressModalState extends State<AddAddressModal> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final label = _labelController.text.trim();
     final recipient = _recipientController.text.trim();
     final line1 = _line1Controller.text.trim();
@@ -80,7 +82,7 @@ class _AddAddressModalState extends State<AddAddressModal> {
     final addrProvider = context.read<AddressProvider>();
 
     if (widget.initialAddress != null) {
-      addrProvider.updateAddress(
+      await addrProvider.updateAddress(
         id: widget.initialAddress!.id,
         label: label,
         recipient: recipient,
@@ -89,9 +91,10 @@ class _AddAddressModalState extends State<AddAddressModal> {
         phone: phone,
         isDefault: _isDefault,
       );
+      if (!mounted) return;
       AppSnackbar.showSuccess(context, 'Address updated successfully!');
     } else {
-      addrProvider.addAddress(
+      await addrProvider.addAddress(
         label: label,
         recipient: recipient,
         line1: line1,
@@ -99,10 +102,13 @@ class _AddAddressModalState extends State<AddAddressModal> {
         phone: phone,
         isDefault: _isDefault,
       );
+      if (!mounted) return;
       AppSnackbar.showSuccess(context, 'New address added successfully!');
     }
 
-    Navigator.of(context).pop();
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override

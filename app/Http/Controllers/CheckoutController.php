@@ -63,11 +63,7 @@ class CheckoutController extends Controller
         $order = $this->checkout->placeOrder($user, $cart, $shipping, $billing, PaymentMethod::from($request->string('payment_method')->value()));
 
         if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
-            $firstVendor = $order->vendorOrders()->with('vendor.paymentSettings')->first()?->vendor;
-            $vendorStripeKey = $firstVendor?->paymentSettings?->stripe_secret_key;
-            $secretKey = filled($vendorStripeKey)
-                ? $vendorStripeKey
-                : (app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret'));
+            $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
 
             if (filled($secretKey)) {
                 try {
@@ -120,7 +116,7 @@ class CheckoutController extends Controller
         $this->authorizeOrderAccess($order);
 
         foreach ($order->vendorOrders as $vendorOrder) {
-            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+            app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
         }
 
         return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');
@@ -131,7 +127,7 @@ class CheckoutController extends Controller
         $this->authorizeOrderAccess($order);
 
         foreach ($order->vendorOrders as $vendorOrder) {
-            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+            app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
         }
 
         return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');

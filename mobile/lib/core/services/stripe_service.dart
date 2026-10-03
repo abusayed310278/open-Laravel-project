@@ -6,7 +6,7 @@ class StripeService {
   static final StripeService instance = StripeService._();
 
   static const String defaultPublishableKey =
-      'pk_live_51QypHVDzVjBx8VzWZawVtIspqfkYgUClj7kUDn9TUVXFpXFl2YWJZRYLjW1p5GV421bTHhsPUXtXy199xM7fPSek00GOGAroYH';
+      'pk_test_51QnbuSG6FK9ALYTJmBbkh4tuJAjLpbyXHz0JpOQ39EFKUpRLgbR8RD3FOAWqyQCNTDOaAsOIYaC8ViAn3qR26pvB00ndaNU8QY';
 
   bool _initialized = false;
 

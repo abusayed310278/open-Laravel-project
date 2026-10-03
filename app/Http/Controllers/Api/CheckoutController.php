@@ -27,56 +27,95 @@ class CheckoutController extends Controller
     public function availablePaymentMethods(Request $request): JsonResponse
     {
         $user = $request->user();
+        $cartModel = null;
+
         if ($user) {
             $cartModel = $this->cart->forUser($user);
-        if ($cartModel->items()->count() === 0 && $request->filled('items') && is_array($request->input('items'))) {
-            foreach ($request->input('items') as $it) {
-                $pid = $it['product_id'] ?? null;
-                $qty = (int) ($it['quantity'] ?? 1);
-                if ($pid && ($prod = \App\Models\Product::find($pid))) {
-                    $this->cart->add($user, $prod, $qty);
+            if ($cartModel->items()->count() === 0 && $request->filled('items') && is_array($request->input('items'))) {
+                foreach ($request->input('items') as $it) {
+                    $pid = $it['product_id'] ?? null;
+                    $qty = (int) ($it['quantity'] ?? 1);
+                    if ($pid && ($prod = \App\Models\Product::find($pid))) {
+                        $this->cart->add($user, $prod, $qty);
+                    }
                 }
+                $cartModel = $this->cart->forUser($user);
             }
-            $cartModel = $this->cart->forUser($user);
         }
+
+        $isMultiVendor = false;
+        $vendorName = 'Openbox Platform';
+        $available = null;
+
+        if ($request->filled('items') && is_array($request->input('items'))) {
+            $productIds = collect($request->input('items'))->pluck('product_id')->filter()->all();
+            $products = \App\Models\Product::with(['user.businessProfile', 'user.salerProfile', 'user.paymentSettings'])
+                ->whereIn('id', $productIds)
+                ->get();
+            $sellerIds = $products->pluck('user_id')->unique()->values()->all();
+            $isMultiVendor = count($sellerIds) > 1;
+
+            if (! $isMultiVendor && count($sellerIds) === 1) {
+                $seller = $products->first()?->user;
+                $vendorName = $seller?->businessProfile?->business_name
+                    ?? $seller?->salerProfile?->display_name
+                    ?? $seller?->name
+                    ?? 'Store Owner';
+                $available = $this->checkout->methodsForSeller($seller);
+            } else {
+                $available = $this->checkout->platformMethods();
+            }
+        } elseif ($cartModel && $cartModel->items()->exists()) {
+            $groups = $this->cart->groupedBySeller($cartModel);
+            $isMultiVendor = count($groups) > 1;
+            if (! $isMultiVendor && count($groups) === 1) {
+                $seller = $groups[0]['seller'];
+                $vendorName = $seller?->businessProfile?->business_name
+                    ?? $seller?->salerProfile?->display_name
+                    ?? $seller?->name
+                    ?? 'Store Owner';
+            }
             $available = $this->checkout->availablePaymentMethods($cartModel);
-            $availableValues = array_map(fn (PaymentMethod $m) => $m->value, $available);
+        } else {
+            $available = $this->checkout->platformMethods();
+        }
 
-            $allMethods = [
-                [
-                    'id' => 'cod',
-                    'name' => 'Cash on Delivery',
-                    'enabled' => in_array('cod', $availableValues, true),
-                ],
-                [
-                    'id' => 'manual_bank',
-                    'name' => 'Manual Bank Transfer',
-                    'enabled' => in_array('manual_bank', $availableValues, true),
-                ],
-                [
-                    'id' => 'stripe',
-                    'name' => 'Card (Stripe)',
-                    'enabled' => in_array('stripe', $availableValues, true),
-                ],
-                [
-                    'id' => 'paypal',
-                    'name' => 'PayPal',
-                    'enabled' => in_array('paypal', $availableValues, true),
-                ],
+        $availableValues = array_map(fn (PaymentMethod $m) => $m->value, $available);
+
+        $activeMethods = [];
+        if (in_array('cod', $availableValues, true)) {
+            $activeMethods[] = [
+                'id' => 'cod',
+                'name' => 'Cash on Delivery',
+                'enabled' => true,
             ];
-
-            return response()->json([
-                'payment_methods' => $allMethods,
-            ]);
+        }
+        if (in_array('manual_bank', $availableValues, true)) {
+            $activeMethods[] = [
+                'id' => 'manual_bank',
+                'name' => 'Manual Bank Transfer',
+                'enabled' => true,
+            ];
+        }
+        if (in_array('stripe', $availableValues, true)) {
+            $activeMethods[] = [
+                'id' => 'stripe',
+                'name' => 'Card (Stripe)',
+                'enabled' => true,
+            ];
+        }
+        if (in_array('paypal', $availableValues, true)) {
+            $activeMethods[] = [
+                'id' => 'paypal',
+                'name' => 'PayPal',
+                'enabled' => true,
+            ];
         }
 
         return response()->json([
-            'payment_methods' => [
-                ['id' => 'cod', 'name' => 'Cash on Delivery', 'enabled' => true],
-                ['id' => 'manual_bank', 'name' => 'Manual Bank Transfer', 'enabled' => true],
-                ['id' => 'stripe', 'name' => 'Card (Stripe)', 'enabled' => true],
-                ['id' => 'paypal', 'name' => 'PayPal', 'enabled' => true],
-            ],
+            'is_multivendor' => $isMultiVendor,
+            'vendor_name' => $vendorName,
+            'payment_methods' => $activeMethods,
         ]);
     }
 
@@ -154,12 +193,18 @@ class CheckoutController extends Controller
         $stripeData = null;
 
         if ($paymentMethod === PaymentMethod::Stripe) {
-            $firstVendor = $order->vendorOrders()->with('vendor.paymentSettings')->first()?->vendor;
-            $vendorStripeKey = $firstVendor?->paymentSettings?->stripe_secret_key;
-            $secretKey = filled($vendorStripeKey)
-                ? $vendorStripeKey
-                : (app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret'));
-            $publishableKey = config('services.stripe.key');
+            $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
+            $publishableKey = app(SettingsService::class)->get('stripe_publishable_key') ?: config('services.stripe.key');
+
+            // If single vendor order, check if seller has custom Stripe connected
+            if ($order->vendorOrders->count() === 1) {
+                $singleSeller = $order->vendorOrders->first()?->seller;
+                $vendorSetting = $singleSeller?->paymentSettings;
+                if ($vendorSetting && $vendorSetting->stripe_enabled && $vendorSetting->hasStripeConnected()) {
+                    $secretKey = $vendorSetting->stripe_secret_key;
+                    $publishableKey = $vendorSetting->stripe_publishable_key;
+                }
+            }
 
             if (filled($secretKey)) {
                 // 1. Create Stripe PaymentIntent for native mobile Stripe PaymentSheet
@@ -256,7 +301,7 @@ class CheckoutController extends Controller
         }
 
         foreach ($order->vendorOrders as $vendorOrder) {
-            app(PaymentService::class)->confirmCodCollected($vendorOrder);
+            app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
         }
 
         return response()->json([

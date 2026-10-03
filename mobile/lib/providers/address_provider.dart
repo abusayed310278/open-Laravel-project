@@ -1,13 +1,12 @@
 import 'package:flutter/foundation.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_config.dart';
-import '../data/mock/mock_data.dart';
 import '../data/models/address.dart';
 
 class AddressProvider extends ChangeNotifier {
   final ApiClient _apiClient;
 
-  List<Address> _addresses = List.from(MockData.addresses);
+  List<Address> _addresses = [];
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -25,19 +24,9 @@ class AddressProvider extends ChangeNotifier {
     );
   }
 
-  void syncWithUser(String userName, String? userPhone) {
-    if (_addresses.isEmpty && userName.trim().isNotEmpty) {
-      _addresses.add(Address(
-        id: 'addr_default',
-        label: 'Home',
-        recipient: userName,
-        line1: 'Zone 45, Street 12, Villa 7',
-        city: 'Doha, Qatar',
-        phone: (userPhone != null && userPhone.trim().isNotEmpty) ? userPhone.trim() : '+974 5555 1234',
-        isDefault: true,
-      ));
-      notifyListeners();
-    }
+  void clear() {
+    _addresses = [];
+    notifyListeners();
   }
 
   Future<void> fetchAddresses() async {
@@ -49,7 +38,7 @@ class AddressProvider extends ChangeNotifier {
       final response = await _apiClient.get(ApiConfig.addresses);
       if (response is Map<String, dynamic> && response.containsKey('addresses')) {
         final list = response['addresses'] as List;
-        final fetched = list.map((item) {
+        _addresses = list.map((item) {
           return Address(
             id: item['id']?.toString() ?? '',
             label: item['label']?.toString() ?? 'Home',
@@ -60,9 +49,6 @@ class AddressProvider extends ChangeNotifier {
             isDefault: item['is_default'] == true,
           );
         }).toList();
-        if (fetched.isNotEmpty) {
-          _addresses = fetched;
-        }
       }
     } catch (_) {
       // Retain existing addresses if unauthenticated or offline

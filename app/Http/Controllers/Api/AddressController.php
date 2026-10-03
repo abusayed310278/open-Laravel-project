@@ -79,6 +79,57 @@ class AddressController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'label' => ['nullable', 'string', 'max:50'],
+            'recipient' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+            'line1' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:120'],
+            'state' => ['nullable', 'string', 'max:120'],
+            'country' => ['nullable', 'string', 'max:120'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'is_default' => ['nullable', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        $address = $user->addresses()->findOrFail($id);
+
+        $isDefault = $request->boolean('is_default');
+        if ($isDefault) {
+            $user->addresses()->where('id', '!=', $id)->update(['is_default' => false]);
+        }
+
+        $address->update([
+            'label' => $validated['label'] ?? $address->label ?? 'Home',
+            'name' => $validated['recipient'],
+            'phone' => $validated['phone'],
+            'line1' => $validated['line1'],
+            'city' => $validated['city'],
+            'state' => $validated['state'] ?? $address->state ?? 'Doha',
+            'country' => $validated['country'] ?? $address->country ?? 'Qatar',
+            'postal_code' => $validated['postal_code'] ?? $address->postal_code ?? '00000',
+            'is_default' => $isDefault ? true : $address->is_default,
+        ]);
+
+        return response()->json([
+            'message' => 'Address updated successfully',
+            'address' => [
+                'id' => (string) $address->id,
+                'label' => $address->label,
+                'recipient' => $address->name,
+                'phone' => $address->phone,
+                'line1' => $address->line1,
+                'city' => $address->city,
+                'state' => $address->state,
+                'country' => $address->country,
+                'postal_code' => $address->postal_code,
+                'is_default' => (bool) $address->is_default,
+            ],
+        ]);
+    }
+
     public function setDefault(Request $request, int $id): JsonResponse
     {
         $user = $request->user();
