@@ -7,18 +7,34 @@
         <x-alert type="success" class="mb-5">{{ $value }}</x-alert>
     @endsession
 
+    {{-- Top Section Navigation Tabs --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+        <div class="inline-flex p-1 bg-gray-100 rounded-xl gap-1 text-xs font-semibold">
+            <span class="px-3.5 py-1.5 rounded-lg bg-white text-gray-900 shadow-xs inline-flex items-center gap-1.5">
+                <span>Blog Posts</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-[10px] font-bold">{{ \App\Models\Post::count() }}</span>
+            </span>
+            <a href="{{ route('admin.blog-categories.index') }}" class="px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/60 transition">
+                Blog Categories
+            </a>
+            <a href="{{ route('admin.blog.comments.index') }}" class="px-3.5 py-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-white/60 transition inline-flex items-center gap-1.5">
+                <span>Blog Comments</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-[10px] font-bold">{{ \App\Models\BlogComment::count() }}</span>
+            </a>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.blog-categories.index') }}" class="text-xs font-semibold text-gray-600 hover:text-brand-600 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-200 transition">
+                Manage Categories
+            </a>
+            <x-button as="a" :href="route('admin.blog.create')" class="text-xs py-1.5 px-3 font-semibold">
+                + New Post
+            </x-button>
+        </div>
+    </div>
+
     <x-card>
         <x-slot:title>Blog Posts</x-slot:title>
-        <x-slot:action>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.blog-categories.index') }}" class="text-xs font-semibold text-gray-600 hover:text-brand-600 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-200 transition">
-                    Manage Categories
-                </a>
-                <x-button as="a" :href="route('admin.blog.create')" class="text-xs py-1.5 px-3 font-semibold">
-                    + New Post
-                </x-button>
-            </div>
-        </x-slot:action>
 
         <x-table :headers="['Title', 'Category', 'Author', 'Status', 'Published', 'Actions']" id="admin-posts-table">
             @forelse ($posts as $post)

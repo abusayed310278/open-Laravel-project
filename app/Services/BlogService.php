@@ -29,7 +29,7 @@ class BlogService
     /**
      * @param  array<string, mixed>  $data
      */
-    public function update(Post $post, array $data, ?UploadedFile $image, ?string $tags): Post
+    public function update(Post $post, array $data, ?UploadedFile $image, ?string $tags, bool $removeImage = false): Post
     {
         if ($image) {
             if ($post->featured_image) {
@@ -37,6 +37,9 @@ class BlogService
             }
 
             $data['featured_image'] = \App\Helpers\FileUploadHelper::store($image, 'blog');
+        } elseif ($removeImage && $post->featured_image) {
+            \App\Support\MediaUrl::delete($post->featured_image);
+            $data['featured_image'] = null;
         }
 
         $post->update($data);

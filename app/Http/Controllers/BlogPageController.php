@@ -27,14 +27,18 @@ class BlogPageController extends Controller
     {
         abort_unless($post->status->value === 'published', 404);
 
+        $related = Post::query()
+            ->published()
+            ->where('id', '!=', $post->id)
+            ->with(['category', 'author'])
+            ->when($post->category_id, fn ($q) => $q->orderByRaw('CASE WHEN category_id = ? THEN 0 ELSE 1 END', [$post->category_id]))
+            ->latest('published_at')
+            ->limit(3)
+            ->get();
+
         return view('pages.blog.show', [
-            'post' => $post->load(['category', 'author', 'tags']),
-            'related' => Post::query()
-                ->published()
-                ->where('category_id', $post->category_id)
-                ->where('id', '!=', $post->id)
-                ->limit(3)
-                ->get(),
+            'post' => $post->load(['category', 'author', 'tags', 'approvedComments.user']),
+            'related' => $related,
         ]);
     }
 }

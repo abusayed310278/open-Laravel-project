@@ -60,6 +60,7 @@ class PostController extends Controller
             $request->safe()->except(['featured_image', 'tags']),
             $request->file('featured_image'),
             $request->string('tags')->value() ?: null,
+            $request->boolean('remove_featured_image'),
         );
 
         return redirect()->route('admin.blog.index')->with('status', 'Post updated.');

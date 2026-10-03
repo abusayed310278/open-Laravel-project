@@ -65,6 +65,7 @@
                 'label' => 'Content',
                 'items' => [
                     ['route' => 'admin.blog.index', 'label' => 'Blog', 'icon' => $icon['newspaper']],
+                    ['route' => 'admin.blog.comments.index', 'label' => 'Blog Comments', 'icon' => $icon['chat']],
                     ['route' => 'admin.pages.index', 'label' => 'Pages', 'icon' => $icon['document']],
                     ['route' => 'admin.banners.index', 'label' => 'Banners', 'icon' => $icon['image']],
                     ['route' => 'admin.social-types.index', 'label' => 'Social Types', 'icon' => $icon['share']],

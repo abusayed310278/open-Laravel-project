@@ -14,7 +14,7 @@ class PageController extends Controller
     public function index(): View
     {
         return view('admin.pages.index', [
-            'pages' => Page::query()->latest()->paginate(20),
+            'pages' => Page::query()->orderBy('id')->paginate(20),
         ]);
     }
 

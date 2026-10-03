@@ -30,6 +30,7 @@ class StorePostRequest extends FormRequest
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'string', 'max:500'],
+            'remove_featured_image' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
@@ -50,9 +51,24 @@ class Post extends Model
         return $this->belongsTo(User::class, 'author_id');
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->author();
+    }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'post_tags');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(BlogComment::class, 'post_id');
+    }
+
+    public function approvedComments(): HasMany
+    {
+        return $this->hasMany(BlogComment::class, 'post_id')->approved()->latest();
     }
 
     public function scopePublished(Builder $query): Builder

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\GitSettingsController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\BlogCommentController as AdminBlogCommentController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PaymentVerificationController as AdminPaymentVerificationController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\Admin\WarehouseController as AdminWarehouseController;
 use App\Http\Controllers\Admin\WarehouseLocationController;
 use App\Http\Controllers\Admin\WarehouseProductController;
 use App\Http\Controllers\BlogPageController;
+use App\Http\Controllers\BlogPostCommentController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryPageController;
 use App\Http\Controllers\ChatController;
@@ -103,6 +105,7 @@ Route::get('/seller/{slug}', [StorePageController::class, 'saler'])->name('store
 
 Route::get('/blog', [BlogPageController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post:slug}', [BlogPageController::class, 'show'])->name('blog.show');
+Route::post('/blog/{post:slug}/comments', [BlogPostCommentController::class, 'store'])->name('blog.comments.store');
 Route::get('/p/{page:slug}', [CmsPageController::class, 'show'])->name('pages.show');
 Route::get('/pages/{page:slug}', [CmsPageController::class, 'show']);
 
@@ -556,6 +559,11 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/blog', [AdminPostController::class, 'index'])->name('blog.index');
         Route::get('/blog/create', [AdminPostController::class, 'create'])->name('blog.create');
         Route::post('/blog', [AdminPostController::class, 'store'])->name('blog.store');
+        Route::get('/blog/comments', [AdminBlogCommentController::class, 'index'])->name('blog.comments.index');
+        Route::patch('/blog/comments/{comment}/approve', [AdminBlogCommentController::class, 'approve'])->name('blog.comments.approve');
+        Route::patch('/blog/comments/{comment}/pending', [AdminBlogCommentController::class, 'pending'])->name('blog.comments.pending');
+        Route::patch('/blog/comments/{comment}/spam', [AdminBlogCommentController::class, 'spam'])->name('blog.comments.spam');
+        Route::delete('/blog/comments/{comment}', [AdminBlogCommentController::class, 'destroy'])->name('blog.comments.destroy');
         Route::patch('/blog/{post}/toggle-status', [AdminPostController::class, 'toggleStatus'])->name('blog.toggle-status');
         Route::get('/blog/{post}/edit', [AdminPostController::class, 'edit'])->name('blog.edit');
         Route::put('/blog/{post}', [AdminPostController::class, 'update'])->name('blog.update');

@@ -272,6 +272,107 @@ class CmsPagesSeeder extends Seeder
                 'meta_description' => 'Explore career opportunities and open roles at Openbox.',
                 'status' => ContentStatus::Published,
             ],
+            [
+                'title' => 'Account & Data Deletion Policy',
+                'slug' => 'delete-policy',
+                'content' => '
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-5 rounded-xl bg-rose-50/70 border border-rose-100 text-xs text-rose-950">
+        <strong>Right to Erasure:</strong> Openbox respects your right to control your digital footprint. This Account & Data Deletion Policy explains our transparent process for requesting account closure, the categories of data permanently purged, and the specific statutory records we are legally required to retain.
+    </div>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">1. What Happens When You Request Deletion?</h2>
+        <p>When an account deletion request is approved, Openbox permanently erases your personal profile and anonymizes associated records:</p>
+        
+        <div class="grid sm:grid-cols-2 gap-4 my-3 text-xs">
+            <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl">
+                <span class="font-bold text-emerald-950 block mb-1 text-sm">✅ Permanently Purged & Erased</span>
+                <ul class="space-y-1 text-emerald-900">
+                    <li>• Login credentials, email address & phone number</li>
+                    <li>• Account passwords, auth tokens & active sessions</li>
+                    <li>• Saved delivery addresses and recipient names</li>
+                    <li>• Cart items, wishlist records & search history</li>
+                    <li>• Marketing subscriptions & notification preferences</li>
+                    <li>• Customer support chat logs (after case closure)</li>
+                </ul>
+            </div>
+
+            <div class="p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
+                <span class="font-bold text-amber-950 block mb-1 text-sm">⚖️ Retained for Statutory & Legal Obligations</span>
+                <ul class="space-y-1 text-amber-900">
+                    <li>• <strong>Tax & Invoices:</strong> Completed financial orders, VAT/tax receipts (retained for statutory periods as required by Bangladesh National Board of Revenue).</li>
+                    <li>• <strong>Device Anti-Theft Logs:</strong> IMEI & serial numbers of inspected hardware (anonymized and decoupled from your personal profile to prevent stolen device circulation).</li>
+                    <li>• <strong>Fraud Audit Trails:</strong> Historical escrow records involved in resolved fraud investigations.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">2. Pre-requisites Prior to Deletion Request</h2>
+        <p>To protect buyers, sellers, and open escrow funds, your account must meet the following criteria before deletion can proceed:</p>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-xs">
+            <li><strong>No Active Orders:</strong> All orders must be in completed, cancelled, or refunded status. No packages may be in-transit.</li>
+            <li><strong>No Open Escrow or Dispute Claims:</strong> The 7-day return guarantee period on your recent purchases must be concluded.</li>
+            <li><strong>Zero Wallet Balance:</strong> Sellers and buyers must withdraw all remaining balance from their Openbox Wallet to their bank or mobile financial service (bKash/Nagad).</li>
+            <li><strong>No Active Warehouse Inventory:</strong> Sellers must retrieve or liquidate any physical devices stored in Openbox custody hubs.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">3. How to Submit an Account Deletion Request</h2>
+        <p>You can initiate an account deletion through either of the following verified channels:</p>
+
+        <div class="space-y-3">
+            <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-xs">
+                <h4 class="font-bold text-gray-900 text-sm mb-1">Option A: In-App Self-Service Request</h4>
+                <p class="text-xs text-gray-600 mb-2">
+                    Log in to your Openbox account, go to <strong>Account &rarr; Security Settings</strong>, scroll to the bottom, and select <strong>Request Account Deletion</strong>. You will receive an SMS/Email OTP verification code to confirm your request.
+                </p>
+            </div>
+
+            <div class="p-4 bg-white border border-gray-200 rounded-xl shadow-xs">
+                <h4 class="font-bold text-gray-900 text-sm mb-1">Option B: Direct Email to Privacy Office</h4>
+                <p class="text-xs text-gray-600 mb-2">
+                    Send an email from your registered Openbox email address to <strong>privacy@openbox.com.bd</strong> with the subject line <em>"Account Deletion Request - [Your Registered Phone Number]"</em>. Our team will verify ownership and process your request.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="space-y-3">
+        <h2 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">4. Turnaround Timeline &amp; 14-Day Cooling Period</h2>
+        <p>
+            To safeguard users against accidental deletion or unauthorized account hijacking:
+        </p>
+        <ul class="list-disc list-inside space-y-1 pl-2 text-xs">
+            <li>Upon receiving your verified request, your account is immediately disabled and deactivated from public view.</li>
+            <li>A <strong>14-day cooling-off period</strong> begins. During this window, you may contact support to cancel the deletion if requested by error.</li>
+            <li>After 14 days, our automated data shredding system permanently purges all eligible records. The entire process concludes within <strong>30 calendar days</strong>.</li>
+        </ul>
+    </section>
+
+    <section class="space-y-2 pt-2 border-t border-gray-100">
+        <h3 class="text-base font-bold text-gray-900">Questions or Assistance?</h3>
+        <p class="text-xs text-gray-600">
+            If you need assistance backing up past order receipts or have questions about data retention, please contact our Support Team at <strong>support@openbox.com.bd</strong> or call our customer hotline.
+        </p>
+    </section>
+</div>
+                ',
+                'meta_title' => 'Account & Data Deletion Policy — Openbox Bangladesh',
+                'meta_description' => 'Understand how to request account deletion on Openbox, what data is permanently wiped, what records are retained for legal/tax reasons, and timelines.',
+                'status' => ContentStatus::Published,
+            ],
+            [
+                'title' => 'Blog',
+                'slug' => 'blog',
+                'content' => '<p>Openbox Blog & Articles — Guides, Reviews, and Gadget Insights.</p>',
+                'meta_title' => 'Blog — Openbox',
+                'meta_description' => 'Read our latest tech articles, gadget comparisons, and certified device buying guides.',
+                'status' => ContentStatus::Published,
+            ],
         ];
 
         foreach ($pages as $data) {
