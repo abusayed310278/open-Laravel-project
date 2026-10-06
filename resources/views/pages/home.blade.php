@@ -180,7 +180,7 @@
                         @if ($b->video_url)
                             <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
                         @else
-                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-64 sm:h-80 md:h-[440px] lg:h-[600px] object-contain group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
+                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-48 sm:h-64 md:h-[320px] lg:h-[400px] object-contain group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
                         @endif
                     </a>
                 @endforeach
