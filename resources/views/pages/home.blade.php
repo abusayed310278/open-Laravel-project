@@ -6,7 +6,81 @@
 
     @php $heroImageUrl = \App\Support\MediaUrl::resolve(setting('home_hero_image')); @endphp
 
-    @if (feature_enabled('home_hero_section') && $heroImageUrl)
+    @if (feature_enabled('home_hero_section') && $heroSlides->isNotEmpty())
+        {{-- HERO SLIDER (admin-managed slides, each linking to a product) --}}
+        <section class="w-full bg-white" data-hero-slider>
+            <div data-hero-viewport class="relative overflow-hidden" style="aspect-ratio:3.5/1;">
+                <div data-hero-track style="display:flex;height:100%;transition:transform 700ms ease-in-out;will-change:transform;">
+                @foreach ($heroSlides as $slide)
+                    @php $slideUrl = $slide->product ? route('products.show', $slide->product) : null; @endphp
+                    <div data-hero-slide style="flex:0 0 100%;min-width:0;height:100%;">
+                        @if ($slideUrl)
+                            <a href="{{ $slideUrl }}" title="{{ $slide->product->title }}" class="block" style="height:100%;">
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->product->title }}" class="block" style="width:100%;height:100%;object-fit:contain;">
+                            </a>
+                        @else
+                            <img src="{{ $slide->imageUrl() }}" alt="{{ config('app.name') }}" class="block" style="width:100%;height:100%;object-fit:contain;">
+                        @endif
+                    </div>
+                @endforeach
+                </div>
+
+                @if ($heroSlides->count() > 1)
+                    <button type="button" data-hero-prev aria-label="Previous slide" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white shadow text-gray-900 flex items-center justify-center cursor-pointer">&larr;</button>
+                    <button type="button" data-hero-next aria-label="Next slide" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white shadow text-gray-900 flex items-center justify-center cursor-pointer">&rarr;</button>
+                    <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+                        @foreach ($heroSlides as $slide)
+                            <button type="button" data-hero-dot="{{ $loop->index }}" aria-label="Go to slide {{ $loop->iteration }}" class="w-2.5 h-2.5 rounded-full bg-white/60 cursor-pointer"></button>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </section>
+
+        <script>
+            (() => {
+                const root = document.querySelector('[data-hero-slider]');
+                const viewport = root.querySelector('[data-hero-viewport]');
+                const firstImage = root.querySelector('[data-hero-slide] img');
+                const syncHeight = () => {
+                    if (firstImage.naturalWidth && firstImage.naturalHeight) {
+                        viewport.style.aspectRatio = `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`;
+                    }
+                };
+                firstImage.complete ? syncHeight() : firstImage.addEventListener('load', syncHeight);
+            })();
+        </script>
+
+        @if ($heroSlides->count() > 1)
+            <script>
+                (() => {
+                    const root = document.querySelector('[data-hero-slider]');
+                    const track = root.querySelector('[data-hero-track]');
+                    const slides = root.querySelectorAll('[data-hero-slide]');
+                    const dots = root.querySelectorAll('[data-hero-dot]');
+                    let index = 0;
+                    let timer;
+
+                    const show = (next) => {
+                        index = (next + slides.length) % slides.length;
+                        track.style.transform = `translateX(-${index * 100}%)`;
+                        dots.forEach((el, i) => el.classList.toggle('bg-white', i === index));
+                        dots.forEach((el, i) => el.classList.toggle('bg-white/60', i !== index));
+                    };
+                    const restart = () => {
+                        clearInterval(timer);
+                        timer = setInterval(() => show(index + 1), 5000);
+                    };
+
+                    root.querySelector('[data-hero-prev]').addEventListener('click', () => { show(index - 1); restart(); });
+                    root.querySelector('[data-hero-next]').addEventListener('click', () => { show(index + 1); restart(); });
+                    dots.forEach((el) => el.addEventListener('click', () => { show(Number(el.dataset.heroDot)); restart(); }));
+                    show(0);
+                    restart();
+                })();
+            </script>
+        @endif
+    @elseif (feature_enabled('home_hero_section') && $heroImageUrl)
         {{-- HERO IMAGE (admin-managed) --}}
         <section class="w-full bg-white">
             <img src="{{ $heroImageUrl }}" alt="{{ config('app.name') }}" class="block w-full h-auto">
@@ -69,13 +143,6 @@
     @if (feature_enabled('home_browse_categories'))
         {{-- BROWSE CATEGORIES --}}
         <section class="py-8 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950">Browse Categories</h2>
-                <a href="{{ route('categories.index') }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
-                    <span>View All</span>
-                    <span>→</span>
-                </a>
-            </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
                 @php
@@ -109,11 +176,11 @@
         <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="grid grid-cols-1 md:grid-cols-{{ min($banners->count(), 2) }} gap-6">
                 @foreach ($banners as $b)
-                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 bg-gray-900">
+                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 bg-white">
                         @if ($b->video_url)
                             <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
                         @else
-                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
+                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-64 sm:h-80 md:h-[440px] lg:h-[600px] object-contain group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
                         @endif
                     </a>
                 @endforeach
@@ -134,44 +201,6 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 @foreach ($featuredProducts as $product)
-                    <x-product-card
-                        :id="$product['id'] ?? null"
-                        :title="$product['title']"
-                        :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
-                        :brand="$product['brand']"
-                        :price="$product['price']"
-                        :compare-price="$product['comparePrice'] ?? null"
-                        :rating="$product['rating'] ?? null"
-                        :rating-count="$product['ratingCount'] ?? null"
-                        :seller="$product['seller'] ?? null"
-                        :is-new="$product['isNew'] ?? false"
-                        :key-features="$product['keyFeatures'] ?? []"
-                        :image="$product['image'] ?? null"
-                        :href="$product['href'] ?? '#'"
-                        :is-verified="$product['isVerified'] ?? true"
-                        :is-admin-approved="$product['isAdminApproved'] ?? true"
-                    />
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    @if (feature_enabled('home_refurbished_deals'))
-        {{-- REFURBISHED DEALS --}}
-        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2.5">
-                    <h2 class="text-xl font-bold text-gray-950">⚡ Certified Refurbished</h2>
-                    <span class="bg-gray-50 text-gray-900 text-[11px] font-bold px-2.5 py-1 rounded-md border border-gray-200">Save up to 40%</span>
-                </div>
-                <a href="{{ Route::has('shop') ? route('shop', ['condition' => 'refurbished']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
-                    <span>View All</span>
-                    <span>→</span>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                @foreach ($refurbishedDeals as $product)
                     <x-product-card
                         :id="$product['id'] ?? null"
                         :title="$product['title']"
@@ -246,8 +275,46 @@
                             <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
                             <span class="inline-flex items-center gap-2 mt-4 bg-brand-400 group-hover:bg-brand-500 text-gray-950 text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
                         </div>
-                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 h-full w-2/5 object-contain rounded-lg bg-white/90 p-2 group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 h-full w-2/5 object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300" loading="lazy">
                     </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if (feature_enabled('home_refurbished_deals'))
+        {{-- REFURBISHED DEALS --}}
+        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2.5">
+                    <h2 class="text-xl font-bold text-gray-950">⚡ Certified Refurbished</h2>
+                    <span class="bg-gray-50 text-gray-900 text-[11px] font-bold px-2.5 py-1 rounded-md border border-gray-200">Save up to 40%</span>
+                </div>
+                <a href="{{ Route::has('shop') ? route('shop', ['condition' => 'refurbished']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                    <span>View All</span>
+                    <span>→</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                @foreach ($refurbishedDeals as $product)
+                    <x-product-card
+                        :id="$product['id'] ?? null"
+                        :title="$product['title']"
+                        :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
+                        :brand="$product['brand']"
+                        :price="$product['price']"
+                        :compare-price="$product['comparePrice'] ?? null"
+                        :rating="$product['rating'] ?? null"
+                        :rating-count="$product['ratingCount'] ?? null"
+                        :seller="$product['seller'] ?? null"
+                        :is-new="$product['isNew'] ?? false"
+                        :key-features="$product['keyFeatures'] ?? []"
+                        :image="$product['image'] ?? null"
+                        :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
+                    />
                 @endforeach
             </div>
         </section>

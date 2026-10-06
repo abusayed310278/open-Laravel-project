@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
@@ -18,6 +19,7 @@ class HomeController extends Controller
     {
         $categories = Category::cachedTree()->take(8);
         $banners = Banner::query()->live()->position('homepage')->get();
+        $heroSlides = HeroSlide::query()->active()->with('product')->get();
 
         $allLiveProducts = Product::query()
             ->live()
@@ -157,6 +159,7 @@ class HomeController extends Controller
         return view('pages.home', compact(
             'categories',
             'banners',
+            'heroSlides',
             'featuredProducts',
             'refurbishedDeals',
             'mobileTechProducts',

@@ -8,6 +8,8 @@ use App\Http\Requests\Admin\Settings\UpdateMailRequest;
 use App\Http\Requests\Admin\Settings\UpdatePaymentsRequest;
 use App\Http\Requests\Admin\Settings\UpdateStorageRequest;
 use App\Models\ActivityLog;
+use App\Models\HeroSlide;
+use App\Models\Product;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
@@ -88,6 +90,8 @@ class SettingsController extends Controller
     {
         return view('admin.settings.hero', [
             'heroImage' => $this->settings->get('home_hero_image'),
+            'heroSlides' => HeroSlide::query()->with('product:id,title')->orderBy('sort_order')->orderBy('id')->get(),
+            'products' => Product::query()->live()->orderBy('title')->limit(500)->get(['id', 'title']),
             'hero' => [
                 'badge' => $this->settings->get('home_hero_badge', 'First 3 Months Free for New Vendors'),
                 'title' => $this->settings->get('home_hero_title', 'Premium Electronics'),
@@ -135,6 +139,67 @@ class SettingsController extends Controller
         ActivityLog::record('settings.hero_image.updated');
 
         return back()->with('status', 'Homepage hero image updated successfully.');
+    }
+
+    public function storeHeroSlides(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'slides' => ['required', 'array', 'max:10'],
+            'slides.*' => ['image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+        ]);
+
+        $nextOrder = (int) HeroSlide::query()->max('sort_order') + 1;
+
+        foreach ($request->file('slides') as $file) {
+            HeroSlide::create([
+                'image' => $this->storeUploadedFile($file, 'branding', 'public'),
+                'sort_order' => $nextOrder++,
+            ]);
+        }
+
+        ActivityLog::record('settings.hero_slides.added');
+
+        return back()->with('status', 'Hero slides uploaded. Assign a product to each slide below.');
+    }
+
+    public function updateHeroSlide(Request $request, HeroSlide $heroSlide): RedirectResponse
+    {
+        $data = $request->validate([
+            'image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            'product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        if ($request->hasFile('image')) {
+            if (is_string($heroSlide->image) && Storage::disk('public')->exists($heroSlide->image)) {
+                Storage::disk('public')->delete($heroSlide->image);
+            }
+
+            $heroSlide->image = $this->storeUploadedFile($request->file('image'), 'branding', 'public');
+        }
+
+        $heroSlide->update([
+            'product_id' => $data['product_id'] ?? null,
+            'sort_order' => $data['sort_order'] ?? $heroSlide->sort_order,
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        ActivityLog::record('settings.hero_slides.updated', properties: ['slide' => $heroSlide->id]);
+
+        return back()->with('status', 'Hero slide updated.');
+    }
+
+    public function destroyHeroSlide(HeroSlide $heroSlide): RedirectResponse
+    {
+        if (is_string($heroSlide->image) && Storage::disk('public')->exists($heroSlide->image)) {
+            Storage::disk('public')->delete($heroSlide->image);
+        }
+
+        $heroSlide->delete();
+        ActivityLog::record('settings.hero_slides.removed');
+
+        return back()->with('status', 'Hero slide removed.');
     }
 
     public function removeHeroImage(): RedirectResponse
@@ -293,6 +358,10 @@ class SettingsController extends Controller
 
     public function updateColor(Request $request): RedirectResponse
     {
+        $request->merge([
+            'brand_color_primary' => '#'.ltrim(trim($request->string('brand_color_primary')->value()), '#'),
+        ]);
+
         $request->validate([
             'brand_color_primary' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);

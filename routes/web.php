@@ -352,6 +352,9 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/settings/hero-text', [SettingsController::class, 'updateHeroText'])->name('settings.hero-text.update');
         Route::post('/settings/hero-image', [SettingsController::class, 'updateHeroImage'])->name('settings.hero-image.update');
         Route::delete('/settings/hero-image', [SettingsController::class, 'removeHeroImage'])->name('settings.hero-image.remove');
+        Route::post('/settings/hero-slides', [SettingsController::class, 'storeHeroSlides'])->name('settings.hero-slides.store');
+        Route::put('/settings/hero-slides/{heroSlide}', [SettingsController::class, 'updateHeroSlide'])->name('settings.hero-slides.update');
+        Route::delete('/settings/hero-slides/{heroSlide}', [SettingsController::class, 'destroyHeroSlide'])->name('settings.hero-slides.destroy');
 
         Route::get('/settings/siteicon', [SettingsController::class, 'siteicon'])->name('settings.siteicon');
         Route::post('/settings/siteicon', [SettingsController::class, 'updateSiteicon'])->name('settings.siteicon.update');
