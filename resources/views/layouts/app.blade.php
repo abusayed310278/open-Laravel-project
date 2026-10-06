@@ -14,6 +14,7 @@
     </main>
 
     @include('layouts.partials.public-footer')
+    @include('layouts.partials.toast')
 
 </body>
 </html>

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
+use App\Support\HomeContent;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -46,6 +47,10 @@ class HomeController extends Controller
         $latestProducts = $this->productCards(
             $allLiveProducts->take(8)
         );
+
+        $promoCards = $this->promoCards($allLiveProducts);
+        $whyBuyContent = HomeContent::whyBuy();
+        $newsletter = HomeContent::newsletter();
 
         $whyBuy = [
             [
@@ -157,9 +162,64 @@ class HomeController extends Controller
             'mobileTechProducts',
             'latestProducts',
             'whyBuy',
+            'promoCards',
+            'whyBuyContent',
+            'newsletter',
             'vendors',
             'reviews',
         ));
+    }
+
+    /**
+     * Promo cards with admin-editable copy; the product is the admin's pick, else auto-selected.
+     *
+     * @param  Collection<int, Product>  $liveProducts
+     * @return array<int, array<string, mixed>>
+     */
+    private function promoCards(Collection $liveProducts): array
+    {
+        $cards = HomeContent::promoCards();
+        $autoSlugs = [1 => 'laptops', 2 => 'smartphones'];
+        $used = [];
+
+        foreach ($cards as $number => &$card) {
+            $chosen = $card['product_id'] ? $liveProducts->firstWhere('id', $card['product_id']) : null;
+            $chosen ??= isset($autoSlugs[$number])
+                ? $this->promoProduct($liveProducts, $autoSlugs[$number])
+                : $liveProducts->first(fn (Product $product) => $this->hasRealImage($product) && ! in_array($product->id, $used, true));
+
+            $card['product'] = $chosen;
+            $used[] = $chosen?->id;
+        }
+
+        return $cards;
+    }
+
+    /**
+     * Newest live product (preferring ones with photos) inside a category slug and its descendants.
+     *
+     * @param  Collection<int, Product>  $liveProducts
+     */
+    private function promoProduct(Collection $liveProducts, string $categorySlug): ?Product
+    {
+        $category = Category::query()->where('slug', $categorySlug)->first();
+
+        if (! $category) {
+            return null;
+        }
+
+        $categoryIds = array_merge([$category->id], $category->descendantIds());
+        $matches = $liveProducts->whereIn('category_id', $categoryIds);
+
+        return $matches->first(fn (Product $product) => $this->hasRealImage($product)) ?? $matches->first();
+    }
+
+    /**
+     * True when the product has an uploaded photo (not a remote dummy/placeholder image).
+     */
+    private function hasRealImage(Product $product): bool
+    {
+        return $product->images->contains(fn ($image) => ! str_contains($image->url(), 'loremflickr.com'));
     }
 
     /**

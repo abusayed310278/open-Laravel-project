@@ -972,8 +972,14 @@
                         },
                         body: JSON.stringify({ quantity: 1 })
                     })
-                    .then(res => res.json())
-                    .then(data => {
+                    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+                    .then(({ ok, data }) => {
+                        if (!ok || data.success === false) {
+                            if (window.showToast) window.showToast(data.message || 'Could not add the item to your cart.', 'error');
+                            btn.disabled = false;
+                            if (btnText) btnText.textContent = originalText;
+                            return;
+                        }
                         if (data.cart_count !== undefined) {
                             window.updateCartBadge(data.cart_count);
                         } else {
@@ -981,6 +987,7 @@
                             const current = badge && !badge.classList.contains('hidden') ? parseInt(badge.textContent) || 0 : 0;
                             window.updateCartBadge(current + 1);
                         }
+                        if (window.showToast) window.showToast(data.message || 'Added to your cart.', 'success');
                         if (btnText) btnText.textContent = 'Added!';
                         btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
                         setTimeout(() => {
@@ -991,14 +998,9 @@
                     })
                     .catch(err => {
                         console.error('Cart addition error:', err);
-                        const badge = document.querySelector('.js-cart-badge');
-                        const current = badge && !badge.classList.contains('hidden') ? parseInt(badge.textContent) || 0 : 0;
-                        window.updateCartBadge(current + 1);
-                        if (btnText) btnText.textContent = 'Added!';
-                        setTimeout(() => {
-                            btn.disabled = false;
-                            if (btnText) btnText.textContent = originalText;
-                        }, 1200);
+                        if (window.showToast) window.showToast('Could not add the item to your cart. Please try again.', 'error');
+                        btn.disabled = false;
+                        if (btnText) btnText.textContent = originalText;
                     });
                 } else {
                     // Demo item without DB ID

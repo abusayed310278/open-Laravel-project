@@ -84,6 +84,72 @@ class SettingsController extends Controller
         ]);
     }
 
+    public function hero(): View
+    {
+        return view('admin.settings.hero', [
+            'heroImage' => $this->settings->get('home_hero_image'),
+            'hero' => [
+                'badge' => $this->settings->get('home_hero_badge', 'First 3 Months Free for New Vendors'),
+                'title' => $this->settings->get('home_hero_title', 'Premium Electronics'),
+                'highlight' => $this->settings->get('home_hero_highlight', 'Marketplace'),
+                'subtitle' => $this->settings->get('home_hero_subtitle', 'Certified & graded electronics from verified sellers across Bangladesh. Every pre-owned item inspected, graded, and covered by our Openbox Guarantee.'),
+            ],
+        ]);
+    }
+
+    public function updateHeroText(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'badge' => ['nullable', 'string', 'max:120'],
+            'title' => ['required', 'string', 'max:120'],
+            'highlight' => ['nullable', 'string', 'max:120'],
+            'subtitle' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->settings->setMany([
+            'home_hero_badge' => $data['badge'] ?? '',
+            'home_hero_title' => $data['title'],
+            'home_hero_highlight' => $data['highlight'] ?? '',
+            'home_hero_subtitle' => $data['subtitle'] ?? '',
+        ], 'branding');
+
+        ActivityLog::record('settings.hero_text.updated');
+
+        return back()->with('status', 'Homepage hero text updated successfully.');
+    }
+
+    public function updateHeroImage(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'hero_image' => ['required', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+        ]);
+
+        $oldImage = $this->settings->get('home_hero_image');
+        if (!empty($oldImage) && is_string($oldImage) && Storage::disk('public')->exists($oldImage)) {
+            Storage::disk('public')->delete($oldImage);
+        }
+
+        $path = $this->storeUploadedFile($request->file('hero_image'), 'branding', 'public');
+        $this->settings->set('home_hero_image', $path, 'branding');
+
+        ActivityLog::record('settings.hero_image.updated');
+
+        return back()->with('status', 'Homepage hero image updated successfully.');
+    }
+
+    public function removeHeroImage(): RedirectResponse
+    {
+        $oldImage = $this->settings->get('home_hero_image');
+        if (!empty($oldImage) && is_string($oldImage) && Storage::disk('public')->exists($oldImage)) {
+            Storage::disk('public')->delete($oldImage);
+        }
+
+        $this->settings->set('home_hero_image', null, 'branding');
+        ActivityLog::record('settings.hero_image.removed');
+
+        return back()->with('status', 'Homepage hero image removed.');
+    }
+
     public function updateBanner(Request $request): RedirectResponse
     {
         $request->validate([

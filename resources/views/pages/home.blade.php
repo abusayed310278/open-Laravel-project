@@ -4,27 +4,44 @@
 
 @section('content')
 
-    @if (feature_enabled('home_hero_section'))
+    @php $heroImageUrl = \App\Support\MediaUrl::resolve(setting('home_hero_image')); @endphp
+
+    @if (feature_enabled('home_hero_section') && $heroImageUrl)
+        {{-- HERO IMAGE (admin-managed) --}}
+        <section class="w-full bg-white">
+            <img src="{{ $heroImageUrl }}" alt="{{ config('app.name') }}" class="block w-full h-auto">
+        </section>
+    @elseif (feature_enabled('home_hero_section'))
         {{-- HERO SECTION --}}
         <section class="relative bg-white pt-14 sm:pt-20 pb-14 sm:pb-16 overflow-hidden">
             <div class="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
                 {{-- Top Pill Badge --}}
-                <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200/80 shadow-2xs mb-6">
-                    <svg class="w-4 h-4 text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
-                    <span>First 3 Months Free for New Vendors</span>
-                </div>
+                @php
+                    $heroBadge = setting('home_hero_badge', 'First 3 Months Free for New Vendors');
+                    $heroTitle = setting('home_hero_title') ?: 'Premium Electronics';
+                    $heroHighlight = setting('home_hero_highlight', 'Marketplace');
+                    $heroSubtitle = setting('home_hero_subtitle', 'Certified & graded electronics from verified sellers across Bangladesh. Every pre-owned item inspected, graded, and covered by our Openbox Guarantee.');
+                @endphp
+
+                @if (filled($heroBadge))
+                    <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200/80 shadow-2xs mb-6">
+                        <svg class="w-4 h-4 text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                        <span>{{ $heroBadge }}</span>
+                    </div>
+                @endif
 
                 {{-- Main Headline --}}
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-5">
-                    <span class="block text-[#18182b]">Premium Electronics</span>
-                    <span class="block text-[#b45309]" style="color: rgb(180, 83, 9);">Marketplace</span>
+                    <span class="block text-[#18182b]">{{ $heroTitle }}</span>
+                    @if (filled($heroHighlight))
+                        <span class="block text-[#b45309]" style="color: rgb(180, 83, 9);">{{ $heroHighlight }}</span>
+                    @endif
                 </h1>
 
                 {{-- Subheading --}}
-                <p class="text-gray-500 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-                    Certified &amp; graded electronics from verified sellers across Bangladesh.<br class="hidden sm:inline">
-                    Every pre-owned item inspected, graded, and covered by our Openbox Guarantee.
-                </p>
+                @if (filled($heroSubtitle))
+                    <p class="text-gray-500 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed mb-8">{{ $heroSubtitle }}</p>
+                @endif
 
                 {{-- Popular Keywords (Well-spaced tags) --}}
                 <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
@@ -179,39 +196,66 @@
 
     @if (feature_enabled('home_why_buy'))
         {{-- WHY BUY ON OPENBOX --}}
-        <section class="py-14 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="text-center max-w-2xl mx-auto mb-10">
-                    <h2 class="text-2xl font-extrabold text-gray-950 mb-2">Why Buy on Openbox?</h2>
-                    <p class="text-sm text-gray-500 leading-relaxed">We're not just another marketplace. We guarantee quality, transparency, and trust with every single device.</p>
-                </div>
+        @php
+            $whyBuyStyles = [
+                ['title' => 'Verified Quality', 'text' => 'All products tested and verified', 'bg' => 'bg-amber-100', 'color' => 'text-gray-900', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+                ['title' => 'Fast & Reliable Delivery', 'text' => 'Across Abu Dhabi & UAE', 'bg' => 'bg-orange-100', 'color' => 'text-gray-900', 'icon' => 'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0'],
+                ['title' => 'A More Sustainable Choice', 'text' => 'Give tech a second life', 'bg' => 'bg-green-100', 'color' => 'text-green-600', 'icon' => 'M5 19c0-9 5-14 15-14 0 10-5 15-14 15m-1 1c2-5 5-8 9-10'],
+                ['title' => 'Dedicated Support', 'text' => "We're here to help", 'bg' => 'bg-orange-100', 'color' => 'text-gray-900', 'icon' => 'M4 14v-2a8 8 0 0116 0v2M4 14a2 2 0 012-2h1v6H6a2 2 0 01-2-2v-2zm16 0a2 2 0 00-2-2h-1v6h1a2 2 0 002-2v-2zm-3 6c0 1-2 2-5 2'],
+            ];
+        @endphp
+        <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="w-1 h-4 rounded-full bg-brand-400"></span>
+                <h2 class="text-lg font-bold text-gray-950">{{ $whyBuyContent['heading'] }}</h2>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    @foreach ($whyBuy as $item)
-                        <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-6 text-center shadow-2xs hover:shadow-md transition-all">
-                            <div class="w-12 h-12 mx-auto rounded-xl bg-gray-50 border border-gray-100 text-gray-900 flex items-center justify-center mb-4">
-                                @if (($item['icon'] ?? '') === 'shield')
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                                @elseif (($item['icon'] ?? '') === 'refresh')
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                @elseif (($item['icon'] ?? '') === 'lock')
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                @else
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
-                                @endif
-                            </div>
-                            <h3 class="text-sm font-bold text-gray-900 mb-2">{{ $item['title'] }}</h3>
-                            <p class="text-xs text-gray-500 leading-relaxed">{{ $item['description'] }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                @foreach ($whyBuyStyles as $i => $item)
+                    <div class="bg-white border border-gray-100 rounded-xl px-6 py-5 flex items-center gap-5 shadow-2xs">
+                        <div class="w-14 h-14 shrink-0 rounded-full {{ $item['bg'] }} {{ $item['color'] }} flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $item['icon'] }}" /></svg>
                         </div>
-                    @endforeach
-                </div>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-bold text-gray-900">{{ $whyBuyContent['items'][$i]['title'] }}</h3>
+                            <p class="text-xs text-gray-500 mt-1">{{ $whyBuyContent['items'][$i]['text'] }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if (feature_enabled('home_why_buy') && collect($promoCards)->contains(fn ($card) => $card['product']))
+        {{-- PRODUCT PROMO CARDS (real products, admin-editable text) --}}
+        @php
+            $promoStyles = [
+                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug'],
+                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight'],
+                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug'],
+            ];
+        @endphp
+        <section class="pb-6 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                @foreach ($promoCards as $n => $card)
+                    @continue(! $card['product'])
+                    @php $style = $promoStyles[$n]; @endphp
+                    <a href="{{ route('products.show', $card['product']) }}" title="{{ $card['product']->title }}" class="group relative flex items-center justify-between gap-3 h-44 rounded-xl overflow-hidden px-6 py-5 bg-gradient-to-br {{ $style['wrap'] }} shadow-2xs hover:shadow-lg transition-shadow">
+                        <div class="relative z-10 max-w-[55%]">
+                            <h3 class="text-xl font-extrabold leading-tight">{!! nl2br(e($card['title'])) !!}</h3>
+                            <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
+                            <span class="inline-flex items-center gap-2 mt-4 bg-brand-400 group-hover:bg-brand-500 text-gray-950 text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
+                        </div>
+                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 h-full w-2/5 object-contain rounded-lg bg-white/90 p-2 group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                    </a>
+                @endforeach
             </div>
         </section>
     @endif
 
     @if (feature_enabled('home_openbox_guarantee'))
         {{-- THE OPENBOX BUYER ADVANTAGE --}}
-        <section class="py-14 bg-white border-t border-gray-100">
+        <section class="py-14 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10">
                     <h2 class="text-2xl font-extrabold text-gray-950 mb-2">The Openbox Guarantee</h2>
@@ -456,23 +500,30 @@
 
     @if (feature_enabled('home_newsletter'))
         {{-- STAY UPDATED (NEWSLETTER) --}}
-        <section class="py-14 bg-white border-t border-gray-100">
-            <div class="max-w-xl mx-auto px-4 sm:px-6 text-center">
-                <h2 class="text-2xl font-black text-gray-950 mb-2">Stay Updated</h2>
-                <p class="text-xs sm:text-sm text-gray-500 mb-6">Get the latest drops, price drops, and verified electronics deals straight to your inbox.</p>
+        <section class="pt-8 pb-5 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="rounded-lg bg-gradient-to-r from-brand-300 to-brand-400 px-6 sm:px-10 py-5 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-10">
+                <div class="flex items-center gap-4 lg:w-5/12">
+                    <svg class="w-10 h-10 text-gray-950 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 0l9 6 9-6" /></svg>
+                    <div>
+                        <h2 class="text-lg font-extrabold text-gray-950 leading-tight">{{ $newsletter['title'] }}</h2>
+                        <p class="text-xs text-gray-900/80">{{ $newsletter['text'] }}</p>
+                    </div>
+                </div>
 
-                <form class="flex flex-col sm:flex-row gap-2.5">
+                <form action="{{ route('newsletter.subscribe') }}" method="POST" data-newsletter-form class="flex flex-1 flex-col sm:flex-row gap-3">
+                    @csrf
                     <input
                         type="email"
-                        placeholder="Enter your email address"
-                        class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                        name="email"
+                        placeholder="{{ $newsletter['placeholder'] }}"
+                        class="flex-1 bg-white border-0 rounded-md px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         required
                     >
                     <button
                         type="submit"
-                        class="bg-amber-400 hover:bg-amber-500 text-gray-950 font-bold px-7 py-3 rounded-xl text-sm shadow-xs transition-colors"
+                        class="bg-gray-950 hover:bg-black text-white font-bold px-8 py-3 rounded-md text-sm transition-colors"
                     >
-                        Subscribe
+                        {{ $newsletter['button'] }}
                     </button>
                 </form>
             </div>

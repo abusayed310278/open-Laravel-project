@@ -2,6 +2,10 @@
     $tabs = [
         'logo' => ['label' => 'Logo', 'route' => 'admin.settings.logo'],
         'banner' => ['label' => 'Banner', 'route' => 'admin.settings.banner'],
+        'hero' => ['label' => 'Hero', 'route' => 'admin.settings.hero'],
+        'why-buy' => ['label' => 'Why Buy', 'route' => 'admin.settings.why-buy'],
+        'promo' => ['label' => 'Promo Cards', 'route' => 'admin.settings.promo'],
+        'newsletter' => ['label' => 'Newsletter', 'route' => 'admin.settings.newsletter'],
         'siteicon' => ['label' => 'Site Icon', 'route' => 'admin.settings.siteicon'],
         'footericon' => ['label' => 'Footer Icon', 'route' => 'admin.settings.footericon'],
         'font' => ['label' => 'Font', 'route' => 'admin.settings.font'],
