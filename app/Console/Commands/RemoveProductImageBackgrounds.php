@@ -25,6 +25,7 @@ class RemoveProductImageBackgrounds extends Command
         $dryRun = (bool) $this->option('dry-run');
         $changed = 0;
         $skipped = 0;
+        $originals = [];
 
         foreach (ProductImage::query()->cursor() as $image) {
             $source = $this->download($image->url());
@@ -64,12 +65,20 @@ class RemoveProductImageBackgrounds extends Command
                 continue;
             }
 
+            $originals[$image->id] = $image->path;
+
             $image->update([
                 'path' => in_array($disk, ['cloudinary', 'r2'], true)
                     ? Storage::disk($disk)->url($storedPath)
                     : 'products/'.$filename,
             ]);
             $changed++;
+        }
+
+        if ($originals !== []) {
+            $log = storage_path('app/image-background-originals-'.now()->format('Ymd-His').'.json');
+            file_put_contents($log, json_encode($originals, JSON_PRETTY_PRINT));
+            $this->line("Original paths saved to {$log}");
         }
 
         $this->info(($dryRun ? 'Would change' : 'Changed')." {$changed} image(s), skipped {$skipped}.");
