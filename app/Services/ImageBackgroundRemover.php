@@ -10,7 +10,7 @@ class ImageBackgroundRemover
 
     private const TOLERANCE = 30;
 
-    private const MIN_BORDER_MATCH = 0.85;
+    private const MIN_BORDER_MATCH = 0.65;
 
     /**
      * Cuts a uniform studio background out of a product photo.
@@ -28,6 +28,11 @@ class ImageBackgroundRemover
         $source = $raw === false ? false : @imagecreatefromstring($raw);
 
         if (! $source instanceof GdImage) {
+            return null;
+        }
+
+        // If the image already has transparency, do not flatten or modify it
+        if ($this->hasTransparency($source)) {
             return null;
         }
 
@@ -214,5 +219,32 @@ class ImageBackgroundRemover
     private function distance(array $a, array $b): float
     {
         return sqrt(($a[0] - $b[0]) ** 2 + ($a[1] - $b[1]) ** 2 + ($a[2] - $b[2]) ** 2);
+    }
+
+    /**
+     * Checks if the image contains any pixels with transparent or semi-transparent alpha.
+     */
+    private function hasTransparency(GdImage $image): bool
+    {
+        if (imagecolortransparent($image) >= 0) {
+            return true;
+        }
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $stepX = max(1, intdiv($width, 30));
+        $stepY = max(1, intdiv($height, 30));
+
+        for ($x = 0; $x < $width; $x += $stepX) {
+            for ($y = 0; $y < $height; $y += $stepY) {
+                $color = imagecolorat($image, $x, $y);
+                $alpha = ($color >> 24) & 0x7F;
+                if ($alpha > 10) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
