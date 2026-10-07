@@ -21,6 +21,9 @@
 
 @php
     $categoryHeading = $category ?: ($brand ?: 'Electronics');
+    if ($image && str_contains($image, '/image/upload/') && ! str_contains($image, '/e_make_transparent')) {
+        $image = str_replace('/image/upload/', '/image/upload/e_make_transparent:12/', $image);
+    }
     $discountPercent = ($comparePrice && $comparePrice > $price)
         ? (int) round((($comparePrice - $price) / $comparePrice) * 100)
         : null;
