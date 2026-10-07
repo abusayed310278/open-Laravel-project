@@ -509,7 +509,7 @@
 
     @if (feature_enabled('home_reviews'))
         {{-- WHAT OUR COMMUNITY SAYS --}}
-        <section class="py-14 bg-white border-t border-gray-100">
+        <section class="py-14 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10">
                     <h2 class="text-2xl font-extrabold text-gray-950 mb-2">What Our Community Says</h2>
