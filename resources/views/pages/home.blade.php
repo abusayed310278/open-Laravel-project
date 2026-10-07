@@ -259,9 +259,9 @@
         {{-- PRODUCT PROMO CARDS (real products, admin-editable text) --}}
         @php
             $promoStyles = [
-                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug'],
-                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight'],
-                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug'],
+                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'bg-white rounded-lg p-2 h-[85%] w-2/5 object-contain group-hover:scale-105 transition-transform duration-300'],
+                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-full w-2/5 object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300'],
+                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'bg-white rounded-lg p-2 h-[85%] w-2/5 object-contain group-hover:scale-105 transition-transform duration-300'],
             ];
         @endphp
         <section class="pb-6 max-w-7xl mx-auto px-4 sm:px-6">
@@ -275,7 +275,7 @@
                             <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
                             <span class="inline-flex items-center gap-2 mt-4 bg-brand-400 group-hover:bg-brand-500 text-gray-950 text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
                         </div>
-                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 h-full w-2/5 object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 {{ $style['img'] }}" loading="lazy">
                     </a>
                 @endforeach
             </div>
