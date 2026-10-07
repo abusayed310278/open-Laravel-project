@@ -57,14 +57,14 @@
 
 <div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
     {{-- Product Image --}}
-    <div class="relative w-full h-72 sm:h-80 shrink-0 overflow-hidden bg-white">
+    <div class="relative w-full h-44 sm:h-48 shrink-0 overflow-hidden bg-white">
         @if ($discountPercent)
             <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
         @endif
 
         <a href="{{ $href }}" class="absolute inset-0 flex items-center justify-center">
             @if ($image)
-                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-full object-contain p-6 mix-blend-multiply group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-full object-contain p-2 mix-blend-multiply group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
                 <div class="hidden w-full h-full items-center justify-center text-gray-300">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
@@ -109,15 +109,15 @@
 
     <div class="p-3 sm:p-4 pt-2.5 flex flex-col grow">
 
-    {{-- New Badge --}}
-    @if ($isNew)
-        <span class="self-start text-emerald-600 bg-white border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none mb-2">New</span>
-    @endif
-
-    {{-- Category Heading --}}
-    <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 uppercase tracking-wide mb-1">
-        {{ $categoryHeading }}
-    </span>
+    {{-- Category Heading + New Badge --}}
+    <div class="flex items-center justify-between gap-2 mb-1">
+        <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 uppercase tracking-wide">
+            {{ $categoryHeading }}
+        </span>
+        @if ($isNew)
+            <span class="text-emerald-600 bg-white border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none">New</span>
+        @endif
+    </div>
 
     {{-- Product Title --}}
     <a href="{{ $href }}" class="text-sm font-bold text-gray-950 hover:text-brand-600 leading-snug mb-1 transition-colors truncate">
@@ -145,7 +145,7 @@
 
     {{-- Rating & Trust Badges (1st: Physical Verifier Badge, 2nd: Openbox Admin Badge) --}}
     @if ($rating || $showVerifierBadge || $showAdminBadge)
-        <div class="flex items-center gap-1.5 mb-3">
+        <div class="flex items-center gap-1.5 mb-1">
             @if ($rating)
                 <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
                     <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
@@ -178,7 +178,7 @@
 
 
     {{-- Seller & Add to Cart --}}
-    <div class="mt-auto pt-2.5 flex items-center justify-between gap-2">
+    <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
         <span class="text-xs text-gray-500 truncate">{{ $sellerName ?: $seller }}</span>
         <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
