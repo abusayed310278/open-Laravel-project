@@ -259,9 +259,9 @@
         {{-- PRODUCT PROMO CARDS (real products, admin-editable text) --}}
         @php
             $promoStyles = [
-                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-full w-2/5 object-contain group-hover:scale-105 transition-transform duration-300'],
-                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-full w-2/5 object-contain group-hover:scale-105 transition-transform duration-300'],
-                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-full w-2/5 object-contain group-hover:scale-105 transition-transform duration-300'],
+                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
+                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
+                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
             ];
         @endphp
         <section class="pb-6 max-w-7xl mx-auto px-4 sm:px-6">
