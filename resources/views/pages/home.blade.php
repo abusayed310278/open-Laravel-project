@@ -275,7 +275,13 @@
                             <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
                             <span class="inline-flex items-center gap-2 mt-4 bg-brand-400 group-hover:bg-brand-500 text-gray-950 text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
                         </div>
-                        <img src="{{ $card['product']->primaryImageUrl() }}" alt="{{ $card['product']->title }}" class="relative z-10 {{ $style['img'] }}" loading="lazy">
+                        @php
+                            $promoImage = $card['product']->primaryImageUrl();
+                            if ($n === 3 && str_contains($promoImage, '/image/upload/')) {
+                                $promoImage = str_replace('/image/upload/', '/image/upload/e_make_transparent:15/', $promoImage);
+                            }
+                        @endphp
+                        <img src="{{ $promoImage }}" alt="{{ $card['product']->title }}" class="relative z-10 {{ $style['img'] }}" loading="lazy">
                     </a>
                 @endforeach
             </div>
