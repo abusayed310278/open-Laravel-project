@@ -17,6 +17,7 @@
         'payments' => ['label' => 'Payments', 'route' => 'admin.settings.payments'],
         'system' => ['label' => 'System', 'route' => 'admin.settings.system'],
         'git' => ['label' => 'Git', 'route' => 'admin.settings.git'],
+        'seller-banner' => ['label' => 'Seller Banner', 'route' => 'admin.settings.seller-banner'],
     ];
 @endphp
 

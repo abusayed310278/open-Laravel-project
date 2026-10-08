@@ -107,6 +107,26 @@
                     <line x1="15.8" y1="6.4" x2="8.2" y2="10.6" />
                 </svg>
             </button>
+            <button
+                type="button"
+                data-compare-id="{{ $id }}"
+                data-compare-title="{{ $title }}"
+                data-compare-price="Tk {{ number_format($price) }}"
+                data-compare-raw-price="{{ $price }}"
+                data-compare-image="{{ $image }}"
+                data-compare-brand="{{ $brand ?? $categoryHeading }}"
+                data-compare-category="{{ $categoryHeading }}"
+                data-compare-condition="{{ ucfirst($condition ?? 'Refurbished') }}"
+                data-compare-rating="{{ $rating ? number_format($rating, 1) : '4.9' }}"
+                data-compare-seller="{{ $sellerName ?: $seller }}"
+                data-compare-href="{{ $href }}"
+                class="js-compare-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors cursor-pointer"
+                title="Compare product"
+            >
+                <svg class="w-4 h-4 js-compare-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </button>
         </div>
     </div>
 

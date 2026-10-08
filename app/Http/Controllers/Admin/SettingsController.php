@@ -250,6 +250,45 @@ class SettingsController extends Controller
         return back()->with('status', 'Custom banner removed. Default banner restored.');
     }
 
+    public function sellerBanner(): View
+    {
+        return view('admin.settings.seller-banner', [
+            'banner' => $this->settings->get('seller_banner'),
+        ]);
+    }
+
+    public function updateSellerBanner(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'banner' => ['required', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:5120'],
+        ]);
+
+        $oldBanner = $this->settings->get('seller_banner');
+        if (!empty($oldBanner) && is_string($oldBanner) && trim($oldBanner) !== '' && Storage::disk('public')->exists($oldBanner)) {
+            Storage::disk('public')->delete($oldBanner);
+        }
+
+        $path = $this->storeUploadedFile($request->file('banner'), 'branding', 'public');
+        $this->settings->set('seller_banner', $path, 'branding');
+
+        ActivityLog::record('settings.seller_banner.updated');
+
+        return back()->with('status', 'Default seller banner / cover photo updated successfully.');
+    }
+
+    public function removeSellerBanner(): RedirectResponse
+    {
+        $oldBanner = $this->settings->get('seller_banner');
+        if (!empty($oldBanner) && is_string($oldBanner) && trim($oldBanner) !== '' && Storage::disk('public')->exists($oldBanner)) {
+            Storage::disk('public')->delete($oldBanner);
+        }
+
+        $this->settings->set('seller_banner', null, 'branding');
+        ActivityLog::record('settings.seller_banner.removed');
+
+        return back()->with('status', 'Custom seller banner removed. Default fallback banner restored.');
+    }
+
     public function siteicon(): View
     {
         return view('admin.settings.siteicon', [

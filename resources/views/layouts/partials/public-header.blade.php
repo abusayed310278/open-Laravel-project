@@ -45,7 +45,7 @@
 
         {{-- Center: Search Bar --}}
         <div class="flex-1 max-w-xl lg:max-w-2xl mx-1 sm:mx-4">
-            <form action="{{ Route::has('search') ? route('search') : '#' }}" method="GET" class="w-full">
+            <form action="{{ route('search') }}" method="GET" class="w-full">
                 <div class="flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] hover:bg-gray-100/80 focus-within:bg-white border border-gray-200 hover:border-gray-300 focus-within:border-gray-900 focus-within:ring-2 focus-within:ring-gray-900/20 rounded-lg transition-all shadow-2xs px-3 sm:px-4">
                     {{-- Search Icon --}}
                     <div class="flex items-center justify-center text-gray-400 flex-shrink-0 mr-2">
@@ -68,9 +68,9 @@
 
         {{-- Right: Actions & Start Selling --}}
         <div class="flex items-center gap-2.5 sm:gap-4 lg:gap-5 flex-shrink-0">
-            {{-- Compare Icon --}}
-            <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-gray-600 hover:text-gray-950 transition-colors p-1 hidden sm:inline-block" title="Compare">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+            {{-- Advanced Search --}}
+            <a href="{{ route('search.advanced') }}" class="hidden sm:inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-brand-500 hover:bg-brand-500 hover:text-white whitespace-nowrap" title="Advanced Search">
+                Advanced
             </a>
 
             {{-- Wishlist --}}

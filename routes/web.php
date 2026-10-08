@@ -69,6 +69,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CompareController;
 use App\Http\Controllers\ProductPageController;
 use App\Http\Controllers\ProductVerificationController;
 use App\Http\Controllers\RefundRequestController;
@@ -99,6 +100,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/newsletter', [NewsletterController::class, 'store'])->middleware('throttle:10,1')->name('newsletter.subscribe');
 Route::get('/grading-system', GradingSystemController::class)->name('grading-system');
 Route::get('/shop', [ProductPageController::class, 'index'])->name('shop');
+Route::get('/search', [ProductPageController::class, 'index'])->name('search');
+Route::get('/search/advanced', [ProductPageController::class, 'advanced'])->name('search.advanced');
+Route::get('/compare', [CompareController::class, 'index'])->name('compare');
 Route::get('/products/{product:slug}', [ProductPageController::class, 'show'])->name('products.show');
 Route::get('/categories', [CategoryPageController::class, 'index'])->name('categories.index');
 Route::get('/categories/{category:slug}', [CategoryPageController::class, 'show'])->name('categories.show');
@@ -139,6 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
 
     Route::post('/products/{product}/chat', [ChatController::class, 'startFromProduct'])->name('chat.start');
+    Route::match(['GET', 'POST'], '/sellers/{user}/chat', [ChatController::class, 'startFromSeller'])->name('chat.start-seller');
     Route::post('/support-chat/start', [ChatController::class, 'startWithAdmin'])->middleware('throttle:10,1')->name('chat.start-admin');
     Route::post('/chat/{conversation}', [ChatController::class, 'store'])->middleware('throttle:30,1')->name('chat.store');
     Route::get('/chat/{conversation}/poll/{afterId}', [ChatController::class, 'poll'])->whereNumber('afterId')->name('chat.poll');
@@ -342,6 +347,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/settings/banner', [SettingsController::class, 'banner'])->name('settings.banner');
         Route::post('/settings/banner', [SettingsController::class, 'updateBanner'])->name('settings.banner.update');
         Route::delete('/settings/banner', [SettingsController::class, 'removeBanner'])->name('settings.banner.remove');
+
+        Route::get('/settings/seller-banner', [SettingsController::class, 'sellerBanner'])->name('settings.seller-banner');
+        Route::post('/settings/seller-banner', [SettingsController::class, 'updateSellerBanner'])->name('settings.seller-banner.update');
+        Route::delete('/settings/seller-banner', [SettingsController::class, 'removeSellerBanner'])->name('settings.seller-banner.remove');
         Route::get('/settings/why-buy', [HomeContentController::class, 'whyBuy'])->name('settings.why-buy');
         Route::post('/settings/why-buy', [HomeContentController::class, 'updateWhyBuy'])->name('settings.why-buy.update');
         Route::get('/settings/promo-cards', [HomeContentController::class, 'promo'])->name('settings.promo');

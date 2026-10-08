@@ -81,7 +81,8 @@ class ProductController extends Controller
             if ($sellerCover) {
                 $bannerUrl = \App\Support\MediaUrl::resolve($sellerCover);
             } else {
-                $bannerUrl = $adminBannerUrl;
+                $sellerBannerSetting = setting('seller_banner');
+                $bannerUrl = $sellerBannerSetting ? \App\Support\MediaUrl::resolve($sellerBannerSetting) : $adminBannerUrl;
             }
         }
         if (! $bannerUrl && file_exists(public_path('banner image.png'))) {

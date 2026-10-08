@@ -56,6 +56,10 @@ class SalerProfile extends Model
 
     public function coverImageUrl(): ?string
     {
-        return \App\Support\MediaUrl::resolve($this->cover_image);
+        $adminSellerBanner = setting('seller_banner');
+
+        return (trim((string) $this->cover_image) !== '' ? \App\Support\MediaUrl::resolve($this->cover_image) : null)
+            ?: (trim((string) $adminSellerBanner) !== '' ? \App\Support\MediaUrl::resolve($adminSellerBanner) : null)
+            ?: asset('images/default-cover.svg');
     }
 }

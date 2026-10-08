@@ -45,7 +45,7 @@ class ChatController extends Controller
         $this->chat->markRead($conversation, Auth::user());
 
         return view('chat.show', [
-            'conversation' => $conversation->load(['buyer.profile', 'seller.profile', 'product']),
+            'conversation' => $conversation->load(['buyer.profile', 'seller.profile', 'seller.businessProfile', 'seller.salerProfile', 'product']),
             'messages' => $conversation->messages()->with('sender')->oldest()->get(),
             'layout' => $this->layoutFor(Auth::user()),
             'section' => $this->sectionFor(Auth::user()),
@@ -101,6 +101,23 @@ class ChatController extends Controller
         return redirect()->route($this->routePrefixFor($user).'chat.show', $conversation);
     }
 
+    public function startFromSeller(User $user): RedirectResponse
+    {
+        $currentUser = Auth::user();
+
+        if ($currentUser->id === $user->id) {
+            return back()->with('error', 'You cannot message your own store.');
+        }
+
+        if (! $currentUser->isCustomer() && ! $currentUser->isAdmin()) {
+            return back()->with('error', 'Messaging sellers is available for customer accounts.');
+        }
+
+        $conversation = $this->chat->startOrGetConversation($currentUser, $user);
+
+        return redirect()->route($this->routePrefixFor($currentUser).'chat.show', $conversation);
+    }
+
     public function startWithAdmin(Request $request): RedirectResponse
     {
         $user = Auth::user();
@@ -143,6 +160,7 @@ class ChatController extends Controller
     private function layoutFor(User $user): string
     {
         return match (true) {
+            $user->isAdmin() => 'layouts.admin',
             $user->isBusiness() => 'layouts.business',
             $user->isSaler() => 'layouts.saler',
             $user->isVerifier() => 'layouts.verifier',
@@ -153,6 +171,7 @@ class ChatController extends Controller
     private function routePrefixFor(User $user): string
     {
         return match (true) {
+            $user->isAdmin() => 'admin.',
             $user->isBusiness() => 'business.',
             $user->isSaler() => 'saler.',
             $user->isVerifier() => 'verifier.',
@@ -162,6 +181,6 @@ class ChatController extends Controller
 
     private function sectionFor(User $user): string
     {
-        return $user->isBusiness() || $user->isSaler() || $user->isVerifier() ? 'content' : 'account-content';
+        return $user->isBusiness() || $user->isSaler() || $user->isVerifier() || $user->isAdmin() ? 'content' : 'account-content';
     }
 }

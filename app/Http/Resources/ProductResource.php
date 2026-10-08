@@ -49,7 +49,8 @@ class ProductResource extends JsonResource
                 if ($sellerCover) {
                     $bannerUrl = MediaUrl::resolve($sellerCover);
                 } else {
-                    $bannerUrl = $adminBannerUrl;
+                    $sellerBannerSetting = setting('seller_banner');
+                    $bannerUrl = $sellerBannerSetting ? MediaUrl::resolve($sellerBannerSetting) : $adminBannerUrl;
                 }
             }
 

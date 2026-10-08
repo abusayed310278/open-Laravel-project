@@ -10,13 +10,19 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
 use App\Support\HomeContent;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View|RedirectResponse
     {
+        if ($request->filled('q')) {
+            return redirect()->route('search', $request->query());
+        }
+
         $categories = Category::cachedTree()->take(8);
         $banners = Banner::query()->live()->position('homepage')->get();
         $heroSlides = HeroSlide::query()->active()->with('product')->get();
@@ -48,6 +54,10 @@ class HomeController extends Controller
 
         $latestProducts = $this->productCards(
             $allLiveProducts->take(8)
+        );
+
+        $comparableProducts = $this->productCards(
+            $allLiveProducts->take(16)
         );
 
         $promoCards = $this->promoCards($allLiveProducts);
@@ -170,6 +180,7 @@ class HomeController extends Controller
             'newsletter',
             'vendors',
             'reviews',
+            'comparableProducts',
         ));
     }
 
