@@ -2,7 +2,7 @@
 <div id="site-compare-dock" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl bg-gray-900 text-white rounded-2xl shadow-2xl ring-1 ring-black/20 p-3 sm:p-4 transition-all duration-300 translate-y-36 opacity-0 pointer-events-none flex items-center justify-between gap-3">
     <div class="flex items-center gap-3 min-w-0">
         <span class="shrink-0 text-xs sm:text-sm font-bold tracking-tight text-white">Compare (<span id="site-compare-count">0</span>/{{ \App\Http\Controllers\CompareController::MAX_PRODUCTS }})</span>
-        <div id="site-compare-thumbs" class="flex items-center gap-2 overflow-x-auto py-1"></div>
+        <div id="site-compare-thumbs" class="flex items-center gap-3 overflow-x-auto pt-2 pr-2 pb-1 pl-1"></div>
     </div>
     <div class="flex items-center gap-2 shrink-0">
         <a href="{{ route('compare') }}" id="site-compare-open" class="bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-xl transition-all active:scale-95">Compare Now</a>
@@ -53,7 +53,7 @@
                 remove.type = 'button';
                 remove.textContent = '✕';
                 remove.title = 'Remove';
-                remove.className = 'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center cursor-pointer';
+                remove.className = 'absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[11px] leading-none font-bold flex items-center justify-center cursor-pointer';
                 remove.addEventListener('click', () => { list.splice(index, 1); save(); });
                 wrap.append(box, remove);
                 thumbs.appendChild(wrap);
