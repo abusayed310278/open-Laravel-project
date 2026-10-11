@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/loading_view.dart';
@@ -54,9 +55,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
 
   Future<void> _submitVerification() async {
     if (_docNumberController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your document ID number.'), backgroundColor: AppColors.danger),
-      );
+      AppSnackBar.warning(context, 'Please enter your document ID number.');
       return;
     }
 
@@ -71,15 +70,11 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       _docNumberController.clear();
       _fetchStatus();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification details submitted!'), backgroundColor: AppColors.success),
-        );
+        AppSnackBar.success(context, 'Verification details submitted!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e'), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, 'Submission failed: $e');
       }
     }
   }

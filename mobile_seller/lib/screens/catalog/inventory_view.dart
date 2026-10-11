@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
 
@@ -104,15 +105,11 @@ class _InventoryViewState extends State<InventoryView> {
                 );
                 _fetchInventory(_searchController.text);
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Inventory updated successfully!'), backgroundColor: AppColors.success),
-                  );
+                  AppSnackBar.success(context, 'Inventory updated successfully!');
                 }
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to update: $e'), backgroundColor: AppColors.danger),
-                  );
+                  AppSnackBar.error(context, 'Failed to update: $e');
                 }
               }
             },

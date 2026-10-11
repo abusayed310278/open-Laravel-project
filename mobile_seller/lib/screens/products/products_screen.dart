@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/status_badge.dart';
@@ -315,11 +316,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     onChanged: (_) async {
                       final success = await provider.togglePublish(product.id);
                       if (!success && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(provider.errorMessage ?? 'Unable to publish listing.'),
-                            backgroundColor: AppColors.danger,
-                          ),
+                        AppSnackBar.error(
+                          context,
+                          provider.errorMessage ?? 'Unable to publish listing.',
                         );
                       }
                     },

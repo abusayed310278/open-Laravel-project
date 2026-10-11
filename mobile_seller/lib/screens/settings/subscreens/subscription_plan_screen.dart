@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/loading_view.dart';
 
@@ -195,11 +196,9 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
                                 onPressed: isCurrent
                                     ? null
                                     : () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Selected ${plan['name']} tier. Please complete payment via Web Portal or contact support.'),
-                                            backgroundColor: AppColors.brand600,
-                                          ),
+                                        AppSnackBar.info(
+                                          context,
+                                          'Selected ${plan['name']} tier. Please complete payment via Web Portal or contact support.',
                                         );
                                       },
                               ),

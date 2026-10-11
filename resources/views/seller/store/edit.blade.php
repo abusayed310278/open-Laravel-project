@@ -232,8 +232,16 @@
                             <x-input label="Store Location" name="location" type="text" id="seller_location_input" placeholder="Seller area, street, landmark..." :value="old('location', $profile->location)" />
                         @endif
 
-                        <x-select label="Country" name="country" id="seller_country_select" placeholder="Loading countries..." :selected="old('country', $profile->country)" />
-                        <x-select label="City" name="city" id="seller_city_select" placeholder="Select a country first..." :selected="old('city', $profile->city)" />
+                        <x-select label="Country" name="country" id="seller_country_select" placeholder="Select Country" :selected="old('country', $profile->country)">
+                            @if ($profile->country)
+                                <option value="{{ $profile->country }}" selected>{{ $profile->country }}</option>
+                            @endif
+                        </x-select>
+                        <x-select label="City" name="city" id="seller_city_select" placeholder="Select City" :selected="old('city', $profile->city)">
+                            @if ($profile->city)
+                                <option value="{{ $profile->city }}" selected>{{ $profile->city }}</option>
+                            @endif
+                        </x-select>
 
                         <x-input label="Latitude" name="latitude" type="number" step="any" min="-90" max="90" id="seller_latitude_input" placeholder="e.g. 23.8103" :value="old('latitude', $profile->latitude)" />
                         <x-input label="Longitude" name="longitude" type="number" step="any" min="-180" max="180" id="seller_longitude_input" placeholder="e.g. 90.4125" :value="old('longitude', $profile->longitude)" />
@@ -719,10 +727,7 @@
         }
     </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCsdLSxCzJS1DypOOyGan4BWTZvZIhiS9M&libraries=places"></script>
-
-    {{-- TAB SWITCHER & AVATAR PREVIEW --}}
+    {{-- TAB SWITCHER & AVATAR PREVIEW (Runs immediately without waiting on external CDNs) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Tab Switcher
@@ -745,7 +750,7 @@
                     content.classList.toggle('hidden', !matches);
                 });
 
-                if (targetId === '#tab-store' && window.sellerMapInstance) {
+                if (targetId === '#tab-store' && typeof google !== 'undefined' && google.maps && window.sellerMapInstance) {
                     google.maps.event.trigger(window.sellerMapInstance, 'resize');
                     if (window.sellerMarkerInstance) {
                         window.sellerMapInstance.setCenter(window.sellerMarkerInstance.getPosition());
@@ -796,6 +801,9 @@
             }
         });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCsdLSxCzJS1DypOOyGan4BWTZvZIhiS9M&libraries=places"></script>
 
     {{-- GOOGLE MAPS & LOCATION AUTOCOMPLETE --}}
     <script>

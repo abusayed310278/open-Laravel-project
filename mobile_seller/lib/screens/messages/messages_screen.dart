@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
 import 'chat_detail_screen.dart';
@@ -81,9 +82,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to start chat: $e'), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, 'Failed to start chat: $e');
       }
     }
   }

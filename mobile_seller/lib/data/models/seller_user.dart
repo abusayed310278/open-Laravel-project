@@ -17,6 +17,12 @@ class SellerUser {
   final String? address;
   final String? city;
   final String? country;
+  final double? latitude;
+  final double? longitude;
+  final String? website;
+  final String? timezone;
+  final Map<String, dynamic>? businessHours;
+  final List<dynamic>? socialLinks;
   final bool isStoreActive;
   final bool isKycApproved;
   final int listingCredits;
@@ -42,6 +48,12 @@ class SellerUser {
     this.address,
     this.city,
     this.country,
+    this.latitude,
+    this.longitude,
+    this.website,
+    this.timezone,
+    this.businessHours,
+    this.socialLinks,
     this.isStoreActive = true,
     this.isKycApproved = false,
     this.listingCredits = 0,
@@ -72,6 +84,14 @@ class SellerUser {
       address: json['address']?.toString(),
       city: json['city']?.toString(),
       country: json['country']?.toString(),
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
+      website: json['website']?.toString(),
+      timezone: json['timezone']?.toString(),
+      businessHours: json['business_hours'] is Map
+          ? (json['business_hours'] as Map).map((k, v) => MapEntry(k.toString(), v))
+          : null,
+      socialLinks: json['social_links'] is List ? List<dynamic>.from(json['social_links'] as List) : null,
       isStoreActive: json['is_store_active'] == true,
       isKycApproved: json['is_kyc_approved'] == true,
       listingCredits: json['listing_credits'] is int
@@ -106,6 +126,12 @@ class SellerUser {
       'address': address,
       'city': city,
       'country': country,
+      'latitude': latitude,
+      'longitude': longitude,
+      'website': website,
+      'timezone': timezone,
+      'business_hours': businessHours,
+      'social_links': socialLinks,
       'is_store_active': isStoreActive,
       'is_kyc_approved': isKycApproved,
       'listing_credits': listingCredits,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/loading_view.dart';
@@ -49,9 +50,7 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
 
   void _showNewDepositModal() {
     if (_eligibleProducts.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No verified products eligible for warehouse deposit yet.'), backgroundColor: AppColors.warning),
-      );
+      AppSnackBar.warning(context, 'No verified products eligible for warehouse deposit yet.');
       return;
     }
 
@@ -136,15 +135,11 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                       );
                       _fetchDeposits();
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Deposit request created!'), backgroundColor: AppColors.success),
-                        );
+                        AppSnackBar.success(context, 'Deposit request created!');
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Request failed: $e'), backgroundColor: AppColors.danger),
-                        );
+                        AppSnackBar.error(context, 'Request failed: $e');
                       }
                     }
                   },

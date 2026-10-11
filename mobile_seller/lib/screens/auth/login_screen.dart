@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_logo.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../providers/seller_auth_provider.dart';
@@ -46,13 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       final error = authProvider.errorMessage ?? 'Login failed. Please check credentials.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: AppColors.danger,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppSnackBar.error(context, error);
     }
   }
 

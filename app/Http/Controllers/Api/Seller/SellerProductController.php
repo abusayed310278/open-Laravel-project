@@ -130,6 +130,9 @@ class SellerProductController extends Controller
                     'name' => $attr->name,
                     'type' => $attr->type?->value ?? 'text',
                     'is_required' => (bool) ($attr->pivot->is_required ?? false),
+                    'group' => $attr->group?->name ?? 'General Specifications',
+                    'unit' => $attr->unit,
+                    'placeholder' => $attr->placeholder,
                     'values' => $attr->values->map(fn ($v) => [
                         'id' => $v->id,
                         'value' => $v->value,
@@ -225,11 +228,19 @@ class SellerProductController extends Controller
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
+        $attributes = $request->input('attributes', []);
+        if (is_string($attributes)) {
+            $decoded = json_decode($attributes, true);
+            if (is_array($decoded)) {
+                $attributes = $decoded;
+            }
+        }
+
         $product = $this->products->create(
             $request->user(),
             $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
-            $request->input('attributes', []),
+            $attributes,
             $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,
         );
 
@@ -253,11 +264,19 @@ class SellerProductController extends Controller
     {
         $this->authorize('update', $product);
 
+        $attributes = $request->input('attributes', []);
+        if (is_string($attributes)) {
+            $decoded = json_decode($attributes, true);
+            if (is_array($decoded)) {
+                $attributes = $decoded;
+            }
+        }
+
         $this->products->update(
             $product,
             $request->safe()->except(['images', 'attributes', 'primary_image_id', 'primary_image_index', 'delete_images']),
             $request->file('images', []),
-            $request->input('attributes', []),
+            $attributes,
             $request->user(),
             $request->input('primary_image_id') ? (int) $request->input('primary_image_id') : null,
             $request->input('primary_image_index') !== null ? (int) $request->input('primary_image_index') : null,

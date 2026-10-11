@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../providers/seller_auth_provider.dart';
@@ -92,15 +93,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       await context.read<SellerAuthProvider>().refreshProfile();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!'), backgroundColor: AppColors.success),
-        );
+        AppSnackBar.success(context, 'Profile updated successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update: $e'), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, 'Failed to update: $e');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

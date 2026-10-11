@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/loading_view.dart';
@@ -78,12 +79,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               );
 
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? 'Order status updated successfully.' : (provider.errorMessage ?? 'Update failed.')),
-                    backgroundColor: success ? AppColors.success : AppColors.danger,
-                  ),
-                );
+                if (success) {
+                  AppSnackBar.success(context, 'Order status updated successfully.');
+                } else {
+                  AppSnackBar.error(context, provider.errorMessage ?? 'Update failed.');
+                }
               }
             },
             child: const Text('Confirm'),

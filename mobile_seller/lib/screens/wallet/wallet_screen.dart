@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/loading_view.dart';
@@ -118,15 +119,11 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                     onPressed: () async {
                       final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
                       if (amount <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please enter a valid amount'), backgroundColor: AppColors.danger),
-                        );
+                        AppSnackBar.warning(context, 'Please enter a valid amount');
                         return;
                       }
                       if (amount > availableBalance) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Amount exceeds available balance'), backgroundColor: AppColors.danger),
-                        );
+                        AppSnackBar.warning(context, 'Amount exceeds available balance');
                         return;
                       }
 
@@ -134,12 +131,14 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                       if (ctx.mounted) Navigator.of(ctx).pop();
 
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(success ? 'Payout request submitted!' : (walletProvider.errorMessage ?? 'Submission failed')),
-                            backgroundColor: success ? AppColors.success : AppColors.danger,
-                          ),
-                        );
+                        if (success) {
+                          AppSnackBar.success(context, 'Payout request submitted!');
+                        } else {
+                          AppSnackBar.error(
+                            context,
+                            walletProvider.errorMessage ?? 'Submission failed',
+                          );
+                        }
                       }
                     },
                   );

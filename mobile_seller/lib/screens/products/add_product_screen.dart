@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
+import '../../data/models/product_meta.dart';
 import '../../providers/seller_product_provider.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -22,6 +24,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _picker = ImagePicker();
 
   final _titleController = TextEditingController();
+  final _shortDescriptionController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _comparePriceController = TextEditingController();
@@ -33,6 +36,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
   int? _selectedBrandId;
   String _selectedCondition = 'new';
   String _selectedShippingType = 'free';
+
+  // Dynamic category attributes state
+  final Map<int, int?> _attributeSelectValues = {};
+  final Map<int, bool> _attributeBoolValues = {};
+  final Map<int, TextEditingController> _attributeTextControllers = {};
 
   final List<XFile> _selectedImages = [];
   bool _isSubmitting = false;
@@ -48,13 +56,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _shortDescriptionController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
     _comparePriceController.dispose();
     _quantityController.dispose();
     _skuController.dispose();
     _shippingFlatRateController.dispose();
+    for (final controller in _attributeTextControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  TextEditingController _getAttributeTextController(int attrId, [String initialValue = '']) {
+    return _attributeTextControllers.putIfAbsent(
+      attrId,
+      () => TextEditingController(text: initialValue),
+    );
   }
 
   Future<void> _pickImages() async {
@@ -75,10 +94,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a product category'), backgroundColor: AppColors.danger),
-      );
+      AppSnackBar.warning(context, 'Please select a product category');
       return;
+    }
+
+    final metaProvider = context.read<SellerProductProvider>();
+    final selectedCat = metaProvider.categories.where((c) => c.id == _selectedCategoryId).firstOrNull;
+    final categoryAttributes = selectedCat?.attributes ?? [];
+
+    // Validate required category attributes
+    for (final attr in categoryAttributes) {
+      if (attr.isRequired) {
+        if (attr.isSelect) {
+          if (_attributeSelectValues[attr.id] == null) {
+            AppSnackBar.warning(context, 'Please select "${attr.name}"');
+            return;
+          }
+        } else if (attr.isBoolean) {
+          if (_attributeBoolValues[attr.id] == null) {
+            AppSnackBar.warning(context, 'Please specify "${attr.name}"');
+            return;
+          }
+        } else {
+          final text = _attributeTextControllers[attr.id]?.text.trim();
+          if (text == null || text.isEmpty) {
+            AppSnackBar.warning(context, 'Please enter "${attr.name}"');
+            return;
+          }
+        }
+      }
     }
 
     setState(() => _isSubmitting = true);
@@ -94,6 +138,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
         'shipping_type': _selectedShippingType,
       };
 
+      if (_shortDescriptionController.text.trim().isNotEmpty) {
+        fields['short_description'] = _shortDescriptionController.text.trim();
+      }
+
       if (_selectedBrandId != null) {
         fields['brand_id'] = _selectedBrandId.toString();
       }
@@ -107,6 +155,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
         fields['shipping_flat_rate'] = _shippingFlatRateController.text.trim();
       }
 
+      // Add dynamic category attributes
+      for (final attr in categoryAttributes) {
+        if (attr.isSelect) {
+          final selId = _attributeSelectValues[attr.id];
+          if (selId != null) {
+            fields['attributes[${attr.id}]'] = selId.toString();
+          }
+        } else if (attr.isBoolean) {
+          final b = _attributeBoolValues[attr.id];
+          if (b != null) {
+            fields['attributes[${attr.id}]'] = b ? '1' : '0';
+          }
+        } else {
+          final text = _attributeTextControllers[attr.id]?.text.trim();
+          if (text != null && text.isNotEmpty) {
+            fields['attributes[${attr.id}]'] = text;
+          }
+        }
+      }
+
       final productProvider = context.read<SellerProductProvider>();
       final files = <http.MultipartFile>[];
       for (final img in _selectedImages) {
@@ -118,26 +186,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (!mounted) return;
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Listing created and submitted for review!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        AppSnackBar.success(context, 'Listing created and submitted for review!');
         Navigator.of(context).pop();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(productProvider.errorMessage ?? 'Failed to create listing'),
-            backgroundColor: AppColors.danger,
-          ),
+        AppSnackBar.error(
+          context,
+          productProvider.errorMessage ?? 'Failed to create listing',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -147,6 +206,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     final metaProvider = context.watch<SellerProductProvider>();
+    final selectedCat = metaProvider.categories.where((c) => c.id == _selectedCategoryId).firstOrNull;
+    final categoryAttributes = selectedCat?.attributes ?? [];
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
@@ -172,7 +233,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: _selectedImages.length + (_selectedImages.length < 8 ? 1 : 0),
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (context, index) {
                             if (index == _selectedImages.length) {
                               return _buildAddPhotoBtn();
@@ -272,7 +333,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       items: metaProvider.categories.map((c) {
                         return DropdownMenuItem<int>(value: c.id, child: Text(c.name));
                       }).toList(),
-                      onChanged: (val) => setState(() => _selectedCategoryId = val),
+                      onChanged: (val) {
+                        if (_selectedCategoryId != val) {
+                          setState(() {
+                            _selectedCategoryId = val;
+                            _attributeSelectValues.clear();
+                            _attributeBoolValues.clear();
+                            for (final c in _attributeTextControllers.values) {
+                              c.dispose();
+                            }
+                            _attributeTextControllers.clear();
+                          });
+                        }
+                      },
                       decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -292,7 +365,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // 3. Pricing & Condition
+              // 3. Dynamic Attributes & Specifications
+              _buildAttributesSection(categoryAttributes),
+              const SizedBox(height: AppSpacing.lg),
+
+              // 4. Pricing & Condition
               _buildSectionCard(
                 title: 'Pricing & Condition',
                 child: Column(
@@ -338,7 +415,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // 4. Inventory & Shipping
+              // 5. Inventory & Shipping
               _buildSectionCard(
                 title: 'Inventory & Shipping',
                 child: Column(
@@ -392,14 +469,26 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // 5. Description
+              // 6. Description (Short & Detailed Description)
               _buildSectionCard(
                 title: 'Description',
-                child: CustomTextField(
-                  controller: _descriptionController,
-                  label: 'Detailed Description',
-                  hint: 'Provide technical details, warranty, accessories included...',
-                  maxLines: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomTextField(
+                      controller: _shortDescriptionController,
+                      label: 'Short Description',
+                      hint: 'Brief summary or key highlights (e.g. 256GB Titanium, includes AppleCare)...',
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    CustomTextField(
+                      controller: _descriptionController,
+                      label: 'Detailed Description',
+                      hint: 'Provide technical details, warranty, accessories included...',
+                      maxLines: 5,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -415,6 +504,239 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAttributesSection(List<AttributeOption> attributes) {
+    return _buildSectionCard(
+      title: 'Attributes & Specifications',
+      child: _selectedCategoryId == null
+          ? Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.slate50,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: AppColors.slate200),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, size: 20, color: AppColors.slate400),
+                  SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Select a category above to load its specific attributes and technical specifications.',
+                      style: TextStyle(fontSize: 12, color: AppColors.slate500),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : attributes.isEmpty
+              ? Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.slate50,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.check_circle_outline, size: 20, color: AppColors.slate400),
+                      SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          'No custom attributes required for this category.',
+                          style: TextStyle(fontSize: 12, color: AppColors.slate500),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildGroupedAttributeWidgets(attributes),
+                ),
+    );
+  }
+
+  List<Widget> _buildGroupedAttributeWidgets(List<AttributeOption> attributes) {
+    final Map<String, List<AttributeOption>> grouped = {};
+    for (final attr in attributes) {
+      final groupName = attr.group ?? 'General Specifications';
+      grouped.putIfAbsent(groupName, () => []).add(attr);
+    }
+
+    final widgets = <Widget>[];
+    int groupIndex = 0;
+
+    grouped.forEach((groupName, groupAttrs) {
+      if (groupIndex > 0) {
+        widgets.add(const SizedBox(height: AppSpacing.lg));
+        widgets.add(const Divider(height: 1, color: AppColors.slate100));
+        widgets.add(const SizedBox(height: AppSpacing.md));
+      }
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: AppColors.brand500,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                groupName.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                  color: AppColors.slate500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      for (int i = 0; i < groupAttrs.length; i++) {
+        final attr = groupAttrs[i];
+        widgets.add(_buildSingleAttributeField(attr));
+        if (i < groupAttrs.length - 1) {
+          widgets.add(const SizedBox(height: AppSpacing.md));
+        }
+      }
+
+      groupIndex++;
+    });
+
+    return widgets;
+  }
+
+  Widget _buildSingleAttributeField(AttributeOption attr) {
+    final labelWidget = Row(
+      children: [
+        Text(
+          attr.name,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.slate700,
+          ),
+        ),
+        if (attr.isRequired) ...[
+          const SizedBox(width: 4),
+          const Text(
+            '*',
+            style: TextStyle(
+              color: AppColors.danger,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    if (attr.isSelect) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          labelWidget,
+          const SizedBox(height: 6),
+          DropdownButtonFormField<int>(
+            value: _attributeSelectValues[attr.id],
+            hint: Text(
+              'Select ${attr.name}',
+              style: const TextStyle(fontSize: 14, color: AppColors.slate400),
+            ),
+            items: attr.values.map((v) {
+              return DropdownMenuItem<int>(
+                value: v.id,
+                child: Text(v.value),
+              );
+            }).toList(),
+            onChanged: (val) {
+              setState(() => _attributeSelectValues[attr.id] = val);
+            },
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (attr.isBoolean) {
+      final currentVal = _attributeBoolValues[attr.id];
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          labelWidget,
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              ChoiceChip(
+                label: const Text('Yes'),
+                selected: currentVal == true,
+                selectedColor: AppColors.brand500,
+                labelStyle: TextStyle(
+                  color: currentVal == true ? Colors.white : AppColors.slate700,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                onSelected: (_) {
+                  setState(() => _attributeBoolValues[attr.id] = true);
+                },
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('No'),
+                selected: currentVal == false,
+                selectedColor: AppColors.brand500,
+                labelStyle: TextStyle(
+                  color: currentVal == false ? Colors.white : AppColors.slate700,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                onSelected: (_) {
+                  setState(() => _attributeBoolValues[attr.id] = false);
+                },
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    final controller = _getAttributeTextController(attr.id);
+    return CustomTextField(
+      controller: controller,
+      label: '${attr.name}${attr.isRequired ? ' *' : ''}',
+      hint: attr.placeholder ?? (attr.unit != null && attr.unit!.isNotEmpty ? 'e.g. ${attr.unit}' : 'Enter ${attr.name}'),
+      keyboardType: attr.isNumber
+          ? const TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      suffixIcon: attr.unit != null && attr.unit!.isNotEmpty
+          ? Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                widthFactor: 1,
+                child: Text(
+                  attr.unit!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.slate500,
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 

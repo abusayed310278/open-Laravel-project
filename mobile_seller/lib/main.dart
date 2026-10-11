@@ -18,6 +18,8 @@ void main() async {
 }
 
 class OpenboxSellerApp extends StatelessWidget {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   const OpenboxSellerApp({super.key});
 
   @override
@@ -31,6 +33,7 @@ class OpenboxSellerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SellerWalletProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Openbox Seller',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),

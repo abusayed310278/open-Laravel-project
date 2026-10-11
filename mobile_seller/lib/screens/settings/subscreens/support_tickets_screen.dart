@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/empty_view.dart';
@@ -110,9 +111,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   text: 'Submit Support Ticket',
                   onPressed: () async {
                     if (subjectController.text.trim().isEmpty || bodyController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill in both subject and message.'), backgroundColor: AppColors.danger),
-                      );
+                      AppSnackBar.warning(context, 'Please fill in both subject and message.');
                       return;
                     }
 
@@ -128,15 +127,11 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       );
                       _fetchTickets();
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Support ticket created successfully!'), backgroundColor: AppColors.success),
-                        );
+                        AppSnackBar.success(context, 'Support ticket created successfully!');
                       }
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to submit ticket: $e'), backgroundColor: AppColors.danger),
-                        );
+                        AppSnackBar.error(context, 'Failed to submit ticket: $e');
                       }
                     }
                   },

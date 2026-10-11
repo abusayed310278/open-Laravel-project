@@ -60,9 +60,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           elevation: 0,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard_rounded),
-              label: 'Overview',
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home_rounded),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/loading_view.dart';
@@ -98,15 +99,11 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment settings saved successfully!'), backgroundColor: AppColors.success),
-        );
+        AppSnackBar.success(context, 'Payment settings saved successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save settings: $e'), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, 'Failed to save settings: $e');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

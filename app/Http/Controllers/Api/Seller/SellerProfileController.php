@@ -39,12 +39,21 @@ class SellerProfileController extends Controller
             'company' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'store_name' => ['nullable', 'string', 'max:255'],
+            'store_slug' => ['nullable', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'bio' => ['nullable', 'string', 'max:5000'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
+            'latitude' => ['nullable'],
+            'longitude' => ['nullable'],
             'website' => ['nullable', 'string', 'max:255'],
+            'timezone' => ['nullable', 'string', 'max:100'],
+            'is_store_active' => ['nullable'],
+            'business_hours' => ['nullable'],
+            'social_links' => ['nullable'],
             'photo' => ['nullable', 'file', 'image', 'max:5120'],
             'avatar' => ['nullable', 'file', 'image', 'max:5120'],
             'logo' => ['nullable', 'file', 'image', 'max:5120'],
@@ -61,7 +70,7 @@ class SellerProfileController extends Controller
         $photoFile = $request->file('photo') ?? $request->file('avatar') ?? $request->file('logo');
         $photoPath = null;
         if ($photoFile) {
-            $photoPath = FileUploadHelper::store($photoFile, 'avatars');
+            $photoPath = FileUploadHelper::store($photoFile, 'avatars', 'public');
         }
 
         // Update UserProfile (user_profiles table)
@@ -79,10 +88,27 @@ class SellerProfileController extends Controller
             $user->profile()->updateOrCreate(['user_id' => $user->id], $userProfileData);
         }
 
+        $slugValue = $validated['store_slug'] ?? ($validated['slug'] ?? null);
+
+        $businessHours = null;
+        if ($request->has('business_hours')) {
+            $rawHours = $request->input('business_hours');
+            $businessHours = is_array($rawHours) ? $rawHours : json_decode((string) $rawHours, true);
+        }
+
+        $socialLinks = null;
+        if ($request->has('social_links')) {
+            $rawLinks = $request->input('social_links');
+            $socialLinks = is_array($rawLinks) ? $rawLinks : json_decode((string) $rawLinks, true);
+            if (is_array($socialLinks)) {
+                $socialLinks = \App\Support\SocialLinkNormalizer::forStorage($socialLinks);
+            }
+        }
+
         if ($user->isBusiness()) {
             $profile = $user->businessProfile ?? $user->businessProfile()->create([
                 'business_name' => $validated['company'] ?? ($validated['store_name'] ?? $user->name),
-                'slug' => Str::slug($validated['company'] ?? ($validated['store_name'] ?? $user->name)) ?: 'store-' . $user->id,
+                'slug' => Str::slug($slugValue ?? ($validated['company'] ?? ($validated['store_name'] ?? $user->name))) ?: 'store-' . $user->id,
             ]);
 
             $attributes = [];
@@ -92,8 +118,14 @@ class SellerProfileController extends Controller
             if (! empty($validated['company'])) {
                 $attributes['business_name'] = $validated['company'];
             }
+            if ($slugValue !== null) {
+                $attributes['slug'] = Str::slug($slugValue) ?: 'store-' . $user->id;
+            }
             if (isset($validated['description'])) {
                 $attributes['description'] = $validated['description'];
+            }
+            if (isset($validated['bio'])) {
+                $attributes['description'] = $validated['bio'];
             }
             if (isset($validated['address'])) {
                 $attributes['address'] = $validated['address'];
@@ -107,14 +139,35 @@ class SellerProfileController extends Controller
             if (isset($validated['country'])) {
                 $attributes['country'] = $validated['country'];
             }
+            if (array_key_exists('latitude', $validated)) {
+                $attributes['latitude'] = (is_numeric($validated['latitude'])) ? (float) $validated['latitude'] : null;
+            }
+            if (array_key_exists('longitude', $validated)) {
+                $attributes['longitude'] = (is_numeric($validated['longitude'])) ? (float) $validated['longitude'] : null;
+            }
+            if (isset($validated['timezone'])) {
+                $attributes['timezone'] = $validated['timezone'];
+            }
             if (isset($validated['website'])) {
                 $attributes['website'] = $validated['website'];
+            }
+            if (isset($validated['phone'])) {
+                $attributes['phone'] = $validated['phone'];
+            }
+            if ($request->has('is_store_active')) {
+                $attributes['is_store_active'] = $request->boolean('is_store_active');
+            }
+            if ($businessHours !== null) {
+                $attributes['business_hours'] = $businessHours;
+            }
+            if ($socialLinks !== null) {
+                $attributes['social_links'] = $socialLinks;
             }
             if ($photoPath) {
                 $attributes['logo'] = $photoPath;
             }
             if ($request->hasFile('cover_image')) {
-                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'stores/covers');
+                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'stores/covers', 'public');
             }
 
             if (! empty($attributes)) {
@@ -123,7 +176,7 @@ class SellerProfileController extends Controller
         } else {
             $profile = $user->salerProfile ?? $user->salerProfile()->create([
                 'display_name' => $validated['company'] ?? ($validated['store_name'] ?? $user->name),
-                'slug' => Str::slug($validated['company'] ?? ($validated['store_name'] ?? $user->name)) ?: 'seller-' . $user->id,
+                'slug' => Str::slug($slugValue ?? ($validated['company'] ?? ($validated['store_name'] ?? $user->name))) ?: 'seller-' . $user->id,
             ]);
 
             $attributes = [];
@@ -133,8 +186,14 @@ class SellerProfileController extends Controller
             if (! empty($validated['company'])) {
                 $attributes['display_name'] = $validated['company'];
             }
+            if ($slugValue !== null) {
+                $attributes['slug'] = Str::slug($slugValue) ?: 'seller-' . $user->id;
+            }
             if (isset($validated['description'])) {
                 $attributes['bio'] = $validated['description'];
+            }
+            if (isset($validated['bio'])) {
+                $attributes['bio'] = $validated['bio'];
             }
             if (isset($validated['address'])) {
                 $attributes['location'] = $validated['address'];
@@ -148,11 +207,29 @@ class SellerProfileController extends Controller
             if (isset($validated['country'])) {
                 $attributes['country'] = $validated['country'];
             }
+            if (array_key_exists('latitude', $validated)) {
+                $attributes['latitude'] = (is_numeric($validated['latitude'])) ? (float) $validated['latitude'] : null;
+            }
+            if (array_key_exists('longitude', $validated)) {
+                $attributes['longitude'] = (is_numeric($validated['longitude'])) ? (float) $validated['longitude'] : null;
+            }
+            if (isset($validated['timezone'])) {
+                $attributes['timezone'] = $validated['timezone'];
+            }
+            if ($request->has('is_store_active')) {
+                $attributes['is_store_active'] = $request->boolean('is_store_active');
+            }
+            if ($businessHours !== null) {
+                $attributes['business_hours'] = $businessHours;
+            }
+            if ($socialLinks !== null) {
+                $attributes['social_links'] = $socialLinks;
+            }
             if ($photoPath) {
                 $attributes['profile_photo'] = $photoPath;
             }
             if ($request->hasFile('cover_image')) {
-                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'sellers/covers');
+                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'sellers/covers', 'public');
             }
 
             if (! empty($attributes)) {

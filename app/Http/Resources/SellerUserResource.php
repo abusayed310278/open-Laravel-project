@@ -53,6 +53,13 @@ class SellerUserResource extends JsonResource
             $isStoreActive = (bool) $profile->is_store_active;
         }
 
+        $latitude = isset($profile) && $profile->latitude ? (float) $profile->latitude : null;
+        $longitude = isset($profile) && $profile->longitude ? (float) $profile->longitude : null;
+        $website = isset($profile) ? ($profile->website ?? null) : null;
+        $timezone = isset($profile) ? ($profile->timezone ?? null) : null;
+        $businessHours = isset($profile) ? ($profile->business_hours ?? null) : null;
+        $socialLinks = isset($profile) ? ($profile->social_links ?? null) : null;
+
         $subscription = $this->activeSubscription;
         $wallet = $this->wallet;
 
@@ -74,6 +81,12 @@ class SellerUserResource extends JsonResource
             'address' => $address,
             'city' => $city,
             'country' => $country,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'website' => $website,
+            'timezone' => $timezone,
+            'business_hours' => $businessHours,
+            'social_links' => $socialLinks,
             'is_store_active' => $isStoreActive,
             'is_kyc_approved' => $this->isKycApproved(),
             'listing_credits' => (int) ($subscription?->credits ?? 0),

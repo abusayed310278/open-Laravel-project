@@ -17,6 +17,16 @@ class StoreProductRequest extends FormRequest
         return $this->user()->can('create', Product::class);
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('attributes'))) {
+            $decoded = json_decode($this->input('attributes'), true);
+            if (is_array($decoded)) {
+                $this->merge(['attributes' => $decoded]);
+            }
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */

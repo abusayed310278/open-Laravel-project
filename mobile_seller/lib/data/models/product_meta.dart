@@ -17,6 +17,9 @@ class AttributeOption {
   final String name;
   final String type;
   final bool isRequired;
+  final String? group;
+  final String? unit;
+  final String? placeholder;
   final List<AttributeValueOption> values;
 
   const AttributeOption({
@@ -24,8 +27,20 @@ class AttributeOption {
     required this.name,
     this.type = 'text',
     this.isRequired = false,
+    this.group,
+    this.unit,
+    this.placeholder,
     this.values = const [],
   });
+
+  bool get isSelect =>
+      type == 'select' ||
+      type == 'multi_select' ||
+      type == 'color' ||
+      values.isNotEmpty;
+
+  bool get isBoolean => type == 'boolean';
+  bool get isNumber => type == 'number';
 
   factory AttributeOption.fromJson(Map<String, dynamic> json) {
     final vals = (json['values'] as List?)
@@ -38,6 +53,9 @@ class AttributeOption {
       name: json['name']?.toString() ?? '',
       type: json['type']?.toString() ?? 'text',
       isRequired: json['is_required'] == true,
+      group: json['group']?.toString() ?? 'General Specifications',
+      unit: json['unit']?.toString(),
+      placeholder: json['placeholder']?.toString(),
       values: vals,
     );
   }

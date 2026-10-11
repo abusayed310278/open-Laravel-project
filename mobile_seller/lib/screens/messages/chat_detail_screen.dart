@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
 
@@ -148,9 +149,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await _pollNewMessages();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e'), backgroundColor: AppColors.danger),
-        );
+        AppSnackBar.error(context, 'Failed to send: $e');
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
