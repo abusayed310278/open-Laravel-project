@@ -627,6 +627,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
 
         Route::get('/store', [StoreSettingsController::class, 'edit'])->name('store.edit');
         Route::post('/store', [StoreSettingsController::class, 'updateBusiness'])->name('store.update');
+        Route::get('/settings', [StoreSettingsController::class, 'edit'])->name('settings.index');
+        Route::post('/settings', [StoreSettingsController::class, 'updateBusiness']);
 
         Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
         Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel'])->name('subscription.cancel');
@@ -658,6 +660,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.
 
         Route::get('/store', [StoreSettingsController::class, 'edit'])->name('store.edit');
         Route::post('/store', [StoreSettingsController::class, 'updateSaler'])->name('store.update');
+        Route::get('/settings', [StoreSettingsController::class, 'edit'])->name('settings.index');
+        Route::post('/settings', [StoreSettingsController::class, 'updateSaler']);
 
         Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
         Route::post('/subscriptions/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');

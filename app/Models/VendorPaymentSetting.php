@@ -41,6 +41,36 @@ class VendorPaymentSetting extends Model
         return filled($this->paypal_client_id) && filled($this->paypal_client_secret);
     }
 
+    public function getBankNameAttribute(): ?string
+    {
+        return $this->bank_details['bank_name'] ?? null;
+    }
+
+    public function getAccountNameAttribute(): ?string
+    {
+        return $this->bank_details['account_name'] ?? null;
+    }
+
+    public function getAccountNumberAttribute(): ?string
+    {
+        return $this->bank_details['account_number'] ?? null;
+    }
+
+    public function getIbanAttribute(): ?string
+    {
+        return $this->bank_details['iban'] ?? null;
+    }
+
+    public function getSwiftCodeAttribute(): ?string
+    {
+        return $this->bank_details['swift_code'] ?? null;
+    }
+
+    public function getBankBranchAttribute(): ?string
+    {
+        return $this->bank_details['bank_branch'] ?? null;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

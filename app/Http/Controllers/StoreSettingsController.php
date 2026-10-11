@@ -41,7 +41,13 @@ class StoreSettingsController extends Controller
         $kycRequirements = $kycService->requirementsFor($user);
 
         return view('seller.store.edit', [
+            'user' => $user,
             'profile' => $profile,
+            'userProfile' => $user->profile,
+            'paymentSettings' => $user->paymentSettings ?? $user->paymentSettings()->make(['cod_enabled' => true, 'manual_bank_enabled' => true]),
+            'paymentAccounts' => $user->paymentAccounts,
+            'activeSubscription' => $user->activeSubscription?->load('plan'),
+            'productsCount' => $user->products()->count(),
             'socialPlatformOptions' => $socialTypes->map(fn (SocialType $type) => [
                 'slug' => $type->slug,
                 'name' => $type->name,
@@ -81,7 +87,45 @@ class StoreSettingsController extends Controller
             'slug' => Str::slug($user->name) ?: 'store-' . $user->id,
         ]);
 
-        $data = $request->safe()->except(['logo', 'cover_image', 'business_hours', 'social_links']);
+        if ($request->filled('name')) {
+            $user->update(['name' => $request->string('name')->trim()->value()]);
+        }
+        if ($request->has('phone')) {
+            $user->update(['phone' => $request->input('phone')]);
+        }
+        if ($request->has('company') || $request->has('location')) {
+            $user->profile()->updateOrCreate(['user_id' => $user->id], [
+                'company' => $request->input('company'),
+                'location' => $request->input('location'),
+            ]);
+        }
+
+        $avatarFile = $request->file('avatar') ?? $request->file('photo');
+        if ($avatarFile && $avatarFile->isValid()) {
+            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars', 'public');
+            $user->update(['avatar' => $avatarPath]);
+            $user->profile()->updateOrCreate(['user_id' => $user->id], ['avatar' => $avatarPath]);
+        }
+
+        if ($request->has('bank_name') || $request->has('iban') || $request->has('account_number')) {
+            $paymentSetting = $user->paymentSettings()->firstOrCreate(['user_id' => $user->id]);
+            $existing = $paymentSetting->bank_details ?? [];
+            $bankDetails = [
+                'bank_name' => $request->input('bank_name', $existing['bank_name'] ?? null),
+                'account_name' => $request->input('account_name', $existing['account_name'] ?? null),
+                'account_number' => $request->input('account_number', $existing['account_number'] ?? null),
+                'iban' => $request->input('iban', $existing['iban'] ?? null),
+                'swift_code' => $request->input('swift_code', $existing['swift_code'] ?? null),
+                'bank_branch' => $request->input('bank_branch', $existing['bank_branch'] ?? null),
+            ];
+            $paymentSetting->update([
+                'bank_details' => $bankDetails,
+                'cod_enabled' => $request->boolean('cod_enabled'),
+                'manual_bank_enabled' => $request->boolean('manual_bank_enabled', true),
+            ]);
+        }
+
+        $data = $request->safe()->except(['logo', 'cover_image', 'business_hours', 'social_links', 'avatar', 'photo', 'name', 'phone', 'company', 'location', 'bank_name', 'account_name', 'account_number', 'iban', 'swift_code', 'bank_branch', 'cod_enabled', 'manual_bank_enabled']);
         $data['is_store_active'] = $request->boolean('is_store_active');
         $data['profile_completed'] = true;
         $data['business_hours'] = $this->buildBusinessHours($request);
@@ -101,7 +145,7 @@ class StoreSettingsController extends Controller
 
         $profile->update($data);
 
-        return back()->with('status', 'Store profile updated.');
+        return back()->with('status', 'Store profile updated successfully.');
     }
 
     public function updateSaler(UpdateSalerStoreRequest $request): RedirectResponse
@@ -112,7 +156,45 @@ class StoreSettingsController extends Controller
             'slug' => Str::slug($user->name) ?: 'seller-' . $user->id,
         ]);
 
-        $data = $request->safe()->except(['profile_photo', 'cover_image', 'business_hours', 'social_links']);
+        if ($request->filled('name')) {
+            $user->update(['name' => $request->string('name')->trim()->value()]);
+        }
+        if ($request->has('phone')) {
+            $user->update(['phone' => $request->input('phone')]);
+        }
+        if ($request->has('company') || $request->has('location')) {
+            $user->profile()->updateOrCreate(['user_id' => $user->id], [
+                'company' => $request->input('company'),
+                'location' => $request->input('location'),
+            ]);
+        }
+
+        $avatarFile = $request->file('avatar') ?? $request->file('photo');
+        if ($avatarFile && $avatarFile->isValid()) {
+            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars', 'public');
+            $user->update(['avatar' => $avatarPath]);
+            $user->profile()->updateOrCreate(['user_id' => $user->id], ['avatar' => $avatarPath]);
+        }
+
+        if ($request->has('bank_name') || $request->has('iban') || $request->has('account_number')) {
+            $paymentSetting = $user->paymentSettings()->firstOrCreate(['user_id' => $user->id]);
+            $existing = $paymentSetting->bank_details ?? [];
+            $bankDetails = [
+                'bank_name' => $request->input('bank_name', $existing['bank_name'] ?? null),
+                'account_name' => $request->input('account_name', $existing['account_name'] ?? null),
+                'account_number' => $request->input('account_number', $existing['account_number'] ?? null),
+                'iban' => $request->input('iban', $existing['iban'] ?? null),
+                'swift_code' => $request->input('swift_code', $existing['swift_code'] ?? null),
+                'bank_branch' => $request->input('bank_branch', $existing['bank_branch'] ?? null),
+            ];
+            $paymentSetting->update([
+                'bank_details' => $bankDetails,
+                'cod_enabled' => $request->boolean('cod_enabled'),
+                'manual_bank_enabled' => $request->boolean('manual_bank_enabled', true),
+            ]);
+        }
+
+        $data = $request->safe()->except(['profile_photo', 'cover_image', 'business_hours', 'social_links', 'avatar', 'photo', 'name', 'phone', 'company', 'location', 'bank_name', 'account_name', 'account_number', 'iban', 'swift_code', 'bank_branch', 'cod_enabled', 'manual_bank_enabled']);
         $data['is_store_active'] = $request->boolean('is_store_active');
         $data['profile_completed'] = true;
         $data['business_hours'] = $this->buildBusinessHours($request);
@@ -132,7 +214,7 @@ class StoreSettingsController extends Controller
 
         $profile->update($data);
 
-        return back()->with('status', 'Store profile updated.');
+        return back()->with('status', 'Store profile updated successfully.');
     }
 
     /**

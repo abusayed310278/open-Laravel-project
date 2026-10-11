@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Http\Controllers\Api\Seller;
+
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\SellerUserResource;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+
+class SellerAuthController extends Controller
+{
+    /**
+     * Authenticate seller account and return Sanctum access token.
+     */
+    public function login(Request $request): JsonResponse
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (! Auth::attempt($credentials)) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials do not match our records.'],
+            ]);
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        // Enforce that only Sellers (saler) or Store Owners (business) can access the seller app
+        if (! $user->isSaler() && ! $user->isBusiness()) {
+            Auth::logout();
+            return response()->json([
+                'message' => 'Access denied. This app is strictly for Sellers and Store Owners.',
+            ], 403);
+        }
+
+        if ($user->status === UserStatus::Suspended || $user->status === UserStatus::Blocked) {
+            Auth::logout();
+            return response()->json([
+                'message' => 'Your account has been restricted. Please contact support.',
+            ], 403);
+        }
+
+        $token = $user->createToken('flutter-mobile-seller-app')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successful',
+            'token' => $token,
+            'user' => new SellerUserResource($user),
+        ]);
+    }
+
+    /**
+     * Get authenticated seller profile and store state.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        return response()->json([
+            'user' => new SellerUserResource($user),
+        ]);
+    }
+
+    /**
+     * Revoke current session token.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully',
+        ]);
+    }
+}
