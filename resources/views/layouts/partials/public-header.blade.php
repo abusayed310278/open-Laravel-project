@@ -683,7 +683,7 @@
             </div>
             {{-- Categories Navigation Bar (Adapts based on device width) --}}
             <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start min-w-0 overflow-hidden">
-                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-x-auto no-scrollbar scroll-smooth">
+                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-hidden">
                     @foreach ($navMenuCategories as $index => $navCat)
                         <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
@@ -825,16 +825,67 @@
                 }
             }
 
-            // Horizontal Category Navigation Bar - Mouse Wheel Scroll
+            // Dynamically show only categories that fit 100% completely without cutting off words
+            const navContainer = document.getElementById('header-main-nav');
             const navItemsContainer = document.getElementById('header-nav-items');
-            if (navItemsContainer) {
-                navItemsContainer.addEventListener('wheel', (e) => {
-                    if (Math.abs(e.deltaX) > 0) return;
-                    if (e.deltaY !== 0 && navItemsContainer.scrollWidth > navItemsContainer.clientWidth) {
-                        e.preventDefault();
-                        navItemsContainer.scrollLeft += e.deltaY;
+            const topItems = Array.from(document.querySelectorAll('.js-nav-category-item'));
+
+            if (navContainer && navItemsContainer && topItems.length > 0) {
+                let cachedWidths = [];
+
+                const measure = () => {
+                    topItems.forEach(item => {
+                        item.style.display = 'inline-flex';
+                    });
+                    cachedWidths = topItems.map(item => item.getBoundingClientRect().width);
+                };
+
+                const updateFit = () => {
+                    if (cachedWidths.length === 0) measure();
+                    const availableWidth = navContainer.clientWidth;
+                    if (availableWidth <= 0) return;
+
+                    let accum = 0;
+                    const gap = 4; // gap between category items
+                    let visibleCount = 0;
+
+                    for (let i = 0; i < cachedWidths.length; i++) {
+                        const itemW = cachedWidths[i] + (i > 0 ? gap : 0);
+                        if (accum + itemW <= availableWidth) {
+                            accum += itemW;
+                            visibleCount++;
+                        } else {
+                            break;
+                        }
                     }
-                }, { passive: false });
+
+                    // Display only categories that fit completely; hide any that would be cut off
+                    topItems.forEach((item, idx) => {
+                        item.style.display = (idx < visibleCount) ? 'inline-flex' : 'none';
+                    });
+                };
+
+                measure();
+                updateFit();
+
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => {
+                        measure();
+                        updateFit();
+                    });
+                }
+
+                window.addEventListener('resize', () => {
+                    measure();
+                    updateFit();
+                });
+
+                if (window.ResizeObserver) {
+                    const ro = new ResizeObserver(() => {
+                        updateFit();
+                    });
+                    ro.observe(navContainer);
+                }
             }
 
             // Global Cart Badge Manager & Add to Cart Click Listener
