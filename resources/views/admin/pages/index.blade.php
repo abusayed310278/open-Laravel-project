@@ -34,10 +34,31 @@
                         </div>
                     </td>
                     <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ $page->slug === 'blog' ? '/blog' : '/pages/' . $page->slug }}</td>
-                    <td class="px-4 py-3"><x-badge :color="$page->status->badgeColor()">{{ $page->status->label() }}</x-badge></td>
+                    <td class="px-4 py-3" id="page-status-badge-{{ $page->id }}">
+                        <x-badge :color="$page->status->badgeColor()">{{ $page->status->label() }}</x-badge>
+                    </td>
                     <td class="px-4 py-3 text-gray-400 text-xs">{{ $page->updated_at->format('M j, Y') }}</td>
                     <td class="px-4 py-3 text-right">
-                        <div class="inline-flex items-center justify-end gap-1">
+                        <div class="inline-flex items-center justify-end gap-1.5">
+                            {{-- Active/Inactive Toggle Switch --}}
+                            <form method="POST" action="{{ route('admin.pages.toggle-status', $page) }}" class="inline-flex items-center m-0 js-toggle-page-form" data-page-id="{{ $page->id }}">
+                                @csrf
+                                @method('PATCH')
+                                <button
+                                    type="submit"
+                                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 {{ $page->status === \App\Enums\ContentStatus::Published ? 'bg-emerald-500' : 'bg-gray-300' }} js-toggle-btn"
+                                    role="switch"
+                                    aria-checked="{{ $page->status === \App\Enums\ContentStatus::Published ? 'true' : 'false' }}"
+                                    title="{{ $page->status === \App\Enums\ContentStatus::Published ? 'Active / Published (Click to Deactivate)' : 'Inactive / Draft (Click to Activate)' }}"
+                                >
+                                    <span class="sr-only">Toggle page status</span>
+                                    <span
+                                        aria-hidden="true"
+                                        class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out {{ $page->status === \App\Enums\ContentStatus::Published ? 'translate-x-4' : 'translate-x-0' }} js-toggle-knob"
+                                    ></span>
+                                </button>
+                            </form>
+
                             <a href="{{ $page->slug === 'blog' ? route('blog.index') : route('pages.show', $page->slug) }}" target="_blank" class="p-1.5 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition inline-flex items-center" title="View Live Page (All Blogs)">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                             </a>
@@ -63,4 +84,63 @@
 
         <x-pagination :paginator="$pages" />
     </x-card>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.js-toggle-page-form').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const btn = form.querySelector('.js-toggle-btn');
+                    const knob = form.querySelector('.js-toggle-knob');
+                    const pageId = form.getAttribute('data-page-id');
+                    const statusBadgeCell = document.getElementById('page-status-badge-' + pageId);
+
+                    btn.disabled = true;
+                    btn.classList.add('opacity-70');
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-70');
+                        if (data && data.success) {
+                            if (data.isPublished) {
+                                btn.classList.remove('bg-gray-300');
+                                btn.classList.add('bg-emerald-500');
+                                knob.classList.remove('translate-x-0');
+                                knob.classList.add('translate-x-4');
+                                btn.setAttribute('aria-checked', 'true');
+                                btn.setAttribute('title', 'Active / Published (Click to Deactivate)');
+                                if (statusBadgeCell) {
+                                    statusBadgeCell.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">' + data.label + '</span>';
+                                }
+                            } else {
+                                btn.classList.remove('bg-emerald-500');
+                                btn.classList.add('bg-gray-300');
+                                knob.classList.remove('translate-x-4');
+                                knob.classList.add('translate-x-0');
+                                btn.setAttribute('aria-checked', 'false');
+                                btn.setAttribute('title', 'Inactive / Draft (Click to Activate)');
+                                if (statusBadgeCell) {
+                                    statusBadgeCell.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">' + data.label + '</span>';
+                                }
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-70');
+                        form.submit();
+                    });
+                });
+            });
+        });
+    </script>
 @endsection

@@ -1,3 +1,9 @@
+@php
+    $activePageSlugs = \Illuminate\Support\Facades\Cache::remember('published_page_slugs', 3600, function () {
+        return \App\Models\Page::published()->pluck('slug')->all();
+    });
+@endphp
+
 <footer style="background-color: #0c0f1d; color: #94a3b8;" class="text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-10">
         {{-- Brand & About --}}
@@ -30,8 +36,12 @@
                 <li><a href="{{ Route::has('register.saler') ? route('register.saler') : (Route::has('register') ? route('register') : '#') }}" class="hover:text-amber-400 transition-colors">Sell as Saler</a></li>
                 <li><a href="{{ Route::has('register.business') ? route('register.business') : (Route::has('register') ? route('register') : '#') }}" class="hover:text-amber-400 transition-colors">Sell as Business</a></li>
                 <li><a href="{{ Route::has('stores.index') ? route('stores.index') : '#' }}" class="hover:text-amber-400 transition-colors">Browse Stores</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Warehouse Custody</a></li>
-                <li><a href="#" class="hover:text-amber-400 transition-colors">Fee Calculator</a></li>
+                @if (in_array('warehouse-custody', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'warehouse-custody') }}" class="hover:text-amber-400 transition-colors">Warehouse Custody</a></li>
+                @endif
+                @if (in_array('fee-calculator', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'fee-calculator') }}" class="hover:text-amber-400 transition-colors">Fee Calculator</a></li>
+                @endif
             </ul>
         </div>
 
@@ -39,11 +49,21 @@
         <div>
             <h3 class="text-white text-xs font-bold uppercase tracking-wider mb-4" style="color: #ffffff;">Support</h3>
             <ul class="space-y-2.5 text-xs text-gray-400">
-                <li><a href="{{ route('pages.show', 'help-center') }}" class="hover:text-amber-400 transition-colors">Help Center</a></li>
-                <li><a href="{{ route('pages.show', 'track-order') }}" class="hover:text-amber-400 transition-colors">Track Order</a></li>
-                <li><a href="{{ route('pages.show', 'returns-refund-policy') }}" class="hover:text-amber-400 transition-colors">Returns &amp; Refund Policy</a></li>
-                <li><a href="{{ route('pages.show', 'escrow-protection') }}" class="hover:text-amber-400 transition-colors">Escrow Protection</a></li>
-                <li><a href="{{ route('pages.show', 'contact-support') }}" class="hover:text-amber-400 transition-colors">Contact Support</a></li>
+                @if (in_array('help-center', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'help-center') }}" class="hover:text-amber-400 transition-colors">Help Center</a></li>
+                @endif
+                @if (in_array('track-order', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'track-order') }}" class="hover:text-amber-400 transition-colors">Track Order</a></li>
+                @endif
+                @if (in_array('returns-refund-policy', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'returns-refund-policy') }}" class="hover:text-amber-400 transition-colors">Returns &amp; Refund Policy</a></li>
+                @endif
+                @if (in_array('escrow-protection', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'escrow-protection') }}" class="hover:text-amber-400 transition-colors">Escrow Protection</a></li>
+                @endif
+                @if (in_array('contact-support', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'contact-support') }}" class="hover:text-amber-400 transition-colors">Contact Support</a></li>
+                @endif
             </ul>
         </div>
 
@@ -51,13 +71,27 @@
         <div>
             <h3 class="text-white text-xs font-bold uppercase tracking-wider mb-4" style="color: #ffffff;">Company</h3>
             <ul class="space-y-2.5 text-xs text-gray-400">
-                <li><a href="{{ route('pages.show', 'about-openbox') }}" class="hover:text-amber-400 transition-colors">About Openbox</a></li>
-                <li><a href="{{ route('pages.show', 'terms-of-service') }}" class="hover:text-amber-400 transition-colors">Terms of Service</a></li>
-                <li><a href="{{ route('pages.show', 'privacy-policy') }}" class="hover:text-amber-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="{{ route('pages.show', 'delete-policy') }}" class="hover:text-amber-400 transition-colors">Delete Policy</a></li>
-                <li><a href="{{ route('pages.show', 'trust-safety') }}" class="hover:text-amber-400 transition-colors">Trust &amp; Safety</a></li>
-                <li><a href="{{ route('pages.show', 'careers') }}" class="hover:text-amber-400 transition-colors">Careers</a></li>
-                <li><a href="{{ route('blog.index') }}" class="hover:text-amber-400 transition-colors">Blog</a></li>
+                @if (in_array('about-openbox', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'about-openbox') }}" class="hover:text-amber-400 transition-colors">About Openbox</a></li>
+                @endif
+                @if (in_array('terms-of-service', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'terms-of-service') }}" class="hover:text-amber-400 transition-colors">Terms of Service</a></li>
+                @endif
+                @if (in_array('privacy-policy', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'privacy-policy') }}" class="hover:text-amber-400 transition-colors">Privacy Policy</a></li>
+                @endif
+                @if (in_array('delete-policy', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'delete-policy') }}" class="hover:text-amber-400 transition-colors">Delete Policy</a></li>
+                @endif
+                @if (in_array('trust-safety', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'trust-safety') }}" class="hover:text-amber-400 transition-colors">Trust &amp; Safety</a></li>
+                @endif
+                @if (in_array('careers', $activePageSlugs))
+                    <li><a href="{{ route('pages.show', 'careers') }}" class="hover:text-amber-400 transition-colors">Careers</a></li>
+                @endif
+                @if (in_array('blog', $activePageSlugs))
+                    <li><a href="{{ route('blog.index') }}" class="hover:text-amber-400 transition-colors">Blog</a></li>
+                @endif
             </ul>
         </div>
     </div>

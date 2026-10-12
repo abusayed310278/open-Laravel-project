@@ -547,6 +547,175 @@ class CmsPagesSeeder extends Seeder
                 'meta_description' => 'Read our latest tech articles, gadget comparisons, and certified device buying guides.',
                 'status' => ContentStatus::Published,
             ],
+            [
+                'title' => 'Warehouse Custody',
+                'slug' => 'warehouse-custody',
+                'content' => '
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-6 rounded-2xl bg-gradient-to-r from-brand-50 to-amber-50/50 border border-brand-100 text-gray-900">
+        <h2 class="text-xl font-extrabold text-gray-950 mb-2">Openbox Warehouse Custody & Fulfillment</h2>
+        <p class="text-gray-600">Store your verified inventory in our climate-controlled, 24/7 guarded central hubs. Enjoy instant same-day fulfillment, zero storage fees for 30 days, and complete escrow-backed peace of mind.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg mb-2">🏢</div>
+            <h3 class="text-base font-bold text-gray-900">Climate-Controlled Hubs</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Electronics are stored in dedicated anti-static, temperature-regulated facilities in Dhaka to maintain battery health and cosmetic condition.
+            </p>
+        </div>
+
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-lg mb-2">⚡</div>
+            <h3 class="text-base font-bold text-gray-900">Same-Day Dispatch</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                When a buyer orders your deposited item, Openbox fulfills and dispatches immediately without requiring you to drop off the device.
+            </p>
+        </div>
+
+        <div class="p-5 border border-gray-200/80 rounded-xl bg-white shadow-xs space-y-2">
+            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-lg mb-2">🛡️</div>
+            <h3 class="text-base font-bold text-gray-900">100% Insured Custody</h3>
+            <p class="text-xs text-gray-600 leading-normal">
+                Every unit in custody is insured against theft, accidental damage, or mishandling, backed by our commercial custody warranty.
+            </p>
+        </div>
+    </div>
+
+    <section class="space-y-4">
+        <h3 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">How Warehouse Custody Works</h3>
+        <ol class="list-decimal list-inside space-y-3 text-xs sm:text-sm text-gray-700">
+            <li><strong>Deposit Booking:</strong> Choose "Warehouse Deposit" in your Seller Dashboard and select your preferred hub location.</li>
+            <li><strong>40-Point Diagnostic Check:</strong> Certified verifier engineers physically test your device, verify components, and generate an official condition certificate.</li>
+            <li><strong>Inventory Vaulting:</strong> The device is packaged in tamper-evident protective materials and assigned a unique barcode in our storage vault.</li>
+            <li><strong>Automated Selling & Payout:</strong> Your listing receives the "Warehouse Verified" badge. When sold, we handle shipping and transfer funds to your wallet instantly upon buyer acceptance.</li>
+        </ol>
+    </section>
+
+    <section class="space-y-3">
+        <h3 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">Storage Pricing & Retrieval</h3>
+        <p class="text-xs text-gray-600">First 30 days of warehouse storage are 100% free for all verified sellers. Devices can be retrieved or returned to the seller at any time upon 24-hour advance request.</p>
+    </section>
+</div>
+                ',
+                'meta_title' => 'Warehouse Custody & Hub Fulfillment — Openbox',
+                'meta_description' => 'Store verified electronics inventory in secure Openbox hubs with automated same-day delivery.',
+                'status' => ContentStatus::Published,
+            ],
+            [
+                'title' => 'Fee Calculator',
+                'slug' => 'fee-calculator',
+                'content' => '
+<div class="space-y-8 text-sm text-gray-700 leading-relaxed">
+    <div class="p-6 rounded-2xl bg-gradient-to-r from-brand-50 to-amber-50/50 border border-brand-100 text-gray-900">
+        <h2 class="text-xl font-extrabold text-gray-950 mb-2">Openbox Fee & Earnings Calculator</h2>
+        <p class="text-gray-600">Calculate your exact platform commission, verification fees, and estimated net payout before listing your electronics.</p>
+    </div>
+
+    <div class="p-6 border border-gray-200 rounded-2xl bg-white shadow-xs space-y-6">
+        <h3 class="text-base font-bold text-gray-900">Interactive Profit Calculator</h3>
+        
+        <div class="grid sm:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5" for="calc-price">Listing Price (৳ BDT)</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">Tk</span>
+                    <input type="number" id="calc-price" value="25000" min="500" step="100" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5" for="calc-role">Seller Account Type</label>
+                <select id="calc-role" class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                    <option value="individual" selected>Individual Seller (Saler) — 5% commission</option>
+                    <option value="business">Verified Business Store — 3.5% commission</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4 pt-4 border-t border-gray-100 text-center">
+            <div class="p-4 bg-gray-50 rounded-xl">
+                <span class="text-xs text-gray-500 block mb-1">Platform Commission</span>
+                <span class="text-lg font-bold text-gray-900" id="calc-commission-display">৳ 1,250</span>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-xl">
+                <span class="text-xs text-gray-500 block mb-1">Physical Verification</span>
+                <span class="text-lg font-bold text-emerald-600" id="calc-inspection-display">৳ 0 (Free)</span>
+            </div>
+            <div class="p-4 bg-brand-50 border border-brand-200 rounded-xl">
+                <span class="text-xs text-brand-700 font-semibold block mb-1">Your Net Payout</span>
+                <span class="text-xl font-extrabold text-brand-900" id="calc-net-display">৳ 23,750</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const priceInput = document.getElementById("calc-price");
+            const roleSelect = document.getElementById("calc-role");
+            const commDisplay = document.getElementById("calc-commission-display");
+            const netDisplay = document.getElementById("calc-net-display");
+
+            function recalc() {
+                const price = Math.max(0, parseFloat(priceInput.value) || 0);
+                const rate = roleSelect.value === "business" ? 0.035 : 0.05;
+                const commission = Math.round(price * rate);
+                const net = price - commission;
+                commDisplay.textContent = "৳ " + commission.toLocaleString();
+                netDisplay.textContent = "৳ " + net.toLocaleString();
+            }
+
+            if (priceInput && roleSelect) {
+                priceInput.addEventListener("input", recalc);
+                roleSelect.addEventListener("change", recalc);
+                recalc();
+            }
+        })();
+    </script>
+
+    <section class="space-y-4">
+        <h3 class="text-lg font-bold text-gray-950 border-b border-gray-100 pb-2">Fee Schedule & Breakdown</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border border-gray-200 rounded-xl overflow-hidden">
+                <thead class="bg-gray-50 font-bold text-gray-700">
+                    <tr>
+                        <th class="p-3 border-b">Feature / Service</th>
+                        <th class="p-3 border-b">Individual Saler</th>
+                        <th class="p-3 border-b">Verified Business Store</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr>
+                        <td class="p-3 font-semibold text-gray-900">Success Commission</td>
+                        <td class="p-3 text-gray-600">5.0% of final sale value</td>
+                        <td class="p-3 text-gray-600">3.5% (Tiered for volume)</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-gray-900">40-Point Diagnostic Check</td>
+                        <td class="p-3 text-emerald-600 font-medium">Free during launch</td>
+                        <td class="p-3 text-emerald-600 font-medium">Included in store plan</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-gray-900">Escrow Vault Protection</td>
+                        <td class="p-3 text-emerald-600 font-medium">100% Free</td>
+                        <td class="p-3 text-emerald-600 font-medium">100% Free</td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 font-semibold text-gray-900">Payout Withdrawal Fee</td>
+                        <td class="p-3 text-gray-600">0% Bank, MFS at standard rate</td>
+                        <td class="p-3 text-gray-600">0% Direct Bank Settlement</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+                ',
+                'meta_title' => 'Seller Fee Calculator & Pricing — Openbox',
+                'meta_description' => 'Calculate your Openbox seller commission, verification fees, and net payouts instantly.',
+                'status' => ContentStatus::Published,
+            ],
         ];
 
         foreach ($pages as $data) {

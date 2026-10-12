@@ -604,6 +604,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
         Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
         Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+        Route::patch('/pages/{page}/toggle-status', [AdminPageController::class, 'toggleStatus'])->name('pages.toggle-status');
         Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
 
         Route::get('/banners', [AdminBannerController::class, 'index'])->name('banners.index');
