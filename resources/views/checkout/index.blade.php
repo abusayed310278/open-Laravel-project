@@ -6,9 +6,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <h1 class="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
 
+        @if (session('error'))
+            <x-alert type="error" class="mb-6">{{ session('error') }}</x-alert>
+        @endif
+
         @error('checkout')
             <x-alert type="error" class="mb-6">{{ $message }}</x-alert>
         @enderror
+
+        @if ($errors->any() && !$errors->has('checkout'))
+            <x-alert type="error" class="mb-6">
+                <p class="font-semibold mb-1">Please review the form for the following issues:</p>
+                <ul class="list-disc list-inside text-sm space-y-0.5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </x-alert>
+        @endif
 
         @if (empty($summary['groups']))
             <x-alert type="info">Your cart is empty. <a href="{{ route('shop') }}" class="underline">Browse the marketplace</a>.</x-alert>

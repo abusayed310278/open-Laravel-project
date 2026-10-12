@@ -51,16 +51,29 @@ class CheckoutController extends Controller
 
         $cart = $this->carts->forUser($user);
 
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('cart')->with('error', 'Your cart is empty. Please add items to your cart before proceeding to checkout.');
+        }
+
         $available = $this->checkout->availablePaymentMethods($cart);
 
         $request->validate([
             'payment_method' => ['required', Rule::in(array_map(fn (PaymentMethod $m) => $m->value, $available))],
         ]);
 
-        $shipping = $this->resolveAddress($request, 'shipping');
-        $billing = $request->boolean('same_as_shipping', true) ? $shipping : $this->resolveAddress($request, 'billing');
+        try {
+            $shipping = $this->resolveAddress($request, 'shipping');
+            $billing = $request->boolean('same_as_shipping', true) ? $shipping : $this->resolveAddress($request, 'billing');
 
-        $order = $this->checkout->placeOrder($user, $cart, $shipping, $billing, PaymentMethod::from($request->string('payment_method')->value()));
+            $order = $this->checkout->placeOrder($user, $cart, $shipping, $billing, PaymentMethod::from($request->string('payment_method')->value()));
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return back()->withInput()->withErrors(['checkout' => $e->getMessage()]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('Checkout processing error: ' . $e->getMessage(), ['exception' => $e]);
+            return back()->withInput()->withErrors(['checkout' => $e->getMessage() ?: 'Unable to process checkout. Please try again.']);
+        }
 
         if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
             $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
