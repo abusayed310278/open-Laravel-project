@@ -102,6 +102,7 @@ class ProductPageController extends Controller
             ->when($request->boolean('negotiable'), fn ($query) => $query->where('is_negotiable', true))
             ->when($request->boolean('free_shipping'), fn ($query) => $query->where('shipping_type', 'free'))
             ->when($request->boolean('in_stock'), fn ($query) => $query->where('quantity', '>', 0))
+            ->when($request->boolean('deal') || $request->boolean('deals'), fn ($query) => $query->whereNotNull('compare_price')->whereColumn('compare_price', '>', 'price'))
             ->tap(fn ($query) => match ($request->string('sort')->value()) {
                 'price_asc' => $query->orderBy('price'),
                 'price_desc' => $query->orderByDesc('price'),

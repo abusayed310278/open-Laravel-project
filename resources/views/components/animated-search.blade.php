@@ -17,7 +17,7 @@
 >
     <div
         id="searchBox"
-        class="search-box relative flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] hover:bg-gray-100/90 focus-within:bg-white border border-gray-200 hover:border-gray-300 focus-within:border-gray-900 rounded-lg shadow-2xs transition-all duration-200 pl-3 sm:pl-4 pr-1.5 sm:pr-2 overflow-hidden group"
+        class="search-box relative flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] dark:bg-slate-900/90 hover:bg-gray-100/90 dark:hover:bg-slate-800/90 focus-within:bg-white dark:focus-within:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 focus-within:border-gray-900 dark:focus-within:border-brand-500 rounded-lg shadow-2xs transition-all duration-200 pl-3 sm:pl-4 pr-1.5 sm:pr-2 overflow-hidden group"
     >
         {{-- Left: Animated Icon Wrapper (Search Icon + Success Check Icon) --}}
         <div id="iconWrapper" class="icon-wrapper relative flex items-center justify-center w-5 h-5 flex-shrink-0 mr-2 text-gray-400 group-focus-within:text-brand-500 transition-colors">
@@ -52,14 +52,14 @@
             value="{{ $currentQuery }}"
             placeholder="{{ $placeholder }}"
             autocomplete="off"
-            class="search-input w-full h-full bg-transparent border-0 p-0 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 leading-normal"
+            class="search-input w-full h-full bg-transparent border-0 p-0 text-xs sm:text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-0 leading-normal"
         />
 
         {{-- Clear Query Button (Visible when input has value) --}}
         <button
             type="button"
             id="clearButton"
-            class="clear-button text-gray-400 hover:text-gray-700 p-1 mr-1 rounded-full transition-all duration-150 {{ $currentQuery ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none' }}"
+            class="clear-button text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-1 mr-1 rounded-full transition-all duration-150 {{ $currentQuery ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none' }}"
             title="Clear search"
             aria-label="Clear search"
         >
@@ -72,7 +72,7 @@
         <button
             type="submit"
             id="searchButton"
-            class="search-button relative inline-flex items-center justify-center px-3 sm:px-4 py-1.5 h-7 sm:h-8 rounded-md bg-gray-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition-all duration-200 cursor-pointer overflow-hidden flex-shrink-0"
+            class="search-button relative inline-flex items-center justify-center px-3 sm:px-4 py-1.5 h-7 sm:h-8 rounded-md bg-gray-900 dark:bg-brand-500 hover:bg-black dark:hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition-all duration-200 cursor-pointer overflow-hidden flex-shrink-0"
         >
             <span id="buttonText" class="button-text transition-opacity duration-150">Search</span>
             <div id="spinner" class="spinner absolute inset-0 m-auto w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full opacity-0 pointer-events-none transition-opacity duration-150"></div>

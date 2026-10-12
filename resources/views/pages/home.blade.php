@@ -8,7 +8,7 @@
 
     @if (feature_enabled('home_hero_section') && $heroSlides->isNotEmpty())
         {{-- HERO SLIDER (admin-managed slides, each linking to a product) --}}
-        <section class="w-full bg-white" data-hero-slider>
+        <section class="w-full bg-white dark:bg-[#0b0f19]" data-hero-slider>
             <div data-hero-viewport class="relative overflow-hidden" style="aspect-ratio:3.5/1;">
                 <div data-hero-track style="display:flex;height:100%;transition:transform 700ms ease-in-out;will-change:transform;">
                 @foreach ($heroSlides as $slide)
@@ -26,8 +26,8 @@
                 </div>
 
                 @if ($heroSlides->count() > 1)
-                    <button type="button" data-hero-prev aria-label="Previous slide" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white shadow text-gray-900 flex items-center justify-center cursor-pointer">&larr;</button>
-                    <button type="button" data-hero-next aria-label="Next slide" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white shadow text-gray-900 flex items-center justify-center cursor-pointer">&rarr;</button>
+                    <button type="button" data-hero-prev aria-label="Previous slide" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 shadow text-gray-900 dark:text-white flex items-center justify-center cursor-pointer">&larr;</button>
+                    <button type="button" data-hero-next aria-label="Next slide" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 shadow text-gray-900 dark:text-white flex items-center justify-center cursor-pointer">&rarr;</button>
                     <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
                         @foreach ($heroSlides as $slide)
                             <button type="button" data-hero-dot="{{ $loop->index }}" aria-label="Go to slide {{ $loop->iteration }}" class="w-2.5 h-2.5 rounded-full bg-white/60 cursor-pointer"></button>
@@ -82,12 +82,12 @@
         @endif
     @elseif (feature_enabled('home_hero_section') && $heroImageUrl)
         {{-- HERO IMAGE (admin-managed) --}}
-        <section class="w-full bg-white">
+        <section class="w-full bg-white dark:bg-[#0b0f19]">
             <img src="{{ $heroImageUrl }}" alt="{{ config('app.name') }}" class="block w-full h-auto">
         </section>
     @elseif (feature_enabled('home_hero_section'))
         {{-- HERO SECTION --}}
-        <section class="relative bg-white pt-14 sm:pt-20 pb-14 sm:pb-16 overflow-hidden">
+        <section class="relative bg-white dark:bg-[#0b0f19] pt-14 sm:pt-20 pb-14 sm:pb-16 overflow-hidden">
             <div class="relative max-w-5xl mx-auto px-4 sm:px-6 text-center">
                 {{-- Top Pill Badge --}}
                 @php
@@ -98,41 +98,41 @@
                 @endphp
 
                 @if (filled($heroBadge))
-                    <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-gray-900 bg-gray-100 border border-gray-200/80 shadow-2xs mb-6">
-                        <svg class="w-4 h-4 text-gray-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
+                    <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 shadow-2xs mb-6">
+                        <svg class="w-4 h-4 text-gray-900 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" /></svg>
                         <span>{{ $heroBadge }}</span>
                     </div>
                 @endif
 
                 {{-- Main Headline --}}
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-5">
-                    <span class="block text-[#18182b]">{{ $heroTitle }}</span>
+                    <span class="block text-gray-950 dark:text-white">{{ $heroTitle }}</span>
                     @if (filled($heroHighlight))
-                        <span class="block text-[#b45309]" style="color: rgb(180, 83, 9);">{{ $heroHighlight }}</span>
+                        <span class="block text-amber-600 dark:text-amber-400">{{ $heroHighlight }}</span>
                     @endif
                 </h1>
 
                 {{-- Subheading --}}
                 @if (filled($heroSubtitle))
-                    <p class="text-gray-500 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed mb-8">{{ $heroSubtitle }}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto leading-relaxed mb-8">{{ $heroSubtitle }}</p>
                 @endif
 
                 {{-- Popular Keywords (Well-spaced tags) --}}
                 <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
                     <span class="text-xs font-semibold text-gray-400 mr-1.5">Popular:</span>
-                    <a href="{{ Route::has('search') ? route('search', ['q' => 'iPhone 15']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-950 border border-gray-200 hover:border-gray-900 shadow-2xs transition-all">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => 'iPhone 15']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-950 dark:hover:text-white border border-gray-200 dark:border-slate-700 hover:border-gray-900 dark:hover:border-amber-400 shadow-2xs transition-all">
                         iPhone 15 Pro Max
                     </a>
-                    <a href="{{ Route::has('search') ? route('search', ['q' => 'MacBook']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-950 border border-gray-200 hover:border-gray-900 shadow-2xs transition-all">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => 'MacBook']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-950 dark:hover:text-white border border-gray-200 dark:border-slate-700 hover:border-gray-900 dark:hover:border-amber-400 shadow-2xs transition-all">
                         MacBook Air M2
                     </a>
-                    <a href="{{ Route::has('search') ? route('search', ['q' => 'PlayStation 5']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-950 border border-gray-200 hover:border-gray-900 shadow-2xs transition-all">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => 'PlayStation 5']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-950 dark:hover:text-white border border-gray-200 dark:border-slate-700 hover:border-gray-900 dark:hover:border-amber-400 shadow-2xs transition-all">
                         PlayStation 5
                     </a>
-                    <a href="{{ Route::has('search') ? route('search', ['q' => 'Apple Watch']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-950 border border-gray-200 hover:border-gray-900 shadow-2xs transition-all">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => 'Apple Watch']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-950 dark:hover:text-white border border-gray-200 dark:border-slate-700 hover:border-gray-900 dark:hover:border-amber-400 shadow-2xs transition-all">
                         Apple Watch Ultra
                     </a>
-                    <a href="{{ Route::has('search') ? route('search', ['q' => 'Sony XM5']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 hover:text-gray-950 border border-gray-200 hover:border-gray-900 shadow-2xs transition-all">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => 'Sony XM5']) : '#' }}" class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-gray-950 dark:hover:text-white border border-gray-200 dark:border-slate-700 hover:border-gray-900 dark:hover:border-amber-400 shadow-2xs transition-all">
                         Sony XM5
                     </a>
                 </div>
@@ -141,27 +141,30 @@
     @endif
 
     @if (feature_enabled('home_browse_categories') && isset($categories) && $categories->isNotEmpty())
-        {{-- BROWSE CATEGORIES --}}
-        <section class="py-8 max-w-7xl mx-auto px-4 sm:px-6">
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+        {{-- BROWSE CATEGORIES (Matches Screenshot 1) --}}
+        <section class="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2 sm:gap-2.5 lg:gap-3">
                 @foreach ($categories as $cat)
                     @php
                         $catName = is_array($cat) ? $cat['name'] : $cat->name;
                         $catSlug = is_array($cat) ? $cat['slug'] : $cat->slug;
                         $catImage = is_array($cat) ? ($cat['image'] ?? null) : $cat->imageUrl();
-                        $catCount = is_array($cat) ? ($cat['countLabel'] ?? ($cat['count'] . ' items')) : (($cat->products_count ?? 0) . ' items');
+                        $isDeals = (is_array($cat) && !empty($cat['is_deals'])) || $catSlug === 'deals';
+                        $catUrl = $isDeals
+                            ? (Route::has('shop') ? route('shop', ['deal' => 1]) : '#')
+                            : (Route::has('shop') ? route('shop', ['category' => $catSlug]) : '#');
                     @endphp
-                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $catSlug]) : '#' }}" class="group bg-white border border-gray-100 hover:border-amber-300 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
-                        <div class="w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-amber-50 border border-gray-100 group-hover:border-amber-200 flex items-center justify-center text-gray-600 group-hover:text-amber-600 transition-colors mb-2.5">
+                    <a href="{{ $catUrl }}" class="group bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-400 rounded-2xl py-4 px-2 sm:py-4.5 sm:px-2 flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 {{ $isDeals ? 'hover:border-red-300 dark:hover:border-red-400' : '' }}">
+                        <div class="mb-2 sm:mb-2.5 flex items-center justify-center transition-colors {{ $isDeals ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400' }}">
                             @if (!empty($catImage))
-                                <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 object-contain" />
+                                <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
                             @else
-                                <x-category-icon :slug="$catSlug" class="w-6 h-6" />
+                                <x-category-icon :slug="$catSlug" class="w-7 h-7 sm:w-8 sm:h-8" />
                             @endif
                         </div>
-                        <span class="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-amber-600 transition-colors line-clamp-1" title="{{ $catName }}">{{ $catName }}</span>
-                        <span class="text-[11px] text-gray-400 mt-0.5">{{ $catCount }}</span>
+                        <span class="text-xs sm:text-[13px] font-semibold text-gray-800 dark:text-gray-200 transition-colors line-clamp-1 {{ $isDeals ? 'font-bold group-hover:text-red-600 dark:group-hover:text-red-400' : 'group-hover:text-amber-600 dark:group-hover:text-amber-400' }}" title="{{ $catName }}">
+                            {{ $catName }}
+                        </span>
                     </a>
                 @endforeach
             </div>
@@ -173,7 +176,7 @@
         <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="grid grid-cols-1 md:grid-cols-{{ min($banners->count(), 2) }} gap-6">
                 @foreach ($banners as $b)
-                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 bg-white">
+                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800">
                         @if ($b->video_url)
                             <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="block w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
                         @else
@@ -189,8 +192,8 @@
         {{-- FEATURED PRODUCTS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950">Featured Products</h2>
-                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Featured Products</h2>
+                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
@@ -233,18 +236,18 @@
         <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center gap-2 mb-4">
                 <span class="w-1 h-4 rounded-full bg-brand-400"></span>
-                <h2 class="text-lg font-bold text-gray-950">{{ $whyBuyContent['heading'] }}</h2>
+                <h2 class="text-lg font-bold text-gray-950 dark:text-white">{{ $whyBuyContent['heading'] }}</h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 @foreach ($whyBuyStyles as $i => $item)
-                    <div class="bg-white border border-gray-100 rounded-xl px-6 py-5 flex items-center gap-5 shadow-2xs">
+                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-xl px-6 py-5 flex items-center gap-5 shadow-2xs">
                         <div class="w-14 h-14 shrink-0 rounded-full {{ $item['bg'] }} {{ $item['color'] }} flex items-center justify-center">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $item['icon'] }}" /></svg>
                         </div>
                         <div class="min-w-0">
-                            <h3 class="text-sm font-bold text-gray-900">{{ $whyBuyContent['items'][$i]['title'] }}</h3>
-                            <p class="text-xs text-gray-500 mt-1">{{ $whyBuyContent['items'][$i]['text'] }}</p>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $whyBuyContent['items'][$i]['title'] }}</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $whyBuyContent['items'][$i]['text'] }}</p>
                         </div>
                     </div>
                 @endforeach
@@ -257,7 +260,7 @@
         @php
             $promoStyles = [
                 1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
-                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
+                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950 dark:from-[#1e293b] dark:to-[#0f172a] dark:text-white', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
                 3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
             ];
         @endphp
@@ -290,10 +293,10 @@
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center gap-2.5">
-                    <h2 class="text-xl font-bold text-gray-950">⚡ Certified Refurbished</h2>
-                    <span class="bg-gray-50 text-gray-900 text-[11px] font-bold px-2.5 py-1 rounded-md border border-gray-200">Save up to 40%</span>
+                    <h2 class="text-xl font-bold text-gray-950 dark:text-white">⚡ Certified Refurbished</h2>
+                    <span class="bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-gray-200 text-[11px] font-bold px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-700">Save up to 40%</span>
                 </div>
-                <a href="{{ Route::has('shop') ? route('shop', ['condition' => 'refurbished']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                <a href="{{ Route::has('shop') ? route('shop', ['condition' => 'refurbished']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
@@ -325,56 +328,56 @@
 
     @if (feature_enabled('home_openbox_guarantee'))
         {{-- THE OPENBOX BUYER ADVANTAGE --}}
-        <section class="py-14 bg-white">
+        <section class="py-14 bg-white dark:bg-[#0b0f19]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10">
-                    <h2 class="text-2xl font-extrabold text-gray-950 mb-2">The Openbox Guarantee</h2>
-                    <p class="text-sm text-gray-500 leading-relaxed">Shop pre-owned and new electronics with 100% confidence and zero hassle.</p>
+                    <h2 class="text-2xl font-extrabold text-gray-950 dark:text-white mb-2">The Openbox Guarantee</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Shop pre-owned and new electronics with 100% confidence and zero hassle.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {{-- 100% Inspected --}}
-                    <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
-                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 text-gray-900 border border-gray-200 mb-4">
+                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
+                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-slate-700 mb-4">
                             Quality Guaranteed
                         </div>
-                        <h3 class="text-base font-bold text-gray-900 mb-2">Certified Diagnostic Check</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-4">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">Certified Diagnostic Check</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                             Every device undergoes thorough hardware and component inspections to ensure pristine operational condition.
                         </p>
-                        <ul class="text-xs text-gray-500 space-y-1.5 border-t border-gray-50 pt-3">
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> Multi-point diagnostic testing</li>
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> Battery health verification</li>
+                        <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> Multi-point diagnostic testing</li>
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> Battery health verification</li>
                         </ul>
                     </div>
 
                     {{-- 7-Day Return --}}
-                    <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
-                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 text-gray-900 border border-gray-200 mb-4">
+                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
+                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-slate-700 mb-4">
                             Zero Risk Policy
                         </div>
-                        <h3 class="text-base font-bold text-gray-900 mb-2">7-Day Replacement</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-4">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">7-Day Replacement</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                             If your item doesn't match its listing description, return it within 7 days for a full refund or direct exchange.
                         </p>
-                        <ul class="text-xs text-gray-500 space-y-1.5 border-t border-gray-50 pt-3">
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> Fast and easy return pickup</li>
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> Instant escrow refund processing</li>
+                        <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> Fast and easy return pickup</li>
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> Instant escrow refund processing</li>
                         </ul>
                     </div>
 
                     {{-- Secure Escrow --}}
-                    <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
-                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 text-gray-900 border border-gray-200 mb-4">
+                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all">
+                        <div class="inline-flex items-center px-5 py-2 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-slate-700 mb-4">
                             Safe &amp; Secure
                         </div>
-                        <h3 class="text-base font-bold text-gray-900 mb-2">Escrow Protected Checkout</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-4">
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">Escrow Protected Checkout</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                             Your payment is held safely in escrow and only released to the seller after you receive and inspect your package.
                         </p>
-                        <ul class="text-xs text-gray-500 space-y-1.5 border-t border-gray-50 pt-3">
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> 100% payment protection</li>
-                            <li class="flex items-center gap-1.5"><span class="text-gray-900 font-bold">✓</span> Doorstep delivery nationwide</li>
+                        <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> 100% payment protection</li>
+                            <li class="flex items-center gap-1.5"><span class="text-gray-900 dark:text-amber-400 font-bold">✓</span> Doorstep delivery nationwide</li>
                         </ul>
                     </div>
                 </div>
@@ -386,8 +389,8 @@
         {{-- MOBILE & TECH (POPULAR) --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950">Mobile &amp; Tech</h2>
-                <a href="{{ Route::has('shop') ? route('shop', ['category' => 'phones']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Mobile &amp; Tech</h2>
+                <a href="{{ Route::has('shop') ? route('shop', ['category' => 'phones']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
@@ -421,8 +424,8 @@
         {{-- TOP RATED VENDORS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950">Top Rated Vendors</h2>
-                <a href="{{ Route::has('stores.index') ? route('stores.index') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Top Rated Vendors</h2>
+                <a href="{{ Route::has('stores.index') ? route('stores.index') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
@@ -430,16 +433,16 @@
 
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 @foreach ($vendors as $vendor)
-                    <div class="bg-white border border-gray-100 hover:border-gray-900 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all">
-                        <div class="w-12 h-12 rounded-full bg-gray-50 border border-gray-200 text-gray-900 font-bold flex items-center justify-center text-sm mb-2.5">
+                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all">
+                        <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white font-bold flex items-center justify-center text-sm mb-2.5">
                             {{ strtoupper(substr($vendor['name'], 0, 2)) }}
                         </div>
-                        <span class="text-xs font-bold text-gray-900 line-clamp-1">{{ $vendor['name'] }}</span>
-                        <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-950 font-semibold">
+                        <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{{ $vendor['name'] }}</span>
+                        <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-950 dark:text-amber-400 font-semibold">
                             <span>★</span>
                             <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>
                         </div>
-                        <span class="text-[10px] text-gray-400 mt-0.5">{{ $vendor['salesCount'] ?? '120' }}+ sales</span>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{{ $vendor['salesCount'] ?? '120' }}+ sales</span>
                     </div>
                 @endforeach
             </div>
@@ -449,10 +452,10 @@
     @if (feature_enabled('home_start_selling_cta'))
         {{-- START SELLING CTA BANNER --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="relative bg-gray-50 border border-gray-100 rounded-3xl p-8 sm:p-12 text-center shadow-2xs">
+            <div class="relative bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700 rounded-3xl p-8 sm:p-12 text-center shadow-2xs">
                 <div class="relative max-w-2xl mx-auto">
-                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-950 mb-3 tracking-tight">Start selling your electronics</h2>
-                    <p class="text-gray-600 text-xs sm:text-sm lg:text-base leading-relaxed mb-8">
+                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-950 dark:text-white mb-3 tracking-tight">Start selling your electronics</h2>
+                    <p class="text-gray-600 dark:text-gray-300 text-xs sm:text-sm lg:text-base leading-relaxed mb-8">
                         Turn your unused gadgets into instant cash. List in minutes as a seller or open a verified store with warehouse fulfillment.
                     </p>
 
@@ -465,7 +468,7 @@
                         </a>
                         <a
                             href="{{ Route::has('shop') ? route('shop') : '#' }}"
-                            class="w-full sm:w-auto bg-white hover:bg-gray-100 text-gray-900 font-semibold text-sm px-7 py-3.5 rounded-xl border border-gray-200 shadow-2xs transition-all"
+                            class="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-900 dark:text-white font-semibold text-sm px-7 py-3.5 rounded-xl border border-gray-200 dark:border-slate-600 shadow-2xs transition-all"
                         >
                             Explore Verified Deals →
                         </a>
@@ -479,8 +482,8 @@
         {{-- LATEST DROPS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950">Latest Drops</h2>
-                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 hover:text-black flex items-center gap-1 transition-colors">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Latest Drops</h2>
+                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
@@ -512,32 +515,32 @@
 
     @if (feature_enabled('home_reviews'))
         {{-- WHAT OUR COMMUNITY SAYS --}}
-        <section class="py-14 bg-white">
+        <section class="py-14 bg-white dark:bg-[#0b0f19]">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <div class="text-center max-w-2xl mx-auto mb-10">
-                    <h2 class="text-2xl font-extrabold text-gray-950 mb-2">What Our Community Says</h2>
-                    <p class="text-sm text-gray-500">Real feedback from verified buyers and sellers nationwide.</p>
+                    <h2 class="text-2xl font-extrabold text-gray-950 dark:text-white mb-2">What Our Community Says</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Real feedback from verified buyers and sellers nationwide.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     @foreach ($reviews as $review)
-                        <div class="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow">
+                        <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow">
                             <div>
                                 {{-- Stars --}}
-                                <div class="flex items-center gap-1 text-gray-950 mb-3">
+                                <div class="flex items-center gap-1 text-amber-400 mb-3">
                                     @for ($i = 0; $i < 5; $i++)
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
                                     @endfor
                                 </div>
 
-                                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-4">
+                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
                                     &ldquo;{{ $review['body'] }}&rdquo;
                                 </p>
                             </div>
 
-                            <div class="border-t border-gray-50 pt-3 flex items-center justify-between">
-                                <span class="text-xs font-bold text-gray-900">{{ $review['name'] }}</span>
-                                <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Verified Buyer</span>
+                            <div class="border-t border-gray-50 dark:border-slate-700/60 pt-3 flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-900 dark:text-white">{{ $review['name'] }}</span>
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">Verified Buyer</span>
                             </div>
                         </div>
                     @endforeach
@@ -549,7 +552,7 @@
     @if (feature_enabled('home_popular_searches'))
         {{-- POPULAR SEARCHES --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <h3 class="text-sm font-bold text-gray-900 mb-4">Popular Searches</h3>
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white mb-4">Popular Searches</h3>
             <div class="flex flex-wrap gap-2">
                 @php
                     $popularTags = [
@@ -560,7 +563,7 @@
                     ];
                 @endphp
                 @foreach ($popularTags as $tag)
-                    <a href="{{ Route::has('search') ? route('search', ['q' => $tag]) : '#' }}" class="bg-white hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 border border-gray-200 text-xs font-medium text-gray-700 px-5 py-2 rounded-lg shadow-2xs transition-colors">
+                    <a href="{{ Route::has('search') ? route('search', ['q' => $tag]) : '#' }}" class="bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 hover:text-amber-800 dark:hover:text-amber-400 hover:border-amber-300 dark:hover:border-amber-400 border border-gray-200 dark:border-slate-700 text-xs font-medium text-gray-700 dark:text-gray-300 px-5 py-2 rounded-lg shadow-2xs transition-colors">
                         {{ $tag }}
                     </a>
                 @endforeach
@@ -586,7 +589,7 @@
                         type="email"
                         name="email"
                         placeholder="{{ $newsletter['placeholder'] }}"
-                        class="flex-1 bg-white border-0 rounded-md px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        class="flex-1 bg-white dark:bg-slate-900 border-0 rounded-md px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-amber-500"
                         required
                     >
                     <button

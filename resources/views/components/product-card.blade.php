@@ -58,23 +58,23 @@
     }
 @endphp
 
-<div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
+<div class="group bg-white dark:bg-[#131b2e] border border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
     {{-- Product Image --}}
-    <div class="relative w-full h-52 sm:h-56 shrink-0 overflow-hidden bg-white">
+    <div class="relative w-full h-52 sm:h-56 shrink-0 overflow-hidden bg-white dark:bg-[#182238]/60">
         @if ($discountPercent)
             <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
         @endif
 
         <a href="{{ $href }}" class="absolute inset-0 block p-3 pt-6">
             @if ($image)
-                <img src="{{ $image }}" alt="{{ $title }}" class="block w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                <div class="hidden w-full h-full items-center justify-center text-gray-300 [&:not(.hidden)]:flex">
+                <img src="{{ $image }}" alt="{{ $title }}" class="block w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <div class="hidden w-full h-full items-center justify-center text-gray-300 dark:text-gray-600 [&:not(.hidden)]:flex">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
                     </svg>
                 </div>
             @else
-                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
                 </svg>
             @endif
@@ -85,7 +85,7 @@
             <button
                 type="button"
                 data-wishlist-id="{{ $id }}"
-                class="js-wishlist-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors cursor-pointer"
+                class="js-wishlist-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800/95 dark:hover:bg-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
                 title="Save to wishlist"
             >
                 <svg class="w-4 h-4 js-wishlist-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -96,7 +96,7 @@
                 type="button"
                 data-share-url="{{ $href }}"
                 data-share-title="{{ $title }}"
-                class="js-share-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors cursor-pointer"
+                class="js-share-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800/95 dark:hover:bg-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-brand-600 transition-colors cursor-pointer"
                 title="Share"
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@
                 data-compare-rating="{{ $rating ? number_format($rating, 1) : '4.9' }}"
                 data-compare-seller="{{ $sellerName ?: $seller }}"
                 data-compare-href="{{ $href }}"
-                class="js-compare-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white shadow-md flex items-center justify-center text-gray-600 hover:text-brand-600 transition-colors cursor-pointer"
+                class="js-compare-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800/95 dark:hover:bg-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-brand-600 transition-colors cursor-pointer"
                 title="Compare product"
             >
                 <svg class="w-4 h-4 js-compare-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -134,33 +134,33 @@
 
     {{-- Category Heading + New Badge --}}
     <div class="flex items-center justify-between gap-2 mb-1">
-        <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 uppercase tracking-wide">
+        <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
             {{ $categoryHeading }}
         </span>
         @if ($isNew)
-            <span class="text-emerald-600 bg-white border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none">New</span>
+            <span class="text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none">New</span>
         @endif
     </div>
 
     {{-- Product Title --}}
-    <a href="{{ $href }}" class="text-sm font-bold text-gray-950 hover:text-brand-600 leading-snug mb-1 transition-colors truncate">
+    <a href="{{ $href }}" class="text-sm font-bold text-gray-950 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 leading-snug mb-1 transition-colors truncate">
         {{ $title }}
     </a>
 
     {{-- Description --}}
     @if ($description)
-        <p class="text-xs text-gray-500 line-clamp-1 mb-2">
+        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
             {{ $description }}
         </p>
     @endif
 
     {{-- Price --}}
     <div class="flex items-baseline gap-2 mb-1.5">
-        <span class="text-sm sm:text-base font-bold text-gray-950 font-mono">
+        <span class="text-sm sm:text-base font-bold text-gray-950 dark:text-white font-mono">
             Tk {{ number_format($price) }}
         </span>
         @if ($discountPercent)
-            <span class="text-xs text-gray-400 line-through font-mono">
+            <span class="text-xs text-gray-400 dark:text-gray-500 line-through font-mono">
                 Tk {{ number_format($comparePrice) }}
             </span>
         @endif
@@ -173,9 +173,9 @@
                 <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
                     <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
                 </svg>
-                <span class="text-xs font-semibold text-gray-800">{{ number_format($rating, 1) }}</span>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ number_format($rating, 1) }}</span>
                 @if ($ratingCount)
-                    <span class="text-xs text-gray-400">({{ $ratingCount }})</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">({{ $ratingCount }})</span>
                 @endif
             @endif
 
@@ -202,8 +202,8 @@
 
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
-        <span class="text-xs text-gray-500 truncate">{{ $sellerName ?: $seller }}</span>
-        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
+        <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
+        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white dark:bg-slate-800 hover:bg-brand-500 dark:hover:bg-brand-500 text-brand-600 dark:text-brand-400 hover:text-white dark:hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>

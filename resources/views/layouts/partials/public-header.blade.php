@@ -1,4 +1,4 @@
-<header class="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-xs">
+<header class="bg-white dark:bg-[#0f172a] border-b border-gray-100 dark:border-slate-800 sticky top-0 z-40 shadow-xs">
     <style>
         .all-cat-container:hover .all-cat-dropdown,
         .all-cat-dropdown:hover {
@@ -24,6 +24,13 @@
         .subnav-link:hover {
             color: #0f172a;
             background-color: #f8fafc;
+        }
+        html.dark .subnav-link {
+            color: #94a3b8 !important;
+        }
+        html.dark .subnav-link:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
         }
     </style>
 
@@ -51,16 +58,17 @@
         {{-- Right: Actions & Start Selling --}}
         <div class="flex items-center gap-2.5 sm:gap-4 lg:gap-5 flex-shrink-0">
             {{-- Advanced Search --}}
-            <a href="{{ route('search.advanced') }}" class="hidden sm:inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-brand-500 hover:bg-brand-500 hover:text-white whitespace-nowrap" title="Advanced Search">
+            <a href="{{ route('search.advanced') }}" class="hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:border-brand-500 hover:bg-brand-500 hover:text-white whitespace-nowrap" title="Advanced Search">
                 Advanced
             </a>
 
-            {{-- Wishlist --}}
-            <a href="{{ Route::has('wishlist') ? route('wishlist') : '#' }}" class="text-gray-600 hover:text-gray-950 transition-colors p-1" title="Wishlist">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            {{-- Wishlist (text appears on hover) --}}
+            <a href="{{ Route::has('wishlist') ? route('wishlist') : '#' }}" class="inline-flex items-center text-gray-700 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-slate-800/80 group cursor-pointer" title="Wishlist">
+                <svg class="w-5 h-5 text-gray-700 group-hover:text-red-500 dark:text-gray-300 dark:group-hover:text-red-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-24 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Wishlist</span>
             </a>
 
-            {{-- Cart --}}
+            {{-- Cart (text appears on hover) --}}
             @php
                 $headerCartCount = 0;
                 try {
@@ -73,12 +81,36 @@
                     $headerCartCount = 0;
                 }
             @endphp
-            <a href="{{ Route::has('cart') ? route('cart') : '#' }}" class="relative text-gray-600 hover:text-gray-950 transition-colors p-1 group" title="Cart">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                <span id="header-cart-badge" class="js-cart-badge absolute -top-1.5 -right-2 bg-red-600 text-white text-[10px] font-extrabold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center shadow-xs transition-all transform scale-100 {{ $headerCartCount > 0 ? '' : 'hidden' }}">
-                    {{ $headerCartCount }}
-                </span>
+            <a href="{{ Route::has('cart') ? route('cart') : '#' }}" class="relative inline-flex items-center text-gray-700 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-slate-800/80 group cursor-pointer" title="Cart">
+                <div class="relative flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-gray-700 group-hover:text-amber-500 dark:text-gray-300 dark:group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="header-cart-badge" class="js-cart-badge absolute -top-1.5 -right-2 bg-red-600 text-white text-[10px] font-extrabold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center shadow-xs transition-all transform scale-100 {{ $headerCartCount > 0 ? '' : 'hidden' }}">
+                        {{ $headerCartCount }}
+                    </span>
+                </div>
+                <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-20 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Cart</span>
             </a>
+
+            {{-- Dark / Light Mode Toggle --}}
+            <button
+                type="button"
+                id="theme-toggle-btn"
+                class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                title="Toggle Dark / Light Mode"
+                aria-label="Toggle theme"
+            >
+                {{-- Sun Icon (Shown in Dark Mode to switch to Light) --}}
+                <svg id="theme-toggle-sun-icon" class="w-4.5 h-4.5 text-amber-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4" stroke-width="2" />
+                    <path stroke-linecap="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m14.14-14.14l-1.41 1.41" />
+                </svg>
+                {{-- Moon Icon (Shown in Light Mode to switch to Dark) --}}
+                <svg id="theme-toggle-moon-icon" class="w-4.5 h-4.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
 
             {{-- User / Account --}}
             @auth
@@ -237,6 +269,11 @@
             z-index: 60 !important;
             display: none;
         }
+        html.dark .nav-sub-dropdown {
+            background-color: #111827 !important;
+            border-color: #1f2937 !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+        }
         .nav-sub-item-group:hover > .nav-sub-dropdown,
         .nav-sub-dropdown:hover {
             display: block !important;
@@ -254,7 +291,7 @@
     </style>
 
     {{-- Horizontal Category Navigation Bar (Responsive based on Device Width) --}}
-    <div class="border-t border-gray-100 bg-white relative z-20 shadow-xs">
+    <div class="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] relative z-20 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             @php
                 $dbCategories = \App\Models\Category::cachedTree();
@@ -277,6 +314,14 @@
                             })->all(),
                         ];
                     })->all();
+
+                    // Append Deals item (from Screenshot 1)
+                    $navMenuCategories[] = [
+                        'name' => 'Deals',
+                        'slug' => 'deals',
+                        'is_deals' => true,
+                        'children' => [],
+                    ];
                 } else {
                     $navMenuCategories = [
                     [
@@ -603,7 +648,7 @@
 
                 {{-- All Categories Multi-Level Flyout Dropdown Menu --}}
                 <div id="all-categories-dropdown" class="all-cat-nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[250px] max-w-[290px]">
-                    <div class="bg-white rounded-b-xl shadow-2xl border border-gray-100 text-[13px] overflow-hidden flex flex-col">
+                    <div class="bg-white dark:bg-[#111827] rounded-b-xl shadow-2xl border border-gray-100 dark:border-slate-800 text-[13px] overflow-hidden flex flex-col">
                         {{-- Scrollable Category Items List --}}
                         <div class="all-cat-scroll py-1.5" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
                             @foreach ($navMenuCategories as $allCatItem)
@@ -671,15 +716,26 @@
                     @foreach ($navMenuCategories as $index => $navCat)
                         <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
-                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center text-[12.5px] sm:text-[13px] font-semibold text-gray-800 hover:text-gray-950 transition-colors whitespace-nowrap group">
-                                <span>{{ $navCat['name'] }}</span>
-                                <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
-                            </a>
+                            @if (!empty($navCat['is_deals']) || $navCat['slug'] === 'deals')
+                                <a href="{{ Route::has('shop') ? route('shop', ['deal' => 1]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-red-600 hover:text-red-700 transition-colors whitespace-nowrap group">
+                                    <svg class="w-3.5 h-3.5 text-red-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                                    </svg>
+                                    <span>Deals</span>
+                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-red-600 transition-all duration-150"></span>
+                                </a>
+                            @else
+                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center text-[12.5px] sm:text-[13px] font-semibold text-gray-800 hover:text-gray-950 transition-colors whitespace-nowrap group">
+                                    <span>{{ $navCat['name'] }}</span>
+                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
+                                </a>
+                            @endif
 
                             {{-- Dropdown Menu on Hover --}}
                             @if (!empty($navCat['children']))
                                 <div class="nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[220px] max-w-[280px]">
-                                    <div class="bg-white rounded-b-lg shadow-xl border border-gray-100 py-1.5 text-[13px]">
+                                    <div class="bg-white dark:bg-[#111827] rounded-b-lg shadow-xl border border-gray-100 dark:border-slate-800 py-1.5 text-[13px]">
                                         @foreach ($navCat['children'] as $child)
                                             @php
                                                 $hasGrandchildren = !empty($child['children']);
@@ -722,26 +778,38 @@
 
                     {{-- More Dropdown --}}
                     <div id="nav-more-dropdown" class="relative nav-item-group flex-shrink-0 hidden">
-                        <button type="button" id="nav-more-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none" aria-label="More categories">
+                        <a href="{{ route('categories.index') }}" id="nav-more-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none" aria-label="All categories" title="Browse all categories">
                             <span class="text-sm font-extrabold tracking-wider">...</span>
                             <svg class="w-3 h-3 text-gray-900 more-chevron transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                             <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
-                        </button>
+                        </a>
 
                         <div id="nav-more-menu" class="nav-dropdown absolute right-0 sm:left-auto top-full pt-0.5 hidden z-50 min-w-[220px]">
-                            <div class="bg-white rounded-b-lg shadow-xl border border-gray-100 py-1.5 text-[13px] all-cat-scroll" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
+                            <div class="bg-white dark:bg-[#111827] rounded-b-lg shadow-xl border border-gray-100 dark:border-slate-800 py-1.5 text-[13px] all-cat-scroll" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
                                 @foreach ($navMenuCategories as $index => $navCat)
                                     <div class="relative nav-sub-item-group group/sub js-more-category-item" data-index="{{ $index }}">
-                                        <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                            <span>{{ $navCat['name'] }}</span>
-                                            @if (!empty($navCat['children']))
-                                                <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            @endif
-                                        </a>
+                                        @if (!empty($navCat['is_deals']) || $navCat['slug'] === 'deals')
+                                            <a href="{{ Route::has('shop') ? route('shop', ['deal' => 1]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50/60 font-bold transition-colors">
+                                                <span class="flex items-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+                                                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                                                    </svg>
+                                                    Deals
+                                                </span>
+                                            </a>
+                                        @else
+                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
+                                                <span>{{ $navCat['name'] }}</span>
+                                                @if (!empty($navCat['children']))
+                                                    <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                @endif
+                                            </a>
+                                        @endif
 
                                         @if (!empty($navCat['children']))
                                             <div class="nav-sub-dropdown absolute right-full top-0 mr-0.5 min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-1.5 hidden z-50">
@@ -754,6 +822,13 @@
                                         @endif
                                     </div>
                                 @endforeach
+                            </div>
+
+                            <div class="border-t border-gray-100 p-2 bg-gray-50/80">
+                                <a href="{{ route('categories.index') }}" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-gray-900 dark:text-gray-100 hover:text-black dark:hover:text-amber-400 bg-white dark:bg-slate-800 hover:bg-gray-100/80 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-lg shadow-2xs transition-all">
+                                    <span>Browse All Categories</span>
+                                    <span>→</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -870,9 +945,7 @@
 
                     if (moreBtn) {
                         moreBtn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            moreDropdown.classList.toggle('is-open');
+                            window.location.href = moreBtn.getAttribute('href') || '{{ route("categories.index") }}';
                         });
                     }
 
@@ -1137,6 +1210,32 @@
                     setTimeout(() => { btn.innerHTML = original; }, 1200);
                 }).catch(() => {});
             });
+
+            // Theme toggle logic (Dark / Light mode)
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const sunIcon = document.getElementById('theme-toggle-sun-icon');
+            const moonIcon = document.getElementById('theme-toggle-moon-icon');
+
+            function syncThemeIcons(isDark) {
+                if (!sunIcon || !moonIcon) return;
+                if (isDark) {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            }
+
+            syncThemeIcons(document.documentElement.classList.contains('dark'));
+
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    syncThemeIcons(isDark);
+                });
+            }
         });
     </script>
 </header>

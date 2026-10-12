@@ -3,7 +3,7 @@
 <head>
     @include('layouts.partials.head')
 </head>
-<body class="bg-white text-gray-800 antialiased">
+<body class="bg-white dark:bg-[#0b0f19] text-gray-800 dark:text-gray-100 antialiased transition-colors duration-150">
 
     @include('layouts.partials.announcement-bar')
     @include('layouts.partials.public-header')

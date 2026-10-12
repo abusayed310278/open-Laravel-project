@@ -20,10 +20,13 @@
 @endphp
 
 <span {{ $attributes->merge(['class' => 'inline-flex items-center gap-2 sm:gap-3']) }}>
+    @php
+        $logoFilterClass = $dark ? 'filter invert hue-rotate-180 brightness-110' : 'dark:filter dark:invert dark:hue-rotate-180 dark:brightness-110';
+    @endphp
     @if (!empty($resolvedLogo))
-        <img src="{{ $resolvedLogo }}" alt="{{ config('app.name', 'OPENBOX') }}" class="{{ $imgClass ?: $customSizeClass }} w-auto object-contain" />
+        <img src="{{ $resolvedLogo }}" alt="{{ config('app.name', 'OPENBOX') }}" class="{{ $imgClass ?: $customSizeClass }} w-auto object-contain {{ $logoFilterClass }}" />
     @else
-        <img src="{{ asset('buy-and-sale.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="{{ $imgClass ?: $fallbackSizeClass }} w-auto object-contain" />
+        <img src="{{ asset('buy-and-sale.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="{{ $imgClass ?: $fallbackSizeClass }} w-auto object-contain {{ $logoFilterClass }}" />
     @endif
 </span>
 

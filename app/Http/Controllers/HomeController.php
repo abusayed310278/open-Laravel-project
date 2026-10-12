@@ -30,7 +30,7 @@ class HomeController extends Controller
             ->pluck('count', 'category_id')
             ->all();
 
-        $categories = Category::cachedTree()->take(8)->map(function (Category $cat) use ($liveCategoryCounts) {
+        $categories = Category::cachedTree()->take(10)->map(function (Category $cat) use ($liveCategoryCounts) {
             $descendantIds = array_merge([$cat->id], $cat->descendantIds());
             $count = 0;
             foreach ($descendantIds as $id) {
@@ -44,8 +44,20 @@ class HomeController extends Controller
                 'image' => $cat->imageUrl(),
                 'count' => $count,
                 'countLabel' => $count === 1 ? '1 item' : "{$count} items",
+                'is_deals' => false,
             ];
         });
+
+        $dealsCount = Product::query()->live()->whereNotNull('compare_price')->whereColumn('compare_price', '>', 'price')->count();
+        $categories = $categories->push([
+            'id' => 'deals',
+            'name' => 'Deals',
+            'slug' => 'deals',
+            'image' => null,
+            'count' => $dealsCount,
+            'countLabel' => $dealsCount === 1 ? '1 item' : "{$dealsCount} items",
+            'is_deals' => true,
+        ]);
 
         $banners = Banner::query()->live()->position('homepage')->get();
         $heroSlides = HeroSlide::query()->active()->with('product')->get();
