@@ -25,13 +25,6 @@
             color: #0f172a;
             background-color: #f8fafc;
         }
-        html.dark .subnav-link {
-            color: #94a3b8 !important;
-        }
-        html.dark .subnav-link:hover {
-            color: #ffffff !important;
-            background-color: #1e293b !important;
-        }
     </style>
 
     {{-- Main Navbar (Logo, Search Bar, and Actions on a Single Row) --}}
@@ -92,25 +85,6 @@
                 </div>
                 <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-20 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Cart</span>
             </a>
-
-            {{-- Dark / Light Mode Toggle --}}
-            <button
-                type="button"
-                id="theme-toggle-btn"
-                class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                title="Toggle Dark / Light Mode"
-                aria-label="Toggle theme"
-            >
-                {{-- Sun Icon (Shown in Dark Mode to switch to Light) --}}
-                <svg id="theme-toggle-sun-icon" class="w-4.5 h-4.5 text-amber-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="4" stroke-width="2" />
-                    <path stroke-linecap="round" stroke-width="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m14.14-14.14l-1.41 1.41" />
-                </svg>
-                {{-- Moon Icon (Shown in Light Mode to switch to Dark) --}}
-                <svg id="theme-toggle-moon-icon" class="w-4.5 h-4.5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-            </button>
 
             {{-- User / Account --}}
             @auth
@@ -268,11 +242,6 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
             z-index: 60 !important;
             display: none;
-        }
-        html.dark .nav-sub-dropdown {
-            background-color: #111827 !important;
-            border-color: #1f2937 !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
         }
         .nav-sub-item-group:hover > .nav-sub-dropdown,
         .nav-sub-dropdown:hover {
@@ -1210,32 +1179,6 @@
                     setTimeout(() => { btn.innerHTML = original; }, 1200);
                 }).catch(() => {});
             });
-
-            // Theme toggle logic (Dark / Light mode)
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const sunIcon = document.getElementById('theme-toggle-sun-icon');
-            const moonIcon = document.getElementById('theme-toggle-moon-icon');
-
-            function syncThemeIcons(isDark) {
-                if (!sunIcon || !moonIcon) return;
-                if (isDark) {
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                } else {
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                }
-            }
-
-            syncThemeIcons(document.documentElement.classList.contains('dark'));
-
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
-                    const isDark = document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                    syncThemeIcons(isDark);
-                });
-            }
         });
     </script>
 </header>
