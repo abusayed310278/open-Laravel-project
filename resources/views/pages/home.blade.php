@@ -140,31 +140,28 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_browse_categories'))
+    @if (feature_enabled('home_browse_categories') && isset($categories) && $categories->isNotEmpty())
         {{-- BROWSE CATEGORIES --}}
         <section class="py-8 max-w-7xl mx-auto px-4 sm:px-6">
 
             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-                @php
-                    $categoryList = [
-                        ['name' => 'Phones', 'slug' => 'smartphones', 'count' => '124 items', 'icon' => 'phones'],
-                        ['name' => 'Laptops', 'slug' => 'laptops', 'count' => '89 items', 'icon' => 'laptops'],
-                        ['name' => 'Tablets', 'slug' => 'tablets', 'count' => '45 items', 'icon' => 'tablets'],
-                        ['name' => 'Smartwatches', 'slug' => 'smartwatches', 'count' => '67 items', 'icon' => 'smartwatches'],
-                        ['name' => 'Audio', 'slug' => 'audio-headphones', 'count' => '150 items', 'icon' => 'audio'],
-                        ['name' => 'Gaming & VR', 'slug' => 'gaming-consoles', 'count' => '38 items', 'icon' => 'gaming'],
-                        ['name' => 'Cameras', 'slug' => 'cameras', 'count' => '52 items', 'icon' => 'cameras'],
-                        ['name' => 'Accessories', 'slug' => 'accessories', 'count' => '95 items', 'icon' => 'accessories'],
-                    ];
-                @endphp
-
-                @foreach ($categoryList as $cat)
-                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $cat['slug']]) : '#' }}" class="group bg-white border border-gray-100 hover:border-amber-300 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
+                @foreach ($categories as $cat)
+                    @php
+                        $catName = is_array($cat) ? $cat['name'] : $cat->name;
+                        $catSlug = is_array($cat) ? $cat['slug'] : $cat->slug;
+                        $catImage = is_array($cat) ? ($cat['image'] ?? null) : $cat->imageUrl();
+                        $catCount = is_array($cat) ? ($cat['countLabel'] ?? ($cat['count'] . ' items')) : (($cat->products_count ?? 0) . ' items');
+                    @endphp
+                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $catSlug]) : '#' }}" class="group bg-white border border-gray-100 hover:border-amber-300 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
                         <div class="w-12 h-12 rounded-xl bg-gray-50 group-hover:bg-amber-50 border border-gray-100 group-hover:border-amber-200 flex items-center justify-center text-gray-600 group-hover:text-amber-600 transition-colors mb-2.5">
-                            <x-category-icon :slug="$cat['slug']" class="w-6 h-6" />
+                            @if (!empty($catImage))
+                                <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 object-contain" />
+                            @else
+                                <x-category-icon :slug="$catSlug" class="w-6 h-6" />
+                            @endif
                         </div>
-                        <span class="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-amber-600 transition-colors line-clamp-1">{{ $cat['name'] }}</span>
-                        <span class="text-[11px] text-gray-400 mt-0.5">{{ $cat['count'] }}</span>
+                        <span class="text-xs sm:text-sm font-semibold text-gray-800 group-hover:text-amber-600 transition-colors line-clamp-1" title="{{ $catName }}">{{ $catName }}</span>
+                        <span class="text-[11px] text-gray-400 mt-0.5">{{ $catCount }}</span>
                     </a>
                 @endforeach
             </div>
@@ -178,9 +175,9 @@
                 @foreach ($banners as $b)
                     <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 bg-white">
                         @if ($b->video_url)
-                            <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="w-full h-64 sm:h-80 md:h-[380px] lg:h-[440px] object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
+                            <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="block w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
                         @else
-                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-48 sm:h-64 md:h-[320px] lg:h-[400px] object-contain group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
+                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-auto group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
                         @endif
                     </a>
                 @endforeach

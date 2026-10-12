@@ -20,6 +20,12 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
+    Route::get('auth/facebook', [SocialAuthController::class, 'redirectToFacebook'])
+        ->name('auth.facebook');
+
+    Route::get('auth/facebook/callback', [SocialAuthController::class, 'handleFacebookCallback'])
+        ->name('auth.facebook.callback');
+
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 

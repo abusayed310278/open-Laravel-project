@@ -23,7 +23,30 @@ class HomeController extends Controller
             return redirect()->route('search', $request->query());
         }
 
-        $categories = Category::cachedTree()->take(8);
+        $liveCategoryCounts = Product::query()
+            ->live()
+            ->selectRaw('category_id, COUNT(*) as count')
+            ->groupBy('category_id')
+            ->pluck('count', 'category_id')
+            ->all();
+
+        $categories = Category::cachedTree()->take(8)->map(function (Category $cat) use ($liveCategoryCounts) {
+            $descendantIds = array_merge([$cat->id], $cat->descendantIds());
+            $count = 0;
+            foreach ($descendantIds as $id) {
+                $count += $liveCategoryCounts[$id] ?? 0;
+            }
+
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'slug' => $cat->slug,
+                'image' => $cat->imageUrl(),
+                'count' => $count,
+                'countLabel' => $count === 1 ? '1 item' : "{$count} items",
+            ];
+        });
+
         $banners = Banner::query()->live()->position('homepage')->get();
         $heroSlides = HeroSlide::query()->active()->with('product')->get();
 

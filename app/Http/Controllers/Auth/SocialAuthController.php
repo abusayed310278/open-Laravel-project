@@ -11,6 +11,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -42,24 +43,61 @@ class SocialAuthController extends Controller
             ]);
         }
 
+        return $this->authenticateSocialUser($request, 'google', $googleUser, 'google_id');
+    }
+
+    /**
+     * Redirect the user to the Facebook authentication page.
+     */
+    public function redirectToFacebook(): RedirectResponse
+    {
+        return Socialite::driver('facebook')->scopes(['email'])->redirect();
+    }
+
+    /**
+     * Obtain the user information from Facebook and authenticate.
+     */
+    public function handleFacebookCallback(Request $request): RedirectResponse
+    {
+        try {
+            $facebookUser = Socialite::driver('facebook')->user();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->route('login')->withErrors([
+                'login' => 'Facebook sign-in was cancelled or failed. Please try again.',
+            ]);
+        }
+
+        return $this->authenticateSocialUser($request, 'facebook', $facebookUser, 'facebook_id');
+    }
+
+    /**
+     * Authenticate or register the social user.
+     */
+    private function authenticateSocialUser(
+        Request $request,
+        string $provider,
+        SocialiteUser $socialUser,
+        string $idColumn
+    ): RedirectResponse {
         $sessionId = $request->session()->get('cart_session_id');
+        $email = $socialUser->getEmail() ?: ($provider.'_'.$socialUser->getId().'@'.$provider.'.com');
 
-        // Look for existing user with this google_id or email
-        $user = User::where('google_id', $googleUser->getId())
-            ->orWhere('email', $googleUser->getEmail())
+        // Look for existing user with this provider id or email
+        $user = User::where($idColumn, $socialUser->getId())
+            ->orWhere('email', $email)
             ->first();
-
-        $isNewUser = false;
 
         if ($user) {
             $updates = [];
 
-            if (! $user->google_id) {
-                $updates['google_id'] = $googleUser->getId();
+            if (! $user->{$idColumn}) {
+                $updates[$idColumn] = $socialUser->getId();
             }
 
-            if (! $user->avatar && $googleUser->getAvatar()) {
-                $updates['avatar'] = $googleUser->getAvatar();
+            if (! $user->avatar && $socialUser->getAvatar()) {
+                $updates['avatar'] = $socialUser->getAvatar();
             }
 
             if (! $user->email_verified_at) {
@@ -71,18 +109,16 @@ class SocialAuthController extends Controller
             }
         } else {
             $user = User::create([
-                'name' => $googleUser->getName() ?: 'User',
-                'email' => $googleUser->getEmail(),
-                'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
+                'name' => $socialUser->getName() ?: 'User',
+                'email' => $email,
+                $idColumn => $socialUser->getId(),
+                'avatar' => $socialUser->getAvatar(),
                 'role' => UserRole::Customer,
                 'status' => UserStatus::Active,
                 'email_verified_at' => now(),
             ]);
 
             $user->profile()->create();
-
-            $isNewUser = true;
 
             try {
                 event(new Registered($user));

@@ -156,6 +156,33 @@
             scrollbar-width: none !important;
         }
 
+        /* Slim Custom Scrollbar for Category Menus */
+        .all-cat-scroll {
+            max-height: 400px !important;
+            max-height: min(420px, calc(100vh - 160px)) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior: contain !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: thin !important;
+            scrollbar-color: #94a3b8 #f1f5f9 !important;
+        }
+        .all-cat-scroll::-webkit-scrollbar {
+            width: 7px !important;
+            display: block !important;
+        }
+        .all-cat-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9 !important;
+            border-radius: 4px !important;
+        }
+        .all-cat-scroll::-webkit-scrollbar-thumb {
+            background-color: #94a3b8 !important;
+            border-radius: 4px !important;
+        }
+        .all-cat-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: #64748b !important;
+        }
+
         /* All Categories Dropdown Container & Menu */
         .all-categories-container {
             position: relative;
@@ -593,64 +620,67 @@
                 </button>
 
                 {{-- All Categories Multi-Level Flyout Dropdown Menu --}}
-                <div id="all-categories-dropdown" class="all-cat-nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[240px]">
-                    <div class="bg-white rounded-b-xl shadow-2xl border border-gray-100 py-1.5 text-[13px]">
-                        @foreach ($navMenuCategories as $allCatItem)
-                            @php
-                                $hasCatChildren = !empty($allCatItem['children']);
-                            @endphp
-                            <div class="relative nav-sub-item-group group/allsub">
-                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                    <span>{{ $allCatItem['name'] }}</span>
+                <div id="all-categories-dropdown" class="all-cat-nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[250px] max-w-[290px]">
+                    <div class="bg-white rounded-b-xl shadow-2xl border border-gray-100 text-[13px] overflow-hidden flex flex-col">
+                        {{-- Scrollable Category Items List --}}
+                        <div class="all-cat-scroll py-1.5" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
+                            @foreach ($navMenuCategories as $allCatItem)
+                                @php
+                                    $hasCatChildren = !empty($allCatItem['children']);
+                                @endphp
+                                <div class="relative nav-sub-item-group group/allsub">
+                                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
+                                        <span>{{ $allCatItem['name'] }}</span>
+                                        @if ($hasCatChildren)
+                                            <svg class="w-3 h-3 text-gray-400 group-hover/allsub:text-gray-950 group-hover/allsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        @endif
+                                    </a>
+
+                                    {{-- Level 2 Flyout Submenu for Category --}}
                                     @if ($hasCatChildren)
-                                        <svg class="w-3 h-3 text-gray-400 group-hover/allsub:text-gray-950 group-hover/allsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    @endif
-                                </a>
+                                        <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[220px] max-w-[270px] bg-white border border-gray-100 shadow-2xl rounded-xl py-1.5 hidden z-[60]">
+                                            @foreach ($allCatItem['children'] as $child)
+                                                @php
+                                                    $hasGrandchildren = !empty($child['children']);
+                                                @endphp
+                                                <div class="relative nav-sub-item-group group/grandsub">
+                                                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12.5px]">
+                                                        <span>{{ $child['name'] }}</span>
+                                                        @if ($hasGrandchildren)
+                                                            <svg class="w-3 h-3 text-gray-400 group-hover/grandsub:text-gray-950 group-hover/grandsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                            </svg>
+                                                        @endif
+                                                    </a>
 
-                                {{-- Level 2 Flyout Submenu for Category --}}
-                                @if ($hasCatChildren)
-                                    <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[220px] max-w-[270px] bg-white border border-gray-100 shadow-2xl rounded-xl py-1.5 hidden z-[60]">
-                                        @foreach ($allCatItem['children'] as $child)
-                                            @php
-                                                $hasGrandchildren = !empty($child['children']);
-                                            @endphp
-                                            <div class="relative nav-sub-item-group group/grandsub">
-                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12.5px]">
-                                                    <span>{{ $child['name'] }}</span>
+                                                    {{-- Level 3 Flyout Submenu --}}
                                                     @if ($hasGrandchildren)
-                                                        <svg class="w-3 h-3 text-gray-400 group-hover/grandsub:text-gray-950 group-hover/grandsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                                        </svg>
+                                                        <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[190px] bg-white border border-gray-100 shadow-2xl rounded-lg py-1.5 hidden z-[70]">
+                                                            @foreach ($child['children'] as $grandchild)
+                                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12px]">
+                                                                    {{ $grandchild['name'] }}
+                                                                </a>
+                                                            @endforeach
+                                                        </div>
                                                     @endif
+                                                </div>
+                                            @endforeach
+
+                                            <div class="border-t border-gray-100 mt-1 pt-1">
+                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-950 hover:text-black hover:bg-gray-100/70 font-semibold transition-colors text-xs">
+                                                    <span>Show All {{ $allCatItem['name'] }}</span>
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                                 </a>
-
-                                                {{-- Level 3 Flyout Submenu --}}
-                                                @if ($hasGrandchildren)
-                                                    <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[190px] bg-white border border-gray-100 shadow-2xl rounded-lg py-1.5 hidden z-[70]">
-                                                        @foreach ($child['children'] as $grandchild)
-                                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12px]">
-                                                                {{ $grandchild['name'] }}
-                                                            </a>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
                                             </div>
-                                        @endforeach
-
-                                        <div class="border-t border-gray-100 mt-1 pt-1">
-                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-950 hover:text-black hover:bg-gray-100/70 font-semibold transition-colors text-xs">
-                                                <span>Show All {{ $allCatItem['name'] }}</span>
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                            </a>
                                         </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
 
-                        <div class="border-t border-gray-100 mt-1.5 pt-1.5 px-3">
+                        <div class="border-t border-gray-100 p-2.5 bg-gray-50/70 shrink-0">
                             <a href="{{ route('categories.index') }}" class="flex items-center justify-center gap-1.5 w-full py-2 bg-gray-900 hover:bg-black text-white font-bold rounded-lg text-xs transition-colors shadow-2xs">
                                 <span>View Category Directory</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
@@ -726,7 +756,7 @@
                         </button>
 
                         <div id="nav-more-menu" class="nav-dropdown absolute right-0 sm:left-auto top-full pt-0.5 hidden z-50 min-w-[220px]">
-                            <div class="bg-white rounded-b-lg shadow-xl border border-gray-100 py-1.5 text-[13px]">
+                            <div class="bg-white rounded-b-lg shadow-xl border border-gray-100 py-1.5 text-[13px] all-cat-scroll" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
                                 @foreach ($navMenuCategories as $index => $navCat)
                                     <div class="relative nav-sub-item-group group/sub js-more-category-item" data-index="{{ $index }}">
                                         <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
@@ -796,11 +826,53 @@
                         allCatContainer.classList.remove('is-open');
                     }
                 });
+
+                // Position flyout submenus cleanly outside scrollable container
+                const allCatDropdown = document.getElementById('all-categories-dropdown');
+                if (allCatDropdown) {
+                    const subItemGroups = allCatDropdown.querySelectorAll('.group\\/allsub');
+                    subItemGroups.forEach(group => {
+                        const flyout = group.querySelector('.nav-sub-dropdown');
+                        if (!flyout) return;
+
+                        group.addEventListener('mouseenter', () => {
+                            const rect = group.getBoundingClientRect();
+                            flyout.style.position = 'fixed';
+                            flyout.style.left = (rect.right + 2) + 'px';
+                            const flyoutHeight = flyout.offsetHeight || 220;
+                            const maxTop = window.innerHeight - flyoutHeight - 16;
+                            flyout.style.top = Math.max(16, Math.min(rect.top, maxTop)) + 'px';
+                            flyout.style.display = 'block';
+                        });
+
+                        group.addEventListener('mouseleave', () => {
+                            flyout.style.display = 'none';
+                        });
+                    });
+
+                    const scrollWrap = allCatDropdown.querySelector('.all-cat-scroll');
+                    if (scrollWrap) {
+                        scrollWrap.addEventListener('scroll', () => {
+                            allCatDropdown.querySelectorAll('.nav-sub-dropdown').forEach(flyout => {
+                                flyout.style.display = 'none';
+                            });
+                        }, { passive: true });
+                    }
+                }
             }
 
             // Dynamic Responsive Navigation Bar Category Overflow (Priority-Plus Menu)
             const navContainer = document.getElementById('header-main-nav');
             const navItemsContainer = document.getElementById('header-nav-items');
+            if (navItemsContainer) {
+                navItemsContainer.addEventListener('wheel', (e) => {
+                    if (Math.abs(e.deltaX) > 0) return;
+                    if (e.deltaY !== 0 && navItemsContainer.scrollWidth > navItemsContainer.clientWidth) {
+                        e.preventDefault();
+                        navItemsContainer.scrollLeft += e.deltaY;
+                    }
+                }, { passive: false });
+            }
             const topItems = Array.from(document.querySelectorAll('.js-nav-category-item'));
             const moreDropdown = document.getElementById('nav-more-dropdown');
             const moreItems = Array.from(document.querySelectorAll('.js-more-category-item'));
