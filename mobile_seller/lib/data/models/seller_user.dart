@@ -10,6 +10,7 @@ class SellerUser {
   final String storeName;
   final String storeSlug;
   final String? logoUrl;
+  final String? avatarUrl;
   final String? coverUrl;
   final String? description;
   final String? company;
@@ -41,6 +42,7 @@ class SellerUser {
     required this.storeName,
     required this.storeSlug,
     this.logoUrl,
+    this.avatarUrl,
     this.coverUrl,
     this.description,
     this.company,
@@ -76,7 +78,12 @@ class SellerUser {
       roleLabel: json['role_label']?.toString(),
       storeName: json['store_name']?.toString() ?? (json['name']?.toString() ?? ''),
       storeSlug: json['store_slug']?.toString() ?? '',
-      logoUrl: json['logo_url'] != null ? ApiConfig.sanitizeUrl(json['logo_url'].toString()) : null,
+      logoUrl: (json['logo_url'] ?? json['avatar_url'] ?? json['avatar']) != null
+          ? ApiConfig.sanitizeUrl((json['logo_url'] ?? json['avatar_url'] ?? json['avatar']).toString())
+          : null,
+      avatarUrl: (json['avatar_url'] ?? json['logo_url'] ?? json['avatar']) != null
+          ? ApiConfig.sanitizeUrl((json['avatar_url'] ?? json['logo_url'] ?? json['avatar']).toString())
+          : null,
       coverUrl: json['cover_url'] != null ? ApiConfig.sanitizeUrl(json['cover_url'].toString()) : null,
       description: json['description']?.toString(),
       company: json['company']?.toString() ?? json['business_name']?.toString(),

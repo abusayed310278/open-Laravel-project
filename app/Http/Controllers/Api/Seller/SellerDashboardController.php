@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Enums\OrderStatus;
+use App\Enums\ReviewableType;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\User;
 use App\Models\VendorOrder;
 use App\Support\MediaUrl;
@@ -147,7 +150,22 @@ class SellerDashboardController extends Controller
                 ];
             });
 
+        $orderCounts = [
+            'to_process' => (clone $vendorOrdersQuery)
+                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Confirmed, OrderStatus::Processing, OrderStatus::Packed])
+                ->count(),
+            'shipping' => (clone $vendorOrdersQuery)
+                ->whereIn('status', [OrderStatus::Shipped, OrderStatus::OutForDelivery])
+                ->count(),
+            'to_review' => Review::query()
+                ->where('reviewable_type', ReviewableType::Product)
+                ->whereIn('reviewable_id', $seller->products()->select('products.id'))
+                ->doesntHave('replies')
+                ->count(),
+        ];
+
         return response()->json([
+            'order_counts' => $orderCounts,
             'metrics' => [
                 'total_revenue' => $totalRevenue,
                 'period_revenue' => $revenueCurrentPeriod,

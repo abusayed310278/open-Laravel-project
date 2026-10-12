@@ -12,6 +12,9 @@ class StatCard extends StatelessWidget {
   final Color? iconColor;
   final Color? iconBgColor;
 
+  /// Renders without its own card chrome, for embedding inside a shared card.
+  final bool isBare;
+
   const StatCard({
     super.key,
     required this.label,
@@ -21,24 +24,27 @@ class StatCard extends StatelessWidget {
     required this.icon,
     this.iconColor,
     this.iconBgColor,
+    this.isBare = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: isBare
+          ? null
+          : BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

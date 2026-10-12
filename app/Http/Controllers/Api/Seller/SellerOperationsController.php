@@ -484,4 +484,102 @@ class SellerOperationsController extends Controller
             ],
         ]);
     }
+/**
+     * Seller Notifications Inbox
+     */
+    public function notifications(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $dbNotifications = $user->notifications()->latest()->limit(50)->get()->map(function ($n) {
+            $data = is_array($n->data) ? $n->data : (json_decode($n->data, true) ?? []);
+            return [
+                'id' => (string) $n->id,
+                'title' => $data['title'] ?? 'Notification',
+                'message' => $data['message'] ?? ($data['body'] ?? 'You have a new update.'),
+                'type' => $data['type'] ?? 'order',
+                'category' => $data['category'] ?? 'alerts',
+                'is_read' => $n->read_at !== null,
+                'created_at' => $n->created_at?->toIso8601String() ?? now()->toIso8601String(),
+            ];
+        })->all();
+
+        if (empty($dbNotifications)) {
+            $dbNotifications = [
+                [
+                    'id' => 'notif_welcome',
+                    'title' => 'Welcome to Openbox Seller Center',
+                    'message' => 'Your merchant account is active. Manage your orders, drop-offs, inventory and payouts all from one portal.',
+                    'type' => 'system',
+                    'category' => 'system',
+                    'is_read' => false,
+                    'created_at' => now()->subMinutes(15)->toIso8601String(),
+                ],
+                [
+                    'id' => 'notif_hubs',
+                    'title' => 'Seller Centers & Drop-off Hubs Live',
+                    'message' => 'Certified drop-off stations and quality inspection centers in West Bay, Al Rayyan, and Al Wakra are ready for parcel reception.',
+                    'type' => 'inspection',
+                    'category' => 'operations',
+                    'is_read' => false,
+                    'created_at' => now()->subHours(2)->toIso8601String(),
+                ],
+                [
+                    'id' => 'notif_kyc',
+                    'title' => $user->isKycApproved ? 'KYC Verification Approved' : 'Identity Verification Pending',
+                    'message' => $user->isKycApproved
+                        ? 'Your store is fully verified with Tier 1 seller privileges.'
+                        : 'Submit your QID and commercial registration documents to unlock instant weekly bank payouts.',
+                    'type' => 'kyc',
+                    'category' => 'account',
+                    'is_read' => (bool) $user->isKycApproved,
+                    'created_at' => now()->subHours(5)->toIso8601String(),
+                ],
+                [
+                    'id' => 'notif_orders',
+                    'title' => 'Orders SLA & Fulfillment Standard',
+                    'message' => 'Remember to mark incoming client orders as Processed within 24 hours to maintain high seller tier ratings.',
+                    'type' => 'order',
+                    'category' => 'orders',
+                    'is_read' => true,
+                    'created_at' => now()->subDay()->toIso8601String(),
+                ],
+                [
+                    'id' => 'notif_security',
+                    'title' => 'Password & Account Security',
+                    'message' => 'You can now update your password anytime directly from Settings > Change Password.',
+                    'type' => 'security',
+                    'category' => 'account',
+                    'is_read' => true,
+                    'created_at' => now()->subDays(2)->toIso8601String(),
+                ],
+            ];
+        }
+
+        $unreadCount = collect($dbNotifications)->where('is_read', false)->count();
+
+        return response()->json([
+            'notifications' => $dbNotifications,
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    /**
+     * Mark notification as read
+     */
+    public function markNotificationAsRead(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        if ($id === 'all') {
+            $user->unreadNotifications->markAsRead();
+        } else {
+            $notification = $user->notifications()->find($id);
+            if ($notification) {
+                $notification->markAsRead();
+            }
+        }
+
+        return response()->json([
+            'message' => 'Notification marked as read',
+        ]);
+    }
 }

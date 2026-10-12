@@ -91,6 +91,7 @@ Route::prefix('seller')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [SellerAuthController::class, 'me']);
         Route::post('/auth/logout', [SellerAuthController::class, 'logout']);
+        Route::post('/auth/change-password', [SellerAuthController::class, 'changePassword']);
 
         // Dashboard Analytics
         Route::get('/dashboard', [SellerDashboardController::class, 'index']);
@@ -114,6 +115,10 @@ Route::prefix('seller')->group(function () {
         Route::post('/wallet/payout-request', [SellerWalletController::class, 'requestPayout']);
 
         // Store Profile & General Settings
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'notifications']);
+        Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'markNotificationAsRead']);
+
         Route::get('/profile', [SellerProfileController::class, 'show']);
         Route::post('/profile', [SellerProfileController::class, 'update']);
 

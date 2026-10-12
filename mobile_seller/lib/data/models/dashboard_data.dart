@@ -42,6 +42,24 @@ class DashboardMetrics {
   }
 }
 
+class OrderCounts {
+  final int toProcess;
+  final int shipping;
+  final int toReview;
+
+  const OrderCounts({this.toProcess = 0, this.shipping = 0, this.toReview = 0});
+
+  factory OrderCounts.fromJson(Map<String, dynamic> json) {
+    int read(String key) => json[key] is int ? json[key] as int : int.tryParse(json[key]?.toString() ?? '') ?? 0;
+
+    return OrderCounts(
+      toProcess: read('to_process'),
+      shipping: read('shipping'),
+      toReview: read('to_review'),
+    );
+  }
+}
+
 class ChartData {
   final List<String> labels;
   final List<double> revenue;

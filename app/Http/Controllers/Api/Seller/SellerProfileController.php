@@ -35,6 +35,7 @@ class SellerProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'name' => ['nullable', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
@@ -59,6 +60,10 @@ class SellerProfileController extends Controller
             'logo' => ['nullable', 'file', 'image', 'max:5120'],
             'cover_image' => ['nullable', 'file', 'image', 'max:6144'],
         ]);
+
+        if (! empty($validated['email'])) {
+            $user->update(['email' => $validated['email']]);
+        }
 
         if (! empty($validated['name'])) {
             $user->update(['name' => $validated['name']]);

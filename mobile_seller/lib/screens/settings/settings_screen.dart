@@ -24,6 +24,8 @@ import 'subscreens/support_tickets_screen.dart';
 import 'subscreens/update_profile_screen.dart';
 import 'subscreens/verification_status_screen.dart';
 import 'subscreens/warehouse_deposit_screen.dart';
+import 'subscreens/seller_center_screen.dart';
+import 'subscreens/change_password_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final void Function(int index)? onNavigateTab;
@@ -505,6 +507,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 destination: const UpdateProfileScreen(),
               ),
               _MenuItem(
+                icon: Icons.lock_outline_rounded,
+                title: 'Change Password',
+                subtitle: 'Update account password & security credentials',
+                destination: const ChangePasswordScreen(),
+              ),
+              _MenuItem(
                 icon: Icons.verified_user_outlined,
                 title: 'Verification Status',
                 subtitle: 'KYC identity compliance & status badge',
@@ -562,6 +570,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: 'Consignment deposits to fulfillment hubs',
                 destination: const WarehouseDepositScreen(),
               ),
+              _MenuItem(
+                icon: Icons.map_outlined,
+                title: 'Seller Centers & Hubs',
+                subtitle: 'Drop-off stations, warehouses & map pins',
+                destination: const SellerCenterScreen(),
+              ),
             ]),
             const SizedBox(height: AppSpacing.lg),
 
@@ -612,6 +626,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // 8. SUPPORT & FEEDBACK (Help Center, Messages, Tickets, Feedback)
             _buildSectionHeader('Support & Communications'),
             _buildMenuCard(context, [
+              _MenuItem(
+                icon: Icons.storefront_outlined,
+                title: 'Seller Center',
+                subtitle: 'Drop-off hubs, inspection points & Google Map locations',
+                destination: const SellerCenterScreen(),
+              ),
               _MenuItem(
                 icon: Icons.help_center_outlined,
                 title: 'Help Center',

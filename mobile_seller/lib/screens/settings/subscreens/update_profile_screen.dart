@@ -70,6 +70,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     try {
       final fields = <String, String>{
         'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
         'company': _companyController.text.trim(),
         'location': _locationController.text.trim(),
         'phone': _phoneController.text.trim(),
@@ -217,8 +218,14 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               CustomTextField(
                 controller: _emailController,
                 label: 'Email Address',
-                readOnly: true,
-                hint: 'Contact admin to change email',
+                keyboardType: TextInputType.emailAddress,
+                hint: 'e.g. seller@example.com',
+                validator: (v) {
+                  if (v != null && v.trim().isNotEmpty && !v.contains('@')) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: AppSpacing.md),
 

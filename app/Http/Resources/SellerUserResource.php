@@ -33,7 +33,8 @@ class SellerUserResource extends JsonResource
             $profile = $this->businessProfile;
             $storeName = $profile->business_name ?: $this->name;
             $storeSlug = $profile->slug ?: '';
-            $logoUrl = $profile->logoUrl();
+            $userAvatar = $this->profile?->avatarUrl() ?? ($this->avatar ? MediaUrl::resolve($this->avatar) : null);
+            $logoUrl = $profile->logoUrl() ?? $userAvatar;
             $coverUrl = $profile->coverImageUrl();
             $description = $profile->description;
             $address = $profile->address;
@@ -44,7 +45,8 @@ class SellerUserResource extends JsonResource
             $profile = $this->salerProfile;
             $storeName = $profile->display_name ?: $this->name;
             $storeSlug = $profile->slug ?: '';
-            $logoUrl = $profile->logoUrl();
+            $userAvatar = $this->profile?->avatarUrl() ?? ($this->avatar ? MediaUrl::resolve($this->avatar) : null);
+            $logoUrl = $profile->logoUrl() ?? $userAvatar;
             $coverUrl = $profile->coverImageUrl();
             $description = $profile->bio;
             $address = $profile->location;
@@ -77,7 +79,7 @@ class SellerUserResource extends JsonResource
             'description' => $description,
             'company' => $this->profile?->company ?? ($this->businessProfile?->business_name ?? null),
             'location' => $this->profile?->location ?? ($address ?? null),
-            'avatar_url' => $this->profile?->avatarUrl() ?? $logoUrl,
+            'avatar_url' => $logoUrl ?? ($this->profile?->avatarUrl() ?? ($this->avatar ? MediaUrl::resolve($this->avatar) : null)),
             'address' => $address,
             'city' => $city,
             'country' => $country,

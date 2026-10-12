@@ -11,6 +11,7 @@ class SellerDashboardProvider extends ChangeNotifier {
 
   DashboardMetrics? _metrics;
   ChartData? _chartData;
+  OrderCounts _orderCounts = const OrderCounts();
   List<TopProductItem> _topProducts = [];
   List<RecentOrderItem> _recentOrders = [];
 
@@ -20,6 +21,7 @@ class SellerDashboardProvider extends ChangeNotifier {
 
   DashboardMetrics? get metrics => _metrics;
   ChartData? get chartData => _chartData;
+  OrderCounts get orderCounts => _orderCounts;
   List<TopProductItem> get topProducts => _topProducts;
   List<RecentOrderItem> get recentOrders => _recentOrders;
 
@@ -43,6 +45,10 @@ class SellerDashboardProvider extends ChangeNotifier {
       if (response is Map<String, dynamic>) {
         if (response.containsKey('metrics') && response['metrics'] is Map<String, dynamic>) {
           _metrics = DashboardMetrics.fromJson(response['metrics'] as Map<String, dynamic>);
+        }
+
+        if (response['order_counts'] is Map<String, dynamic>) {
+          _orderCounts = OrderCounts.fromJson(response['order_counts'] as Map<String, dynamic>);
         }
 
         if (response.containsKey('chart') && response['chart'] is Map<String, dynamic>) {
