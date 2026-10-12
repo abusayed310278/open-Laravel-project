@@ -538,9 +538,9 @@
                                 </p>
                             </div>
 
-                            <div class="border-t border-gray-50 dark:border-slate-700/60 pt-3 flex items-center justify-between">
-                                <span class="text-xs font-bold text-gray-900 dark:text-white">{{ $review['name'] }}</span>
-                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">Verified Buyer</span>
+                            <div class="border-t border-gray-50 dark:border-slate-700/60 pt-3 flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $review['name'] }}">{{ Str::before(trim($review['name'] ?? ''), ' ') }}</span>
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">Verified Buyer</span>
                             </div>
                         </div>
                     @endforeach

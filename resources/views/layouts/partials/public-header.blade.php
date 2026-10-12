@@ -223,9 +223,12 @@
             visibility: visible !important;
             pointer-events: auto !important;
         }
-        #nav-more-dropdown:hover .more-chevron,
-        #nav-more-dropdown.is-open .more-chevron {
-            transform: rotate(180deg);
+        #header-nav-items {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        #header-nav-items::-webkit-scrollbar {
+            display: none;
         }
 
         /* Level 2 & Level 3 Flyout Submenus (Fly out to the RIGHT side) */
@@ -678,10 +681,9 @@
                     </div>
                 </div>
             </div>
-
             {{-- Categories Navigation Bar (Adapts based on device width) --}}
             <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start min-w-0 overflow-hidden">
-                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-hidden">
+                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-x-auto no-scrollbar scroll-smooth">
                     @foreach ($navMenuCategories as $index => $navCat)
                         <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
@@ -706,30 +708,30 @@
                                 <div class="nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[220px] max-w-[280px]">
                                     <div class="bg-white dark:bg-[#111827] rounded-b-lg shadow-xl border border-gray-100 dark:border-slate-800 py-1.5 text-[13px]">
                                         @foreach ($navCat['children'] as $child)
-                                            @php
-                                                $hasGrandchildren = !empty($child['children']);
-                                            @endphp
-                                            <div class="relative nav-sub-item-group group/sub">
-                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                    <span>{{ $child['name'] }}</span>
-                                                    @if ($hasGrandchildren)
-                                                        <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                                        </svg>
-                                                    @endif
-                                                </a>
+                                             @php
+                                                 $hasGrandchildren = !empty($child['children']);
+                                             @endphp
+                                             <div class="relative nav-sub-item-group group/sub">
+                                                 <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
+                                                     <span>{{ $child['name'] }}</span>
+                                                     @if ($hasGrandchildren)
+                                                         <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                         </svg>
+                                                     @endif
+                                                 </a>
 
-                                                {{-- 2nd Level Flyout Submenu --}}
-                                                @if ($hasGrandchildren)
-                                                    <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-1.5 hidden z-50">
-                                                        @foreach ($child['children'] as $grandchild)
-                                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                                {{ $grandchild['name'] }}
-                                                            </a>
-                                                        @endforeach
-                                                    </div>
-                                                @endif
-                                            </div>
+                                                 {{-- 2nd Level Flyout Submenu --}}
+                                                 @if ($hasGrandchildren)
+                                                     <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-1.5 hidden z-50">
+                                                         @foreach ($child['children'] as $grandchild)
+                                                             <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
+                                                                 {{ $grandchild['name'] }}
+                                                             </a>
+                                                         @endforeach
+                                                     </div>
+                                                 @endif
+                                             </div>
                                         @endforeach
 
                                         {{-- Show All Link --}}
@@ -744,63 +746,6 @@
                             @endif
                         </div>
                     @endforeach
-
-                    {{-- More Dropdown --}}
-                    <div id="nav-more-dropdown" class="relative nav-item-group flex-shrink-0 hidden">
-                        <a href="{{ route('categories.index') }}" id="nav-more-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none" aria-label="All categories" title="Browse all categories">
-                            <span class="text-sm font-extrabold tracking-wider">...</span>
-                            <svg class="w-3 h-3 text-gray-900 more-chevron transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                            <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
-                        </a>
-
-                        <div id="nav-more-menu" class="nav-dropdown absolute right-0 sm:left-auto top-full pt-0.5 hidden z-50 min-w-[220px]">
-                            <div class="bg-white dark:bg-[#111827] rounded-b-lg shadow-xl border border-gray-100 dark:border-slate-800 py-1.5 text-[13px] all-cat-scroll" style="max-height: 400px; max-height: min(420px, calc(100vh - 160px)); overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain;">
-                                @foreach ($navMenuCategories as $index => $navCat)
-                                    <div class="relative nav-sub-item-group group/sub js-more-category-item" data-index="{{ $index }}">
-                                        @if (!empty($navCat['is_deals']) || $navCat['slug'] === 'deals')
-                                            <a href="{{ Route::has('shop') ? route('shop', ['deal' => 1]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50/60 font-bold transition-colors">
-                                                <span class="flex items-center gap-1.5">
-                                                    <svg class="w-3.5 h-3.5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-                                                        <line x1="7" y1="7" x2="7.01" y2="7" />
-                                                    </svg>
-                                                    Deals
-                                                </span>
-                                            </a>
-                                        @else
-                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                <span>{{ $navCat['name'] }}</span>
-                                                @if (!empty($navCat['children']))
-                                                    <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                @endif
-                                            </a>
-                                        @endif
-
-                                        @if (!empty($navCat['children']))
-                                            <div class="nav-sub-dropdown absolute right-full top-0 mr-0.5 min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-1.5 hidden z-50">
-                                                @foreach ($navCat['children'] as $child)
-                                                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                        {{ $child['name'] }}
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <div class="border-t border-gray-100 p-2 bg-gray-50/80">
-                                <a href="{{ route('categories.index') }}" class="flex items-center justify-between px-3 py-2 text-xs font-bold text-gray-900 dark:text-gray-100 hover:text-black dark:hover:text-amber-400 bg-white dark:bg-slate-800 hover:bg-gray-100/80 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 rounded-lg shadow-2xs transition-all">
-                                    <span>Browse All Categories</span>
-                                    <span>→</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </nav>
 
@@ -880,8 +825,7 @@
                 }
             }
 
-            // Dynamic Responsive Navigation Bar Category Overflow (Priority-Plus Menu)
-            const navContainer = document.getElementById('header-main-nav');
+            // Horizontal Category Navigation Bar - Mouse Wheel Scroll
             const navItemsContainer = document.getElementById('header-nav-items');
             if (navItemsContainer) {
                 navItemsContainer.addEventListener('wheel', (e) => {
@@ -891,130 +835,6 @@
                         navItemsContainer.scrollLeft += e.deltaY;
                     }
                 }, { passive: false });
-            }
-            const topItems = Array.from(document.querySelectorAll('.js-nav-category-item'));
-            const moreDropdown = document.getElementById('nav-more-dropdown');
-            const moreItems = Array.from(document.querySelectorAll('.js-more-category-item'));
-            const moreBtn = document.getElementById('nav-more-btn');
-
-            if (navContainer && navItemsContainer && topItems.length > 0 && moreDropdown) {
-                // More Dropdown Hover & Click toggle
-                if (moreDropdown) {
-                    let moreTimeout;
-                    moreDropdown.addEventListener('mouseenter', () => {
-                        clearTimeout(moreTimeout);
-                        moreDropdown.classList.add('is-open');
-                    });
-
-                    moreDropdown.addEventListener('mouseleave', () => {
-                        moreTimeout = setTimeout(() => {
-                            moreDropdown.classList.remove('is-open');
-                        }, 150);
-                    });
-
-                    if (moreBtn) {
-                        moreBtn.addEventListener('click', (e) => {
-                            window.location.href = moreBtn.getAttribute('href') || '{{ route("categories.index") }}';
-                        });
-                    }
-
-                    document.addEventListener('click', (e) => {
-                        if (!moreDropdown.contains(e.target)) {
-                            moreDropdown.classList.remove('is-open');
-                        }
-                    });
-
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape') {
-                            moreDropdown.classList.remove('is-open');
-                        }
-                    });
-                }
-
-                let cachedItemWidths = [];
-                let cachedMoreWidth = 0;
-
-                const measureWidths = () => {
-                    moreDropdown.style.display = 'inline-flex';
-                    moreDropdown.classList.remove('hidden');
-                    topItems.forEach(item => {
-                        item.style.display = 'inline-flex';
-                        item.classList.remove('hidden');
-                    });
-
-                    cachedMoreWidth = moreDropdown.offsetWidth || 80;
-                    cachedItemWidths = topItems.map(item => item.offsetWidth || 100);
-                };
-
-                const updateNavOverflow = () => {
-                    if (cachedItemWidths.length === 0) {
-                        measureWidths();
-                    }
-
-                    const availableWidth = navContainer.clientWidth;
-                    if (availableWidth <= 0) return;
-
-                    let totalWidthAll = cachedItemWidths.reduce((sum, w) => sum + w, 0);
-
-                    let visibleCount = 0;
-                    if (totalWidthAll <= availableWidth) {
-                        visibleCount = cachedItemWidths.length;
-                    } else {
-                        const targetWidth = availableWidth - cachedMoreWidth;
-                        let accumWidth = 0;
-                        for (let i = 0; i < cachedItemWidths.length; i++) {
-                            if (accumWidth + cachedItemWidths[i] <= targetWidth) {
-                                accumWidth += cachedItemWidths[i];
-                                visibleCount++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    // Apply display states
-                    topItems.forEach((item, idx) => {
-                        if (idx < visibleCount) {
-                            item.style.display = 'inline-flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-
-                    moreItems.forEach((item, idx) => {
-                        if (idx >= visibleCount) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-
-                    if (visibleCount < topItems.length) {
-                        moreDropdown.style.display = 'inline-flex';
-                        moreDropdown.classList.remove('hidden');
-                    } else {
-                        moreDropdown.style.display = 'none';
-                        moreDropdown.classList.add('hidden');
-                        moreDropdown.classList.remove('is-open');
-                    }
-                };
-
-                // Run measurement and calculation
-                measureWidths();
-                updateNavOverflow();
-
-                // Recalculate on window resize & ResizeObserver
-                window.addEventListener('resize', () => {
-                    measureWidths();
-                    updateNavOverflow();
-                });
-
-                if (window.ResizeObserver) {
-                    const ro = new ResizeObserver(() => {
-                        updateNavOverflow();
-                    });
-                    ro.observe(navContainer);
-                }
             }
 
             // Global Cart Badge Manager & Add to Cart Click Listener
