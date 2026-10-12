@@ -131,7 +131,7 @@
             @endauth
 
             {{-- Start Selling Button --}}
-            <a href="{{ route('register', ['type' => 'saler']) }}" class="bg-brand-500 hover:bg-brand-600 text-white text-xs sm:text-sm font-bold px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
+            <a href="{{ route('register', ['type' => 'saler']) }}" class="header-start-selling-btn text-xs sm:text-sm font-bold px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
                 <span class="whitespace-nowrap">Start Selling</span>
             </a>
         </div>
@@ -678,13 +678,6 @@
                                     @endif
                                 </div>
                             @endforeach
-                        </div>
-
-                        <div class="border-t border-gray-100 p-2.5 bg-gray-50/70 shrink-0">
-                            <a href="{{ route('categories.index') }}" class="flex items-center justify-center gap-1.5 w-full py-2 bg-gray-900 hover:bg-black text-white font-bold rounded-lg text-xs transition-colors shadow-2xs">
-                                <span>View Category Directory</span>
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                            </a>
                         </div>
                     </div>
                 </div>

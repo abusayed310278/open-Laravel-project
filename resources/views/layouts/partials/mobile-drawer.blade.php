@@ -39,6 +39,6 @@
         @else
             <a href="{{ Route::has('login') ? route('login') : '#' }}" class="block text-center border border-gray-200 rounded-md py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">Log in</a>
         @endauth
-        <a href="{{ Route::has('register') ? route('register') : '#' }}" class="block text-center bg-brand-500 hover:bg-brand-600 text-white rounded-md py-2.5 text-sm font-semibold">Start Selling</a>
+        <a href="{{ Route::has('register') ? route('register') : '#' }}" class="block text-center header-start-selling-btn rounded-md py-2.5 text-sm font-semibold">Start Selling</a>
     </div>
 </aside>

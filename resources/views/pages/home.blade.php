@@ -270,7 +270,7 @@
                         <div class="relative z-10 max-w-[55%]">
                             <h3 class="text-xl font-extrabold leading-tight">{!! nl2br(e($card['title'])) !!}</h3>
                             <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
-                            <span class="inline-flex items-center gap-2 mt-4 bg-brand-400 group-hover:bg-brand-500 text-gray-950 text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
+                            <span class="inline-flex items-center gap-2 mt-4 promo-card-btn text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
                         </div>
                         @php
                             $promoImage = $card['product']->primaryImageUrl();
@@ -459,7 +459,7 @@
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <a
                             href="{{ Route::has('register.saler') ? route('register.saler') : (Route::has('register') ? route('register') : '#') }}"
-                            class="w-full sm:w-auto bg-amber-400 hover:bg-amber-500 text-gray-950 font-bold text-sm px-8 py-3.5 rounded-xl shadow-xs transition-all"
+                            class="w-full sm:w-auto brand-btn-primary font-bold text-sm px-8 py-3.5 rounded-xl shadow-xs transition-all"
                         >
                             Start Selling Now
                         </a>
@@ -571,7 +571,7 @@
     @if (feature_enabled('home_newsletter'))
         {{-- STAY UPDATED (NEWSLETTER) --}}
         <section class="pt-8 pb-5 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="rounded-lg bg-gradient-to-r from-brand-300 to-brand-400 px-6 sm:px-10 py-5 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-10">
+            <div class="rounded-lg newsletter-brand-banner px-6 sm:px-10 py-5 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-10">
                 <div class="flex items-center gap-4 lg:w-5/12">
                     <svg class="w-10 h-10 text-gray-950 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zm0 0l9 6 9-6" /></svg>
                     <div>

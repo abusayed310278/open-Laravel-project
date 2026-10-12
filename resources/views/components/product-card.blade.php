@@ -60,15 +60,15 @@
 
 <div class="group bg-white border border-gray-100 hover:border-gray-200 rounded-2xl overflow-hidden flex flex-col text-left shadow-2xs hover:shadow-md transition-all duration-200 h-full">
     {{-- Product Image --}}
-    <div class="relative w-full h-44 sm:h-48 shrink-0 overflow-hidden bg-white">
+    <div class="relative w-full h-52 sm:h-56 shrink-0 overflow-hidden bg-white">
         @if ($discountPercent)
             <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
         @endif
 
-        <a href="{{ $href }}" class="absolute inset-0 flex items-center justify-center">
+        <a href="{{ $href }}" class="absolute inset-0 block p-3 pt-6">
             @if ($image)
-                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-full object-contain p-2 mix-blend-multiply group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                <div class="hidden w-full h-full items-center justify-center text-gray-300">
+                <img src="{{ $image }}" alt="{{ $title }}" class="block w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-200" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <div class="hidden w-full h-full items-center justify-center text-gray-300 [&:not(.hidden)]:flex">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
                     </svg>

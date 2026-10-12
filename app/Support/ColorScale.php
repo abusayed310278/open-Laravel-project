@@ -88,4 +88,28 @@ class ColorScale
             (int) round(($b + $m) * 255),
         );
     }
+
+    /**
+     * Returns '#0f172a' (dark) or '#ffffff' (white) depending on the perceived brightness of the hex color.
+     */
+    public static function contrastText(string $hex): string
+    {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+
+        if (strlen($hex) !== 6) {
+            return '#0f172a';
+        }
+
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+        return ($yiq >= 155) ? '#0f172a' : '#ffffff';
+    }
 }
+
