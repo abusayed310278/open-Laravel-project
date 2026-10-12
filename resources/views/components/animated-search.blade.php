@@ -20,7 +20,13 @@
         class="search-box relative flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] dark:bg-slate-900/90 hover:bg-gray-100/90 dark:hover:bg-slate-800/90 focus-within:bg-white dark:focus-within:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 focus-within:border-gray-900 dark:focus-within:border-brand-500 rounded-lg shadow-2xs transition-all duration-200 pl-3 sm:pl-4 pr-1.5 sm:pr-2 overflow-hidden group"
     >
         {{-- Left: Animated Icon Wrapper (Search Icon + Success Check Icon) --}}
-        <div id="iconWrapper" class="icon-wrapper relative flex items-center justify-center w-5 h-5 flex-shrink-0 mr-2 text-gray-400 group-focus-within:text-brand-500 transition-colors">
+        <button
+            type="submit"
+            id="iconWrapper"
+            class="icon-wrapper relative flex items-center justify-center w-5 h-5 flex-shrink-0 mr-2 text-gray-400 group-focus-within:text-brand-500 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer border-0 bg-transparent p-0"
+            title="Search"
+            aria-label="Search"
+        >
             {{-- Default Search Magnifier Icon --}}
             <svg
                 id="searchIcon"
@@ -42,7 +48,7 @@
             >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
             </svg>
-        </div>
+        </button>
 
         {{-- Center: Search Input --}}
         <input
@@ -68,15 +74,16 @@
             </svg>
         </button>
 
-        {{-- Right: Animated Search Button (with Button Text & Loading Spinner) --}}
-        <button
-            type="submit"
+        {{-- Right: Advanced Search Button --}}
+        <a
+            href="{{ route('search.advanced') }}"
             id="searchButton"
             class="search-button relative inline-flex items-center justify-center px-3 sm:px-4 py-1.5 h-7 sm:h-8 rounded-md bg-gray-900 dark:bg-brand-500 hover:bg-black dark:hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition-all duration-200 cursor-pointer overflow-hidden flex-shrink-0"
+            title="Advanced Search"
         >
-            <span id="buttonText" class="button-text transition-opacity duration-150">Search</span>
+            <span id="buttonText" class="button-text transition-opacity duration-150">Advanced</span>
             <div id="spinner" class="spinner absolute inset-0 m-auto w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full opacity-0 pointer-events-none transition-opacity duration-150"></div>
-        </button>
+        </a>
 
         {{-- Bottom: Animated Laser Scanning Line --}}
         <div id="scanningLine" class="scanning-line"></div>
@@ -281,6 +288,17 @@
                 clearButton.classList.add('opacity-0', 'scale-75', 'pointer-events-none');
                 clearButton.classList.remove('opacity-100', 'scale-100');
                 searchBox.classList.remove('is-typing');
+            });
+        }
+
+        // Advanced button click: navigate to advanced search (passing query if entered)
+        if (searchButton) {
+            searchButton.addEventListener('click', function(e) {
+                const query = searchInput.value.trim();
+                if (query) {
+                    e.preventDefault();
+                    window.location.href = "{{ route('search.advanced') }}?q=" + encodeURIComponent(query);
+                }
             });
         }
 

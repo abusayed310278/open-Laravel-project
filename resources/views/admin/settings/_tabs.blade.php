@@ -7,7 +7,8 @@
         'promo' => ['label' => 'Promo Cards', 'route' => 'admin.settings.promo'],
         'newsletter' => ['label' => 'Newsletter', 'route' => 'admin.settings.newsletter'],
         'siteicon' => ['label' => 'Site Icon', 'route' => 'admin.settings.siteicon'],
-        'footericon' => ['label' => 'Footer Icon', 'route' => 'admin.settings.footericon'],
+        'footericon' => ['label' => 'Footer & Icon', 'route' => 'admin.settings.footericon'],
+        'app-links' => ['label' => 'App Links', 'route' => 'admin.settings.app-links'],
         'font' => ['label' => 'Font', 'route' => 'admin.settings.font'],
 
         'color' => ['label' => 'Color', 'route' => 'admin.settings.color'],

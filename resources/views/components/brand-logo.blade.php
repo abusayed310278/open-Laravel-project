@@ -8,14 +8,14 @@
         'sm' => 'h-8 sm:h-9 max-w-[200px]',
         'lg' => 'h-16 sm:h-20 max-w-[320px]',
         'xl' => 'h-20 sm:h-24 max-w-[360px]',
-        default => $footer ? 'h-9 sm:h-10 max-w-[220px]' : 'h-12 sm:h-14 md:h-16 max-w-[280px]',
+        default => 'h-12 sm:h-14 md:h-16 max-w-[280px]',
     };
 
     $fallbackSizeClass = match ($size) {
         'sm' => 'h-8 sm:h-9',
         'lg' => 'h-16 sm:h-20',
         'xl' => 'h-20 sm:h-24',
-        default => $footer ? 'h-10 sm:h-11' : 'h-12 sm:h-14 md:h-16',
+        default => 'h-12 sm:h-14 md:h-16',
     };
 @endphp
 

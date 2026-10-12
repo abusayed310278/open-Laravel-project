@@ -50,9 +50,17 @@
 
         {{-- Right: Actions & Start Selling --}}
         <div class="flex items-center gap-2.5 sm:gap-4 lg:gap-5 flex-shrink-0">
-            {{-- Advanced Search --}}
-            <a href="{{ route('search.advanced') }}" class="hidden sm:inline-flex items-center rounded-md border border-gray-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:border-brand-500 hover:bg-brand-500 hover:text-white whitespace-nowrap" title="Advanced Search">
-                Advanced
+            {{-- Compare (text appears on hover) --}}
+            <a href="{{ route('compare') }}" data-site-compare-link class="relative inline-flex items-center text-gray-700 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-slate-800/80 group cursor-pointer" title="Compare">
+                <div class="relative flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-gray-700 group-hover:text-amber-500 dark:text-gray-300 dark:group-hover:text-amber-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span id="header-compare-badge" class="js-compare-badge absolute -top-1.5 -right-2 bg-amber-500 text-gray-950 text-[10px] font-extrabold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center shadow-xs transition-all transform scale-100 hidden">
+                        0
+                    </span>
+                </div>
+                <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-24 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Compare</span>
             </a>
 
             {{-- Wishlist (text appears on hover) --}}

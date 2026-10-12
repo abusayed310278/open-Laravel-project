@@ -332,26 +332,46 @@ class SettingsController extends Controller
     {
         return view('admin.settings.footericon', [
             'footerIcon' => $this->settings->get('brand_footer_icon'),
+            'footerDescription' => $this->settings->get('brand_footer_description', "Bangladesh's premier verified electronics marketplace. Every device inspected, graded, and warehoused for authentic peace of mind."),
+            'footerAddress' => $this->settings->get('brand_footer_address', 'Dhaka, Bangladesh'),
+            'footerCopyright' => $this->settings->get('brand_footer_copyright', '© ' . now()->year . ' Openbox. All rights reserved.'),
         ]);
     }
 
     public function updateFootericon(Request $request): RedirectResponse
     {
         $request->validate([
-            'footer_icon' => ['required', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:2048'],
+            'footer_icon' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:2048'],
+            'footer_description' => ['nullable', 'string', 'max:1000'],
+            'footer_address' => ['nullable', 'string', 'max:255'],
+            'footer_copyright' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $oldIcon = $this->settings->get('brand_footer_icon');
-        if (!empty($oldIcon) && is_string($oldIcon) && trim($oldIcon) !== '' && Storage::disk('public')->exists($oldIcon)) {
-            Storage::disk('public')->delete($oldIcon);
+        if ($request->hasFile('footer_icon')) {
+            $oldIcon = $this->settings->get('brand_footer_icon');
+            if (!empty($oldIcon) && is_string($oldIcon) && trim($oldIcon) !== '' && Storage::disk('public')->exists($oldIcon)) {
+                Storage::disk('public')->delete($oldIcon);
+            }
+
+            $path = $this->storeUploadedFile($request->file('footer_icon'), 'branding', 'public');
+            $this->settings->set('brand_footer_icon', $path, 'branding');
         }
 
-        $path = $this->storeUploadedFile($request->file('footer_icon'), 'branding', 'public');
-        $this->settings->set('brand_footer_icon', $path, 'branding');
+        if ($request->has('footer_description')) {
+            $this->settings->set('brand_footer_description', $request->input('footer_description'), 'branding');
+        }
+
+        if ($request->has('footer_address')) {
+            $this->settings->set('brand_footer_address', $request->input('footer_address'), 'branding');
+        }
+
+        if ($request->has('footer_copyright')) {
+            $this->settings->set('brand_footer_copyright', $request->input('footer_copyright'), 'branding');
+        }
 
         ActivityLog::record('settings.footericon.updated');
 
-        return back()->with('status', 'Footer icon updated successfully.');
+        return back()->with('status', 'Footer settings updated successfully.');
     }
 
     public function removeFootericon(): RedirectResponse
@@ -365,6 +385,78 @@ class SettingsController extends Controller
         ActivityLog::record('settings.footericon.removed');
 
         return back()->with('status', 'Custom footer icon removed. Default icon restored.');
+    }
+
+    public function appLinks(): View
+    {
+        $rawAppLinks = $this->settings->get('footer_app_links');
+        $appLinks = !empty($rawAppLinks) ? (is_string($rawAppLinks) ? json_decode($rawAppLinks, true) : (array) $rawAppLinks) : [];
+        if (!is_array($appLinks)) {
+            $appLinks = [];
+        }
+
+        $rawSocialLinks = $this->settings->get('footer_social_links');
+        $socialLinks = !empty($rawSocialLinks) ? (is_string($rawSocialLinks) ? json_decode($rawSocialLinks, true) : (array) $rawSocialLinks) : [];
+        if (!is_array($socialLinks)) {
+            $socialLinks = [];
+        }
+
+        return view('admin.settings.app-links', [
+            'appLinks' => $appLinks,
+            'socialLinks' => $socialLinks,
+            'appPlatforms' => array_values(\App\Support\FooterAppLinks::APP_PLATFORMS),
+            'socialPlatforms' => array_values(\App\Support\FooterAppLinks::SOCIAL_PLATFORMS),
+        ]);
+    }
+
+    public function updateAppLinks(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'app_links' => ['nullable', 'array', 'max:10'],
+            'app_links.*.platform' => ['required', 'string', 'max:50'],
+            'app_links.*.url' => ['nullable', 'string', 'max:500'],
+            'app_links.*.title' => ['nullable', 'string', 'max:100'],
+            'app_links.*.subtitle' => ['nullable', 'string', 'max:100'],
+
+            'social_links' => ['nullable', 'array', 'max:15'],
+            'social_links.*.platform' => ['required', 'string', 'max:50'],
+            'social_links.*.url' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $appLinks = [];
+        foreach ($request->input('app_links', []) as $item) {
+            $platform = trim((string) ($item['platform'] ?? ''));
+            $url = trim((string) ($item['url'] ?? ''));
+            if ($platform !== '' && $url !== '') {
+                $appLinks[] = [
+                    'platform' => $platform,
+                    'url' => $url,
+                    'title' => trim((string) ($item['title'] ?? '')) ?: null,
+                    'subtitle' => trim((string) ($item['subtitle'] ?? '')) ?: null,
+                    'is_active' => !empty($item['is_active']),
+                ];
+            }
+        }
+
+        $socialLinks = [];
+        foreach ($request->input('social_links', []) as $item) {
+            $platform = trim((string) ($item['platform'] ?? ''));
+            $url = trim((string) ($item['url'] ?? ''));
+            if ($platform !== '' && $url !== '') {
+                $socialLinks[] = [
+                    'platform' => $platform,
+                    'url' => $url,
+                    'is_active' => !empty($item['is_active']),
+                ];
+            }
+        }
+
+        $this->settings->set('footer_app_links', json_encode($appLinks), 'branding');
+        $this->settings->set('footer_social_links', json_encode($socialLinks), 'branding');
+
+        ActivityLog::record('settings.app_links.updated');
+
+        return back()->with('status', 'App & social links updated successfully.');
     }
 
     public function font(): View

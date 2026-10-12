@@ -373,6 +373,9 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/settings/footericon', [SettingsController::class, 'updateFootericon'])->name('settings.footericon.update');
         Route::delete('/settings/footericon', [SettingsController::class, 'removeFootericon'])->name('settings.footericon.remove');
 
+        Route::get('/settings/app-links', [SettingsController::class, 'appLinks'])->name('settings.app-links');
+        Route::post('/settings/app-links', [SettingsController::class, 'updateAppLinks'])->name('settings.app-links.update');
+
 
         Route::get('/settings/font', [SettingsController::class, 'font'])->name('settings.font');
         Route::post('/settings/font', [SettingsController::class, 'updateFont'])->name('settings.font.update');

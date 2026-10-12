@@ -28,9 +28,15 @@
         const urlFor = () => list.length ? compareUrl + '?ids=' + list.map(item => item.id).join(',') : compareUrl;
 
         const render = () => {
-            document.getElementById('site-compare-count').textContent = list.length;
-            document.getElementById('site-compare-open').href = urlFor();
+            const countEl = document.getElementById('site-compare-count');
+            if (countEl) countEl.textContent = list.length;
+            const openEl = document.getElementById('site-compare-open');
+            if (openEl) openEl.href = urlFor();
             document.querySelectorAll('[data-site-compare-link]').forEach(a => { a.href = urlFor(); });
+            document.querySelectorAll('.js-compare-badge').forEach(badge => {
+                badge.textContent = list.length;
+                badge.classList.toggle('hidden', list.length === 0);
+            });
 
             const show = list.length > 0 && !onComparePage;
             dock.classList.toggle('translate-y-36', !show);

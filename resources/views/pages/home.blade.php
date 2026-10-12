@@ -259,9 +259,27 @@
         {{-- PRODUCT PROMO CARDS (real products, admin-editable text) --}}
         @php
             $promoStyles = [
-                1 => ['wrap' => 'from-[#7a5642] to-[#3a2a24] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
-                2 => ['wrap' => 'from-[#eef1f6] to-[#c9d2e0] text-gray-950 dark:from-[#1e293b] dark:to-[#0f172a] dark:text-white', 'text' => '', 'body' => 'text-xl font-medium leading-tight', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
-                3 => ['wrap' => 'from-[#16213a] to-[#0b1220] text-white', 'text' => 'text-white/80', 'body' => 'text-xs mt-2 leading-snug', 'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300'],
+                1 => [
+                    'gradient' => 'background: linear-gradient(135deg, #ad7f67 0%, #c6a38f 45%, #e8dedc 100%);',
+                    'title' => 'text-white',
+                    'text' => 'text-white/90',
+                    'body' => 'text-xs mt-1.5 leading-snug',
+                    'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
+                ],
+                2 => [
+                    'gradient' => 'background: linear-gradient(135deg, #ebeef3 0%, #ccd6e2 100%);',
+                    'title' => 'text-gray-950',
+                    'text' => 'text-gray-900',
+                    'body' => 'text-sm font-semibold mt-1 leading-snug',
+                    'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
+                ],
+                3 => [
+                    'gradient' => 'background: linear-gradient(135deg, #6283c4 0%, #85a2dc 50%, #c1d3f7 100%);',
+                    'title' => 'text-white',
+                    'text' => 'text-white/90',
+                    'body' => 'text-xs mt-1.5 leading-snug',
+                    'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
+                ],
             ];
         @endphp
         <section class="pb-6 max-w-7xl mx-auto px-4 sm:px-6">
@@ -269,11 +287,15 @@
                 @foreach ($promoCards as $n => $card)
                     @continue(! $card['product'])
                     @php $style = $promoStyles[$n]; @endphp
-                    <a href="{{ route('products.show', $card['product']) }}" title="{{ $card['product']->title }}" class="group relative flex items-center justify-between gap-3 h-44 rounded-xl overflow-hidden px-6 py-5 bg-gradient-to-br {{ $style['wrap'] }} shadow-2xs hover:shadow-lg transition-shadow">
-                        <div class="relative z-10 max-w-[55%]">
-                            <h3 class="text-xl font-extrabold leading-tight">{!! nl2br(e($card['title'])) !!}</h3>
-                            <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
-                            <span class="inline-flex items-center gap-2 mt-4 promo-card-btn text-xs font-bold px-4 py-2 rounded-md transition-colors">{{ $card['button'] }} <span>→</span></span>
+                    <a href="{{ route('products.show', $card['product']) }}" title="{{ $card['product']->title }}" style="{{ $style['gradient'] }}" class="group relative flex items-center justify-between gap-3 h-44 rounded-xl overflow-hidden px-6 py-5 shadow-2xs hover:shadow-lg transition-shadow">
+                        <div class="relative z-10 max-w-[58%] h-full flex flex-col justify-between py-1">
+                            <div>
+                                <h3 class="text-xl font-extrabold leading-tight {{ $style['title'] }}">{!! nl2br(e($card['title'])) !!}</h3>
+                                <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
+                            </div>
+                            <div class="pt-2">
+                                <span class="inline-flex items-center gap-2 promo-card-btn text-xs font-bold px-4 py-2 rounded-md transition-colors w-fit">{{ $card['button'] }} <span>→</span></span>
+                            </div>
                         </div>
                         @php
                             $promoImage = $card['product']->primaryImageUrl();
