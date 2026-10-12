@@ -682,9 +682,23 @@
                 </div>
             </div>
             {{-- Categories Navigation Bar (Adapts based on device width) --}}
+            @php
+                // Show exactly 11 items in the bar next to "All Categories" (Total 12 categories shown)
+                // 10 top categories from DB + Deals (RAM and subsequent categories are excluded from top bar)
+                $horizontalNavCategories = collect($navMenuCategories)
+                    ->reject(fn ($c) => ($c['slug'] ?? '') === 'deals' || !empty($c['is_deals']))
+                    ->take(10)
+                    ->push([
+                        'name' => 'Deals',
+                        'slug' => 'deals',
+                        'is_deals' => true,
+                        'children' => [],
+                    ])
+                    ->values();
+            @endphp
             <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start min-w-0 overflow-hidden">
                 <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-hidden">
-                    @foreach ($navMenuCategories as $index => $navCat)
+                    @foreach ($horizontalNavCategories as $index => $navCat)
                         <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
                             @if (!empty($navCat['is_deals']) || $navCat['slug'] === 'deals')
