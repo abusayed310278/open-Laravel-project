@@ -16,14 +16,25 @@
         <div class="grid lg:grid-cols-5 gap-10">
             {{-- Gallery --}}
             <div class="lg:col-span-2">
-                <div class="bg-gray-50 rounded-xl aspect-square flex items-center justify-center overflow-hidden">
-                    <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover">
+                @php
+                    $galleryImages = ($product->images && $product->images->isNotEmpty())
+                        ? $product->images->map(fn($img) => $img->url())->values()
+                        : collect([$product->primaryImageUrl()]);
+                @endphp
+
+                {{-- Main Product Image (Click to Open Lightbox Popup) --}}
+                <div id="main-img-wrapper" class="relative group bg-gray-50 rounded-xl aspect-square flex items-center justify-center overflow-hidden cursor-zoom-in" title="Click to view full image">
+                    <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]">
+                    <div class="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md pointer-events-none">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                        <span>Click to zoom</span>
+                    </div>
                 </div>
 
-                @if ($product->images->count() > 1)
+                @if ($galleryImages->count() > 1)
                     <div class="grid grid-cols-4 gap-3 mt-3">
-                        @foreach ($product->images as $image)
-                            <img src="{{ $image->url() }}" class="thumb-img aspect-square w-full object-cover rounded-lg cursor-pointer border-2 {{ $image->is_primary ? 'border-brand-500' : 'border-transparent' }}">
+                        @foreach ($galleryImages as $index => $imageUrl)
+                            <img src="{{ $imageUrl }}" data-index="{{ $index }}" class="thumb-img aspect-square w-full object-cover rounded-lg cursor-pointer border-2 transition-all duration-150 hover:opacity-100 hover:scale-[1.03] {{ $index === 0 ? 'border-brand-500 shadow-xs opacity-100' : 'border-transparent opacity-80 hover:border-gray-300' }}">
                         @endforeach
                     </div>
                 @endif
@@ -382,6 +393,95 @@
         @endif
     </div>
 
+    {{-- Product Image Lightbox Modal: Centered Square Size with Side Circular Arrows --}}
+    <div
+        id="imageLightboxModal"
+        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-white/75 sm:bg-white/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-200 select-none"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Image gallery lightbox"
+    >
+        {{-- Close Button (Top Right) --}}
+        <button
+            type="button"
+            id="lightboxCloseBtn"
+            class="fixed top-5 right-5 sm:top-8 sm:right-8 z-50 w-11 h-11 rounded-full bg-white hover:bg-gray-100 text-gray-800 shadow-xl border border-gray-200 flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer"
+            title="Close (Esc)"
+            aria-label="Close lightbox"
+        >
+            <svg class="w-5 h-5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        {{-- Center of Page: Square Size Modal Image Container --}}
+        <div
+            id="lightboxSquareCard"
+            class="relative w-[92vw] max-w-[540px] aspect-square max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-gray-200/80 p-4 sm:p-5 flex flex-col items-center justify-between select-none"
+        >
+            {{-- Left Arrow Icon (Bare chevron at red marked area, NO circle) --}}
+            @if ($galleryImages->count() > 1)
+                <button
+                    type="button"
+                    id="lightboxPrevBtn"
+                    class="absolute -left-6 sm:-left-12 top-1/2 -translate-y-1/2 z-40 text-gray-700 hover:text-black hover:scale-125 transition-transform p-1 cursor-pointer focus:outline-none select-none"
+                    title="Previous image (Left Arrow)"
+                    aria-label="Previous image"
+                >
+                    <svg class="w-8 h-8 sm:w-11 sm:h-11 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+
+                {{-- Right Arrow Icon (Bare chevron at red marked area, NO circle) --}}
+                <button
+                    type="button"
+                    id="lightboxNextBtn"
+                    class="absolute -right-6 sm:-right-12 top-1/2 -translate-y-1/2 z-40 text-gray-700 hover:text-black hover:scale-125 transition-transform p-1 cursor-pointer focus:outline-none select-none"
+                    title="Next image (Right Arrow)"
+                    aria-label="Next image"
+                >
+                    <svg class="w-8 h-8 sm:w-11 sm:h-11 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            @endif
+
+            {{-- Image Counter Badge --}}
+            <div class="absolute top-3.5 left-4 z-30">
+                <span id="lightboxCounter" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-900/80 text-white shadow-xs">
+                    1 / {{ $galleryImages->count() }}
+                </span>
+            </div>
+
+            {{-- Image Stage with Smooth Slide Animation (Fills upper area) --}}
+            <div id="lightboxStage" class="relative flex-1 w-full min-h-0 flex items-center justify-center overflow-hidden cursor-default p-2">
+                <img
+                    id="lightboxMainImg"
+                    src="{{ $product->primaryImageUrl() }}"
+                    alt="{{ $product->title }}"
+                    class="w-full h-full object-contain transition-all duration-200 select-none pointer-events-none"
+                />
+            </div>
+
+            {{-- Bottom Thumbnail Strip (Directly in the bottom of the card) --}}
+            @if ($galleryImages->count() > 1)
+                <div class="shrink-0 w-fit max-w-[90%] z-30 mt-1 mb-1 flex items-center gap-2 overflow-x-auto px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 shadow-lg no-scrollbar">
+                    @foreach ($galleryImages as $index => $imageUrl)
+                        <button
+                            type="button"
+                            data-lightbox-index="{{ $index }}"
+                            class="lightbox-thumb-btn w-10 h-10 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer {{ $index === 0 ? 'border-brand-500 ring-2 ring-brand-500/40 scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100' }}"
+                            title="View image {{ $index + 1 }}"
+                        >
+                            <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover pointer-events-none">
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
     <script>
         document.querySelectorAll('[data-qty]').forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -391,18 +491,149 @@
             });
         });
 
-        // Gallery functionality
+        // Gallery & Lightbox Popup functionality
+        const galleryImages = @json($galleryImages);
+        let currentImageIndex = 0;
+
+        const mainImgWrapper = document.getElementById('main-img-wrapper');
         const mainImg = document.getElementById('main-img');
         const thumbs = document.querySelectorAll('.thumb-img');
-        thumbs.forEach(thumb => {
-            thumb.addEventListener('click', () => {
-                if (mainImg) mainImg.src = thumb.src;
-                thumbs.forEach(t => {
-                    t.classList.remove('border-brand-500');
-                    t.classList.add('border-transparent');
-                });
-                thumb.classList.remove('border-transparent');
-                thumb.classList.add('border-brand-500');
+
+        const lightboxModal = document.getElementById('imageLightboxModal');
+        const lightboxMainImg = document.getElementById('lightboxMainImg');
+        const lightboxCounter = document.getElementById('lightboxCounter');
+        const lightboxCloseBtn = document.getElementById('lightboxCloseBtn');
+        const lightboxPrevBtn = document.getElementById('lightboxPrevBtn');
+        const lightboxNextBtn = document.getElementById('lightboxNextBtn');
+        const lightboxThumbs = document.querySelectorAll('.lightbox-thumb-btn');
+
+        function updateGalleryView(index, animateDirection = null) {
+            if (!galleryImages || galleryImages.length === 0) return;
+            if (index < 0) index = galleryImages.length - 1;
+            if (index >= galleryImages.length) index = 0;
+            currentImageIndex = index;
+
+            const targetUrl = galleryImages[currentImageIndex];
+
+            // Update main image on product page
+            if (mainImg) {
+                mainImg.src = targetUrl;
+            }
+
+            // Update thumbnails on product page
+            thumbs.forEach((t, i) => {
+                if (i === currentImageIndex) {
+                    t.classList.remove('border-transparent', 'opacity-80');
+                    t.classList.add('border-brand-500', 'shadow-xs', 'opacity-100');
+                } else {
+                    t.classList.remove('border-brand-500', 'shadow-xs', 'opacity-100');
+                    t.classList.add('border-transparent', 'opacity-80');
+                }
+            });
+
+            // Update lightbox modal if open
+            if (lightboxMainImg) {
+                if (animateDirection) {
+                    const outX = animateDirection === 'next' ? '-24px' : '24px';
+                    const inX = animateDirection === 'next' ? '24px' : '-24px';
+                    lightboxMainImg.style.opacity = '0';
+                    lightboxMainImg.style.transform = `translateX(${outX}) scale(0.96)`;
+
+                    setTimeout(() => {
+                        lightboxMainImg.src = targetUrl;
+                        lightboxMainImg.style.transform = `translateX(${inX}) scale(0.96)`;
+                        requestAnimationFrame(() => {
+                            lightboxMainImg.style.opacity = '1';
+                            lightboxMainImg.style.transform = 'translateX(0) scale(1)';
+                        });
+                    }, 120);
+                } else {
+                    lightboxMainImg.src = targetUrl;
+                    lightboxMainImg.style.opacity = '1';
+                    lightboxMainImg.style.transform = 'translateX(0) scale(1)';
+                }
+            }
+
+            if (lightboxCounter) {
+                lightboxCounter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+            }
+
+            // Update lightbox bottom filmstrip thumbnails
+            lightboxThumbs.forEach((tb, i) => {
+                if (i === currentImageIndex) {
+                    tb.classList.remove('border-transparent', 'opacity-60');
+                    tb.classList.add('border-brand-500', 'ring-2', 'ring-brand-500/40', 'scale-105', 'opacity-100');
+                    tb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    tb.classList.remove('border-brand-500', 'ring-2', 'ring-brand-500/40', 'scale-105', 'opacity-100');
+                    tb.classList.add('border-transparent', 'opacity-60');
+                }
+            });
+        }
+
+        // Open Lightbox
+        function openLightbox(index = currentImageIndex) {
+            if (!lightboxModal) return;
+            updateGalleryView(index);
+            lightboxModal.classList.remove('opacity-0', 'pointer-events-none');
+            lightboxModal.classList.add('opacity-100', 'pointer-events-auto');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close Lightbox
+        function closeLightbox() {
+            if (!lightboxModal) return;
+            lightboxModal.classList.remove('opacity-100', 'pointer-events-auto');
+            lightboxModal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+
+        // Main Image click -> opens lightbox
+        if (mainImgWrapper) {
+            mainImgWrapper.addEventListener('click', () => openLightbox(currentImageIndex));
+        }
+
+        // Thumbnail hover -> switches main image; click -> opens lightbox
+        thumbs.forEach((thumb, index) => {
+            thumb.addEventListener('mouseenter', () => updateGalleryView(index));
+            thumb.addEventListener('click', () => openLightbox(index));
+        });
+
+        // Lightbox buttons
+        if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
+        if (lightboxPrevBtn) lightboxPrevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateGalleryView(currentImageIndex - 1, 'prev');
+        });
+        if (lightboxNextBtn) lightboxNextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateGalleryView(currentImageIndex + 1, 'next');
+        });
+
+        // Click outside square card on backdrop closes lightbox
+        if (lightboxModal) {
+            lightboxModal.addEventListener('click', (e) => {
+                if (e.target === lightboxModal) {
+                    closeLightbox();
+                }
+            });
+        }
+
+        // Keyboard ArrowLeft / ArrowRight & Escape navigation
+        window.addEventListener('keydown', (e) => {
+            if (!lightboxModal || lightboxModal.classList.contains('pointer-events-none')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') updateGalleryView(currentImageIndex - 1, 'prev');
+            if (e.key === 'ArrowRight') updateGalleryView(currentImageIndex + 1, 'next');
+        });
+
+        // Lightbox filmstrip thumbnails click
+        lightboxThumbs.forEach((tb) => {
+            tb.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(tb.dataset.lightboxIndex, 10);
+                const dir = idx > currentImageIndex ? 'next' : 'prev';
+                updateGalleryView(idx, dir);
             });
         });
 

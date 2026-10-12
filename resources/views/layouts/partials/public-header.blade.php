@@ -43,27 +43,9 @@
             </a>
         </div>
 
-        {{-- Center: Search Bar --}}
+        {{-- Center: Animated Search Bar --}}
         <div class="flex-1 max-w-xl lg:max-w-2xl mx-1 sm:mx-4">
-            <form action="{{ route('search') }}" method="GET" class="w-full">
-                <div class="flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] hover:bg-gray-100/80 focus-within:bg-white border border-gray-200 hover:border-gray-300 focus-within:border-gray-900 focus-within:ring-2 focus-within:ring-gray-900/20 rounded-lg transition-all shadow-2xs px-3 sm:px-4">
-                    {{-- Search Icon --}}
-                    <div class="flex items-center justify-center text-gray-400 flex-shrink-0 mr-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-
-                    {{-- Search Input --}}
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ request('q') }}"
-                        placeholder="Search electronics..."
-                        class="w-full h-full bg-transparent border-0 p-0 text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 leading-normal"
-                    >
-                </div>
-            </form>
+            <x-animated-search />
         </div>
 
         {{-- Right: Actions & Start Selling --}}
