@@ -39,7 +39,7 @@ class StoreScreen extends StatelessWidget {
                       ? Image.network(
                           user!.coverUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: AppColors.slate800),
+                          errorBuilder: (_, _, _) => Container(color: AppColors.slate800),
                         )
                       : Container(color: AppColors.slate800),
                 ),
@@ -55,7 +55,7 @@ class StoreScreen extends StatelessWidget {
                       border: Border.all(color: AppColors.surface, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -66,7 +66,7 @@ class StoreScreen extends StatelessWidget {
                         ? Image.network(
                             user!.logoUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.storefront, size: 36, color: AppColors.brand500),
+                            errorBuilder: (_, _, _) => const Icon(Icons.storefront, size: 36, color: AppColors.brand500),
                           )
                         : const Icon(Icons.storefront, size: 36, color: AppColors.brand500),
                   ),
@@ -96,7 +96,7 @@ class StoreScreen extends StatelessWidget {
                           color: user?.isKycApproved == true ? AppColors.successBg : AppColors.brand50,
                           borderRadius: BorderRadius.circular(AppRadius.pill),
                           border: Border.all(
-                            color: user?.isKycApproved == true ? AppColors.success.withOpacity(0.4) : AppColors.brand200,
+                            color: user?.isKycApproved == true ? AppColors.success.withValues(alpha: 0.4) : AppColors.brand200,
                           ),
                         ),
                         child: Row(
@@ -146,7 +146,7 @@ class StoreScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+                  border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
                 ),
                 child: Row(
                   children: [
@@ -190,7 +190,7 @@ class StoreScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+                  border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
                 ),
                 child: Column(
                   children: [
@@ -227,7 +227,7 @@ class StoreScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+                  border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
                 ),
                 child: Column(
                   children: [

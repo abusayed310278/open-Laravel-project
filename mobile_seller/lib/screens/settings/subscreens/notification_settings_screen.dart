@@ -80,7 +80,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               ),
               child: SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                activeColor: AppColors.brand500,
+                activeTrackColor: AppColors.brand500,
                 title: const Text(
                   'Allow Push Notifications',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
@@ -258,7 +258,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       ),
       trailing: Switch.adaptive(
         value: value,
-        activeColor: AppColors.brand500,
+        activeTrackColor: AppColors.brand500,
         onChanged: enabled ? onChanged : null,
       ),
     );

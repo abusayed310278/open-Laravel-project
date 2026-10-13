@@ -332,7 +332,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
         border: Border.all(color: AppColors.slate200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -352,7 +352,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                   color: AppColors.ink,
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -406,11 +406,11 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                                 if (_selectedCover != null)
                                   Image.file(File(_selectedCover!.path), fit: BoxFit.cover)
                                 else if (activeCover != null)
-                                  Image.network(activeCover, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppColors.slate800))
+                                  Image.network(activeCover, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: AppColors.slate800))
                                 else
                                   Container(color: AppColors.slate800),
                                 Container(
-                                  color: Colors.black.withOpacity(0.35),
+                                  color: Colors.black.withValues(alpha: 0.35),
                                   alignment: Alignment.center,
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -449,11 +449,11 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                                     if (_selectedLogo != null)
                                       Image.file(File(_selectedLogo!.path), fit: BoxFit.cover)
                                     else if (activeLogo != null)
-                                      Image.network(activeLogo, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.storefront, color: AppColors.brand500, size: 30))
+                                      Image.network(activeLogo, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.storefront, color: AppColors.brand500, size: 30))
                                     else
                                       const Icon(Icons.storefront, color: AppColors.brand500, size: 30),
                                     Container(
-                                      color: Colors.black.withOpacity(0.25),
+                                      color: Colors.black.withValues(alpha: 0.25),
                                       alignment: Alignment.bottomRight,
                                       padding: const EdgeInsets.all(4),
                                       child: const Icon(Icons.edit, color: Colors.white, size: 14),
@@ -591,7 +591,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                 child: SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   value: _isStoreActive,
-                  activeColor: AppColors.brand500,
+                  activeThumbColor: AppColors.brand500,
                   title: const Text('Store is Publicly Visible', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                   subtitle: const Text('When disabled, your store and listings are hidden from public view', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
                   onChanged: (val) => setState(() => _isStoreActive = val),
@@ -692,7 +692,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

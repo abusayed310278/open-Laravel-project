@@ -105,8 +105,8 @@ class _LoadingViewState extends State<LoadingView> with TickerProviderStateMixin
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              AppColors.brand500.withOpacity(0.18 * pulseVal),
-                              AppColors.brand400.withOpacity(0.06 * pulseVal),
+                              AppColors.brand500.withValues(alpha: 0.18 * pulseVal),
+                              AppColors.brand400.withValues(alpha: 0.06 * pulseVal),
                               Colors.transparent,
                             ],
                             stops: const [0.35, 0.7, 1.0],
@@ -134,13 +134,13 @@ class _LoadingViewState extends State<LoadingView> with TickerProviderStateMixin
                             color: AppColors.surface,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.brand500.withOpacity(0.24 + (0.12 * pulseVal)),
+                                color: AppColors.brand500.withValues(alpha: 0.24 + (0.12 * pulseVal)),
                                 blurRadius: 16 + (6 * pulseVal),
                                 spreadRadius: 1 + (2 * pulseVal),
                                 offset: const Offset(0, 4),
                               ),
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withValues(alpha: 0.06),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -158,7 +158,7 @@ class _LoadingViewState extends State<LoadingView> with TickerProviderStateMixin
                                   ? Image.asset(
                                       widget.logoAsset!,
                                       fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) => Icon(
+                                      errorBuilder: (_, _, _) => Icon(
                                         centerIcon,
                                         color: AppColors.brand600,
                                         size: widget.size * 0.28,
@@ -242,7 +242,7 @@ class _LoadingViewState extends State<LoadingView> with TickerProviderStateMixin
                 height: 3.5,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.brand500.withOpacity(opacity),
+                  color: AppColors.brand500.withValues(alpha: opacity),
                 ),
               ),
             );
@@ -272,7 +272,7 @@ class _TremendousOrbitalPainter extends CustomPainter {
 
     // 1. Subtle background tracks
     final bgPaint = Paint()
-      ..color = AppColors.slate100.withOpacity(0.9)
+      ..color = AppColors.slate100.withValues(alpha: 0.9)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
 
@@ -287,7 +287,7 @@ class _TremendousOrbitalPainter extends CustomPainter {
       startAngle: 0.0,
       endAngle: outerSweepAngle,
       colors: [
-        AppColors.brand500.withOpacity(0.0),
+        AppColors.brand500.withValues(alpha: 0.0),
         AppColors.brand400,
         AppColors.brand600,
       ],
@@ -310,7 +310,7 @@ class _TremendousOrbitalPainter extends CustomPainter {
       center.dy + outerRadius * math.sin(outerHeadAngle),
     );
     final dotGlowPaint = Paint()
-      ..color = AppColors.brand400.withOpacity(0.4)
+      ..color = AppColors.brand400.withValues(alpha: 0.4)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawCircle(outerHeadOffset, 3.5, dotGlowPaint);
     canvas.drawCircle(outerHeadOffset, 2.4, Paint()..color = AppColors.brand600);
@@ -324,7 +324,7 @@ class _TremendousOrbitalPainter extends CustomPainter {
       startAngle: 0.0,
       endAngle: innerSweepAngle,
       colors: [
-        AppColors.brand300.withOpacity(0.0),
+        AppColors.brand300.withValues(alpha: 0.0),
         AppColors.brand400,
         AppColors.brand500,
       ],

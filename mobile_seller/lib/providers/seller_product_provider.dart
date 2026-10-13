@@ -144,7 +144,7 @@ class SellerProductProvider extends ChangeNotifier {
 
   Future<bool> togglePublish(int productId) async {
     try {
-      final response = await _apiClient.patch('/products/$productId/toggle-publish');
+      await _apiClient.patch('/products/$productId/toggle-publish');
       await fetchProducts();
       return true;
     } catch (e) {
@@ -175,7 +175,7 @@ class SellerProductProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiClient.multipart(
+      await _apiClient.multipart(
         '/products',
         method: 'POST',
         fields: fields,

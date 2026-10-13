@@ -107,7 +107,7 @@ class SellerOrderProvider extends ChangeNotifier {
         body['tracking_number'] = trackingNumber.trim();
       }
 
-      final response = await _apiClient.post('/orders/$vendorOrderId/status', body: body);
+      await _apiClient.post('/orders/$vendorOrderId/status', body: body);
 
       // Refresh current detail and orders list
       await fetchOrderDetail(vendorOrderId);

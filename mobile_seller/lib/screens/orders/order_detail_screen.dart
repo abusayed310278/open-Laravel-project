@@ -139,7 +139,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 color: AppColors.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     offset: const Offset(0, -2),
                     blurRadius: 8,
                   ),
@@ -175,7 +175,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -215,7 +215,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +261,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +288,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ? Image.network(
                             item.thumbnail!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2, size: 24, color: AppColors.slate400),
+                            errorBuilder: (_, _, _) => const Icon(Icons.inventory_2, size: 24, color: AppColors.slate400),
                           )
                         : const Icon(Icons.inventory_2, size: 24, color: AppColors.slate400),
                   ),
@@ -330,7 +330,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

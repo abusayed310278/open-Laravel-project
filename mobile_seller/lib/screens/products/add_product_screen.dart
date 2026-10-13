@@ -328,7 +328,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const Text('Category *', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<int>(
-                      value: _selectedCategoryId,
+                      initialValue: _selectedCategoryId,
                       hint: const Text('Select Category', style: TextStyle(fontSize: 14, color: AppColors.slate400)),
                       items: metaProvider.categories.map((c) {
                         return DropdownMenuItem<int>(value: c.id, child: Text(c.name));
@@ -352,7 +352,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const Text('Brand (Optional)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<int>(
-                      value: _selectedBrandId,
+                      initialValue: _selectedBrandId,
                       hint: const Text('Select Brand', style: TextStyle(fontSize: 14, color: AppColors.slate400)),
                       items: metaProvider.brands.map((b) {
                         return DropdownMenuItem<int>(value: b.id, child: Text(b.name));
@@ -446,7 +446,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const Text('Shipping Type *', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: _selectedShippingType,
+                      initialValue: _selectedShippingType,
                       items: const [
                         DropdownMenuItem(value: 'free', child: Text('Free Shipping')),
                         DropdownMenuItem(value: 'flat_rate', child: Text('Flat Rate')),
@@ -649,7 +649,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           labelWidget,
           const SizedBox(height: 6),
           DropdownButtonFormField<int>(
-            value: _attributeSelectValues[attr.id],
+            initialValue: _attributeSelectValues[attr.id],
             hint: Text(
               'Select ${attr.name}',
               style: const TextStyle(fontSize: 14, color: AppColors.slate400),
@@ -746,7 +746,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

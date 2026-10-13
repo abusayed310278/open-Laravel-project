@@ -133,8 +133,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          await context.read<SellerDashboardProvider>().fetchDashboard();
-          await context.read<SellerAuthProvider>().refreshProfile();
+          final dashboardProv = context.read<SellerDashboardProvider>();
+          final authProv = context.read<SellerAuthProvider>();
+          await dashboardProv.fetchDashboard();
+          await authProv.refreshProfile();
         },
         color: AppColors.brand500,
         child: dashboardProvider.isLoading && metrics == null
@@ -311,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,12 +516,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             await authProvider.refreshProfile();
                             await dashboardProvider.fetchDashboard();
                             if (ctx.mounted) Navigator.of(ctx).pop();
-                            if (mounted) {
+                            if (context.mounted) {
                               AppSnackBar.success(context, 'Email saved successfully!');
                             }
                           } catch (e) {
                             setModalState(() => isSaving = false);
-                            if (mounted) {
+                            if (context.mounted) {
                               AppSnackBar.error(context, 'Failed to save email: $e');
                             }
                           }
@@ -683,12 +685,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             await authProvider.refreshProfile();
                             await dashboardProvider.fetchDashboard();
                             if (ctx.mounted) Navigator.of(ctx).pop();
-                            if (mounted) {
+                            if (context.mounted) {
                               AppSnackBar.success(context, 'Warehouse address saved successfully!');
                             }
                           } catch (e) {
                             setModalState(() => isSaving = false);
-                            if (mounted) {
+                            if (context.mounted) {
                               AppSnackBar.error(context, 'Failed to save address: $e');
                             }
                           }
@@ -787,7 +789,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isExpanded ? AppColors.surface : Colors.white.withOpacity(0.18),
+          color: isExpanded ? AppColors.surface : Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Column(
@@ -1043,7 +1045,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1135,7 +1137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: const Color(0xFF7C83D4).withOpacity(0.12),
+                            color: const Color(0xFF7C83D4).withValues(alpha: 0.12),
                           ),
                         ),
                       ],
@@ -1264,7 +1266,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1316,7 +1318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? Image.network(
                             product.thumbnail!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 20, color: AppColors.slate400),
+                            errorBuilder: (_, _, _) => const Icon(Icons.image, size: 20, color: AppColors.slate400),
                           )
                         : const Icon(Icons.image, size: 20, color: AppColors.slate400),
                   ),
@@ -1357,7 +1359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

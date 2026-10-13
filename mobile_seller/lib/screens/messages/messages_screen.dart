@@ -179,7 +179,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                             color: AppColors.brand500,
                             child: ListView.separated(
                               itemCount: filtered.length,
-                              separatorBuilder: (_, __) => const Divider(height: 1, indent: 76, color: AppColors.slate100),
+                              separatorBuilder: (_, _) => const Divider(height: 1, indent: 76, color: AppColors.slate100),
                               itemBuilder: (context, index) {
                                 final conv = filtered[index] as Map<String, dynamic>;
                                 final other = (conv['other_user'] as Map<String, dynamic>?) ?? {};

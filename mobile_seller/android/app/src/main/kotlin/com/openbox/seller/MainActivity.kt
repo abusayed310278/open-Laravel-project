@@ -1,4 +1,4 @@
-package com.example.mobile_seller
+package com.openbox.seller
 
 import io.flutter.embedding.android.FlutterActivity
 

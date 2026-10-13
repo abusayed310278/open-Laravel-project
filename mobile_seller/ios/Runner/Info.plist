@@ -24,6 +24,12 @@
 	<string>????</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to display nearby Seller Centers and route directions.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to select and upload product and profile images.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to take photos of products and documents.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save photos to your photo library.</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 	<key>CFBundleVersion</key>

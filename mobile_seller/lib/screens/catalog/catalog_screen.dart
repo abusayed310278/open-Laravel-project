@@ -50,7 +50,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: AppColors.slate200.withOpacity(0.6),
+                color: AppColors.slate200.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
@@ -64,7 +64,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           color: _selectedTab == 0 ? AppColors.surface : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 0
-                              ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 1))]
+                              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))]
                               : null,
                         ),
                         alignment: Alignment.center,
@@ -95,7 +95,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           color: _selectedTab == 1 ? AppColors.surface : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 1
-                              ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 1))]
+                              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))]
                               : null,
                         ),
                         alignment: Alignment.center,

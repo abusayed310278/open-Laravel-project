@@ -83,7 +83,7 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<int>(
-                  value: selectedProductId,
+                  initialValue: selectedProductId,
                   decoration: const InputDecoration(labelText: 'Select Product'),
                   items: _eligibleProducts
                       .map((p) => DropdownMenuItem<int>(
@@ -98,7 +98,7 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                 const SizedBox(height: AppSpacing.md),
                 if (_warehouses.isNotEmpty) ...[
                   DropdownButtonFormField<int>(
-                    value: selectedWarehouseId,
+                    initialValue: selectedWarehouseId,
                     decoration: const InputDecoration(labelText: 'Destination Warehouse'),
                     items: _warehouses
                         .map((w) => DropdownMenuItem<int>(
@@ -134,11 +134,11 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                         },
                       );
                       _fetchDeposits();
-                      if (mounted) {
+                      if (context.mounted) {
                         AppSnackBar.success(context, 'Deposit request created!');
                       }
                     } catch (e) {
-                      if (mounted) {
+                      if (context.mounted) {
                         AppSnackBar.error(context, 'Request failed: $e');
                       }
                     }
@@ -182,7 +182,7 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       itemCount: _deposits.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                       itemBuilder: (context, index) {
                         final d = _deposits[index] as Map<String, dynamic>;
                         final status = d['status']?.toString() ?? 'pending';
@@ -211,7 +211,7 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
-                                      color: statusColor.withOpacity(0.12),
+                                      color: statusColor.withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(AppRadius.pill),
                                     ),
                                     child: Text(

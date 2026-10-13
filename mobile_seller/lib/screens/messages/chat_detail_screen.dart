@@ -215,7 +215,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_outlined, size: 28),
+                        errorBuilder: (_, _, _) => const Icon(Icons.inventory_2_outlined, size: 28),
                       ),
                     )
                   else
@@ -393,7 +393,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 border: isMine ? null : Border.all(color: AppColors.slate200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
                   ),
@@ -409,7 +409,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         child: Image.network(
                           attachmentUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 40),
+                          errorBuilder: (_, _, _) => const Icon(Icons.broken_image, size: 40),
                         ),
                       )
                     else

@@ -101,7 +101,7 @@ class _InventoryViewState extends State<InventoryView> {
               try {
                 await _apiClient.patch(
                   '/inventory/${product['id']}',
-                  body: {'quantity': newQty, if (newPrice != null) 'price': newPrice},
+                  body: {'quantity': newQty, 'price': ?newPrice},
                 );
                 _fetchInventory(_searchController.text);
                 if (mounted) {
@@ -181,7 +181,7 @@ class _InventoryViewState extends State<InventoryView> {
                         : ListView.separated(
                             padding: const EdgeInsets.all(AppSpacing.lg),
                             itemCount: _items.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                             itemBuilder: (context, index) {
                               final item = _items[index] as Map<String, dynamic>;
                               return _buildInventoryCard(item);
@@ -269,7 +269,7 @@ class _InventoryViewState extends State<InventoryView> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: badgeColor.withOpacity(0.12),
+                    color: badgeColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Text(

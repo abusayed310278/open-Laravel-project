@@ -69,7 +69,7 @@ class SellerWalletProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _apiClient.post(
+      await _apiClient.post(
         '/wallet/payout-request',
         body: {
           'amount': amount,

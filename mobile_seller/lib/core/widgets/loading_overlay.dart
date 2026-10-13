@@ -30,7 +30,7 @@ class LoadingOverlay extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
                 child: Container(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   child: LoadingView(
                     message: message ?? 'Processing request...',
                     subtitle: subtitle ?? 'Please wait a moment',

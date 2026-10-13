@@ -101,7 +101,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
               const Text('Payout Method', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: _selectedMethod,
+                initialValue: _selectedMethod,
                 items: const [
                   DropdownMenuItem(value: 'manual_bank', child: Text('Bank Transfer (IBAN)')),
                   DropdownMenuItem(value: 'stripe', child: Text('Stripe Connect')),
@@ -112,7 +112,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: AppSpacing.xl),
               Consumer<SellerWalletProvider>(
-                builder: (_, walletProvider, __) {
+                builder: (_, walletProvider, _) {
                   return CustomButton(
                     text: 'Submit Payout Request',
                     isLoading: walletProvider.isSubmittingPayout,
@@ -130,7 +130,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                       final success = await walletProvider.requestPayout(amount, _selectedMethod);
                       if (ctx.mounted) Navigator.of(ctx).pop();
 
-                      if (mounted) {
+                      if (context.mounted) {
                         if (success) {
                           AppSnackBar.success(context, 'Payout request submitted!');
                         } else {
@@ -183,7 +183,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.12),
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -202,7 +202,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.12),
+                                  color: Colors.white.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(AppRadius.pill),
                                 ),
                                 child: const Text(
@@ -297,7 +297,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                             : ListView.separated(
                                 padding: const EdgeInsets.all(AppSpacing.lg),
                                 itemCount: walletProvider.payouts.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                                 itemBuilder: (context, index) {
                                   final p = walletProvider.payouts[index];
                                   return _buildPayoutCard(p);
@@ -312,7 +312,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                             : ListView.separated(
                                 padding: const EdgeInsets.all(AppSpacing.lg),
                                 itemCount: walletProvider.transactions.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                                 itemBuilder: (context, index) {
                                   final tx = walletProvider.transactions[index];
                                   return _buildTransactionCard(tx);
@@ -333,7 +333,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -366,7 +366,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
       ),
       child: Row(
         children: [

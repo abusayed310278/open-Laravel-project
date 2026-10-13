@@ -58,9 +58,25 @@ class _InspectionQueueScreenState extends State<InspectionQueueScreen> {
       appBar: AppBar(title: const Text('Product Inspection Queue')),
       body: _isLoading
           ? const LoadingView(message: 'Loading inspection queue...')
-          : RefreshIndicator(
-              onRefresh: _fetchInspections,
-              color: AppColors.brand500,
+          : _errorMessage != null && _inspections.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.slate600)),
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(onPressed: _fetchInspections, child: const Text('Retry')),
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchInspections,
+                  color: AppColors.brand500,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
@@ -94,7 +110,7 @@ class _InspectionQueueScreenState extends State<InspectionQueueScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _inspections.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                         itemBuilder: (context, index) {
                           final item = _inspections[index] as Map<String, dynamic>;
                           final status = item['status']?.toString() ?? 'pending';
@@ -126,7 +142,7 @@ class _InspectionQueueScreenState extends State<InspectionQueueScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: statusColor.withOpacity(0.12),
+                                        color: statusColor.withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(AppRadius.pill),
                                       ),
                                       child: Text(

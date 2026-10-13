@@ -61,9 +61,25 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
       appBar: AppBar(title: const Text('Subscription Plan & Credits')),
       body: _isLoading
           ? const LoadingView(message: 'Loading subscription details...')
-          : RefreshIndicator(
-              onRefresh: _fetchSubscriptions,
-              color: AppColors.brand500,
+          : _errorMessage != null && _plans.isEmpty && _currentPlan == null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.slate600)),
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(onPressed: _fetchSubscriptions, child: const Text('Retry')),
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchSubscriptions,
+                  color: AppColors.brand500,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: Column(
@@ -81,7 +97,7 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
                         borderRadius: BorderRadius.circular(AppRadius.lg),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),

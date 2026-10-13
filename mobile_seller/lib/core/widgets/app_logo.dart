@@ -24,7 +24,7 @@ class AppLogo extends StatelessWidget {
       child: Image.asset(
         'assets/icon/logo.png',
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Icon(
+        errorBuilder: (_, _, _) => Icon(
           Icons.storefront_rounded,
           color: Colors.white,
           size: size * 0.55,

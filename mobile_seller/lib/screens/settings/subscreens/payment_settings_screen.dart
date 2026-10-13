@@ -117,7 +117,23 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
       appBar: AppBar(title: const Text('Payment & Payout Settings')),
       body: _isLoading
           ? const LoadingView(message: 'Loading payment settings...')
-          : SingleChildScrollView(
+          : _errorMessage != null && _bankNameController.text.isEmpty && _accountNumberController.text.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.slate600)),
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(onPressed: _fetchPaymentSettings, child: const Text('Retry')),
+                      ],
+                    ),
+                  ),
+                )
+              : SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +203,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                     title: const Text('Direct Bank Transfer Payouts', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Receive earnings directly into your registered bank account', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
                     value: _bankTransferEnabled,
-                    activeColor: AppColors.brand500,
+                    activeThumbColor: AppColors.brand500,
                     onChanged: (val) => setState(() => _bankTransferEnabled = val),
                   ),
                   const Divider(height: 1, color: AppColors.slate100),
@@ -196,7 +212,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                     title: const Text('Cash on Delivery (COD) Acceptance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Allow local customers to pay upon package receipt', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
                     value: _codEnabled,
-                    activeColor: AppColors.brand500,
+                    activeThumbColor: AppColors.brand500,
                     onChanged: (val) => setState(() => _codEnabled = val),
                   ),
                   const SizedBox(height: AppSpacing.xxl),

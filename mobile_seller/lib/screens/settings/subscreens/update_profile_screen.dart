@@ -146,7 +146,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                     fit: BoxFit.cover,
                                     width: 96,
                                     height: 96,
-                                    errorBuilder: (_, __, ___) => _buildInitialFallback(user?.name),
+                                    errorBuilder: (_, _, _) => _buildInitialFallback(user.name),
                                   )
                                 : _buildInitialFallback(user?.name)),
                       ),
@@ -165,7 +165,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             border: Border.all(color: Colors.white, width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.12),
+                                color: Colors.black.withValues(alpha: 0.12),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),

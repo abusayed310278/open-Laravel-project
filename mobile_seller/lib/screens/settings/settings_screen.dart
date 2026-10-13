@@ -443,7 +443,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(color: AppColors.surface, width: 3),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8, offset: const Offset(0, 2))],
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: user?.logoUrl != null
@@ -475,7 +475,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: user?.isKycApproved == true ? AppColors.successBg : AppColors.brand50,
                       borderRadius: BorderRadius.circular(AppRadius.pill),
-                      border: Border.all(color: user?.isKycApproved == true ? AppColors.success.withOpacity(0.3) : AppColors.brand200),
+                      border: Border.all(color: user?.isKycApproved == true ? AppColors.success.withValues(alpha: 0.3) : AppColors.brand200),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -716,7 +716,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
         ),
         child: Column(
           children: items.asMap().entries.map((entry) {
@@ -730,7 +730,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: (item.iconColor ?? AppColors.brand500).withOpacity(0.08),
+                      color: (item.iconColor ?? AppColors.brand500).withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: Icon(item.icon, size: 20, color: item.iconColor ?? AppColors.brand600),
@@ -750,7 +750,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: (item.badgeColor ?? AppColors.brand500).withOpacity(0.12),
+                            color: (item.badgeColor ?? AppColors.brand500).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                           child: Text(

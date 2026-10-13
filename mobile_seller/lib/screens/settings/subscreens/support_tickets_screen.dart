@@ -84,7 +84,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
-                  value: selectedCategory,
+                  initialValue: selectedCategory,
                   decoration: const InputDecoration(labelText: 'Inquiry Category'),
                   items: _categories
                       .map((cat) => DropdownMenuItem(value: cat, child: Text(cat, style: const TextStyle(fontSize: 13))))
@@ -126,11 +126,11 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                         },
                       );
                       _fetchTickets();
-                      if (mounted) {
+                      if (context.mounted) {
                         AppSnackBar.success(context, 'Support ticket created successfully!');
                       }
                     } catch (e) {
-                      if (mounted) {
+                      if (context.mounted) {
                         AppSnackBar.error(context, 'Failed to submit ticket: $e');
                       }
                     }
@@ -160,9 +160,25 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
       ),
       body: _isLoading
           ? const LoadingView(message: 'Loading support tickets...')
-          : RefreshIndicator(
-              onRefresh: _fetchTickets,
-              color: AppColors.brand500,
+          : _errorMessage != null && _tickets.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(_errorMessage!, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.slate600)),
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(onPressed: _fetchTickets, child: const Text('Retry')),
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchTickets,
+                  color: AppColors.brand500,
               child: _tickets.isEmpty
                   ? EmptyView(
                       icon: Icons.chat_bubble_outline_rounded,
@@ -174,7 +190,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       itemCount: _tickets.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                       itemBuilder: (context, index) {
                         final t = _tickets[index] as Map<String, dynamic>;
                         final status = t['status']?.toString() ?? 'open';

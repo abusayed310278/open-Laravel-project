@@ -87,7 +87,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               scrollDirection: Axis.horizontal,
               itemCount: _statusTabs.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final tab = _statusTabs[index];
                 final key = tab['key']!;
@@ -123,7 +123,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.white.withOpacity(0.25) : AppColors.slate100,
+                              color: isSelected ? Colors.white.withValues(alpha: 0.25) : AppColors.slate100,
                               borderRadius: BorderRadius.circular(AppRadius.sm),
                             ),
                             child: Text(
@@ -161,7 +161,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       : ListView.separated(
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           itemCount: orderProvider.orders.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                           itemBuilder: (context, index) {
                             final order = orderProvider.orders[index];
                             return _buildOrderCard(context, order);
@@ -189,10 +189,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.slate200.withOpacity(0.8)),
+          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -238,7 +238,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       ? Image.network(
                           order.thumbnail!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2, size: 22, color: AppColors.slate400),
+                          errorBuilder: (_, _, _) => const Icon(Icons.inventory_2, size: 22, color: AppColors.slate400),
                         )
                       : const Icon(Icons.inventory_2, size: 22, color: AppColors.slate400),
                 ),

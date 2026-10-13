@@ -29,7 +29,7 @@ class AboutScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.xl),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.brand500.withOpacity(0.3),
+                    color: AppColors.brand500.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

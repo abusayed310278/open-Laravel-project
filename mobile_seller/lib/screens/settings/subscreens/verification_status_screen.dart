@@ -116,7 +116,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                           Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: badgeColor.withOpacity(0.12),
+                              color: badgeColor.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(isApproved ? Icons.verified_rounded : Icons.shield_outlined, size: 36, color: badgeColor),
@@ -205,7 +205,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                       const Text('Submit Document ID for Verification', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                       const SizedBox(height: AppSpacing.md),
                       DropdownButtonFormField<String>(
-                        value: _selectedDocType,
+                        initialValue: _selectedDocType,
                         decoration: const InputDecoration(labelText: 'Document Type'),
                         items: const [
                           DropdownMenuItem(value: 'National ID', child: Text('National ID / QID')),
