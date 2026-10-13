@@ -158,7 +158,7 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                 ['title' => 'Warehouses & Stock', 'route_name' => 'admin.warehouses.index', 'group_name' => 'VERIFICATION & KYC', 'permission_slug' => 'inventory.manage', 'icon' => 'building', 'sort_order' => 20],
                 ['title' => 'Chat Messenger', 'route_name' => 'admin.chat.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 18],
                 ['title' => 'Support Tickets', 'route_name' => 'admin.support.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 19],
-                ['title' => 'Reviews Moderation', 'route_name' => 'admin.reviews.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'reviews.manage', 'icon' => 'star', 'sort_order' => 20],
+                ['title' => 'Reviews', 'route_name' => 'admin.reviews.index', 'group_name' => 'ENGAGEMENT', 'permission_slug' => 'reviews.manage', 'icon' => 'star', 'sort_order' => 20],
                 ['title' => 'Blog Comments', 'route_name' => 'admin.blog.comments.index', 'group_name' => 'CONTENT', 'permission_slug' => 'site.manage', 'icon' => 'chat', 'sort_order' => 21],
                 ['title' => 'Pages', 'route_name' => 'admin.pages.index', 'group_name' => 'CONTENT', 'permission_slug' => 'site.manage', 'icon' => 'document', 'sort_order' => 22],
                 ['title' => 'Blog Posts', 'route_name' => 'admin.blog.index', 'group_name' => 'CONTENT', 'permission_slug' => 'site.manage', 'icon' => 'newspaper', 'sort_order' => 23],

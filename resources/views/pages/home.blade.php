@@ -366,7 +366,7 @@
                             Quality Guaranteed
                         </div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">Certified Diagnostic Check</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-4">
                             Every device undergoes thorough hardware and component inspections to ensure pristine operational condition.
                         </p>
                         <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
@@ -381,7 +381,7 @@
                             Zero Risk Policy
                         </div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">7-Day Replacement</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-4">
                             If your item doesn't match its listing description, return it within 7 days for a full refund or direct exchange.
                         </p>
                         <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
@@ -396,7 +396,7 @@
                             Safe &amp; Secure
                         </div>
                         <h3 class="text-base font-bold text-gray-900 dark:text-white mb-2">Escrow Protected Checkout</h3>
-                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-4">
                             Your payment is held safely in escrow and only released to the seller after you receive and inspect your package.
                         </p>
                         <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 border-t border-gray-50 dark:border-slate-700/60 pt-3">
@@ -537,33 +537,104 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_reviews'))
-        {{-- WHAT OUR COMMUNITY SAYS --}}
-        <section class="py-14 bg-white dark:bg-[#0b0f19]">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="text-center max-w-2xl mx-auto mb-10">
-                    <h2 class="text-2xl font-extrabold text-gray-950 dark:text-white mb-2">What Our Community Says</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Real feedback from verified buyers and sellers nationwide.</p>
-                </div>
+    @if (feature_enabled('home_reviews') && $reviews->isNotEmpty())
+        {{-- WHAT OUR COMMUNITY SAYS (Automatically Scrollable) --}}
+        <section class="py-14 bg-white dark:bg-[#0b0f19] overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-center sm:text-left">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-gray-950 dark:text-white mb-2">What Our Community Says</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Real feedback from verified buyers and sellers nationwide.</p>
+                    </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    @foreach ($reviews as $review)
-                        <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow">
+                    <div class="hidden sm:flex items-center gap-2 self-center sm:self-end">
+                        <button
+                            type="button"
+                            id="reviews-scroll-prev"
+                            aria-label="Previous review"
+                            class="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-amber-600 hover:border-amber-300 dark:hover:border-amber-500 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button
+                            type="button"
+                            id="reviews-scroll-next"
+                            aria-label="Next review"
+                            class="w-8 h-8 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-amber-600 hover:border-amber-300 dark:hover:border-amber-500 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @php
+                $displayReviews = $reviews->values();
+                // Ensure sufficient items for seamless infinite auto-scroll
+                while ($displayReviews->count() < 8 && $displayReviews->isNotEmpty()) {
+                    $displayReviews = $displayReviews->concat($reviews);
+                }
+                $duration = max(30, $displayReviews->count() * 4.5);
+            @endphp
+
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 overflow-hidden py-2" id="reviews-viewport" style="container-type: inline-size;">
+                {{-- Left & Right Fade Masks --}}
+                <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-4 sm:w-6 z-10 bg-gradient-to-r from-white dark:from-[#0b0f19] to-transparent"></div>
+                <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-4 sm:w-6 z-10 bg-gradient-to-l from-white dark:from-[#0b0f19] to-transparent"></div>
+
+                {{-- Continuous Auto-Scrolling Track --}}
+                <div
+                    id="reviews-track"
+                    class="reviews-marquee-track flex items-stretch gap-4 w-max select-none"
+                    style="--scroll-duration: {{ $duration }}s;"
+                >
+                    {{-- Set 1 --}}
+                    @foreach ($displayReviews as $review)
+                        <div class="review-card h-[208px] shrink-0 bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow">
                             <div>
                                 {{-- Stars --}}
                                 <div class="flex items-center gap-1 text-amber-400 mb-3">
-                                    @for ($i = 0; $i < 5; $i++)
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
+                                    @for ($i = 0; $i < ($review['rating'] ?? 5); $i++)
+                                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
+                                    @endfor
+                                    @for ($i = ($review['rating'] ?? 5); $i < 5; $i++)
+                                        <svg class="w-4 h-4 text-gray-200 dark:text-gray-700" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
                                     @endfor
                                 </div>
 
-                                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-4">
                                     &ldquo;{{ $review['body'] }}&rdquo;
                                 </p>
                             </div>
 
                             <div class="border-t border-gray-50 dark:border-slate-700/60 pt-3 flex items-center justify-between gap-2">
-                                <span class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $review['name'] }}">{{ Str::before(trim($review['name'] ?? ''), ' ') }}</span>
+                                <span class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $review['name'] }}">{{ Str::before(trim($review['name'] ?? ''), ' ') ?: ($review['name'] ?? 'Customer') }}</span>
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">Verified Buyer</span>
+                            </div>
+                        </div>
+                    @endforeach
+
+                    {{-- Set 2 (Duplicate for continuous loop) --}}
+                    @foreach ($displayReviews as $review)
+                        <div class="review-card h-[208px] shrink-0 bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow" aria-hidden="true">
+                            <div>
+                                {{-- Stars --}}
+                                <div class="flex items-center gap-1 text-amber-400 mb-3">
+                                    @for ($i = 0; $i < ($review['rating'] ?? 5); $i++)
+                                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
+                                    @endfor
+                                    @for ($i = ($review['rating'] ?? 5); $i < 5; $i++)
+                                        <svg class="w-4 h-4 text-gray-200 dark:text-gray-700" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.446a1 1 0 00-1.176 0l-3.367 2.446c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.951-.69l1.285-3.958z" /></svg>
+                                    @endfor
+                                </div>
+
+                                <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 line-clamp-4">
+                                    &ldquo;{{ $review['body'] }}&rdquo;
+                                </p>
+                            </div>
+
+                            <div class="border-t border-gray-50 dark:border-slate-700/60 pt-3 flex items-center justify-between gap-2">
+                                <span class="text-xs font-bold text-gray-900 dark:text-white truncate" title="{{ $review['name'] }}">{{ Str::before(trim($review['name'] ?? ''), ' ') ?: ($review['name'] ?? 'Customer') }}</span>
                                 <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">Verified Buyer</span>
                             </div>
                         </div>
@@ -571,6 +642,67 @@
                 </div>
             </div>
         </section>
+
+        <style>
+            @keyframes communityReviewsScroll {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(-50%);
+                }
+            }
+            #reviews-viewport .review-card {
+                width: calc((100cqw - 1rem) / 2);
+            }
+            @media (min-width: 640px) {
+                #reviews-viewport .review-card {
+                    width: calc((100cqw - 3rem) / 4);
+                }
+            }
+            .reviews-marquee-track {
+                animation: communityReviewsScroll var(--scroll-duration, 40s) linear infinite;
+                will-change: transform;
+            }
+            .reviews-marquee-track:hover,
+            .reviews-marquee-track:focus-within {
+                animation-play-state: paused !important;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .reviews-marquee-track {
+                    animation: none;
+                }
+            }
+        </style>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const track = document.getElementById('reviews-track');
+                const prevBtn = document.getElementById('reviews-scroll-prev');
+                const nextBtn = document.getElementById('reviews-scroll-next');
+
+                if (!track) return;
+
+                let manualOffset = 0;
+                const cardStep = 320 + 16;
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function () {
+                        manualOffset += cardStep;
+                        track.style.transition = 'margin-left 0.4s ease';
+                        track.style.marginLeft = manualOffset + 'px';
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function () {
+                        manualOffset -= cardStep;
+                        track.style.transition = 'margin-left 0.4s ease';
+                        track.style.marginLeft = manualOffset + 'px';
+                    });
+                }
+            });
+        </script>
     @endif
 
     @if (feature_enabled('home_popular_searches'))

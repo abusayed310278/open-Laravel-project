@@ -13,16 +13,27 @@
     @endsession
 
     <x-card>
-        <x-slot:title>Customer & Seller Reviews</x-slot:title>
+        <x-slot:title>Customer & Community Reviews</x-slot:title>
         <x-slot:action>
-            <form method="GET" class="flex items-center">
-                <select name="status" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs bg-white text-gray-700 hover:border-gray-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer">
-                    <option value="">All Statuses</option>
-                    @foreach ($statuses as $status)
-                        <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
-                    @endforeach
-                </select>
-            </form>
+            <div class="flex items-center gap-2">
+                <form method="GET" class="flex items-center">
+                    <select name="status" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs bg-white text-gray-700 hover:border-gray-300 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 cursor-pointer">
+                        <option value="">All Statuses</option>
+                        @foreach ($statuses as $status)
+                            <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
+                <button
+                    type="button"
+                    data-modal-open="create-review-modal"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 shadow-2xs transition-colors cursor-pointer shrink-0"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Review
+                </button>
+            </div>
         </x-slot:action>
 
         <x-table :headers="['Reviewer', 'Target', 'Rating', 'Review Details', 'Status', 'Date', 'Actions']" id="admin-reviews-table">
@@ -31,19 +42,30 @@
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs shrink-0 border border-brand-100">
-                                {{ strtoupper(substr($review->reviewer?->name ?? 'U', 0, 2)) }}
+                                {{ strtoupper(substr($review->author_name ?? 'U', 0, 2)) }}
                             </div>
                             <div>
-                                <span class="font-medium text-gray-900 block">{{ $review->reviewer?->name ?? 'Deleted User' }}</span>
-                                @if ($review->reviewer?->email)
-                                    <span class="text-xs text-gray-400">{{ $review->reviewer->email }}</span>
-                                @endif
+                                <span class="font-medium text-gray-900 block">{{ $review->author_name }}</span>
+                                <div class="flex items-center gap-1 text-[11px] text-gray-400">
+                                    @if ($review->city)
+                                        <span class="text-gray-500 font-medium">{{ $review->city }}</span>
+                                    @endif
+                                    @if ($review->reviewer?->email)
+                                        <span>&bull; {{ $review->reviewer->email }}</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-xs text-gray-600">
-                        <span class="font-semibold text-gray-800">{{ $review->reviewable_type->label() }}</span>
-                        <span class="text-gray-400 font-mono">#{{ $review->reviewable_id }}</span>
+                        @if ($review->reviewable_type)
+                            <span class="font-semibold text-gray-800">{{ $review->reviewable_type->label() }}</span>
+                            <span class="text-gray-400 font-mono">#{{ $review->reviewable_id }}</span>
+                        @else
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                                Community Feedback
+                            </span>
+                        @endif
                     </td>
                     <td class="px-4 py-3 text-sm font-semibold text-gray-900 font-mono">
                         {{ $review->rating }}/5
@@ -106,13 +128,117 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">No reviews found.</td>
+                    <td colspan="7" class="px-4 py-10 text-center text-gray-400 text-sm">No reviews found. Click "Add Review" above to add customer testimonials.</td>
                 </tr>
             @endforelse
         </x-table>
 
         <x-pagination :paginator="$reviews" />
     </x-card>
+
+    {{-- Create Review Modal --}}
+    <x-modal id="create-review-modal" title="Add Customer / Community Review" maxWidth="max-w-xl">
+        <form method="POST" action="{{ route('admin.reviews.store') }}" class="space-y-4">
+            @csrf
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Reviewer Name <span class="text-red-500">*</span></label>
+                    <input
+                        type="text"
+                        name="reviewer_name"
+                        value="{{ old('reviewer_name') }}"
+                        required
+                        placeholder="e.g. Tanvir Ahmed, Mona, Yusuf"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">City / Location (Optional)</label>
+                    <input
+                        type="text"
+                        name="city"
+                        value="{{ old('city', 'Dhaka') }}"
+                        placeholder="e.g. Dhaka, Chittagong, Sylhet"
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Link to Registered User (Optional)</label>
+                    <select name="reviewer_id" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">-- Standalone Reviewer Name --</option>
+                        @foreach ($users as $u)
+                            <option value="{{ $u->id }}" @selected(old('reviewer_id') == $u->id)>{{ $u->name }} ({{ $u->email }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Target Product (Optional)</label>
+                    <select name="reviewable_id" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">-- General Community Feedback --</option>
+                        @foreach ($products as $p)
+                            <option value="{{ $p->id }}" @selected(old('reviewable_id') == $p->id)>{{ Str::limit($p->title, 40) }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" name="reviewable_type" value="product">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Rating <span class="text-red-500">*</span></label>
+                    <select name="rating" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" required>
+                        @for ($i = 5; $i >= 1; $i--)
+                            <option value="{{ $i }}" @selected(old('rating', 5) == $i)>{{ $i }} Stars ({{ str_repeat('★', $i) }})</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
+                    <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400" required>
+                        @foreach ($statuses as $st)
+                            <option value="{{ $st->value }}" @selected(old('status', 'approved') === $st->value)>{{ $st->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Review Headline / Title (Optional)</label>
+                <input
+                    type="text"
+                    name="title"
+                    value="{{ old('title') }}"
+                    placeholder="Short summary (e.g. Verified Buyer Experience)"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Review Body / Feedback Text <span class="text-red-500">*</span></label>
+                <textarea
+                    name="body"
+                    rows="4"
+                    required
+                    placeholder="e.g. Solid quality for the price. Fast delivery and the product looks and works brand new!"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 leading-relaxed"
+                >{{ old('body') }}</textarea>
+                <p class="text-[11px] text-gray-400 mt-1">Approved reviews appear immediately in the "What Our Community Says" section on the homepage.</p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
+                    Cancel
+                </button>
+                <x-button type="submit" class="whitespace-nowrap px-4 py-2 text-xs font-semibold">
+                    Create Review
+                </x-button>
+            </div>
+        </form>
+    </x-modal>
 
     {{-- View Review Modals --}}
     @foreach ($reviews as $review)
@@ -121,11 +247,18 @@
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                     <div class="flex items-center gap-2.5">
                         <div class="w-9 h-9 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm">
-                            {{ strtoupper(substr($review->reviewer?->name ?? 'U', 0, 2)) }}
+                            {{ strtoupper(substr($review->author_name ?? 'U', 0, 2)) }}
                         </div>
                         <div>
-                            <div class="font-semibold text-gray-900">{{ $review->reviewer?->name ?? 'Anonymous User' }}</div>
-                            <div class="text-xs text-gray-400">{{ $review->reviewer?->email }}</div>
+                            <div class="font-semibold text-gray-900">{{ $review->author_name }}</div>
+                            <div class="text-xs text-gray-400">
+                                @if ($review->city)
+                                    <span>{{ $review->city }}</span>
+                                @endif
+                                @if ($review->reviewer?->email)
+                                    <span>&bull; {{ $review->reviewer->email }}</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -139,7 +272,11 @@
                         <span class="text-xs font-bold text-gray-900">({{ $review->rating }} out of 5)</span>
                     </div>
                     <div class="text-xs text-gray-500">
-                        Target: <span class="font-semibold text-gray-800">{{ $review->reviewable_type->label() }} #{{ $review->reviewable_id }}</span>
+                        @if ($review->reviewable_type)
+                            Target: <span class="font-semibold text-gray-800">{{ $review->reviewable_type->label() }} #{{ $review->reviewable_id }}</span>
+                        @else
+                            Target: <span class="font-semibold text-purple-700">Community / General</span>
+                        @endif
                     </div>
                 </div>
 
@@ -189,16 +326,39 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Rating (Stars)</label>
-                        <select name="rating" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500" required>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Reviewer Name</label>
+                        <input
+                            type="text"
+                            name="reviewer_name"
+                            value="{{ old('reviewer_name', $review->author_name) }}"
+                            placeholder="Reviewer Name"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">City / Location</label>
+                        <input
+                            type="text"
+                            name="city"
+                            value="{{ old('city', $review->city) }}"
+                            placeholder="e.g. Dhaka"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Rating (Stars)</label>
+                        <select name="rating" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500" required>
                             @for ($i = 5; $i >= 1; $i--)
                                 <option value="{{ $i }}" @selected(old('rating', $review->rating) == $i)>{{ $i }} Stars ({{ str_repeat('★', $i) }})</option>
                             @endfor
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-                        <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500" required>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                        <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500" required>
                             @foreach ($statuses as $st)
                                 <option value="{{ $st->value }}" @selected(old('status', $review->status->value) === $st->value)>{{ $st->label() }}</option>
                             @endforeach

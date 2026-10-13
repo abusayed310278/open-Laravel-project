@@ -115,10 +115,11 @@
                     }
 
                     $iconSvg = $iconPaths[$iconKey] ?? $iconPaths['box'];
+                    $itemLabel = ($item->route_name === 'admin.reviews.index' || strtolower($item->title ?? '') === 'reviews moderation') ? 'Reviews' : $item->title;
                     $filteredItems[] = [
                         'route' => $item->route_name,
                         'url' => $item->url_path,
-                        'label' => $item->title,
+                        'label' => $itemLabel,
                         'icon' => $iconSvg,
                     ];
                 }

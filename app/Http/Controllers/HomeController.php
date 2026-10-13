@@ -157,11 +157,11 @@ class HomeController extends Controller
             ->approved()
             ->with('reviewer')
             ->latest()
-            ->limit(5)
+            ->limit(25)
             ->get()
             ->map(fn (Review $review) => [
-                'name' => $review->reviewer->name,
-                'city' => 'Dhaka',
+                'name' => $review->author_name,
+                'city' => $review->city ?: 'Dhaka',
                 'rating' => $review->rating ?? 5,
                 'body' => $review->body,
             ]);

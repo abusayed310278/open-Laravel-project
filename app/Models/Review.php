@@ -13,6 +13,8 @@ class Review extends Model
 {
     protected $fillable = [
         'reviewer_id',
+        'reviewer_name',
+        'city',
         'reviewable_type',
         'reviewable_id',
         'order_id',
@@ -21,6 +23,11 @@ class Review extends Model
         'body',
         'status',
     ];
+
+    public function getAuthorNameAttribute(): string
+    {
+        return $this->reviewer_name ?: ($this->reviewer?->name ?? 'Customer');
+    }
 
     protected function casts(): array
     {
