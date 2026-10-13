@@ -67,6 +67,29 @@
                         >
                             Subtle Pill Action
                         </button>
+
+                        {{-- Search Bar Action Buttons Preview --}}
+                        <div class="flex items-center gap-1.5 p-1 bg-white border border-gray-200 rounded-lg shadow-2xs">
+                            <span class="text-xs text-gray-400 px-2 select-none">Search electronics...</span>
+                            <button
+                                type="button"
+                                id="preview-search-submit"
+                                class="px-3 py-1.5 rounded-md text-white text-xs font-semibold shadow-xs transition-all pointer-events-none"
+                                style="background-color: {{ $currentColor }};"
+                            >
+                                Search
+                            </button>
+                            <button
+                                type="button"
+                                id="preview-search-adv"
+                                class="w-7 h-7 flex items-center justify-center rounded-md text-white shadow-xs transition-all pointer-events-none"
+                                style="background-color: {{ $currentColor }};"
+                            >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -105,7 +128,7 @@
                             class="text-base font-extrabold font-mono transition-all ml-auto"
                             style="color: {{ $currentColor }};"
                         >
-                            ৳ 29,999
+                            $ 29,999
                         </span>
                     </div>
                 </div>
@@ -228,6 +251,11 @@
             document.getElementById('preview-tab-active').style.color = hex;
             document.getElementById('preview-link').style.color = hex;
             document.getElementById('preview-price').style.color = hex;
+
+            const searchSubmit = document.getElementById('preview-search-submit');
+            const searchAdv = document.getElementById('preview-search-adv');
+            if (searchSubmit) searchSubmit.style.backgroundColor = hex;
+            if (searchAdv) searchAdv.style.backgroundColor = hex;
 
             // Generate swatch steps
             const swatches = [

@@ -61,7 +61,7 @@
 
                     {{-- Sample UI Components --}}
                     <div class="pt-4 border-t border-gray-200 flex flex-wrap items-center gap-3">
-                        <span class="text-xl font-bold text-brand-600">৳ 45,900</span>
+                        <span class="text-xl font-bold text-brand-600">$ 45,900</span>
                         <button type="button" class="px-4 py-2 rounded-lg bg-brand-500 text-white text-xs font-semibold shadow-xs">
                             Add to Cart
                         </button>

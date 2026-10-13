@@ -6,7 +6,7 @@
     @php
         $ids = $products->pluck('id');
         $rows = [
-            'Price' => fn ($p) => 'Tk '.number_format($p->price),
+            'Price' => fn ($p) => '$'.number_format($p->price),
             'Condition' => fn ($p) => ucfirst($p->condition->value),
             'Brand' => fn ($p) => $p->brand?->name ?? '—',
             'Category' => fn ($p) => $p->category?->name ?? '—',

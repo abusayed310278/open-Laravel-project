@@ -62,6 +62,25 @@
         color: var(--color-brand-contrast) !important;
     }
 
+    /* 4. Search Bar Action Buttons (Search & Advanced Sliders) */
+    .search-submit-btn,
+    .advanced-search-btn {
+        background-color: var(--color-brand-500) !important;
+        color: var(--color-brand-contrast) !important;
+        border-color: transparent !important;
+        transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    }
+    .search-submit-btn:hover,
+    .advanced-search-btn:hover {
+        background-color: var(--color-brand-600) !important;
+        color: var(--color-brand-contrast) !important;
+    }
+    .search-submit-btn svg,
+    .advanced-search-btn svg,
+    .search-submit-btn .submit-button-text {
+        color: var(--color-brand-contrast) !important;
+    }
+
     /* 4. Newsletter Stay Updated Banner (Screenshot 4) */
     .newsletter-brand-banner {
         background: linear-gradient(to right, var(--color-brand-300), var(--color-brand-400)) !important;

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\SalerProfile;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -16,6 +17,75 @@ use Illuminate\View\View;
 
 class ProductPageController extends Controller
 {
+    public function suggest(Request $request): JsonResponse
+    {
+        $query = trim($request->string('q')->value());
+
+        if ($query === '') {
+            return response()->json([
+                'products' => [],
+                'categories' => [],
+                'total_products' => 0,
+                'search_url' => route('search'),
+            ]);
+        }
+
+        $products = Product::query()
+            ->live()
+            ->with(['images', 'category'])
+            ->where(function (Builder $q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                    ->orWhere('sku', 'like', "%{$query}%")
+                    ->orWhereHas('brand', fn (Builder $b) => $b->where('name', 'like', "%{$query}%"));
+            })
+            ->latest('id')
+            ->limit(10)
+            ->get()
+            ->map(function (Product $product) {
+                $inStock = ($product->quantity === null || $product->quantity > 0);
+
+                return [
+                    'id' => $product->id,
+                    'title' => $product->title,
+                    'url' => route('products.show', $product->slug ?: $product->id),
+                    'image' => $product->primaryImageUrl(),
+                    'price' => '$' . number_format((float) $product->price, fmod((float) $product->price, 1.0) == 0.0 ? 0 : 2),
+                    'raw_price' => (float) $product->price,
+                    'compare_price' => ($product->compare_price && $product->compare_price > $product->price)
+                        ? '$' . number_format((float) $product->compare_price, fmod((float) $product->compare_price, 1.0) == 0.0 ? 0 : 2)
+                        : null,
+                    'in_stock' => $inStock,
+                    'stock_label' => $inStock ? 'In Stock' : 'Out Of Stock',
+                    'category' => $product->category?->name,
+                ];
+            });
+
+        $categories = Category::query()
+            ->active()
+            ->where(fn (Builder $q) => $q->where('name', 'like', "%{$query}%")->orWhere('slug', 'like', "%{$query}%"))
+            ->with('parent')
+            ->withCount(['products' => fn (Builder $q) => $q->live()])
+            ->limit(10)
+            ->get()
+            ->map(function (Category $category) {
+                $parentName = $category->parent?->name;
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'url' => route('categories.show', $category->slug),
+                    'breadcrumb' => $parentName ? "{$parentName} > {$category->name}" : $category->name,
+                    'products_count' => $category->products_count,
+                ];
+            });
+
+        return response()->json([
+            'products' => $products,
+            'categories' => $categories,
+            'total_products' => $products->count(),
+            'search_url' => route('search', ['q' => $query]),
+        ]);
+    }
     public function advanced(Request $request): View|RedirectResponse
     {
         $mode = in_array($request->string('mode')->value(), ['items', 'seller', 'item_number', 'store_items', 'stores'], true)

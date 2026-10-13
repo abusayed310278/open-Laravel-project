@@ -401,7 +401,10 @@ class SettingsController extends Controller
             $socialLinks = [];
         }
 
+        $appHeading = $this->settings->get('footer_app_heading', 'Experience '.config('app.name', 'Openbox').' App on your mobile:');
+
         return view('admin.settings.app-links', [
+            'appHeading' => $appHeading,
             'appLinks' => $appLinks,
             'socialLinks' => $socialLinks,
             'appPlatforms' => array_values(\App\Support\FooterAppLinks::APP_PLATFORMS),
@@ -412,6 +415,7 @@ class SettingsController extends Controller
     public function updateAppLinks(Request $request): RedirectResponse
     {
         $request->validate([
+            'footer_app_heading' => ['nullable', 'string', 'max:250'],
             'app_links' => ['nullable', 'array', 'max:10'],
             'app_links.*.platform' => ['required', 'string', 'max:50'],
             'app_links.*.url' => ['nullable', 'string', 'max:500'],
@@ -451,6 +455,7 @@ class SettingsController extends Controller
             }
         }
 
+        $this->settings->set('footer_app_heading', $request->string('footer_app_heading')->value() ?: null, 'branding');
         $this->settings->set('footer_app_links', json_encode($appLinks), 'branding');
         $this->settings->set('footer_social_links', json_encode($socialLinks), 'branding');
 

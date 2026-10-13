@@ -101,6 +101,7 @@ Route::post('/newsletter', [NewsletterController::class, 'store'])->middleware('
 Route::get('/grading-system', GradingSystemController::class)->name('grading-system');
 Route::get('/shop', [ProductPageController::class, 'index'])->name('shop');
 Route::get('/search', [ProductPageController::class, 'index'])->name('search');
+Route::get('/search/suggest', [ProductPageController::class, 'suggest'])->name('search.suggest');
 Route::get('/search/advanced', [ProductPageController::class, 'advanced'])->name('search.advanced');
 Route::get('/compare', [CompareController::class, 'index'])->name('compare');
 Route::get('/products/{product:slug}', [ProductPageController::class, 'show'])->name('products.show');

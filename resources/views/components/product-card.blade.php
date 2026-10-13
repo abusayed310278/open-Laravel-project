@@ -111,7 +111,7 @@
                 type="button"
                 data-compare-id="{{ $id }}"
                 data-compare-title="{{ $title }}"
-                data-compare-price="Tk {{ number_format($price) }}"
+                data-compare-price="${{ number_format($price) }}"
                 data-compare-raw-price="{{ $price }}"
                 data-compare-image="{{ $image }}"
                 data-compare-brand="{{ $brand ?? $categoryHeading }}"
@@ -157,11 +157,11 @@
     {{-- Price --}}
     <div class="flex items-baseline gap-2 mb-1.5">
         <span class="text-sm sm:text-base font-bold text-gray-950 dark:text-white font-mono">
-            Tk {{ number_format($price) }}
+            ${{ number_format($price) }}
         </span>
         @if ($discountPercent)
             <span class="text-xs text-gray-400 dark:text-gray-500 line-through font-mono">
-                Tk {{ number_format($comparePrice) }}
+                ${{ number_format($comparePrice) }}
             </span>
         @endif
     </div>

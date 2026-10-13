@@ -8,18 +8,18 @@ class FooterAppLinks
         'google-play' => [
             'slug' => 'google-play',
             'name' => 'Google Play',
-            'subtitle' => 'GET IT ON',
+            'subtitle' => 'Download on',
             'default_title' => 'Google Play',
             'placeholder' => 'https://play.google.com/store/apps/details?id=com.openbox.app',
-            'icon_svg' => '<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.4l11.4 11.4-3.3 3.3L3.6 2.4z" fill="#00E676"/><path d="M15 13.8l3.6-3.6c.7-.7.7-1.8 0-2.5l-3.6-3.6-3.3 3.3 3.3 6.4z" fill="#FFD600"/><path d="M3.6 2.4c-.4.4-.6 1-.6 1.7v15.8c0 .7.2 1.3.6 1.7l8.1-8.1-8.1-11.1z" fill="#00B0FF"/><path d="M3.6 21.6l11.4-11.4-3.3-3.3-8.1 14.7z" fill="#FF3D00"/></svg>',
+            'icon_svg' => '<svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.4l11.4 11.4-3.3 3.3L3.6 2.4z" fill="#00E676"/><path d="M15 13.8l3.6-3.6c.7-.7.7-1.8 0-2.5l-3.6-3.6-3.3 3.3 3.3 6.4z" fill="#FFD600"/><path d="M3.6 2.4c-.4.4-.6 1-.6 1.7v15.8c0 .7.2 1.3.6 1.7l8.1-8.1-8.1-11.1z" fill="#00B0FF"/><path d="M3.6 21.6l11.4-11.4-3.3-3.3-8.1 14.7z" fill="#FF3D00"/></svg>',
         ],
         'app-store' => [
             'slug' => 'app-store',
             'name' => 'Apple App Store',
-            'subtitle' => 'Download on the',
+            'subtitle' => 'Download on',
             'default_title' => 'App Store',
             'placeholder' => 'https://apps.apple.com/app/openbox/id123456789',
-            'icon_svg' => '<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.66-1.06 1.73-.93 2.76 1 .08 2.01-.51 2.63-1.26z"/></svg>',
+            'icon_svg' => '<svg class="w-5 h-5 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.38c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.66-1.06 1.73-.93 2.76 1 .08 2.01-.51 2.63-1.26z"/></svg>',
         ],
         'huawei' => [
             'slug' => 'huawei',
@@ -100,32 +100,50 @@ class FooterAppLinks
     public static function getAppLinks(): array
     {
         $raw = setting('footer_app_links');
-        if (empty($raw)) {
-            return [];
-        }
-
-        $decoded = is_string($raw) ? json_decode($raw, true) : (array) $raw;
-        if (!is_array($decoded)) {
-            return [];
-        }
+        $decoded = !empty($raw) ? (is_string($raw) ? json_decode($raw, true) : (array) $raw) : null;
 
         $result = [];
-        foreach ($decoded as $item) {
-            if (empty($item['is_active']) || empty($item['url'])) {
-                continue;
+        if (is_array($decoded)) {
+            foreach ($decoded as $item) {
+                if (empty($item['is_active']) || empty($item['url'])) {
+                    continue;
+                }
+
+                $slug = (string) ($item['platform'] ?? '');
+                $meta = self::APP_PLATFORMS[$slug] ?? null;
+
+                $subtitle = !empty($item['subtitle']) ? (string) $item['subtitle'] : ($meta['subtitle'] ?? 'Download on');
+                if (in_array(strtoupper(trim($subtitle)), ['GET IT ON', 'DOWNLOAD ON THE'])) {
+                    $subtitle = 'Download on';
+                }
+
+                $result[] = [
+                    'platform' => $slug,
+                    'name' => $meta['name'] ?? ucfirst($slug),
+                    'title' => !empty($item['title']) ? (string) $item['title'] : ($meta['default_title'] ?? ucfirst($slug)),
+                    'subtitle' => $subtitle,
+                    'url' => (string) $item['url'],
+                    'icon_svg' => $meta['icon_svg'] ?? '<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
+                ];
             }
+        }
 
-            $slug = (string) ($item['platform'] ?? '');
-            $meta = self::APP_PLATFORMS[$slug] ?? null;
-
-            $result[] = [
-                'platform' => $slug,
-                'name' => $meta['name'] ?? ucfirst($slug),
-                'title' => !empty($item['title']) ? (string) $item['title'] : ($meta['default_title'] ?? ucfirst($slug)),
-                'subtitle' => !empty($item['subtitle']) ? (string) $item['subtitle'] : ($meta['subtitle'] ?? 'DOWNLOAD'),
-                'url' => (string) $item['url'],
-                'icon_svg' => $meta['icon_svg'] ?? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
-            ];
+        // Default Star Tech style apps if none active/set
+        if (empty($result)) {
+            $defaultPlatforms = ['google-play', 'app-store'];
+            foreach ($defaultPlatforms as $slug) {
+                $meta = self::APP_PLATFORMS[$slug] ?? null;
+                if ($meta) {
+                    $result[] = [
+                        'platform' => $slug,
+                        'name' => $meta['name'],
+                        'title' => $meta['default_title'],
+                        'subtitle' => $meta['subtitle'] ?? 'Download on',
+                        'url' => '#',
+                        'icon_svg' => $meta['icon_svg'],
+                    ];
+                }
+            }
         }
 
         return $result;
@@ -137,30 +155,41 @@ class FooterAppLinks
     public static function getSocialLinks(): array
     {
         $raw = setting('footer_social_links');
-        if (empty($raw)) {
-            return [];
-        }
-
-        $decoded = is_string($raw) ? json_decode($raw, true) : (array) $raw;
-        if (!is_array($decoded)) {
-            return [];
-        }
+        $decoded = !empty($raw) ? (is_string($raw) ? json_decode($raw, true) : (array) $raw) : null;
 
         $result = [];
-        foreach ($decoded as $item) {
-            if (empty($item['is_active']) || empty($item['url'])) {
-                continue;
+        if (is_array($decoded)) {
+            foreach ($decoded as $item) {
+                if (empty($item['is_active']) || empty($item['url'])) {
+                    continue;
+                }
+
+                $slug = (string) ($item['platform'] ?? '');
+                $meta = self::SOCIAL_PLATFORMS[$slug] ?? null;
+
+                $result[] = [
+                    'platform' => $slug,
+                    'name' => $meta['name'] ?? ucfirst($slug),
+                    'url' => (string) $item['url'],
+                    'icon_svg' => $meta['icon_svg'] ?? '<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>',
+                ];
             }
+        }
 
-            $slug = (string) ($item['platform'] ?? '');
-            $meta = self::SOCIAL_PLATFORMS[$slug] ?? null;
-
-            $result[] = [
-                'platform' => $slug,
-                'name' => $meta['name'] ?? ucfirst($slug),
-                'url' => (string) $item['url'],
-                'icon_svg' => $meta['icon_svg'] ?? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>',
-            ];
+        // Default Star Tech style social icons (WhatsApp, Facebook, YouTube, Instagram) if none active/set
+        if (empty($result)) {
+            $defaultPlatforms = ['whatsapp', 'facebook', 'youtube', 'instagram'];
+            foreach ($defaultPlatforms as $slug) {
+                $meta = self::SOCIAL_PLATFORMS[$slug] ?? null;
+                if ($meta) {
+                    $result[] = [
+                        'platform' => $slug,
+                        'name' => $meta['name'],
+                        'url' => '#',
+                        'icon_svg' => $meta['icon_svg'],
+                    ];
+                }
+            }
         }
 
         return $result;

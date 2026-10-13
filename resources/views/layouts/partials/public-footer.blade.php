@@ -98,66 +98,65 @@
         </div>
     </div>
 
-    {{-- Bottom Bar --}}
+    {{-- Dedicated App & Social Bar (Star Tech Style) --}}
     @php
+        $footerAppHeading = setting('footer_app_heading') ?: ('Experience ' . config('app.name', 'Openbox') . ' App on your mobile:');
         $footerAppLinks = \App\Support\FooterAppLinks::getAppLinks();
         $footerSocialLinks = \App\Support\FooterAppLinks::getSocialLinks();
     @endphp
 
-    <div style="background-color: #070913; border-top: 1px solid #1e293b;">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col lg:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-            <div class="flex items-center gap-4 text-center lg:text-left">
-                <span>{!! setting('brand_footer_copyright') ?: ('&copy; ' . now()->year . ' ' . config('app.name', 'Openbox') . '. All rights reserved.') !!}</span>
+    <div style="background-color: #080c18; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            {{-- Left: Heading / Label + App Badges --}}
+            <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-left">
+                <span class="text-xs sm:text-sm text-gray-400 font-normal whitespace-nowrap">
+                    {{ $footerAppHeading }}
+                </span>
+
+                <div class="flex items-center gap-2.5 flex-wrap justify-center">
+                    @foreach ($footerAppLinks as $item)
+                        <a
+                            href="{{ $item['url'] }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-md bg-black/60 hover:bg-black/90 border border-white/20 hover:border-white/40 text-white transition-all shadow-xs group"
+                            title="{{ $item['title'] }}"
+                        >
+                            <span class="text-white shrink-0 group-hover:scale-105 transition-transform">{!! $item['icon_svg'] !!}</span>
+                            <span class="flex flex-col text-left leading-none">
+                                <span class="text-[9px] text-gray-400 font-normal leading-tight">{{ $item['subtitle'] }}</span>
+                                <span class="text-xs font-bold tracking-tight text-white mt-0.5 leading-tight">{{ $item['title'] }}</span>
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
             </div>
 
-            @if (!empty($footerAppLinks) || !empty($footerSocialLinks))
-                <div class="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
-                    {{-- App Download Badges --}}
-                    @if (!empty($footerAppLinks))
-                        <div class="flex items-center gap-2 flex-wrap justify-center">
-                            @foreach ($footerAppLinks as $item)
-                                <a
-                                    href="{{ $item['url'] }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 hover:border-amber-400/50 text-white transition-all shadow-xs group"
-                                    title="{{ $item['title'] }}"
-                                >
-                                    <span class="text-white shrink-0 group-hover:scale-105 transition-transform">{!! $item['icon_svg'] !!}</span>
-                                    <span class="flex flex-col text-left leading-none">
-                                        <span class="text-[9px] uppercase tracking-wider text-gray-400 group-hover:text-amber-400 transition-colors">{{ $item['subtitle'] }}</span>
-                                        <span class="text-xs font-bold tracking-tight text-white mt-0.5">{{ $item['title'] }}</span>
-                                    </span>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
+            {{-- Right: Social Media Icons --}}
+            <div class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
+                @foreach ($footerSocialLinks as $item)
+                    <a
+                        href="{{ $item['url'] }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="w-9 h-9 rounded-full bg-slate-800/90 hover:bg-slate-700 text-white flex items-center justify-center transition-all shadow-xs hover:scale-105"
+                        title="{{ $item['name'] }}"
+                    >
+                        {!! $item['icon_svg'] !!}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
 
-                    {{-- Social Media Icons --}}
-                    @if (!empty($footerSocialLinks))
-                        <div class="flex items-center gap-2">
-                            @foreach ($footerSocialLinks as $item)
-                                <a
-                                    href="{{ $item['url'] }}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="w-7 h-7 rounded-full bg-slate-800 hover:bg-amber-500 hover:text-gray-950 text-gray-400 flex items-center justify-center transition-all"
-                                    title="{{ $item['name'] }}"
-                                >
-                                    {!! $item['icon_svg'] !!}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            @endif
-
-            <div class="flex items-center gap-4 text-gray-400">
-                <span>100% Inspected Electronics</span>
-                <span>•</span>
-                <span>Escrow Secured</span>
-                <span>•</span>
-                <span>Doorstep Verification</span>
+    {{-- Bottom Copyright Bar --}}
+    <div style="background-color: #05070f;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+            <div>
+                <span>{!! setting('brand_footer_copyright') ?: ('&copy; ' . now()->year . ' ' . config('app.name', 'Openbox') . ' Ltd | All rights reserved') !!}</span>
+            </div>
+            <div>
+                <span>{{ setting('brand_footer_powered_by') ?: ('Powered By: ' . config('app.name', 'Openbox')) }}</span>
             </div>
         </div>
     </div>

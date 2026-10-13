@@ -20,12 +20,12 @@
     @endif
 
     <div class="space-y-6">
-        {{-- Live Footer Bottom Section Preview Card --}}
+        {{-- Live Footer Bottom Section Preview Card (Star Tech Style) --}}
         <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-xs">
             <div class="flex items-center justify-between mb-3">
                 <div>
-                    <h2 class="text-base font-semibold text-gray-900">Footer Bottom Bar Preview</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Real-time live preview of how your app download badges and social links appear in the public footer bottom bar.</p>
+                    <h2 class="text-base font-semibold text-gray-900">Footer App &amp; Social Bar Preview</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Real-time live preview of how your app download badges, heading, and social links appear in the public footer (Star Tech style).</p>
                 </div>
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -34,30 +34,64 @@
             </div>
 
             {{-- Dark Mockup Container --}}
-            <div class="rounded-xl p-4 sm:p-5 border border-slate-800 shadow-inner" style="background-color: #070913; border-top: 1px solid #1e293b;">
-                <div class="flex flex-col lg:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-                    <span class="text-gray-400 select-none">&copy; {{ date('Y') }} Openbox. All rights reserved.</span>
+            <div class="rounded-xl border border-slate-800 shadow-inner overflow-hidden" style="background-color: #080c18;">
+                {{-- App & Social Bar --}}
+                <div class="p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10">
+                    {{-- Left: Heading + App Badges --}}
+                    <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-left">
+                        <span id="preview_app_heading" class="text-xs sm:text-sm text-gray-400 font-normal select-none whitespace-nowrap">
+                            {{ $appHeading ?? ('Experience ' . config('app.name', 'Openbox') . ' App on your mobile:') }}
+                        </span>
 
-                    {{-- Live App & Social Container in Preview --}}
-                    <div class="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
-                        {{-- App Badges Live Container --}}
-                        <div id="preview_app_badges" class="flex items-center gap-2 flex-wrap"></div>
-
-                        {{-- Social Icons Live Container --}}
-                        <div id="preview_social_icons" class="flex items-center gap-1.5"></div>
+                        <div id="preview_app_badges" class="flex items-center gap-2.5 flex-wrap justify-center"></div>
                     </div>
 
-                    <div class="flex items-center gap-3 text-gray-500 text-[11px] select-none">
-                        <span>100% Inspected</span>
-                        <span>•</span>
-                        <span>Escrow Secured</span>
-                    </div>
+                    {{-- Right: Social Icons --}}
+                    <div id="preview_social_icons" class="flex items-center gap-2.5 shrink-0"></div>
+                </div>
+
+                {{-- Copyright Line --}}
+                <div class="px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500" style="background-color: #05070f;">
+                    <span>&copy; {{ date('Y') }} {{ config('app.name', 'Openbox') }} Ltd | All rights reserved</span>
+                    <span>Powered By: {{ config('app.name', 'Openbox') }}</span>
                 </div>
             </div>
         </div>
 
         <form method="POST" action="{{ route('admin.settings.app-links.update') }}" class="space-y-6">
             @csrf
+
+            {{-- Card 0: App Section Heading --}}
+            <div class="bg-white border border-gray-100 rounded-xl p-6 sm:p-7 shadow-xs">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                            </svg>
+                            App Section Heading Text
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-1">Descriptive label shown directly to the left of the mobile app download badges (as seen in Star Tech).</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="reset_app_heading_btn"
+                        class="text-xs font-semibold text-amber-700 hover:text-amber-800 hover:underline cursor-pointer"
+                    >
+                        Reset to Default
+                    </button>
+                </div>
+
+                <input
+                    type="text"
+                    name="footer_app_heading"
+                    id="footer_app_heading_input"
+                    value="{{ old('footer_app_heading', $appHeading ?? ('Experience ' . config('app.name', 'Openbox') . ' App on your mobile:')) }}"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 mt-2"
+                    placeholder="Experience {{ config('app.name', 'Openbox') }} App on your mobile:"
+                >
+            </div>
 
             {{-- Card 1: Mobile App Download Links --}}
             <div class="bg-white border border-gray-100 rounded-xl p-6 sm:p-7 shadow-xs">
@@ -72,14 +106,23 @@
                         <p class="text-xs text-gray-500 mt-1">Configure your official app download links (Google Play, Apple App Store, Huawei, APK, etc.) shown in the footer bottom bar.</p>
                     </div>
 
-                    <button
-                        type="button"
-                        id="app_add_link_btn"
-                        class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200 transition-colors cursor-pointer shrink-0"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Add App Link
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            id="load_default_apps_btn"
+                            class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg border border-gray-300 transition-colors cursor-pointer shrink-0"
+                        >
+                            Default Apps
+                        </button>
+                        <button
+                            type="button"
+                            id="app_add_link_btn"
+                            class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg border border-amber-200 transition-colors cursor-pointer shrink-0"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Add App Link
+                        </button>
+                    </div>
                 </div>
 
                 <div id="app_links_list" class="space-y-3"></div>
@@ -106,27 +149,36 @@
                         <p class="text-xs text-gray-500 mt-1">Official brand social media links (Facebook, X, Instagram, YouTube, LinkedIn, WhatsApp) shown alongside app badges.</p>
                     </div>
 
-                    <button
-                        type="button"
-                        id="social_add_link_btn"
-                        class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors cursor-pointer shrink-0"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Add Social Link
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            id="load_default_socials_btn"
+                            class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg border border-gray-300 transition-colors cursor-pointer shrink-0"
+                        >
+                            Default Socials
+                        </button>
+                        <button
+                            type="button"
+                            id="social_add_link_btn"
+                            class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors cursor-pointer shrink-0"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Add Social Link
+                        </button>
+                    </div>
                 </div>
 
                 <div id="social_links_list" class="space-y-3"></div>
 
                 <div id="social_links_empty" class="text-center py-6 px-4 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
                     <p class="text-sm font-medium text-gray-700">No social media links added yet</p>
-                    <p class="text-xs text-gray-400 mt-0.5">Click "Add Social Link" above to display official social media icons in the footer.</p>
+                    <p class="text-xs text-gray-400 mt-0.5">Click "Add Social Link" or "Default Socials" above to display official social media icons in the footer.</p>
                 </div>
             </div>
 
             {{-- Submit Action Bar --}}
             <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-xs">
-                <span class="text-xs text-gray-500">All enabled links will be immediately shown in the public footer bottom bar.</span>
+                <span class="text-xs text-gray-500">All enabled links and heading will be immediately shown in the public footer (Star Tech style).</span>
                 <x-button type="submit" class="shadow-sm px-6 py-2.5">
                     <svg class="w-4 h-4 mr-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -145,11 +197,29 @@
             const socialPlatforms = @json($socialPlatforms);
             const initialSocialLinks = @json($socialLinks);
 
+            // Heading Logic
+            const headingInput = document.getElementById('footer_app_heading_input');
+            const previewHeading = document.getElementById('preview_app_heading');
+            const resetHeadingBtn = document.getElementById('reset_app_heading_btn');
+
+            if (headingInput && previewHeading) {
+                headingInput.addEventListener('input', function () {
+                    previewHeading.textContent = this.value.trim() || ('Experience ' + @json(config('app.name', 'Openbox')) + ' App on your mobile:');
+                });
+            }
+            if (resetHeadingBtn && headingInput) {
+                resetHeadingBtn.addEventListener('click', function () {
+                    headingInput.value = 'Experience ' + @json(config('app.name', 'Openbox')) + ' App on your mobile:';
+                    headingInput.dispatchEvent(new Event('input'));
+                });
+            }
+
             // App Links Logic
             const appList = document.getElementById('app_links_list');
             const appAddBtn = document.getElementById('app_add_link_btn');
             const appEmptyNotice = document.getElementById('app_links_empty');
             const previewAppBadges = document.getElementById('preview_app_badges');
+            const loadDefaultAppsBtn = document.getElementById('load_default_apps_btn');
 
             let appRowIndex = 0;
 
@@ -181,12 +251,12 @@
                     const a = document.createElement('a');
                     a.href = url;
                     a.target = '_blank';
-                    a.className = 'inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700/80 text-white shadow-xs';
+                    a.className = 'inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-md bg-black/60 border border-white/20 text-white shadow-xs';
                     a.innerHTML = `
                         <span class="text-white shrink-0">${meta.icon_svg}</span>
                         <span class="flex flex-col text-left leading-none">
-                            <span class="text-[8px] uppercase tracking-wider text-gray-400">${subtitle}</span>
-                            <span class="text-[11px] font-bold tracking-tight text-white mt-0.5">${title}</span>
+                            <span class="text-[9px] text-gray-400 font-normal leading-tight">${subtitle}</span>
+                            <span class="text-xs font-bold tracking-tight text-white mt-0.5 leading-tight">${title}</span>
                         </span>
                     `;
                     previewAppBadges.appendChild(a);
@@ -194,7 +264,7 @@
                 });
 
                 if (count === 0) {
-                    previewAppBadges.innerHTML = '<span class="text-[11px] text-gray-600 italic">No app badges active</span>';
+                    previewAppBadges.innerHTML = '<span class="text-[11px] text-gray-500 italic">No app badges active</span>';
                 }
             }
 
@@ -298,15 +368,22 @@
                 });
             }
 
+            if (loadDefaultAppsBtn) {
+                loadDefaultAppsBtn.addEventListener('click', function () {
+                    appList.innerHTML = '';
+                    addAppRow({ platform: 'google-play', title: 'Google Play', subtitle: 'Download on', url: 'https://play.google.com/store/apps', is_active: true });
+                    addAppRow({ platform: 'app-store', title: 'App Store', subtitle: 'Download on', url: 'https://apps.apple.com', is_active: true });
+                });
+            }
+
             // Populate initial App Links or offer defaults
             if (initialAppLinks && initialAppLinks.length > 0) {
                 initialAppLinks.forEach(function (link) {
                     addAppRow(link);
                 });
             } else {
-                // Pre-populate standard Google Play & App Store rows as starters
-                addAppRow({ platform: 'google-play', title: 'Google Play', subtitle: 'GET IT ON', url: '', is_active: true });
-                addAppRow({ platform: 'app-store', title: 'App Store', subtitle: 'Download on the', url: '', is_active: true });
+                addAppRow({ platform: 'google-play', title: 'Google Play', subtitle: 'Download on', url: '', is_active: true });
+                addAppRow({ platform: 'app-store', title: 'App Store', subtitle: 'Download on', url: '', is_active: true });
             }
 
             // Social Links Logic
@@ -314,6 +391,7 @@
             const socialAddBtn = document.getElementById('social_add_link_btn');
             const socialEmptyNotice = document.getElementById('social_links_empty');
             const previewSocialIcons = document.getElementById('preview_social_icons');
+            const loadDefaultSocialsBtn = document.getElementById('load_default_socials_btn');
 
             let socialRowIndex = 0;
 
@@ -339,7 +417,7 @@
                     const a = document.createElement('a');
                     a.href = url;
                     a.target = '_blank';
-                    a.className = 'w-6 h-6 rounded-full bg-slate-800 text-gray-300 flex items-center justify-center';
+                    a.className = 'w-9 h-9 rounded-full bg-slate-800/90 hover:bg-slate-700 text-white flex items-center justify-center transition-all shadow-xs';
                     a.title = meta.name;
                     a.innerHTML = meta.icon_svg;
                     previewSocialIcons.appendChild(a);
@@ -348,7 +426,7 @@
 
             function addSocialRow(data) {
                 const index = socialRowIndex++;
-                const currentPlatformSlug = data ? data.platform : (socialPlatforms[0]?.slug || 'facebook');
+                const currentPlatformSlug = data ? data.platform : (socialPlatforms[0]?.slug || 'whatsapp');
                 const meta = socialMeta(currentPlatformSlug);
 
                 const row = document.createElement('div');
@@ -416,6 +494,16 @@
             if (socialAddBtn) {
                 socialAddBtn.addEventListener('click', function () {
                     addSocialRow(null);
+                });
+            }
+
+            if (loadDefaultSocialsBtn) {
+                loadDefaultSocialsBtn.addEventListener('click', function () {
+                    socialList.innerHTML = '';
+                    addSocialRow({ platform: 'whatsapp', url: 'https://wa.me/971508079199', is_active: true });
+                    addSocialRow({ platform: 'facebook', url: 'https://facebook.com/openbox', is_active: true });
+                    addSocialRow({ platform: 'youtube', url: 'https://youtube.com/@openbox', is_active: true });
+                    addSocialRow({ platform: 'instagram', url: 'https://instagram.com/openbox', is_active: true });
                 });
             }
 

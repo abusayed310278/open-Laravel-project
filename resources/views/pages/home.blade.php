@@ -26,11 +26,11 @@
                 </div>
 
                 @if ($heroSlides->count() > 1)
-                    <button type="button" data-hero-prev aria-label="Previous slide" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 shadow text-gray-900 dark:text-white flex items-center justify-center cursor-pointer">&larr;</button>
-                    <button type="button" data-hero-next aria-label="Next slide" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 shadow text-gray-900 dark:text-white flex items-center justify-center cursor-pointer">&rarr;</button>
+                    <button type="button" data-hero-prev aria-label="Previous slide" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-brand-500 hover:bg-brand-600 shadow text-white flex items-center justify-center cursor-pointer">&larr;</button>
+                    <button type="button" data-hero-next aria-label="Next slide" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-brand-500 hover:bg-brand-600 shadow text-white flex items-center justify-center cursor-pointer">&rarr;</button>
                     <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
                         @foreach ($heroSlides as $slide)
-                            <button type="button" data-hero-dot="{{ $loop->index }}" aria-label="Go to slide {{ $loop->iteration }}" class="w-2.5 h-2.5 rounded-full bg-white/60 cursor-pointer"></button>
+                            <button type="button" data-hero-dot="{{ $loop->index }}" aria-label="Go to slide {{ $loop->iteration }}" class="w-2.5 h-2.5 rounded-full bg-white/70 cursor-pointer"></button>
                         @endforeach
                     </div>
                 @endif
@@ -64,8 +64,10 @@
                     const show = (next) => {
                         index = (next + slides.length) % slides.length;
                         track.style.transform = `translateX(-${index * 100}%)`;
-                        dots.forEach((el, i) => el.classList.toggle('bg-white', i === index));
-                        dots.forEach((el, i) => el.classList.toggle('bg-white/60', i !== index));
+                        dots.forEach((el, i) => {
+                            el.classList.toggle('bg-brand-500', i === index);
+                            el.classList.toggle('bg-white/70', i !== index);
+                        });
                     };
                     const restart = () => {
                         clearInterval(timer);
