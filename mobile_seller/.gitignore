@@ -51,3 +51,6 @@ app.*.map.json
 **/key.properties
 *.jks
 *.keystore
+
+# Play Store Assets
+feature_graphic_*.png
