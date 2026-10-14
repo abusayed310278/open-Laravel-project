@@ -5,7 +5,7 @@
     $contrastText = \App\Support\ColorScale::contrastText($brandColor);
 @endphp
 
-@if ($brandFont && $brandFont !== 'Montserrat')
+@if ($brandFont && !in_array($brandFont, ['Inter', 'Montserrat'], true))
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $brandFont) }}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 <style id="site-branding-css">
     :root {
         @if ($brandFont)
-            --font-sans: '{{ $brandFont }}', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            --font-sans: '{{ $brandFont }}', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         @endif
         --color-brand-primary: {{ $brandColor }};
         --color-brand-contrast: {{ $contrastText }};
