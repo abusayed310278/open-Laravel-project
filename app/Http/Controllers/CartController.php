@@ -88,7 +88,7 @@ class CartController extends Controller
                 'grand_total_formatted' => number_format((float) $grandTotal, 2),
                 'groups' => collect($groups)->map(fn ($g) => [
                     'seller_id' => $g['seller']->id,
-                    'seller_name' => $g['seller']->name,
+                    'seller_name' => $g['seller_name'] ?? $g['seller']->name,
                     'total' => (float) ($g['subtotal'] + $g['shipping']),
                     'total_formatted' => number_format((float) ($g['subtotal'] + $g['shipping']), 2),
                 ])->values(),
@@ -120,7 +120,7 @@ class CartController extends Controller
                 'grand_total_formatted' => number_format((float) $grandTotal, 2),
                 'groups' => collect($groups)->map(fn ($g) => [
                     'seller_id' => $g['seller']->id,
-                    'seller_name' => $g['seller']->name,
+                    'seller_name' => $g['seller_name'] ?? $g['seller']->name,
                     'total' => (float) ($g['subtotal'] + $g['shipping']),
                     'total_formatted' => number_format((float) ($g['subtotal'] + $g['shipping']), 2),
                 ])->values(),

@@ -25,7 +25,7 @@
                     @foreach ($groups as $group)
                         <div id="seller-card-{{ $group['seller']->id }}" class="seller-card bg-white border border-gray-100 rounded-md overflow-hidden">
                             <div class="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-100">
-                                <span class="text-sm font-semibold text-gray-800">Sold by {{ $group['seller']->name }}</span>
+                                <span class="text-sm font-semibold text-gray-800">Sold by {{ $group['seller_name'] ?? $group['seller']->name }}</span>
                                 <x-badge :color="$group['route'] === 'openbox' ? 'amber' : 'blue'">{{ $group['route'] === 'openbox' ? 'Openbox Payment' : 'Seller Payment' }}</x-badge>
                             </div>
 
@@ -84,7 +84,7 @@
                             @foreach ($groups as $group)
                                 <div id="summary-seller-row-{{ $group['seller']->id }}" class="border-b border-gray-100 last:border-b-0 pb-3 last:pb-0">
                                     <div class="flex justify-between font-semibold text-gray-900 mb-2">
-                                        <span class="truncate pr-2">{{ $group['seller']->name }}</span>
+                                        <span class="truncate pr-2">{{ $group['seller_name'] ?? $group['seller']->name }}</span>
                                         <span id="summary-seller-val-{{ $group['seller']->id }}">${{ number_format($group['subtotal'] + $group['shipping'], 2) }}</span>
                                     </div>
 

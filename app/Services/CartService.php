@@ -133,17 +133,23 @@ class CartService
     }
 
     /**
-     * @return array<int, array{seller: User, route: string, items: Collection<int, CartItem>, subtotal: float, shipping: float}>
+     * @return array<int, array{seller: User, seller_name: string, route: string, items: Collection<int, CartItem>, subtotal: float, shipping: float}>
      */
     public function groupedBySeller(Cart $cart): array
     {
-        return $cart->items->load('product.user')
+        return $cart->items->load('product.user.businessProfile', 'product.user.salerProfile', 'product.user.profile')
             ->groupBy('product.user_id')
             ->map(function ($items) {
                 $seller = $items->first()->product->user;
+                $sp = $seller?->businessProfile ?? $seller?->salerProfile;
+                $sellerName = match (true) {
+                    $seller?->isAdmin() => config('app.name', 'Openbox') . ' Official',
+                    default => $sp?->business_name ?? $sp?->display_name ?? $seller?->profile?->company ?? $seller?->name ?? 'Openbox',
+                };
 
                 return [
                     'seller' => $seller,
+                    'seller_name' => $sellerName,
                     'route' => $items->first()->payment_route->value ?? 'cod',
                     'items' => $items,
                     'subtotal' => (float) $items->sum(fn (CartItem $i) => $i->price * $i->quantity),

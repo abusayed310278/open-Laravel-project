@@ -51,13 +51,20 @@
         color: var(--color-brand-contrast) !important;
     }
 
-    /* 3. Header Start Selling Button (Screenshot 3) */
-    .header-start-selling-btn {
+    /* 3. Header Start Selling & Add to Cart Buttons (Dynamically driven by Brand Color) */
+    .header-start-selling-btn,
+    #btn-add-to-cart,
+    .btn-add-to-cart,
+    .add-to-cart-btn {
         background-color: var(--color-brand-500) !important;
         color: var(--color-brand-contrast) !important;
-        transition: background-color 0.15s ease, color 0.15s ease;
+        border-color: transparent !important;
+        transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     }
-    .header-start-selling-btn:hover {
+    .header-start-selling-btn:hover,
+    #btn-add-to-cart:hover,
+    .btn-add-to-cart:hover,
+    .add-to-cart-btn:hover {
         background-color: var(--color-brand-600) !important;
         color: var(--color-brand-contrast) !important;
     }

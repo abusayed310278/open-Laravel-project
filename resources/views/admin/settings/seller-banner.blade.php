@@ -65,11 +65,11 @@
                         <div class="relative z-10 flex items-center justify-between w-full text-white">
                             <div class="flex items-center gap-4">
                                 <div class="w-16 h-16 rounded-2xl bg-amber-500 p-1 shadow-md shrink-0 flex items-center justify-center text-white text-2xl font-bold">
-                                    T
+                                    A
                                 </div>
                                 <div>
                                     <div class="text-lg font-bold flex items-center gap-1.5">
-                                        Test Company (Seller Store)
+                                        Abu Sayed (Seller Store)
                                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                             Verified
                                         </span>
@@ -99,10 +99,10 @@
                         <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"></div>
                         <div class="relative z-10 flex items-center gap-3 text-white">
                             <div class="w-10 h-10 rounded-xl bg-amber-500 shadow-md shrink-0 flex items-center justify-center text-white text-base font-bold">
-                                T
+                                A
                             </div>
                             <div>
-                                <div class="text-sm font-bold leading-tight">Test Company</div>
+                                <div class="text-sm font-bold leading-tight">Abu Sayed</div>
                                 <div class="text-[11px] text-white/80">Individual seller profile</div>
                             </div>
                         </div>

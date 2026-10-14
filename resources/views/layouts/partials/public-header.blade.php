@@ -269,7 +269,7 @@
 
     {{-- Horizontal Category Navigation Bar (Responsive based on Device Width) --}}
     <div class="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] relative z-20 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-h-[42px]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-h-[42px]">
             @php
                 $dbCategories = \App\Models\Category::cachedTree();
                 if ($dbCategories->isNotEmpty()) {
@@ -612,7 +612,7 @@
                 }
             @endphp            {{-- All Categories Dropdown Container (Left Fixed) --}}
             <div id="all-categories-container" class="relative all-categories-container flex-shrink-0 z-40">
-                <button type="button" id="all-categories-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none">
+                <button type="button" id="all-categories-btn" class="relative py-2.5 pl-0 pr-2 sm:pr-3 inline-flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none">
                     <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
