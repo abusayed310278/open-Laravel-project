@@ -235,6 +235,7 @@
                                     'phone' => $user->phone ?? '',
                                     'role' => $user->role->value,
                                     'status' => $user->status->value,
+                                    'store_name' => $user->businessProfile?->business_name ?? $user->salerProfile?->display_name ?? $user->profile?->company ?? '',
                                     'avatar_url' => $userAvatarUrl,
                                     'update_url' => route('admin.users.update', $user),
                                 ]) }})"
@@ -382,6 +383,21 @@
                         name="name"
                         id="modal-user-name"
                         required
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs"
+                        style="padding: 10px 14px !important;"
+                    >
+                </div>
+
+                {{-- Store / Company Display Name --}}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Store / Company Name <span class="text-[11px] font-normal text-gray-400 lowercase">(displayed on vendor cards & website)</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="store_name"
+                        id="modal-user-store-name"
+                        placeholder="e.g. Naim or Store Name"
                         class="w-full bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 transition-all shadow-2xs"
                         style="padding: 10px 14px !important;"
                     >
@@ -595,6 +611,7 @@
             document.getElementById('modal-user-phone').value = userData.phone || '';
             document.getElementById('modal-user-role').value = userData.role || '';
             document.getElementById('modal-user-status').value = userData.status || '';
+            document.getElementById('modal-user-store-name').value = userData.store_name || '';
 
             // Handle Avatar Preview
             const avatarPreview = document.getElementById('modal-avatar-preview');

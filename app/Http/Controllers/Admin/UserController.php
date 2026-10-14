@@ -86,6 +86,7 @@ class UserController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', Rule::enum(UserRole::class)],
             'status' => ['required', Rule::enum(UserStatus::class)],
+            'store_name' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg,gif', 'max:5120'],
         ]);
@@ -96,6 +97,9 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
+        $storeName = $validated['store_name'] ?? null;
+        unset($validated['store_name']);
+
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
             $avatarPath = \App\Helpers\FileUploadHelper::store($request->file('avatar'), 'avatars', 'public');
             $validated['avatar'] = $avatarPath;
@@ -103,6 +107,18 @@ class UserController extends Controller
         }
 
         $this->users->updateUser($user, $validated);
+
+        if ($storeName !== null && $storeName !== '') {
+            if ($user->salerProfile) {
+                $user->salerProfile->update(['display_name' => $storeName]);
+            }
+            if ($user->businessProfile) {
+                $user->businessProfile->update(['business_name' => $storeName]);
+            }
+            if ($user->profile) {
+                $user->profile->update(['company' => $storeName]);
+            }
+        }
 
         return back()->with('status', "{$user->name}'s account was updated successfully.");
     }
