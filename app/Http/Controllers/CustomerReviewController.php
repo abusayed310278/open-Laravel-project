@@ -18,14 +18,17 @@ class CustomerReviewController extends Controller
     {
         return view('account.reviews.index', [
             'reviews' => Auth::user()->reviewsWritten()->with('order')->latest()->paginate(15),
+            'eligibleReviewables' => $this->reviews->allEligibleReviewables(Auth::user()),
         ]);
     }
 
-    public function store(StoreReviewRequest $request, Order $order): RedirectResponse
+    public function store(StoreReviewRequest $request, ?Order $order = null): RedirectResponse
     {
+        $targetOrder = $order ?? Order::where('customer_id', Auth::id())->findOrFail($request->integer('order_id'));
+
         $this->reviews->create(
             Auth::user(),
-            $order,
+            $targetOrder,
             ReviewableType::from($request->string('reviewable_type')->value()),
             $request->integer('reviewable_id'),
             $request->integer('rating'),

@@ -516,13 +516,23 @@
         }
 
         if (tabProductsBtn) {
-            tabProductsBtn.addEventListener('click', function() {
+            tabProductsBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+            });
+            tabProductsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 switchTab('products');
             });
         }
 
         if (tabCategoriesBtn) {
-            tabCategoriesBtn.addEventListener('click', function() {
+            tabCategoriesBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+            });
+            tabCategoriesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 switchTab('categories');
             });
         }

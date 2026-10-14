@@ -50,24 +50,38 @@
                                         @php
                                             $isSelected = (string)$address->id === (string)$defaultAddressId;
                                         @endphp
-                                        <label class="address-option-label flex items-start gap-3 border rounded-xl p-4 cursor-pointer transition-all duration-150 {{ $isSelected ? 'border-amber-400 ring-2 ring-amber-400/20 bg-amber-50/10' : 'border-gray-200' }}">
-                                            <input type="radio" name="shipping_address_id" value="{{ $address->id }}" 
-                                                   class="shipping-address-radio mt-1 accent-amber-500"
-                                                   @checked($isSelected)>
-                                            <div class="flex-1 text-sm text-gray-700">
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    @if($address->label)
-                                                        <span class="text-xs font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md">{{ $address->label }}</span>
-                                                    @endif
-                                                    <strong class="text-gray-900 font-semibold">{{ $address->name }}</strong>
-                                                    @if($address->is_default)
-                                                        <span class="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">PRIMARY</span>
-                                                    @endif
+                                        <div id="address-card-{{ $address->id }}" class="address-option-label relative flex items-start justify-between gap-3 border rounded-xl p-4 transition-all duration-150 {{ $isSelected ? 'border-amber-400 ring-2 ring-amber-400/20 bg-amber-50/10' : 'border-gray-200 hover:border-gray-300' }}">
+                                            <label class="flex items-start gap-3 flex-1 min-w-0 cursor-pointer">
+                                                <input type="radio" name="shipping_address_id" value="{{ $address->id }}" 
+                                                       class="shipping-address-radio mt-1 accent-amber-500"
+                                                       @checked($isSelected)>
+                                                <div class="flex-1 text-sm text-gray-700 min-w-0">
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        @if($address->label)
+                                                            <span id="address-label-badge-{{ $address->id }}" class="text-xs font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md">{{ $address->label }}</span>
+                                                        @endif
+                                                        <strong id="address-name-{{ $address->id }}" class="text-gray-900 font-semibold">{{ $address->name }}</strong>
+                                                        @if($address->is_default)
+                                                            <span id="address-primary-badge-{{ $address->id }}" class="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">PRIMARY</span>
+                                                        @endif
+                                                    </div>
+                                                    <span class="text-xs text-gray-600 block mt-1"><span class="font-semibold text-gray-700">Phone:</span> <span id="address-phone-{{ $address->id }}">{{ $address->phone }}</span></span>
+                                                    <span class="text-xs text-gray-600 block mt-0.5"><span class="font-semibold text-gray-700">Address:</span> <span id="address-oneline-{{ $address->id }}">{{ $address->oneLine() }}</span></span>
                                                 </div>
-                                                <span class="text-xs text-gray-500 block mt-1">{{ $address->phone }}</span>
-                                                <span class="text-xs text-gray-600 block mt-1">{{ $address->oneLine() }}</span>
+                                            </label>
+
+                                            <div class="shrink-0 flex items-center pt-0.5">
+                                                <button type="button" 
+                                                        onclick="openEditAddressModal({{ $address->id }})"
+                                                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 hover:text-amber-950 bg-amber-50 hover:bg-amber-100 border border-amber-200/90 px-2.5 py-1.5 rounded-lg transition-colors shadow-2xs group"
+                                                        title="Edit Address">
+                                                    <svg class="w-3.5 h-3.5 text-amber-600 group-hover:text-amber-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                    <span>Edit</span>
+                                                </button>
                                             </div>
-                                        </label>
+                                        </div>
                                     @endforeach
 
                                     @php
@@ -201,6 +215,64 @@
                 </div>
             </form>
         @endif
+
+        <!-- Edit Address Modal Popup -->
+        <dialog id="checkout-edit-address-modal" class="rounded-2xl p-0 backdrop:bg-gray-900/50 backdrop:backdrop-blur-xs max-w-xl w-full border-0 shadow-2xl">
+            <div class="p-6 bg-white rounded-2xl space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-lg">Edit Shipping Address</h3>
+                        <p class="text-xs text-gray-500">Update recipient details and delivery location.</p>
+                    </div>
+                    <button type="button" onclick="document.getElementById('checkout-edit-address-modal').close()" class="text-gray-400 hover:text-gray-600 text-xl font-bold px-2">✕</button>
+                </div>
+
+                <form id="checkout-edit-address-form" method="POST" action="" class="space-y-4" onsubmit="handleCheckoutAddressUpdate(event)">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" id="edit_modal_address_id" value="">
+
+                    <div id="edit-address-error" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg"></div>
+
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <x-input label="Address Label (optional)" name="label" id="edit_modal_label" placeholder="Home, Office, Warehouse..." />
+                        <x-input label="Full Name" name="name" id="edit_modal_name" placeholder="Full recipient name" />
+                        <x-input label="Phone" name="phone" id="edit_modal_phone" placeholder="e.g. +880 1700-000000" />
+                        <x-input label="Address line 1" name="line1" id="edit_modal_line1" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" />
+                        <x-input label="Address line 2 (optional)" name="line2" id="edit_modal_line2" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" />
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Country</label>
+                            <select name="country" id="edit_modal_country" class="w-full text-xs border border-gray-200 rounded-md px-3 py-2 bg-white focus:ring-1 focus:ring-amber-500 focus:border-amber-500">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">State/Area (optional)</label>
+                            <select name="state" id="edit_modal_state" class="w-full text-xs border border-gray-200 rounded-md px-3 py-2 bg-white focus:ring-1 focus:ring-amber-500 focus:border-amber-500">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">City</label>
+                            <select name="city" id="edit_modal_city" class="w-full text-xs border border-gray-200 rounded-md px-3 py-2 bg-white focus:ring-1 focus:ring-amber-500 focus:border-amber-500">
+                            </select>
+                        </div>
+                        <x-input label="Postal code (optional)" name="postal_code" id="edit_modal_postal_code" placeholder="e.g. 1207" />
+                    </div>
+
+                    <div class="pt-2">
+                        <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
+                            <input type="checkbox" name="is_default" id="edit_modal_is_default" value="1" class="rounded border-gray-300 text-amber-500 focus:ring-amber-400">
+                            <span>Set as primary shipping address</span>
+                        </label>
+                    </div>
+
+                    <div class="pt-3 flex justify-end gap-3 border-t border-gray-100">
+                        <x-button type="button" variant="secondary" onclick="document.getElementById('checkout-edit-address-modal').close()">Cancel</x-button>
+                        <x-button type="submit" id="edit-address-submit-btn">Save Changes</x-button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
     </div>
 
     <script>
@@ -226,10 +298,10 @@
                     const isDashed = label.classList.contains('border-dashed');
 
                     if (radio.checked) {
-                        label.classList.add('border-brand-500', 'ring-1', 'ring-brand-500', 'bg-brand-50/10');
+                        label.classList.add('border-amber-400', 'ring-2', 'ring-amber-400/20', 'bg-amber-50/10');
                         label.classList.remove('border-gray-200', 'border-gray-300');
                     } else {
-                        label.classList.remove('border-brand-500', 'ring-1', 'ring-brand-500', 'bg-brand-50/10');
+                        label.classList.remove('border-amber-400', 'ring-2', 'ring-amber-400/20', 'bg-amber-50/10');
                         label.classList.add(isDashed ? 'border-gray-300' : 'border-gray-200');
                     }
                 });
@@ -313,6 +385,10 @@
         .ts-dropdown .option.active, .ts-dropdown .option:hover {
             background-color: #fffbeb !important;
             color: #d97706 !important;
+        }
+        dialog::backdrop {
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
         }
     </style>
 
@@ -581,6 +657,220 @@
             }
 
             fetchFullDatabaseInBackground();
+
+            // Checkout Address Editing Logic
+            const savedCheckoutAddresses = @json($addresses->keyBy('id'));
+
+            window.populateEditModalGeographic = function(selectedCountry, selectedState, selectedCity) {
+                const countryEl = document.getElementById('edit_modal_country');
+                const stateEl = document.getElementById('edit_modal_state');
+                const cityEl = document.getElementById('edit_modal_city');
+                if (!countryEl || !stateEl || !cityEl) return;
+
+                const cList = (countriesData && countriesData.length > 0) ? countriesData : fallbackCountries;
+
+                countryEl.innerHTML = '<option value="">Select Country</option>';
+                let countryFound = false;
+                cList.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.country;
+                    opt.textContent = item.country;
+                    if (selectedCountry && item.country.toLowerCase() === selectedCountry.toLowerCase()) {
+                        opt.selected = true;
+                        countryFound = true;
+                    }
+                    countryEl.appendChild(opt);
+                });
+
+                if (selectedCountry && !countryFound) {
+                    const opt = document.createElement('option');
+                    opt.value = selectedCountry;
+                    opt.textContent = selectedCountry;
+                    opt.selected = true;
+                    countryEl.appendChild(opt);
+                }
+
+                function syncModalStateAndCity() {
+                    const cVal = countryEl.value;
+                    const countryObj = cVal ? cList.find(item => item.country.toLowerCase() === cVal.toLowerCase()) : null;
+
+                    // States
+                    stateEl.innerHTML = '<option value="">Select State/Area (optional)</option>';
+                    const sList = countryObj ? (countryObj.states || []) : [];
+                    let stateFound = false;
+                    sList.forEach(st => {
+                        const sName = typeof st === 'string' ? st : (st.name || st);
+                        const opt = document.createElement('option');
+                        opt.value = sName;
+                        opt.textContent = sName;
+                        if (selectedState && sName.toLowerCase() === selectedState.toLowerCase()) {
+                            opt.selected = true;
+                            stateFound = true;
+                        }
+                        stateEl.appendChild(opt);
+                    });
+                    if (selectedState && !stateFound) {
+                        const opt = document.createElement('option');
+                        opt.value = selectedState;
+                        opt.textContent = selectedState;
+                        opt.selected = true;
+                        stateEl.appendChild(opt);
+                    }
+
+                    // Cities
+                    cityEl.innerHTML = '<option value="">Select City</option>';
+                    const ctList = countryObj ? (countryObj.cities || []) : [];
+                    let cityFound = false;
+                    ctList.forEach(ct => {
+                        const opt = document.createElement('option');
+                        opt.value = ct;
+                        opt.textContent = ct;
+                        if (selectedCity && ct.toLowerCase() === selectedCity.toLowerCase()) {
+                            opt.selected = true;
+                            cityFound = true;
+                        }
+                        cityEl.appendChild(opt);
+                    });
+                    if (selectedCity && !cityFound) {
+                        const opt = document.createElement('option');
+                        opt.value = selectedCity;
+                        opt.textContent = selectedCity;
+                        opt.selected = true;
+                        cityEl.appendChild(opt);
+                    }
+                }
+
+                countryEl.onchange = function() {
+                    selectedState = '';
+                    selectedCity = '';
+                    syncModalStateAndCity();
+                };
+
+                syncModalStateAndCity();
+            };
+
+            window.openEditAddressModal = function(addressId) {
+                const addr = savedCheckoutAddresses[addressId];
+                if (!addr) return;
+
+                const modal = document.getElementById('checkout-edit-address-modal');
+                const form = document.getElementById('checkout-edit-address-form');
+                const errBox = document.getElementById('edit-address-error');
+                if (errBox) {
+                    errBox.classList.add('hidden');
+                    errBox.innerHTML = '';
+                }
+
+                form.action = `/account/addresses/${addressId}`;
+                document.getElementById('edit_modal_address_id').value = addressId;
+                document.getElementById('edit_modal_label').value = addr.label || '';
+                document.getElementById('edit_modal_name').value = addr.name || '';
+                document.getElementById('edit_modal_phone').value = addr.phone || '';
+                document.getElementById('edit_modal_line1').value = addr.line1 || '';
+                document.getElementById('edit_modal_line2').value = addr.line2 || '';
+                document.getElementById('edit_modal_postal_code').value = addr.postal_code || '';
+                document.getElementById('edit_modal_is_default').checked = !!addr.is_default;
+
+                populateEditModalGeographic(addr.country, addr.state, addr.city);
+
+                modal.showModal();
+            };
+
+            window.handleCheckoutAddressUpdate = async function(e) {
+                e.preventDefault();
+                const form = e.target;
+                const btn = document.getElementById('edit-address-submit-btn');
+                const errBox = document.getElementById('edit-address-error');
+                const addressId = document.getElementById('edit_modal_address_id').value;
+
+                if (errBox) {
+                    errBox.classList.add('hidden');
+                    errBox.innerHTML = '';
+                }
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                const formData = new FormData(form);
+
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        let msg = data.message || 'Validation failed. Please check the fields.';
+                        if (data.errors) {
+                            const list = Object.values(data.errors).flat().join('<br>');
+                            msg += `<div class="mt-1 font-normal">${list}</div>`;
+                        }
+                        if (errBox) {
+                            errBox.innerHTML = msg;
+                            errBox.classList.remove('hidden');
+                        }
+                        return;
+                    }
+
+                    const addr = data.address;
+                    if (addr) {
+                        savedCheckoutAddresses[addr.id] = addr;
+
+                        const nameEl = document.getElementById(`address-name-${addr.id}`);
+                        if (nameEl) nameEl.textContent = addr.name;
+
+                        const phoneEl = document.getElementById(`address-phone-${addr.id}`);
+                        if (phoneEl) phoneEl.textContent = addr.phone;
+
+                        const onelineEl = document.getElementById(`address-oneline-${addr.id}`);
+                        if (onelineEl) onelineEl.textContent = addr.one_line;
+
+                        let badgeEl = document.getElementById(`address-label-badge-${addr.id}`);
+                        if (addr.label) {
+                            if (badgeEl) {
+                                badgeEl.textContent = addr.label;
+                            } else if (nameEl && nameEl.parentElement) {
+                                const badge = document.createElement('span');
+                                badge.id = `address-label-badge-${addr.id}`;
+                                badge.className = 'text-xs font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md';
+                                badge.textContent = addr.label;
+                                nameEl.parentElement.prepend(badge);
+                            }
+                        } else if (badgeEl) {
+                            badgeEl.remove();
+                        }
+
+                        if (addr.is_default) {
+                            document.querySelectorAll('[id^="address-primary-badge-"]').forEach(el => el.remove());
+                            if (nameEl && nameEl.parentElement) {
+                                const primarySpan = document.createElement('span');
+                                primarySpan.id = `address-primary-badge-${addr.id}`;
+                                primarySpan.className = 'text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300';
+                                primarySpan.textContent = 'PRIMARY';
+                                nameEl.parentElement.appendChild(primarySpan);
+                            }
+                        }
+                    }
+
+                    document.getElementById('checkout-edit-address-modal').close();
+                    if (window.showToast) {
+                        window.showToast('Shipping address updated successfully.', 'success');
+                    }
+                } catch (err) {
+                    console.error('Error updating address:', err);
+                    form.submit();
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Changes';
+                }
+            };
         });
     </script>
 @endsection

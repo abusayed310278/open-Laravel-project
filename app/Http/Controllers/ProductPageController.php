@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReviewableType;
+use App\Enums\ReviewStatus;
 use App\Models\Brand;
 use App\Models\BusinessProfile;
 use App\Models\Category;
@@ -62,22 +64,54 @@ class ProductPageController extends Controller
 
         $categories = Category::query()
             ->active()
-            ->where(fn (Builder $q) => $q->where('name', 'like', "%{$query}%")->orWhere('slug', 'like', "%{$query}%"))
+            ->where(function (Builder $q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('slug', 'like', "%{$query}%")
+                    ->orWhereHas('products', function (Builder $p) use ($query) {
+                        $p->live()->where(function (Builder $sub) use ($query) {
+                            $sub->where('title', 'like', "%{$query}%")
+                                ->orWhere('sku', 'like', "%{$query}%")
+                                ->orWhereHas('brand', fn (Builder $b) => $b->where('name', 'like', "%{$query}%"));
+                        });
+                    });
+            })
             ->with('parent')
             ->withCount(['products' => fn (Builder $q) => $q->live()])
             ->limit(10)
             ->get()
-            ->map(function (Category $category) {
+            ->map(function (Category $category) use ($query) {
                 $parentName = $category->parent?->name;
+
+                $matchingCount = $category->products()
+                    ->live()
+                    ->where(function (Builder $sub) use ($query) {
+                        $sub->where('title', 'like', "%{$query}%")
+                            ->orWhere('sku', 'like', "%{$query}%")
+                            ->orWhereHas('brand', fn (Builder $b) => $b->where('name', 'like', "%{$query}%"));
+                    })
+                    ->count();
+
+                $nameMatches = stripos($category->name, $query) !== false || stripos($category->slug, $query) !== false;
+                $url = $nameMatches
+                    ? route('shop', ['category' => $category->slug])
+                    : route('shop', ['category' => $category->slug, 'q' => $query]);
+
+                $displayCount = $matchingCount > 0 ? $matchingCount : $category->products_count;
 
                 return [
                     'id' => $category->id,
                     'name' => $category->name,
-                    'url' => route('categories.show', $category->slug),
+                    'url' => $url,
                     'breadcrumb' => $parentName ? "{$parentName} > {$category->name}" : $category->name,
-                    'products_count' => $category->products_count,
+                    'products_count' => $displayCount,
+                    'matching_count' => $matchingCount,
+                    'name_matches' => $nameMatches,
                 ];
-            });
+            })
+            ->sortByDesc(function (array $cat) {
+                return ($cat['name_matches'] ? 10000 : 0) + ($cat['matching_count'] * 10) + ($cat['products_count']);
+            })
+            ->values();
 
         return response()->json([
             'products' => $products,
@@ -169,6 +203,14 @@ class ProductPageController extends Controller
             ->when($request->filled('grade'), fn ($query) => $query->whereIn('grade', Arr::wrap($request->input('grade'))))
             ->when($request->filled('min_price'), fn ($query) => $query->where('price', '>=', $request->float('min_price')))
             ->when($request->filled('max_price'), fn ($query) => $query->where('price', '<=', $request->float('max_price')))
+            ->when($request->filled('min_rating') && (float) $request->input('min_rating') > 0, function (Builder $query) use ($request) {
+                $minRating = (float) $request->input('min_rating');
+                $query->whereRaw('(SELECT AVG(rating) FROM reviews WHERE reviews.reviewable_id = products.id AND reviews.reviewable_type = ? AND reviews.status = ?) >= ?', [
+                    ReviewableType::Product->value,
+                    ReviewStatus::Approved->value,
+                    $minRating,
+                ]);
+            })
             ->when($request->boolean('negotiable'), fn ($query) => $query->where('is_negotiable', true))
             ->when($request->boolean('free_shipping'), fn ($query) => $query->where('shipping_type', 'free'))
             ->when($request->boolean('in_stock'), fn ($query) => $query->where('quantity', '>', 0))

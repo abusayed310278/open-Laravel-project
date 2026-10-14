@@ -3,23 +3,44 @@
     $existingValues = $product->exists ? $product->attributeValues->keyBy('attribute_id') : collect();
 @endphp
 
-<div class="grid lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
+@php
+    $productTabs = [
+        'basic' => 'Basic',
+        'attributes' => 'Attributes',
+        'media' => 'Media',
+        'pricing' => 'Pricing & Condition',
+        'promotions' => 'Promotions, Coupons & Gift Cards',
+    ];
+@endphp
+
+<div id="product-wizard" class="w-full space-y-6" data-editing="{{ $product->exists ? '1' : '0' }}">
+    <div>
+        <div class="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div id="wizard-progress-bar" class="h-full bg-brand-500 transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-1.5"><span id="wizard-progress-label"></span> &middot; <span id="wizard-progress-percent"></span></p>
+    </div>
+
+    <div class="flex gap-6 border-b border-gray-200 overflow-x-auto" role="tablist">
+        @foreach ($productTabs as $tabKey => $tabLabel)
+            <button type="button" role="tab" data-wizard-tab="{{ $tabKey }}"
+                class="wizard-tab -mb-px pb-2.5 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-gray-500 hover:text-gray-800 cursor-pointer">
+                {!! $tabLabel !!} <span class="wizard-tab-index text-green-600"></span>
+            </button>
+        @endforeach
+    </div>
+
+    {{-- ============ TAB: Basic ============ --}}
+    <div data-wizard-panel="basic" class="space-y-6">
 
         <x-card title="Basic Info">
             <div class="space-y-5">
                 <x-input label="Product title" name="title" type="text" placeholder="e.g. Wireless Noise-Canceling Headphones, iPhone 15 Pro Max" :value="old('title', $product->title)" />
 
-                <div class="grid sm:grid-cols-2 gap-5">
-                    <x-select
-                        label="Category" name="category_id" placeholder="Select a category"
-                        :options="$categories->pluck('name', 'id')" :selected="$selectedCategoryId"
-                    />
-                    <x-select
-                        label="Brand (optional)" name="brand_id" placeholder="No brand"
-                        :options="$brands->pluck('name', 'id')" :selected="old('brand_id', $product->brand_id)"
-                    />
-                </div>
+                <x-select
+                    label="Brand (optional)" name="brand_id" placeholder="No brand"
+                    :options="$brands->pluck('name', 'id')" :selected="old('brand_id', $product->brand_id)"
+                />
 
                 <div>
                     <label for="short_description" class="block text-sm font-medium text-gray-700 mb-1.5">Short description</label>
@@ -39,7 +60,149 @@
             </div>
         </x-card>
 
-        <x-card title="Product Images &amp; Media">
+        <x-card title="Shipping">
+            <div class="space-y-5">
+                <x-input label="Weight (kg, optional)" name="weight" type="number" step="0.01" placeholder="e.g. 0.50" :value="old('weight', $product->weight)" />
+
+                <x-select
+                    label="Shipping" name="shipping_type"
+                    :options="collect(\App\Enums\ShippingType::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])"
+                    :selected="old('shipping_type', $product->shipping_type?->value ?? 'free')"
+                />
+
+                <div id="shipping_flat_rate_wrap" @if (old('shipping_type', $product->shipping_type?->value ?? 'free') !== 'flat_rate') style="display:none" @endif>
+                    <x-input label="Flat rate amount" name="shipping_flat_rate" type="number" step="0.01" placeholder="e.g. 15.00" :value="old('shipping_flat_rate', $product->shipping_flat_rate)" />
+                </div>
+            </div>
+        </x-card>
+
+        <x-card title="SEO">
+            <div class="space-y-5">
+                <x-input label="Meta title" name="meta_title" type="text" placeholder="SEO title for search engine listing" :value="old('meta_title', $product->meta_title)" />
+                <x-input label="Meta description" name="meta_description" type="text" placeholder="SEO summary description for search engine listing" :value="old('meta_description', $product->meta_description)" />
+            </div>
+        </x-card>
+    </div>
+
+    {{-- ============ TAB: Attributes (category + attributes) ============ --}}
+    <div data-wizard-panel="attributes" class="space-y-6 hidden">
+
+        <x-card title="Category">
+            <x-select
+                label="Category" name="category_id" placeholder="Select a category"
+                :options="$categories->pluck('name', 'id')" :selected="$selectedCategoryId"
+            />
+        </x-card>
+
+        <x-card title="Attributes">
+            <p class="text-sm text-gray-500 mb-4" id="attributes-empty" @if ($selectedCategoryId) style="display:none" @endif>
+                Choose a category to see its attributes.
+            </p>
+
+            @foreach ($categories as $category)
+                @php
+                    $isCurrentCategory = (int) $selectedCategoryId === $category->id;
+                    $groupedCategoryAttributes = $category->attributes->groupBy(fn ($a) => $a->group?->name ?? 'General Specifications');
+                @endphp
+                <div
+                    data-category-attributes="{{ $category->id }}"
+                    class="space-y-6"
+                    @if (!$isCurrentCategory) style="display:none" @endif
+                >
+                    @forelse ($groupedCategoryAttributes as $groupName => $attributesInGroup)
+                        <div class="space-y-3">
+                            <div class="border-b border-gray-100 pb-1.5 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $groupName }}</h4>
+                            </div>
+                            <div class="grid sm:grid-cols-2 gap-4 items-start">
+                                @foreach ($attributesInGroup as $attribute)
+                                    <div>
+                                        @php
+                                            $attrLabel = $attribute->name . ($attribute->pivot?->is_required ? ' *' : '');
+                                            $savedAttr = $existingValues->get($attribute->id);
+                                            $savedVal = $savedAttr?->displayValue() ?? '';
+                                            $placeholderVal = $attribute->placeholder ?: ($attribute->unit ? 'e.g. ' . $attribute->unit : '');
+                                        @endphp
+
+                                        @if ($attribute->type->usesValueList())
+                                            @php
+                                                $selectedOptionId = $savedAttr?->attribute_value_id;
+                                                $savedCustomVal = $savedAttr?->custom_value ?? '';
+                                                $oldVal = old('attributes.'.$attribute->id);
+                                                $isCustomActive = (filled($oldVal) && !is_numeric($oldVal)) || (filled($savedCustomVal) && empty($selectedOptionId));
+                                            @endphp
+
+                                            <div class="space-y-1.5 js-attribute-container">
+                                                <div class="flex items-center justify-between">
+                                                    <label class="block text-sm font-medium text-gray-700">
+                                                        {{ $attrLabel }}
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        class="js-attr-toggle-btn text-xs text-brand-600 hover:text-brand-700 font-medium hover:underline cursor-pointer"
+                                                        data-mode="{{ $isCustomActive ? 'custom' : 'preset' }}"
+                                                    >
+                                                        {{ $isCustomActive ? '← Choose from list' : '+ Custom value' }}
+                                                    </button>
+                                                </div>
+
+                                                {{-- Preset Dropdown --}}
+                                                <div class="js-attr-preset-wrap" @if ($isCustomActive) style="display:none" @endif>
+                                                    <select
+                                                        name="attributes[{{ $attribute->id }}]"
+                                                        class="js-attr-preset-select w-full border rounded-md px-4 py-2.5 text-sm text-gray-800 bg-white border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+                                                        @if (!$isCurrentCategory || $isCustomActive) disabled @endif
+                                                    >
+                                                        <option value="">Select {{ $attribute->name }}</option>
+                                                        @foreach ($attribute->values as $opt)
+                                                            <option value="{{ $opt->id }}" @selected((string) old('attributes.'.$attribute->id, $selectedOptionId) === (string) $opt->id)>
+                                                                {{ $opt->value }}
+                                                            </option>
+                                                        @endforeach
+                                                        <option value="__custom__">+ Enter custom value...</option>
+                                                    </select>
+                                                </div>
+
+                                                {{-- Custom Text Input --}}
+                                                <div class="js-attr-custom-wrap" @if (!$isCustomActive) style="display:none" @endif>
+                                                    <input
+                                                        type="text"
+                                                        name="attributes[{{ $attribute->id }}]"
+                                                        class="js-attr-custom-input w-full border rounded-md px-4 py-2.5 text-sm text-gray-800 bg-white border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+                                                        placeholder="Type your custom {{ strtolower($attribute->name) }}"
+                                                        value="{{ old('attributes.'.$attribute->id, $savedCustomVal) }}"
+                                                        @if (!$isCurrentCategory || !$isCustomActive) disabled @endif
+                                                    />
+                                                    <p class="text-[11px] text-gray-400 mt-1">Store your own unique {{ strtolower($attribute->name) }} for this product.</p>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <x-input
+                                                :label="$attrLabel"
+                                                :name="'attributes['.$attribute->id.']'"
+                                                type="text"
+                                                :placeholder="$placeholderVal"
+                                                :value="old('attributes.'.$attribute->id, $savedVal)"
+                                                :disabled="!$isCurrentCategory"
+                                            />
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-400">No attributes configured for this category.</p>
+                    @endforelse
+                </div>
+            @endforeach
+        </x-card>
+    </div>
+
+    {{-- ============ TAB: Media ============ --}}
+    <div data-wizard-panel="media" class="space-y-6 hidden">
+
+        <x-card title="Product Images & Media">
             <div id="product-media-manager" class="space-y-4">
                 {{-- Hidden State Inputs --}}
                 <input type="hidden" name="primary_image_id" id="primary_image_id" value="{{ $product->exists && $product->primaryImage() ? $product->primaryImage()->id : '' }}">
@@ -63,7 +226,7 @@
                 {{-- Interactive Cards Grid --}}
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Gallery &amp; Main Thumbnail</span>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Product Gallery & Main Thumbnail</span>
                         <span class="text-xs text-gray-400">Click ⭐ to set primary thumbnail</span>
                     </div>
 
@@ -110,76 +273,12 @@
             </div>
         </x-card>
 
-        <x-card title="Attributes">
-            <p class="text-sm text-gray-500 mb-4" id="attributes-empty" @if ($selectedCategoryId) style="display:none" @endif>
-                Choose a category to see its attributes.
-            </p>
-
-            @foreach ($categories as $category)
-                @php
-                    $isCurrentCategory = (int) $selectedCategoryId === $category->id;
-                    $groupedCategoryAttributes = $category->attributes->groupBy(fn ($a) => $a->group?->name ?? 'General Specifications');
-                @endphp
-                <div
-                    data-category-attributes="{{ $category->id }}"
-                    class="space-y-6"
-                    @if (!$isCurrentCategory) style="display:none" @endif
-                >
-                    @forelse ($groupedCategoryAttributes as $groupName => $attributesInGroup)
-                        <div class="space-y-3">
-                            <div class="border-b border-gray-100 pb-1.5 flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
-                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ $groupName }}</h4>
-                            </div>
-                            <div class="grid sm:grid-cols-2 gap-4 items-start">
-                                @foreach ($attributesInGroup as $attribute)
-                                    <div>
-                                        @php
-                                            $attrLabel = $attribute->name . ($attribute->pivot?->is_required ? ' *' : '');
-                                            $savedAttr = $existingValues->get($attribute->id);
-                                            $savedVal = $savedAttr?->displayValue();
-                                            $defaultTextVal = ($savedVal !== null && $savedVal !== '') ? $savedVal : ($attribute->unit ?? '');
-                                        @endphp
-
-                                        @if ($attribute->type->usesValueList())
-                                            @php
-                                                $selectedOptionId = $savedAttr?->attribute_value_id;
-                                                if ($selectedOptionId === null && filled($attribute->unit)) {
-                                                    $selectedOptionId = $attribute->values->firstWhere('value', $attribute->unit)?->id;
-                                                }
-                                            @endphp
-                                            <x-select
-                                                :label="$attrLabel"
-                                                :name="'attributes['.$attribute->id.']'"
-                                                :placeholder="'Select '.$attribute->name"
-                                                :options="$attribute->values->pluck('value', 'id')"
-                                                :selected="old('attributes.'.$attribute->id, $selectedOptionId)"
-                                                :disabled="!$isCurrentCategory"
-                                            />
-                                        @else
-                                            <x-input
-                                                :label="$attrLabel"
-                                                :name="'attributes['.$attribute->id.']'"
-                                                type="text"
-                                                :placeholder="$attribute->placeholder ?? $attribute->unit ?? ''"
-                                                :value="old('attributes.'.$attribute->id, $defaultTextVal)"
-                                                :disabled="!$isCurrentCategory"
-                                            />
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-sm text-gray-400">No attributes configured for this category.</p>
-                    @endforelse
-                </div>
-            @endforeach
-        </x-card>
     </div>
 
-    <div class="space-y-6">
-        <x-card title="Pricing &amp; Condition">
+    {{-- ============ TAB: Pricing & Condition ============ --}}
+    <div data-wizard-panel="pricing" class="space-y-6 hidden">
+
+        <x-card title="Pricing & Condition">
             <div class="space-y-5">
                 <x-select
                     label="Condition" name="condition"
@@ -211,8 +310,17 @@
             </div>
         </x-card>
 
-        <x-card title="Promotions, Coupons &amp; Gift Cards">
-            <div class="space-y-4">
+    </div>
+
+    {{-- ============ TAB: Promotions ============ --}}
+    <div data-wizard-panel="promotions" class="space-y-6 hidden">
+
+        <x-card title="Promotions, Coupons & Gift Cards">
+            <div class="space-y-5">
+                <p class="text-xs text-gray-500">
+                    Configure promotional discount codes, coupon eligibility, and gift card payment support for this product.
+                </p>
+
                 <div class="grid sm:grid-cols-2 gap-4">
                     <x-input
                         label="Product Promo / Coupon Code"
@@ -233,44 +341,35 @@
                     />
                 </div>
 
-                <div class="space-y-2.5 border-t border-gray-100 pt-3">
-                    <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
-                        <input type="checkbox" name="allow_coupons" value="1" @checked(old('allow_coupons', $product->allow_coupons ?? true)) class="w-4 h-4 rounded accent-brand-500">
-                        <span>Eligible for storewide &amp; seller promotional coupons</span>
+                <div class="space-y-3 border-t border-gray-100 pt-4">
+                    <label class="flex items-start gap-2.5 text-sm text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" name="allow_coupons" value="1" @checked(old('allow_coupons', $product->allow_coupons ?? true)) class="mt-0.5 w-4 h-4 rounded accent-brand-500">
+                        <div>
+                            <span class="font-medium text-gray-800">Eligible for storewide & seller promotional coupons</span>
+                            <p class="text-xs text-gray-400">Buyers can apply promotional discount coupon codes at checkout on this product.</p>
+                        </div>
                     </label>
 
-                    <label class="flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer select-none">
-                        <input type="checkbox" name="allow_gift_cards" value="1" @checked(old('allow_gift_cards', $product->allow_gift_cards ?? true)) class="w-4 h-4 rounded accent-brand-500">
-                        <span>Eligible for Gift Card payments at checkout</span>
+                    <label class="flex items-start gap-2.5 text-sm text-gray-700 cursor-pointer select-none">
+                        <input type="checkbox" name="allow_gift_cards" value="1" @checked(old('allow_gift_cards', $product->allow_gift_cards ?? true)) class="mt-0.5 w-4 h-4 rounded accent-brand-500">
+                        <div>
+                            <span class="font-medium text-gray-800">Eligible for Gift Card payments at checkout</span>
+                            <p class="text-xs text-gray-400">Allow customers to use gift cards and store credit towards this product.</p>
+                        </div>
                     </label>
                 </div>
             </div>
         </x-card>
+    </div>
 
-        <x-card title="Shipping">
-            <div class="space-y-5">
-                <x-input label="Weight (kg, optional)" name="weight" type="number" step="0.01" placeholder="e.g. 0.50" :value="old('weight', $product->weight)" />
-
-                <x-select
-                    label="Shipping" name="shipping_type"
-                    :options="collect(\App\Enums\ShippingType::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])"
-                    :selected="old('shipping_type', $product->shipping_type?->value ?? 'free')"
-                />
-
-                <div id="shipping_flat_rate_wrap" @if (old('shipping_type', $product->shipping_type?->value ?? 'free') !== 'flat_rate') style="display:none" @endif>
-                    <x-input label="Flat rate amount" name="shipping_flat_rate" type="number" step="0.01" placeholder="e.g. 15.00" :value="old('shipping_flat_rate', $product->shipping_flat_rate)" />
-                </div>
-            </div>
-        </x-card>
-
-        <x-card title="SEO">
-            <div class="space-y-5">
-                <x-input label="Meta title" name="meta_title" type="text" placeholder="SEO title for search engine listing" :value="old('meta_title', $product->meta_title)" />
-                <x-input label="Meta description" name="meta_description" type="text" placeholder="SEO summary description for search engine listing" :value="old('meta_description', $product->meta_description)" />
-            </div>
-        </x-card>
-
-        <x-button type="submit" class="w-full justify-center">{{ $product->exists ? 'Save Changes' : 'Save as Draft' }}</x-button>
+    {{-- Navigation --}}
+    <div class="flex items-center justify-between gap-3">
+        <button type="button" id="wizard-prev" class="px-4 py-2 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">Back</button>
+        <div class="flex items-center gap-3">
+            <p id="wizard-error" class="text-xs text-red-500 hidden"></p>
+            <x-button type="button" id="wizard-next">Next</x-button>
+            <x-button type="submit" id="wizard-save" style="display:none">{{ $product->exists ? 'Save Changes' : 'Save as Draft' }}</x-button>
+        </div>
     </div>
 </div>
 
@@ -327,12 +426,169 @@
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
 
 <script>
+    // Product form wizard: tabs, per-tab completion rules and progress bar
+    (function () {
+        const wizard = document.getElementById('product-wizard');
+        if (!wizard) return;
+
+        const tabs = Array.from(wizard.querySelectorAll('[data-wizard-tab]'));
+        const keys = tabs.map((t) => t.dataset.wizardTab);
+        const panels = Object.fromEntries(keys.map((k) => [k, wizard.querySelector(`[data-wizard-panel="${k}"]`)]));
+        const prevBtn = document.getElementById('wizard-prev');
+        const nextBtn = document.getElementById('wizard-next');
+        const saveBtn = document.getElementById('wizard-save');
+        const errorEl = document.getElementById('wizard-error');
+        const bar = document.getElementById('wizard-progress-bar');
+        const percentEl = document.getElementById('wizard-progress-percent');
+        const labelEl = document.getElementById('wizard-progress-label');
+        const unlockAll = wizard.dataset.editing === '1' || {{ $errors->any() ? 'true' : 'false' }};
+
+        const field = (name) => wizard.closest('form').elements[name];
+        const filled = (name) => (field(name)?.value ?? '').toString().trim() !== '';
+
+        const rules = {
+            basic: () => (filled('title') ? null : 'Enter a product title to continue.'),
+            attributes: () => (filled('category_id') ? null : 'Select a category to continue.'),
+            media: () => null,
+            promotions: () => null,
+            pricing: () => {
+                if (!filled('condition')) return 'Select a condition.';
+                if (!filled('price') || parseFloat(field('price').value) < 0) return 'Enter a valid price.';
+                if (!filled('quantity') || parseInt(field('quantity').value, 10) < 1) return 'Quantity must be at least 1.';
+                return null;
+            },
+        };
+
+        const isComplete = (key) => rules[key]() === null;
+        let current = 0;
+        let reached = unlockAll ? keys.length - 1 : 0;
+
+        function render() {
+            const doneCount = keys.filter(isComplete).length;
+            const percent = Math.round((doneCount / keys.length) * 100);
+            bar.style.width = percent + '%';
+            percentEl.textContent = percent + '%';
+            labelEl.textContent = `${doneCount} of ${keys.length} steps complete`;
+
+            keys.forEach((key, i) => {
+                panels[key].classList.toggle('hidden', i !== current);
+                const tab = tabs[i];
+                const active = i === current;
+                const done = isComplete(key) && i <= reached && !active;
+                tab.classList.toggle('border-brand-500', active);
+                tab.classList.toggle('text-brand-600', active);
+                tab.classList.toggle('opacity-50', i > reached);
+                tab.querySelector('.wizard-tab-index').textContent = done ? '✓' : '';
+            });
+
+            const last = current === keys.length - 1;
+            prevBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+            nextBtn.style.display = last ? 'none' : '';
+            saveBtn.style.display = last ? '' : 'none';
+        }
+
+        function showError(msg) {
+            errorEl.textContent = msg || '';
+            errorEl.classList.toggle('hidden', !msg);
+        }
+
+        function goTo(index) {
+            if (index < 0 || index >= keys.length) return;
+            showError('');
+            current = index;
+            reached = Math.max(reached, index);
+            render();
+            wizard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        nextBtn.addEventListener('click', () => {
+            const error = rules[keys[current]]();
+            if (error) {
+                showError(error);
+                return;
+            }
+            reached = Math.max(reached, current + 1);
+            goTo(current + 1);
+        });
+
+        prevBtn.addEventListener('click', () => goTo(current - 1));
+        tabs.forEach((tab, i) => tab.addEventListener('click', () => {
+            goTo(i);
+        }));
+
+        saveBtn.addEventListener('click', (e) => {
+            for (let i = 0; i < keys.length; i++) {
+                const error = rules[keys[i]]();
+                if (error) {
+                    e.preventDefault();
+                    goTo(i);
+                    showError(error);
+                    return;
+                }
+            }
+        });
+
+        wizard.addEventListener('input', () => { showError(''); render(); });
+        wizard.addEventListener('change', render);
+
+        // Jump to the first tab holding a server-side validation error.
+        const errorPanel = keys.findIndex((k) => panels[k].querySelector('p.text-red-500'));
+        if (errorPanel >= 0) current = errorPanel;
+
+        render();
+    })();
+
+    // Handle custom vs preset attribute value toggles
+    document.querySelectorAll('.js-attribute-container').forEach((container) => {
+        const toggleBtn = container.querySelector('.js-attr-toggle-btn');
+        const presetWrap = container.querySelector('.js-attr-preset-wrap');
+        const customWrap = container.querySelector('.js-attr-custom-wrap');
+        const select = container.querySelector('.js-attr-preset-select');
+        const input = container.querySelector('.js-attr-custom-input');
+
+        function setMode(mode) {
+            const isCustom = mode === 'custom';
+            if (presetWrap) presetWrap.style.display = isCustom ? 'none' : '';
+            if (customWrap) customWrap.style.display = isCustom ? '' : 'none';
+            if (toggleBtn) {
+                toggleBtn.dataset.mode = isCustom ? 'custom' : 'preset';
+                toggleBtn.textContent = isCustom ? '← Choose from list' : '+ Custom value';
+            }
+            const categoryMatch = !container.closest('[data-category-attributes]') || container.closest('[data-category-attributes]').style.display !== 'none';
+            if (select) {
+                select.disabled = isCustom || !categoryMatch;
+                if (isCustom && select.value === '__custom__') select.value = '';
+            }
+            if (input) {
+                input.disabled = !isCustom || !categoryMatch;
+                if (isCustom) input.focus();
+            }
+        }
+
+        toggleBtn?.addEventListener('click', () => {
+            setMode(toggleBtn.dataset.mode === 'custom' ? 'preset' : 'custom');
+        });
+
+        select?.addEventListener('change', () => {
+            if (select.value === '__custom__') {
+                setMode('custom');
+            }
+        });
+    });
+
     document.getElementById('category_id')?.addEventListener('change', function () {
         const selectedId = this.value;
         document.querySelectorAll('[data-category-attributes]').forEach((el) => {
             const isMatch = el.dataset.categoryAttributes === selectedId;
             el.style.display = isMatch ? '' : 'none';
-            el.querySelectorAll('input, select, textarea').forEach((input) => {
+            el.querySelectorAll('.js-attribute-container').forEach((container) => {
+                const isCustom = container.querySelector('.js-attr-toggle-btn')?.dataset.mode === 'custom';
+                const sel = container.querySelector('.js-attr-preset-select');
+                const inp = container.querySelector('.js-attr-custom-input');
+                if (sel) sel.disabled = !isMatch || isCustom;
+                if (inp) inp.disabled = !isMatch || !isCustom;
+            });
+            el.querySelectorAll('input:not(.js-attr-custom-input), select:not(.js-attr-preset-select), textarea').forEach((input) => {
                 input.disabled = !isMatch;
             });
         });

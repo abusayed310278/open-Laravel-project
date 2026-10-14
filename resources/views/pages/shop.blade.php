@@ -2,98 +2,129 @@
 
 @section('title', request('q') ? 'Search: ' . request('q') : 'Shop')
 
+@php
+    $hasFilters = request()->hasAny(['category', 'condition', 'brand', 'min_rating', 'min_price', 'max_price', 'q']);
+    $fieldClass = 'w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500';
+    $labelClass = 'block text-xs font-semibold text-gray-500 mb-1.5';
+@endphp
+
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <x-breadcrumb :items="request('q') ? ['Shop' => route('shop'), 'Search: ' . request('q') => null] : ['Shop' => null]" class="mb-6" />
 
         <div class="grid lg:grid-cols-4 gap-8">
+            {{-- Filters --}}
             <aside class="lg:col-span-1">
-                <form method="GET" class="space-y-6">
-                    <div>
-                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Search within results" class="w-full border border-gray-200 rounded-md px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
-                    </div>
+                <details class="group bg-white rounded-2xl border border-gray-200 lg:open:shadow-none" @if ($hasFilters) open @endif>
+                    <summary class="flex items-center justify-between px-5 py-4 cursor-pointer list-none lg:pointer-events-none">
+                        <span class="text-base font-bold text-gray-900">Filters</span>
+                        @if ($hasFilters)
+                            <a href="{{ route('shop', array_filter(['sort' => request('sort')])) }}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 lg:pointer-events-auto">Reset</a>
+                        @endif
+                    </summary>
 
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800 mb-2">Category</p>
-                        <div class="space-y-1.5">
-                            @foreach ($categories as $category)
-                                <label class="flex items-center gap-2 text-sm text-gray-600">
-                                    <input type="radio" name="category" value="{{ $category->slug }}" @checked(request('category') === $category->slug) class="accent-brand-500">
-                                    {{ $category->name }}
-                                </label>
-                            @endforeach
+                    <form method="GET" action="{{ route('shop') }}" class="px-5 pb-5 space-y-5 border-t border-gray-100 pt-5">
+                        @if (request('sort'))
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                        @endif
+
+                        @if (request('q'))
+                            <div>
+                                <label class="{{ $labelClass }}">Search</label>
+                                <input type="text" name="q" value="{{ request('q') }}" class="{{ $fieldClass }}">
+                            </div>
+                        @endif
+
+                        <div>
+                            <label for="filter-category" class="{{ $labelClass }}">Category</label>
+                            <select id="filter-category" name="category" onchange="this.form.submit()" class="{{ $fieldClass }}">
+                                <option value="">Any category</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->slug }}" @selected(request('category') === $cat->slug)>{{ $cat->name }}</option>
+                                    @foreach ($cat->children ?? [] as $child)
+                                        <option value="{{ $child->slug }}" @selected(request('category') === $child->slug)>&nbsp;&nbsp;– {{ $child->name }}</option>
+                                    @endforeach
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
 
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800 mb-2">Condition</p>
-                        <div class="space-y-1.5">
-                            @foreach (\App\Enums\ProductCondition::cases() as $condition)
-                                <label class="flex items-center gap-2 text-sm text-gray-600">
-                                    <input type="radio" name="condition" value="{{ $condition->value }}" @checked(request('condition') === $condition->value) class="accent-brand-500">
-                                    {{ $condition->label() }}
-                                </label>
-                            @endforeach
+                        <div>
+                            <label for="filter-brand" class="{{ $labelClass }}">Brand</label>
+                            <select id="filter-brand" name="brand" onchange="this.form.submit()" class="{{ $fieldClass }}">
+                                <option value="">Any brand</option>
+                                @foreach ($brands as $brand)
+                                    <option value="{{ $brand->slug }}" @selected(request('brand') === $brand->slug)>{{ $brand->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
 
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800 mb-2">Brand</p>
-                        <div class="space-y-1.5">
-                            @foreach ($brands as $brand)
-                                <label class="flex items-center gap-2 text-sm text-gray-600">
-                                    <input type="radio" name="brand" value="{{ $brand->slug }}" @checked(request('brand') === $brand->slug) class="accent-brand-500">
-                                    {{ $brand->name }}
-                                </label>
-                            @endforeach
+                        <div>
+                            <label for="filter-condition" class="{{ $labelClass }}">Condition</label>
+                            <select id="filter-condition" name="condition" onchange="this.form.submit()" class="{{ $fieldClass }}">
+                                <option value="">Any condition</option>
+                                @foreach (\App\Enums\ProductCondition::cases() as $condition)
+                                    <option value="{{ $condition->value }}" @selected(request('condition') === $condition->value)>{{ $condition->label() }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
 
-                    <div>
-                        <p class="text-sm font-semibold text-gray-800 mb-2">Price range</p>
-                        <div class="flex items-center gap-2">
-                            <input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Min" class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm">
-                            <span class="text-gray-300">–</span>
-                            <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max" class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm">
+                        <div>
+                            <span class="{{ $labelClass }}">Rating</span>
+                            <div class="space-y-1.5">
+                                @foreach (['' => 'Any rating', '3' => '3★ & up', '4' => '4★ & up', '4.5' => '4.5★ & up'] as $value => $label)
+                                    <label class="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer">
+                                        <input type="radio" name="min_rating" value="{{ $value }}" onchange="this.form.submit()" @checked((string) request('min_rating') === (string) $value) class="w-4 h-4 accent-brand-500 cursor-pointer">
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
 
-                    <x-button type="submit" variant="secondary" class="w-full justify-center">Apply Filters</x-button>
-                    <a href="{{ route('shop') }}" class="block text-center text-sm text-gray-400 hover:text-gray-600">Clear Filters</a>
-                </form>
+                        <div>
+                            <span class="{{ $labelClass }}">Price</span>
+                            <div class="flex items-center gap-2">
+                                <input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Min" min="0" class="{{ $fieldClass }}">
+                                <span class="text-gray-300">–</span>
+                                <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Max" min="0" class="{{ $fieldClass }}">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors">
+                            Apply filters
+                        </button>
+                    </form>
+                </details>
+                <script>
+                    if (window.matchMedia('(min-width: 1024px)').matches) {
+                        document.currentScript.previousElementSibling.open = true;
+                    }
+                </script>
             </aside>
 
+            {{-- Results --}}
             <div class="lg:col-span-3">
                 @if (request('q'))
-                    <div class="mb-6 flex flex-wrap items-center justify-between gap-3 bg-brand-50/50 border border-brand-100 rounded-xl px-5 py-3.5">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                            </div>
-                            <div>
-                                <h1 class="text-base sm:text-lg font-bold text-gray-900">
-                                    Search results for <span class="text-brand-600">"{{ request('q') }}"</span>
-                                </h1>
-                                <p class="text-xs text-gray-500 mt-0.5">{{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }} found</p>
-                            </div>
-                        </div>
-                        <a href="{{ route('shop') }}" class="text-xs font-semibold text-gray-600 hover:text-brand-700 bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-2xs">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                            <span>Clear Search</span>
-                        </a>
-                    </div>
+                    <h1 class="text-xl font-bold text-gray-900 mb-1">Results for <span class="text-brand-600">"{{ request('q') }}"</span></h1>
+                @else
+                    <h1 class="text-xl font-bold text-gray-900 mb-1">Shop</h1>
                 @endif
 
-                <div class="flex items-center justify-between mb-6">
-                    <p class="text-sm text-gray-500">Showing {{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} of {{ $products->total() }} results</p>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                    <p class="text-sm text-gray-500">
+                        {{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}
+                        @if ($products->total() > 0)
+                            · showing {{ $products->firstItem() }}–{{ $products->lastItem() }}
+                        @endif
+                    </p>
 
-                    <form method="GET">
+                    <form method="GET" class="flex items-center gap-2">
                         @foreach (explode('&', \Illuminate\Support\Arr::query(request()->except('sort', 'page'))) as $pair)
                             @continue($pair === '')
                             @php([$hiddenKey, $hiddenValue] = array_pad(array_map('urldecode', explode('=', $pair, 2)), 2, ''))
                             <input type="hidden" name="{{ $hiddenKey }}" value="{{ $hiddenValue }}">
                         @endforeach
-                        <select name="sort" onchange="this.form.submit()" class="border border-gray-200 rounded-md px-3 py-2 text-sm bg-white">
+                        <label for="sort" class="text-sm text-gray-500">Sort by</label>
+                        <select id="sort" name="sort" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                             <option value="" @selected(!request('sort'))>Newest</option>
                             <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: Low to High</option>
                             <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: High to Low</option>
@@ -103,16 +134,14 @@
                 </div>
 
                 @if ($products->isEmpty())
-                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-12 text-center text-gray-500 text-sm">
-                        @if (request('q'))
-                            <p class="text-base font-semibold text-gray-800 mb-1">No products found matching "{{ request('q') }}"</p>
-                            <p class="text-gray-400 text-xs mb-4">Try checking your spelling, using more general terms, or clearing filters.</p>
-                            <a href="{{ route('shop') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs rounded-lg transition-colors">
-                                View all products
-                            </a>
-                        @else
-                            No products match your filters yet.
-                        @endif
+                    <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                        <p class="text-base font-semibold text-gray-800">
+                            {{ request('q') ? 'No products found for "' . request('q') . '"' : 'No products match your filters' }}
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1 mb-5">Try different keywords or clear your filters.</p>
+                        <a href="{{ route('shop') }}" class="inline-flex px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors">
+                            View all products
+                        </a>
                     </div>
                 @else
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">

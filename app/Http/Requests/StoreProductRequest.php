@@ -25,6 +25,12 @@ class StoreProductRequest extends FormRequest
                 $this->merge(['attributes' => $decoded]);
             }
         }
+
+        $this->merge([
+            'is_negotiable' => $this->boolean('is_negotiable'),
+            'allow_coupons' => $this->boolean('allow_coupons'),
+            'allow_gift_cards' => $this->boolean('allow_gift_cards'),
+        ]);
     }
 
     /**
@@ -41,6 +47,10 @@ class StoreProductRequest extends FormRequest
             'condition' => ['required', new Enum(ProductCondition::class)],
             'price' => ['required', 'numeric', 'min:0'],
             'compare_price' => ['nullable', 'numeric', 'gt:price'],
+            'promo_code' => ['nullable', 'string', 'max:50'],
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'allow_coupons' => ['boolean'],
+            'allow_gift_cards' => ['boolean'],
             'sku' => ['nullable', 'string', 'max:100'],
             'quantity' => ['required', 'integer', 'min:1'],
             'is_negotiable' => ['boolean'],

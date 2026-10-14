@@ -24,8 +24,41 @@
             </div>
         @endif
 
-        <div class="bg-gray-50 border border-gray-100 rounded-md p-8 text-center text-gray-400 text-sm">
-            Products in this category will appear here once listings go live.
-        </div>
+        @if (isset($products) && $products->isNotEmpty())
+            <div class="mb-6 flex items-center justify-between">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Showing <span class="font-semibold text-gray-900 dark:text-white">{{ $products->firstItem() }}</span> to <span class="font-semibold text-gray-900 dark:text-white">{{ $products->lastItem() }}</span> of <span class="font-semibold text-gray-900 dark:text-white">{{ $products->total() }}</span> products
+                </p>
+                <a href="{{ route('shop', ['category' => $category->slug]) }}" class="text-xs sm:text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+                    View in Shop with Filters &rarr;
+                </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach ($products as $product)
+                    <x-product-card
+                        :id="$product->id"
+                        :product="$product"
+                        :title="$product->title"
+                        :price="$product->price"
+                        :compare-price="$product->compare_price"
+                        :category="$product->category?->name ?? 'Electronics'"
+                        :brand="$product->brand?->name"
+                        :condition="$product->condition?->value"
+                        :key-features="$product->keyFeatures(3)"
+                        :image="$product->primaryImageUrl()"
+                        :href="route('products.show', $product)"
+                    />
+                @endforeach
+            </div>
+
+            <div class="mt-8">
+                {{ $products->links() }}
+            </div>
+        @else
+            <div class="bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700/60 rounded-xl p-12 text-center text-gray-400 text-sm">
+                No products found in this category yet.
+            </div>
+        @endif
     </div>
 @endsection

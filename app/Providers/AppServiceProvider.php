@@ -37,6 +37,29 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->applyRuntimeSettings();
+
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+            if (auth()->check()) {
+                static $authWishlistIds = null;
+                if ($authWishlistIds === null) {
+                    try {
+                        $authWishlistIds = \App\Models\Wishlist::query()
+                            ->where('user_id', auth()->id())
+                            ->with('items')
+                            ->first()
+                            ?->items
+                            ->pluck('product_id')
+                            ->map(fn ($id) => (string) $id)
+                            ->toArray() ?? [];
+                    } catch (\Throwable) {
+                        $authWishlistIds = [];
+                    }
+                }
+                $view->with('authWishlistIds', $authWishlistIds);
+            } else {
+                $view->with('authWishlistIds', []);
+            }
+        });
     }
 
     /**

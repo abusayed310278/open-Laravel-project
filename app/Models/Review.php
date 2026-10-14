@@ -73,6 +73,7 @@ class Review extends Model
         return match ($this->reviewable_type) {
             ReviewableType::Product => Product::find($this->reviewable_id),
             ReviewableType::Seller => User::find($this->reviewable_id),
+            default => null,
         };
     }
 

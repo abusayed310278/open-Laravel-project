@@ -13,7 +13,11 @@ class CustomerWishlistController extends Controller
     public function index(): View
     {
         return view('account.wishlist.index', [
-            'wishlist' => $this->wishlists->forUser(Auth::user())->load('items.product.images'),
+            'wishlist' => $this->wishlists->forUser(Auth::user())->load([
+                'items.product.images',
+                'items.product.category',
+                'items.product.brand',
+            ]),
         ]);
     }
 }

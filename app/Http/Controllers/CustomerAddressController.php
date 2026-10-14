@@ -28,7 +28,7 @@ class CustomerAddressController extends Controller
         return back()->with('status', 'Address added.');
     }
 
-    public function update(Request $request, Address $address): RedirectResponse
+    public function update(Request $request, Address $address): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         abort_unless($address->user_id === Auth::id(), 403);
 
@@ -36,6 +36,29 @@ class CustomerAddressController extends Controller
 
         if ($request->boolean('is_default')) {
             $this->makeDefault($address);
+        }
+
+        $address->refresh();
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Address updated.',
+                'address' => [
+                    'id' => $address->id,
+                    'label' => $address->label,
+                    'name' => $address->name,
+                    'phone' => $address->phone,
+                    'line1' => $address->line1,
+                    'line2' => $address->line2,
+                    'city' => $address->city,
+                    'state' => $address->state,
+                    'country' => $address->country,
+                    'postal_code' => $address->postal_code,
+                    'is_default' => (bool)$address->is_default,
+                    'one_line' => $address->oneLine(),
+                ],
+            ]);
         }
 
         return back()->with('status', 'Address updated.');
@@ -70,7 +93,7 @@ class CustomerAddressController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'label' => ['nullable', 'string', 'max:50'],
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
@@ -81,5 +104,9 @@ class CustomerAddressController extends Controller
             'country' => ['required', 'string', 'max:100'],
             'postal_code' => ['nullable', 'string', 'max:20'],
         ]);
+
+        $validated['name'] = \Illuminate\Support\Str::title(trim($validated['name']));
+
+        return $validated;
     }
 }

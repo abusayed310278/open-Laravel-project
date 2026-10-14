@@ -82,17 +82,25 @@
                                 </div>
                             </div>
 
-                            <div class="text-xs text-gray-600 space-y-1">
-                                <p class="font-semibold text-gray-900 text-sm">{{ $address->name }}</p>
-                                <p class="text-gray-500">{{ $address->phone }}</p>
-                                <div class="pt-1 text-gray-700 leading-relaxed border-t border-gray-100">
-                                    <p>{{ $address->line1 }}</p>
-                                    @if ($address->line2)
-                                        <p>{{ $address->line2 }}</p>
-                                    @endif
-                                    <p class="font-medium text-gray-900 mt-0.5">
-                                        {{ implode(', ', array_filter([$address->city, $address->state, $address->country, $address->postal_code])) }}
-                                    </p>
+                            <div class="text-xs text-gray-600 space-y-1.5">
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-sm capitalize">{{ $address->name }}</p>
+                                </div>
+                                <div class="text-gray-700 flex items-center gap-1.5">
+                                    <span class="font-semibold text-gray-900">Phone:</span>
+                                    <span class="text-gray-600">{{ $address->phone }}</span>
+                                </div>
+                                <div class="pt-1.5 text-gray-700 leading-relaxed border-t border-gray-100 flex items-start gap-1.5">
+                                    <span class="font-semibold text-gray-900 shrink-0">Address:</span>
+                                    <div class="text-gray-600 space-y-0.5">
+                                        <p>{{ $address->line1 }}</p>
+                                        @if ($address->line2)
+                                            <p>{{ $address->line2 }}</p>
+                                        @endif
+                                        <p class="font-medium text-gray-800 mt-0.5">
+                                            {{ implode(', ', array_filter([$address->city, $address->state, $address->country, $address->postal_code])) }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

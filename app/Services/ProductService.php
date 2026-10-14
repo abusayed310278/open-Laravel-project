@@ -234,7 +234,9 @@ class ProductService
                 continue;
             }
 
-            if ($attribute->type->usesValueList()) {
+            $isExistingOptionId = is_numeric($value) && (int) $value > 0 && \App\Models\AttributeValue::query()->where('id', (int) $value)->where('attribute_id', $attribute->id)->exists();
+
+            if ($attribute->type->usesValueList() && $isExistingOptionId) {
                 $product->attributeValues()->create([
                     'attribute_id' => $attribute->id,
                     'attribute_value_id' => (int) $value,

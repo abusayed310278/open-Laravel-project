@@ -51,6 +51,7 @@
     </div>
 
     <x-support-chat-widget />
+    @include('layouts.partials.wishlist-script')
 
 </body>
 </html>

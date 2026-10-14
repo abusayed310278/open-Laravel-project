@@ -4,7 +4,6 @@
     @include('layouts.partials.head')
 </head>
 <body class="bg-white dark:bg-[#0b0f19] text-gray-800 dark:text-gray-100 antialiased transition-colors duration-150">
-
     @include('layouts.partials.announcement-bar')
     @include('layouts.partials.public-header')
     @include('layouts.partials.mobile-drawer')
@@ -18,6 +17,7 @@
     @include('layouts.partials.compare')
 
     @include('layouts.partials.scroll-to-top')
+    @include('layouts.partials.wishlist-script')
 
 </body>
 </html>

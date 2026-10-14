@@ -109,8 +109,15 @@
                     <span class="text-3xl font-bold text-gray-900">${{ number_format($product->price, 2) }}</span>
                     @if ($product->compare_price)
                         <span class="text-base text-gray-400 line-through">${{ number_format($product->compare_price, 2) }}</span>
+                        @php
+                            $rawSave = (($product->compare_price - $product->price) / $product->compare_price) * 100;
+                            $saveStr = number_format($rawSave, 4, '.', '');
+                            [$saveWhole, $saveDec] = explode('.', $saveStr);
+                            $saveDigit = substr($saveDec, 0, 1);
+                            $savePercent = $saveDigit === '0' ? $saveWhole : "{$saveWhole}.{$saveDigit}";
+                        @endphp
                         <x-badge color="red">
-                            Save {{ number_format((1 - $product->price / $product->compare_price) * 100) }}%
+                            Save {{ $savePercent }}%
                         </x-badge>
                     @endif
                 </div>

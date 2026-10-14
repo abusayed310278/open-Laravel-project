@@ -63,9 +63,16 @@
                 <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-24 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Compare</span>
             </a>
 
-            {{-- Wishlist (text appears on hover) --}}
-            <a href="{{ Route::has('wishlist') ? route('wishlist') : '#' }}" class="inline-flex items-center text-gray-700 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-slate-800/80 group cursor-pointer" title="Wishlist">
-                <svg class="w-5 h-5 text-gray-700 group-hover:text-red-500 dark:text-gray-300 dark:group-hover:text-red-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+            @php
+                $headerWishlistCount = count($authWishlistIds ?? []);
+            @endphp
+            <a href="{{ Route::has('wishlist') ? route('wishlist') : '#' }}" class="relative inline-flex items-center text-gray-700 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white transition-colors p-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-slate-800/80 group cursor-pointer" title="Wishlist">
+                <div class="relative flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 text-gray-700 group-hover:text-red-500 dark:text-gray-300 dark:group-hover:text-red-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    <span id="header-wishlist-badge" class="js-wishlist-badge absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-extrabold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center shadow-xs transition-all transform scale-100 {{ $headerWishlistCount > 0 ? '' : 'hidden' }}">
+                        {{ $headerWishlistCount }}
+                    </span>
+                </div>
                 <span class="max-w-0 overflow-hidden opacity-0 group-hover:max-w-24 group-hover:opacity-100 group-hover:ml-1.5 transition-all duration-200 ease-out text-xs font-semibold whitespace-nowrap select-none">Wishlist</span>
             </a>
 
@@ -77,7 +84,7 @@
                     $headerCart = auth()->check()
                         ? $cartService->forUser(auth()->user())
                         : $cartService->forGuest($cartService->sessionId());
-                    $headerCartCount = (int) $headerCart->items()->sum('quantity');
+                    $headerCartCount = (int) $headerCart->items()->count();
                 } catch (\Throwable $e) {
                     $headerCartCount = 0;
                 }
@@ -690,24 +697,33 @@
                     return ($posA === false ? 99 : $posA) <=> ($posB === false ? 99 : $posB);
                 });
 
-                $horizontalNavItems = \Illuminate\Support\Facades\Cache::remember('header_nav_condition_items_v5', 180, function () use ($conditionCases) {
+                $horizontalNavItems = \Illuminate\Support\Facades\Cache::remember('header_nav_condition_items_v6', 180, function () use ($conditionCases) {
                     $rows = \Illuminate\Support\Facades\DB::table('categories')
                         ->join('products', 'categories.id', '=', 'products.category_id')
+                        ->where('categories.status', \App\Enums\PublishStatus::Active->value)
+                        ->whereNull('products.deleted_at')
                         ->where('products.publication_status', \App\Enums\ProductPublicationStatus::Published->value)
                         ->select('categories.id', 'categories.name', 'categories.slug', 'products.condition', \Illuminate\Support\Facades\DB::raw('count(products.id) as product_count'))
                         ->groupBy('categories.id', 'categories.name', 'categories.slug', 'products.condition')
                         ->orderByDesc('product_count')
                         ->get();
 
+                    $totalRows = \Illuminate\Support\Facades\DB::table('products')
+                        ->whereNull('products.deleted_at')
+                        ->where('products.publication_status', \App\Enums\ProductPublicationStatus::Published->value)
+                        ->select('products.condition', \Illuminate\Support\Facades\DB::raw('count(products.id) as total_count'))
+                        ->groupBy('products.condition')
+                        ->get()
+                        ->pluck('total_count', 'condition')
+                        ->all();
+
                     $grouped = [];
-                    $totalCounts = [];
                     foreach ($rows as $row) {
                         $grouped[$row->condition][] = [
                             'name' => $row->name,
                             'slug' => $row->slug,
                             'count' => (int) $row->product_count,
                         ];
-                        $totalCounts[$row->condition] = ($totalCounts[$row->condition] ?? 0) + (int) $row->product_count;
                     }
 
                     $items = [];
@@ -717,7 +733,7 @@
                             'value' => $case->value,
                             'slug' => $case->value,
                             'is_deals' => false,
-                            'total_count' => $totalCounts[$case->value] ?? 0,
+                            'total_count' => (int) ($totalRows[$case->value] ?? 0),
                             'categories' => $grouped[$case->value] ?? [],
                         ];
                     }
@@ -1020,56 +1036,6 @@
                 }
             });
 
-            // Wishlist (heart) toggle on product cards
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('.js-wishlist-btn');
-                if (!btn) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const icon = btn.querySelector('.js-wishlist-icon');
-                const productId = btn.dataset.wishlistId;
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-                const setLiked = (liked) => {
-                    icon?.classList.toggle('fill-current', liked);
-                    icon?.classList.toggle('text-red-500', liked);
-                    btn.classList.toggle('text-red-500', liked);
-                };
-
-                if (!productId || productId === '' || productId === 'null') {
-                    setLiked(!icon?.classList.contains('fill-current'));
-                    return;
-                }
-
-                btn.disabled = true;
-
-                fetch('/wishlist/' + productId + '/toggle', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken || '',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(res => {
-                    if (res.status === 401) {
-                        window.location.href = '{{ route('login') }}';
-                        return null;
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (!data) return;
-                    setLiked(!!data.added);
-                })
-                .catch(() => {})
-                .finally(() => {
-                    btn.disabled = false;
-                });
-            });
 
             // Share button on product cards
             document.addEventListener('click', function(e) {

@@ -721,6 +721,8 @@ Route::middleware(['auth', 'verified'])
 
         Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/invoice', [CustomerOrderController::class, 'invoice'])->name('orders.invoice');
+        Route::get('/orders/{order}/invoice/download', [CustomerOrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
 
         Route::post('/vendor-orders/{vendorOrder}/payment-proof', [ManualPaymentSubmissionController::class, 'store'])->name('payment-proof.store');
         Route::post('/vendor-orders/{vendorOrder}/refund-request', [RefundRequestController::class, 'store'])->middleware('throttle:10,1')->name('refund-requests.store');
@@ -730,6 +732,7 @@ Route::middleware(['auth', 'verified'])
         Route::get('/invoices/{invoice}/download', [CustomerInvoiceController::class, 'download'])->name('invoices.download');
 
         Route::get('/reviews', [CustomerReviewController::class, 'index'])->name('reviews.index');
+        Route::post('/reviews', [CustomerReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store-direct');
         Route::post('/orders/{order}/reviews', [CustomerReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
 
         Route::get('/wishlist', [CustomerWishlistController::class, 'index'])->name('wishlist.index');

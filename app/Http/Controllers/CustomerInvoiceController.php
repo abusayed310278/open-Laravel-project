@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Services\InvoiceService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,29 +16,33 @@ class CustomerInvoiceController extends Controller
 
     public function index(): View
     {
+        $perPage = (int) request()->input('per_page', 10);
+        if ($perPage < 5 || $perPage > 100) {
+            $perPage = 10;
+        }
+
         return view('account.invoices.index', [
-            'invoices' => Auth::user()->invoicesAsBuyer()->with('vendorOrder')->latest('issued_at')->paginate(15),
+            'orders' => Auth::user()->orders()->with('items', 'vendorOrders')->latest()->paginate($perPage)->withQueryString(),
         ]);
     }
 
-    public function show(Invoice $invoice): View
+    public function show(Invoice $invoice): RedirectResponse
     {
         abort_unless($invoice->buyer_id === Auth::id(), 403);
 
-        return view('account.invoices.show', [
-            'invoice' => $invoice->load('items', 'seller', 'vendorOrder'),
-        ]);
+        return redirect()->route('account.orders.invoice', $invoice->order_id);
     }
 
     public function download(Invoice $invoice): Response
     {
         abort_unless($invoice->buyer_id === Auth::id(), 403);
 
-        $path = $this->invoices->pdf($invoice);
+        $order = $invoice->order;
+        $path = $this->invoices->orderPdf($order);
 
         return response(Storage::disk('local')->get($path), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$invoice->invoice_number.'.pdf"',
+            'Content-Disposition' => 'attachment; filename="Invoice-'.$order->order_number.'.pdf"',
         ]);
     }
 }

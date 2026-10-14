@@ -38,7 +38,7 @@ class ReviewService
         $eligible = [];
 
         foreach ($order->vendorOrders as $vendorOrder) {
-            if ($vendorOrder->status !== OrderStatus::Delivered) {
+            if (in_array($vendorOrder->status, [OrderStatus::Cancelled, OrderStatus::Failed, OrderStatus::Refunded], true)) {
                 continue;
             }
 
@@ -60,6 +60,67 @@ class ReviewService
         return array_values($eligible);
     }
 
+    /**
+     * Get all eligible unreviewed products & sellers across all orders for a customer.
+     *
+     * @return array<int, array{order_id: int, order_number: string, type: ReviewableType, id: int, label: string, subtext: string, image: ?string}>
+     */
+    public function allEligibleReviewables(User $customer): array
+    {
+        $orders = $customer->orders()
+            ->with(['vendorOrders.items.product', 'vendorOrders.vendor'])
+            ->whereNotIn('status', [OrderStatus::Cancelled, OrderStatus::Failed, OrderStatus::Refunded])
+            ->latest()
+            ->get();
+
+        $alreadyReviewed = Review::query()
+            ->where('reviewer_id', $customer->id)
+            ->get(['order_id', 'reviewable_type', 'reviewable_id'])
+            ->map(fn (Review $r) => $r->order_id.':'.$r->reviewable_type->value.':'.$r->reviewable_id)
+            ->all();
+
+        $eligible = [];
+
+        foreach ($orders as $order) {
+            foreach ($order->vendorOrders as $vendorOrder) {
+                if (in_array($vendorOrder->status, [OrderStatus::Cancelled, OrderStatus::Failed, OrderStatus::Refunded], true)) {
+                    continue;
+                }
+
+                foreach ($vendorOrder->items as $item) {
+                    $compositeKey = $order->id.':'.ReviewableType::Product->value.':'.$item->product_id;
+
+                    if (! in_array($compositeKey, $alreadyReviewed, true) && ! isset($eligible[$compositeKey])) {
+                        $eligible[$compositeKey] = [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'type' => ReviewableType::Product,
+                            'id' => $item->product_id,
+                            'label' => $item->product_title,
+                            'subtext' => 'Order #' . $order->order_number . ' · ' . $order->created_at->format('M j, Y'),
+                            'image' => $item->product?->primaryImageUrl(),
+                        ];
+                    }
+                }
+
+                $sellerKey = $order->id.':'.ReviewableType::Seller->value.':'.$vendorOrder->vendor_id;
+                if (! in_array($sellerKey, $alreadyReviewed, true) && ! isset($eligible[$sellerKey])) {
+                    $eligible[$sellerKey] = [
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
+                        'type' => ReviewableType::Seller,
+                        'id' => $vendorOrder->vendor_id,
+                        'label' => 'Seller: ' . $vendorOrder->vendor->name,
+                        'subtext' => 'Order #' . $order->order_number . ' · ' . $order->created_at->format('M j, Y'),
+                        'image' => null,
+                    ];
+                }
+            }
+        }
+
+        return array_values($eligible);
+    }
+
     public function create(User $reviewer, Order $order, ReviewableType $type, int $reviewableId, int $rating, ?string $title, string $body): Review
     {
         $eligible = collect($this->eligibleReviewables($reviewer, $order));
@@ -67,7 +128,7 @@ class ReviewService
         abort_unless(
             $eligible->contains(fn (array $r) => $r['type'] === $type && $r['id'] === $reviewableId),
             422,
-            'You can only review items from a delivered order you haven\'t already reviewed.'
+            'You can only review items from your orders that you haven\'t already reviewed.'
         );
 
         $review = Review::create([

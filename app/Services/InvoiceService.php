@@ -75,6 +75,29 @@ class InvoiceService
         return $path;
     }
 
+    /**
+     * Render a consolidated order-level invoice PDF covering all products
+     * in the customer's order.
+     */
+    public function orderPdf(\App\Models\Order $order): string
+    {
+        $path = "invoices/orders/{$order->order_number}.pdf";
+
+        $order->loadMissing([
+            'items.vendorOrder.vendor',
+            'customer',
+            'billingAddress',
+            'shippingAddress',
+            'vendorOrders.vendor',
+        ]);
+
+        $pdf = Pdf::loadView('invoices.order-pdf', ['order' => $order]);
+
+        Storage::disk('local')->put($path, $pdf->output());
+
+        return $path;
+    }
+
     private function nextInvoiceNumber(): string
     {
         $year = now()->format('Y');

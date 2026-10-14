@@ -60,22 +60,71 @@ class CartController extends Controller
         return back()->with('status', "\"{$product->title}\" was added to your cart.");
     }
 
-    public function update(Request $request, CartItem $item): RedirectResponse
+    public function update(Request $request, CartItem $item): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorizeItem($item);
 
         $request->validate(['quantity' => ['required', 'integer', 'min:0']]);
 
-        $this->carts->updateQuantity($item, $request->integer('quantity'));
+        $newQty = $request->integer('quantity');
+        $this->carts->updateQuantity($item, $newQty);
+
+        $cart = $this->currentCart();
+        $cart->load('items.product');
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            $groups = $this->carts->groupedBySeller($cart);
+            $grandTotal = collect($groups)->sum(fn ($g) => $g['subtotal'] + $g['shipping']);
+
+            return response()->json([
+                'success' => true,
+                'cart_item_id' => $item->id,
+                'quantity' => $newQty,
+                'line_total' => $newQty > 0 ? '$' . number_format((float) ($item->fresh()?->lineTotal() ?? 0), 2) : '$0.00',
+                'cart_count' => $cart->items()->count(),
+                'grand_total' => (float) $grandTotal,
+                'grand_total_formatted' => number_format((float) $grandTotal, 2),
+                'groups' => collect($groups)->map(fn ($g) => [
+                    'seller_id' => $g['seller']->id,
+                    'seller_name' => $g['seller']->name,
+                    'total' => (float) ($g['subtotal'] + $g['shipping']),
+                    'total_formatted' => number_format((float) ($g['subtotal'] + $g['shipping']), 2),
+                ])->values(),
+                'cart_empty' => $cart->items()->count() === 0,
+            ]);
+        }
 
         return back()->with('status', 'Cart updated.');
     }
 
-    public function destroy(CartItem $item): RedirectResponse
+    public function destroy(Request $request, CartItem $item): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorizeItem($item);
 
         $this->carts->remove($item);
+
+        $cart = $this->currentCart();
+        $cart->load('items.product');
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            $groups = $this->carts->groupedBySeller($cart);
+            $grandTotal = collect($groups)->sum(fn ($g) => $g['subtotal'] + $g['shipping']);
+
+            return response()->json([
+                'success' => true,
+                'cart_item_id' => $item->id,
+                'cart_count' => $cart->items()->count(),
+                'grand_total' => (float) $grandTotal,
+                'grand_total_formatted' => number_format((float) $grandTotal, 2),
+                'groups' => collect($groups)->map(fn ($g) => [
+                    'seller_id' => $g['seller']->id,
+                    'seller_name' => $g['seller']->name,
+                    'total' => (float) ($g['subtotal'] + $g['shipping']),
+                    'total_formatted' => number_format((float) ($g['subtotal'] + $g['shipping']), 2),
+                ])->values(),
+                'cart_empty' => $cart->items()->count() === 0,
+            ]);
+        }
 
         return back()->with('status', 'Item removed from cart.');
     }

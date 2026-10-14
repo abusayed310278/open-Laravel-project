@@ -20,13 +20,19 @@
 ])
 
 @php
+    $id = $id ?? ($product instanceof \App\Models\Product ? $product->id : ($product['id'] ?? null));
     $categoryHeading = $category ?: ($brand ?: 'Electronics');
     if ($image && str_contains($image, '/image/upload/') && ! str_contains($image, '/e_make_transparent')) {
         $image = str_replace('/image/upload/', '/image/upload/e_make_transparent:12/', $image);
     }
-    $discountPercent = ($comparePrice && $comparePrice > $price)
-        ? (int) round((($comparePrice - $price) / $comparePrice) * 100)
-        : null;
+    $discountPercent = null;
+    if ($comparePrice && $comparePrice > $price) {
+        $rawPercent = (($comparePrice - $price) / $comparePrice) * 100;
+        $formattedStr = number_format($rawPercent, 4, '.', '');
+        [$wholePart, $decPart] = explode('.', $formattedStr);
+        $firstDecimal = substr($decPart, 0, 1);
+        $discountPercent = $firstDecimal === '0' ? $wholePart : "{$wholePart}.{$firstDecimal}";
+    }
     $description = $keyFeatures instanceof \Illuminate\Support\Collection ? $keyFeatures->all() : $keyFeatures;
     $description = $description ? implode(', ', $description) : null;
 
@@ -62,7 +68,7 @@
     {{-- Product Image --}}
     <div class="relative w-full h-52 sm:h-56 shrink-0 overflow-hidden bg-white dark:bg-[#182238]/60">
         @if ($discountPercent)
-            <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">-{{ $discountPercent }}%</span>
+            <span class="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">{{ $discountPercent }}%</span>
         @endif
 
         <a href="{{ $href }}" class="absolute inset-0 block p-3 pt-6">
@@ -81,14 +87,17 @@
         </a>
 
         {{-- Hover Actions: Wishlist & Share --}}
+        @php
+            $isWishlisted = in_array((string) $id, $authWishlistIds ?? [], true);
+        @endphp
         <div class="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
             <button
                 type="button"
                 data-wishlist-id="{{ $id }}"
-                class="js-wishlist-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800/95 dark:hover:bg-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
-                title="Save to wishlist"
+                class="js-wishlist-btn w-8 h-8 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800/95 dark:hover:bg-slate-700 shadow-md flex items-center justify-center {{ $isWishlisted ? 'text-red-500 bg-red-50' : 'text-gray-600 dark:text-gray-300 hover:text-red-500' }} transition-colors cursor-pointer"
+                title="{{ $isWishlisted ? 'Remove from wishlist' : 'Save to wishlist' }}"
             >
-                <svg class="w-4 h-4 js-wishlist-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 js-wishlist-icon {{ $isWishlisted ? 'fill-current text-red-500' : '' }}" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
             </button>
@@ -124,7 +133,7 @@
                 title="Compare product"
             >
                 <svg class="w-4 h-4 js-compare-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
             </button>
         </div>
