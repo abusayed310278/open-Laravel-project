@@ -38,7 +38,7 @@ foreach ($roles as $role) {
         'name' => $user->name,
         'email' => $user->email,
         'phone' => $user->phone ?? '+123456789',
-        'company' => 'Test Company',
+        'company' => 'Abu Sayed',
         'designation' => $newDesignation,
         'location' => 'Dubai, UAE',
     ]);
