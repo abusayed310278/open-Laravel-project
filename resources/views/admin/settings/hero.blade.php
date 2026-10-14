@@ -113,10 +113,18 @@
                                     <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
                                     Top Pill Badge
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                     <div class="sm:col-span-1">
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Badge Text</label>
                                         <input type="text" name="badge_text" value="{{ old('badge_text', $slide->badge_text) }}" placeholder="e.g. PREMIUM OPEN-BOX ELECTRONICS" class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-brand-400">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 mb-1">Font Size (px)</label>
+                                        <div class="flex items-center border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                            <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||8, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||11)-1); i.dispatchEvent(new Event('input'))" class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-bold select-none cursor-pointer border-r border-gray-200">−</button>
+                                            <input type="number" name="badge_font_size" min="8" max="60" value="{{ old('badge_font_size', $slide->badge_font_size) }}" placeholder="11" class="w-full text-center border-0 py-1 px-1 text-xs font-semibold focus:ring-0 focus:outline-hidden">
+                                            <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||60, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||11)+1); i.dispatchEvent(new Event('input'))" class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-bold select-none cursor-pointer border-l border-gray-200">+</button>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Badge Background Color</label>
@@ -145,29 +153,62 @@
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Headline Line 1</label>
                                         <input type="text" name="title_line1" value="{{ old('title_line1', $slide->title_line1) }}" placeholder="e.g. Top Brands." class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-brand-400 mb-1.5">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="text-[10px] text-gray-500">Color:</span>
-                                            <input type="color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="title_line1_color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.previousElementSibling.value = this.value" class="w-24 border border-gray-200 rounded px-2 py-0.5 text-[10px] font-mono">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-gray-500">Color:</span>
+                                                <input type="color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
+                                                <input type="text" name="title_line1_color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-gray-500">Size:</span>
+                                                <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                    <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||12, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||48)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                    <input type="number" name="title_line1_font_size" min="12" max="150" value="{{ old('title_line1_font_size', $slide->title_line1_font_size) }}" placeholder="48" class="w-12 text-center border-0 p-0 text-[10px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                    <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||150, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||48)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                </div>
+                                                <span class="text-[10px] text-gray-400">px</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Headline Line 2 (Highlight)</label>
                                         <input type="text" name="title_line2" value="{{ old('title_line2', $slide->title_line2) }}" placeholder="e.g. Better Value." class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-brand-400 mb-1.5">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="text-[10px] text-gray-500">Color:</span>
-                                            <input type="color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="title_line2_color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.previousElementSibling.value = this.value" class="w-24 border border-gray-200 rounded px-2 py-0.5 text-[10px] font-mono">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-gray-500">Color:</span>
+                                                <input type="color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
+                                                <input type="text" name="title_line2_color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px] text-gray-500">Size:</span>
+                                                <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                    <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||12, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||48)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                    <input type="number" name="title_line2_font_size" min="12" max="150" value="{{ old('title_line2_font_size', $slide->title_line2_font_size) }}" placeholder="48" class="w-12 text-center border-0 p-0 text-[10px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                    <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||150, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||48)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                </div>
+                                                <span class="text-[10px] text-gray-400">px</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="flex items-center justify-between mb-1">
                                         <label class="text-[11px] font-medium text-gray-700">Subtitle Description</label>
-                                        <div class="flex items-center gap-1.5 text-xs text-gray-500">
-                                            <span class="text-[10px]">Color:</span>
-                                            <input type="color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.nextElementSibling.value = this.value" class="w-5 h-5 rounded border border-gray-200 cursor-pointer p-0.5">
-                                            <input type="text" name="subtitle_color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.previousElementSibling.value = this.value" class="w-24 border border-gray-200 rounded px-2 py-0.5 text-[10px] font-mono">
+                                        <div class="flex items-center gap-3 text-xs text-gray-500">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px]">Color:</span>
+                                                <input type="color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.nextElementSibling.value = this.value" class="w-5 h-5 rounded border border-gray-200 cursor-pointer p-0.5">
+                                                <input type="text" name="subtitle_color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-[10px]">Size:</span>
+                                                <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                    <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||9, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||14)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                    <input type="number" name="subtitle_font_size" min="9" max="60" value="{{ old('subtitle_font_size', $slide->subtitle_font_size) }}" placeholder="14" class="w-12 text-center border-0 p-0 text-[10px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                    <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||60, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||14)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-5 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                </div>
+                                                <span class="text-[10px] text-gray-400">px</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <textarea name="subtitle" rows="2" placeholder="e.g. Quality open-box and pre-owned electronics at unbeatable prices in Abu Dhabi." class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-brand-400">{{ old('subtitle', $slide->subtitle) }}</textarea>
@@ -180,11 +221,20 @@
                                     <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                                     Top-Right Sticker Callout
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                     <div class="sm:col-span-1">
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Sticker Text</label>
                                         <textarea name="callout_text" rows="2" placeholder="e.g. Same&#10;Performance&#10;Lower Price" class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-brand-400">{{ old('callout_text', $slide->callout_text) }}</textarea>
                                         <p class="text-[10px] text-gray-400 mt-0.5">Enter each line on a new line.</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 mb-1">Font Size (px)</label>
+                                        <div class="flex items-center border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                            <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||10, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||26)-1); i.dispatchEvent(new Event('input'))" class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-bold select-none cursor-pointer border-r border-gray-200">−</button>
+                                            <input type="number" name="callout_font_size" min="10" max="80" value="{{ old('callout_font_size', $slide->callout_font_size) }}" placeholder="26" class="w-full text-center border-0 py-1 px-1 text-xs font-semibold focus:ring-0 focus:outline-hidden">
+                                            <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||80, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||26)+1); i.dispatchEvent(new Event('input'))" class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-bold select-none cursor-pointer border-l border-gray-200">+</button>
+                                        </div>
+                                        <p class="text-[10px] text-gray-400 mt-0.5">Default ~26px</p>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Text Color</label>
@@ -212,34 +262,35 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     @php
                                         $featDefaults = [
-                                            ['icon' => 'shield-check', 'color' => '#EAB308', 'title' => 'Quality Checked', 'subtitle' => 'Tested & Verified'],
-                                            ['icon' => 'truck', 'color' => '#EAB308', 'title' => 'Fast Delivery', 'subtitle' => 'Across UAE'],
-                                            ['icon' => 'handshake', 'color' => '#EAB308', 'title' => 'Great Prices', 'subtitle' => 'Save More'],
+                                            ['icon' => 'shield-check', 'color' => '#EAB308', 'icon_size' => 28, 'title' => 'Quality Checked', 'title_size' => 13, 'subtitle' => 'Tested & Verified', 'subtitle_size' => 11],
+                                            ['icon' => 'truck', 'color' => '#EAB308', 'icon_size' => 28, 'title' => 'Fast Delivery', 'title_size' => 13, 'subtitle' => 'Across UAE', 'subtitle_size' => 11],
+                                            ['icon' => 'handshake', 'color' => '#EAB308', 'icon_size' => 28, 'title' => 'Great Prices', 'title_size' => 13, 'subtitle' => 'Save More', 'subtitle_size' => 11],
                                         ];
                                     @endphp
                                     @for ($i = 0; $i < 3; $i++)
                                         @php
                                             $item = ($slide->features[$i] ?? null) ?: ($featDefaults[$i] ?? ['icon' => 'shield-check', 'color' => '#EAB308', 'title' => '', 'subtitle' => '']);
                                         @endphp
-                                        <div class="border border-gray-200 rounded-lg p-2.5 bg-white space-y-2">
+                                        <div class="border border-gray-200 rounded-lg p-3 bg-white space-y-2.5">
                                             <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Badge {{ $i + 1 }}</div>
 
+                                            <div>
+                                                <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Icon</label>
+                                                <select name="features[{{ $i }}][icon]" class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs">
+                                                    <option value="shield-check" @selected(($item['icon'] ?? '') === 'shield-check')>Shield Check</option>
+                                                    <option value="truck" @selected(($item['icon'] ?? '') === 'truck')>Delivery Truck</option>
+                                                    <option value="handshake" @selected(($item['icon'] ?? '') === 'handshake')>Handshake</option>
+                                                    <option value="tag" @selected(($item['icon'] ?? '') === 'tag')>Price Tag</option>
+                                                    <option value="heart" @selected(($item['icon'] ?? '') === 'heart')>Heart</option>
+                                                    <option value="star" @selected(($item['icon'] ?? '') === 'star')>Star</option>
+                                                    <option value="award" @selected(($item['icon'] ?? '') === 'award')>Award</option>
+                                                    <option value="zap" @selected(($item['icon'] ?? '') === 'zap')>Fast (Zap)</option>
+                                                    <option value="rotate-ccw" @selected(($item['icon'] ?? '') === 'rotate-ccw')>Easy Return</option>
+                                                    <option value="clock" @selected(($item['icon'] ?? '') === 'clock')>24/7 Clock</option>
+                                                </select>
+                                            </div>
+
                                             <div class="grid grid-cols-2 gap-2">
-                                                <div>
-                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Icon</label>
-                                                    <select name="features[{{ $i }}][icon]" class="w-full border border-gray-200 rounded px-1.5 py-1 text-xs">
-                                                        <option value="shield-check" @selected(($item['icon'] ?? '') === 'shield-check')>Shield Check</option>
-                                                        <option value="truck" @selected(($item['icon'] ?? '') === 'truck')>Delivery Truck</option>
-                                                        <option value="handshake" @selected(($item['icon'] ?? '') === 'handshake')>Handshake</option>
-                                                        <option value="tag" @selected(($item['icon'] ?? '') === 'tag')>Price Tag</option>
-                                                        <option value="heart" @selected(($item['icon'] ?? '') === 'heart')>Heart</option>
-                                                        <option value="star" @selected(($item['icon'] ?? '') === 'star')>Star</option>
-                                                        <option value="award" @selected(($item['icon'] ?? '') === 'award')>Award</option>
-                                                        <option value="zap" @selected(($item['icon'] ?? '') === 'zap')>Fast (Zap)</option>
-                                                        <option value="rotate-ccw" @selected(($item['icon'] ?? '') === 'rotate-ccw')>Easy Return</option>
-                                                        <option value="clock" @selected(($item['icon'] ?? '') === 'clock')>24/7 Clock</option>
-                                                    </select>
-                                                </div>
                                                 <div>
                                                     <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Icon Color</label>
                                                     <div class="flex items-center gap-1">
@@ -247,16 +298,44 @@
                                                         <input type="text" name="features[{{ $i }}][color]" value="{{ $item['color'] ?? '#EAB308' }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded px-1 py-0.5 text-[10px] font-mono">
                                                     </div>
                                                 </div>
+                                                <div>
+                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Icon Size (px)</label>
+                                                    <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                        <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||12, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||28)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                        <input type="number" name="features[{{ $i }}][icon_size]" min="12" max="80" value="{{ $item['icon_size'] ?? '' }}" placeholder="28" class="w-full text-center border-0 p-0 text-[11px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                        <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||80, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||28)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div>
-                                                <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Title</label>
-                                                <input type="text" name="features[{{ $i }}][title]" value="{{ $item['title'] ?? '' }}" placeholder="e.g. Quality Checked" class="w-full border border-gray-200 rounded px-2 py-1 text-xs font-semibold">
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <div class="col-span-2">
+                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Title</label>
+                                                    <input type="text" name="features[{{ $i }}][title]" value="{{ $item['title'] ?? '' }}" placeholder="e.g. Quality Checked" class="w-full border border-gray-200 rounded px-2 py-1 text-xs font-semibold">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Title Size</label>
+                                                    <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                        <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||9, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||13)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                        <input type="number" name="features[{{ $i }}][title_size]" min="9" max="40" value="{{ $item['title_size'] ?? '' }}" placeholder="13" class="w-full text-center border-0 p-0 text-[11px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                        <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||40, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||13)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            <div>
-                                                <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Subtitle</label>
-                                                <input type="text" name="features[{{ $i }}][subtitle]" value="{{ $item['subtitle'] ?? '' }}" placeholder="e.g. Tested & Verified" class="w-full border border-gray-200 rounded px-2 py-1 text-xs">
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <div class="col-span-2">
+                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Subtitle</label>
+                                                    <input type="text" name="features[{{ $i }}][subtitle]" value="{{ $item['subtitle'] ?? '' }}" placeholder="e.g. Tested & Verified" class="w-full border border-gray-200 rounded px-2 py-1 text-xs">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Subtitle Size</label>
+                                                    <div class="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+                                                        <button type="button" onclick="const i=this.nextElementSibling; i.value=Math.max(parseInt(i.min)||8, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||11)-1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-r border-gray-200 text-xs">−</button>
+                                                        <input type="number" name="features[{{ $i }}][subtitle_size]" min="8" max="30" value="{{ $item['subtitle_size'] ?? '' }}" placeholder="11" class="w-full text-center border-0 p-0 text-[11px] font-semibold focus:ring-0 focus:outline-hidden">
+                                                        <button type="button" onclick="const i=this.previousElementSibling; i.value=Math.min(parseInt(i.max)||30, (parseInt(i.value)||parseInt(i.placeholder.replace(/\D/g,''))||11)+1); i.dispatchEvent(new Event('input'))" class="w-5 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-bold select-none cursor-pointer border-l border-gray-200 text-xs">+</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     @endfor
