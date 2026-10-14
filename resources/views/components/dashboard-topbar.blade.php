@@ -103,7 +103,7 @@
                 {{-- Brand Amber Avatar with Initials or Photo --}}
                 <div class="w-9 h-9 bg-brand-400 text-gray-950 font-bold text-xs sm:text-sm rounded-full flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
                     @if ($avatarUrl)
-                        <img src="{{ $avatarUrl }}" alt="{{ $user?->name }}" class="w-full h-full object-cover">
+                        <img src="{{ $avatarUrl }}" alt="{{ $user?->name }}" class="w-full h-full object-cover object-top" style="object-position: top center !important;">
                     @else
                         {{ $initials }}
                     @endif

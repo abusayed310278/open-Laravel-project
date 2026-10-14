@@ -13,15 +13,18 @@
     @endsession
 
     <x-card>
-        {{-- Live Instant Search Toolbar (Instant Filtering On Keystroke) --}}
-        <div class="mb-6">
+        {{-- Filter & Search Controls Form --}}
+        <form method="GET" action="{{ route('admin.users.index') }}" id="usersFilterForm" class="mb-5 space-y-3.5">
+            {{-- Search Bar (Full-Width, exact match with screenshot) --}}
             <div class="relative w-full">
                 <div class="pointer-events-none text-gray-400 z-10" style="position: absolute; left: 14px; top: 0; bottom: 0; display: flex; align-items: center;">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <input
                     type="text"
+                    name="search"
                     id="userSearchInput"
+                    value="{{ request('search') }}"
                     placeholder="Search users by name, email, phone, role or status..."
                     class="w-full h-11 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition-all shadow-2xs"
                     style="padding-left: 2.75rem !important; padding-right: 2.5rem !important;"
@@ -31,18 +34,101 @@
                     type="button"
                     id="clearSearchBtn"
                     onclick="clearUserSearch()"
-                    class="hidden absolute right-3 top-0 bottom-0 my-auto h-7 w-7 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center cursor-pointer transition-colors"
+                    class="{{ request('search') ? '' : 'hidden' }} absolute right-3 top-0 bottom-0 my-auto h-7 w-7 text-gray-400 hover:text-gray-600 rounded-full flex items-center justify-center cursor-pointer transition-colors"
                     title="Clear search"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-        </div>
+
+            {{-- Filter Controls Row (Right under search bar, with Role filter in red box location) --}}
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-0.5">
+                {{-- Left: Role Pills Tabs --}}
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+                    <a
+                        href="{{ route('admin.users.index', array_filter(['status' => request('status'), 'search' => request('search')])) }}"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap {{ empty(request('role')) ? 'bg-gray-900 text-white shadow-2xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900' }}"
+                    >
+                        <span>All</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold {{ empty(request('role')) ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700' }}">
+                            {{ number_format($totalUsersCount) }}
+                        </span>
+                    </a>
+
+                    @foreach ($roles as $roleOption)
+                        @php
+                            $isRoleActive = in_array(request('role'), [$roleOption->value, strtolower($roleOption->label())]);
+                            $count = $roleCounts[$roleOption->value] ?? 0;
+                        @endphp
+                        <a
+                            href="{{ route('admin.users.index', array_filter(['role' => $roleOption->value, 'status' => request('status'), 'search' => request('search')])) }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap {{ $isRoleActive ? 'bg-gray-900 text-white shadow-2xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900' }}"
+                        >
+                            <span>{{ $roleOption->label() }}</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold {{ $isRoleActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700' }}">
+                                {{ number_format($count) }}
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+
+                {{-- Right: Dropdown Filters (Matching user's red box area) --}}
+                <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                    {{-- Role Dropdown --}}
+                    <div class="flex items-center gap-1.5">
+                        <label for="roleFilterSelect" class="text-xs font-semibold text-gray-500 whitespace-nowrap hidden md:inline">Role:</label>
+                        <select
+                            name="role"
+                            id="roleFilterSelect"
+                            onchange="this.form.submit()"
+                            class="h-9 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-800 px-3 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 shadow-2xs cursor-pointer hover:border-gray-300 transition-colors"
+                        >
+                            <option value="">All Roles</option>
+                            <option value="customer" @selected(in_array(request('role'), ['customer', 'user']))>User</option>
+                            <option value="saler" @selected(in_array(request('role'), ['saler', 'seller']))>Seller</option>
+                            <option value="business" @selected(in_array(request('role'), ['business', 'store owner', 'store_owner']))>Store Owner</option>
+                            <option value="verifier" @selected(request('role') === 'verifier')>Verifier</option>
+                            <option value="admin" @selected(request('role') === 'admin')>Admin</option>
+                        </select>
+                    </div>
+
+                    {{-- Status Dropdown --}}
+                    <div class="flex items-center gap-1.5">
+                        <label for="statusFilterSelect" class="text-xs font-semibold text-gray-500 whitespace-nowrap hidden md:inline">Status:</label>
+                        <select
+                            name="status"
+                            id="statusFilterSelect"
+                            onchange="this.form.submit()"
+                            class="h-9 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-800 px-3 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 shadow-2xs cursor-pointer hover:border-gray-300 transition-colors"
+                        >
+                            <option value="">All Statuses</option>
+                            @foreach ($statuses as $statusOption)
+                                <option value="{{ $statusOption->value }}" @selected(request('status') === $statusOption->value)>
+                                    {{ $statusOption->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Reset Filters Button --}}
+                    @if (request()->filled('role') || request()->filled('status') || request()->filled('search'))
+                        <a
+                            href="{{ route('admin.users.index') }}"
+                            class="h-9 inline-flex items-center justify-center gap-1 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                            title="Reset all filters"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </form>
 
         {{-- Users Table --}}
         <x-table :headers="['User', 'Role', 'Status', 'Joined', 'Actions']" id="users-table">
             @forelse ($users as $user)
-                <tr class="border-b border-gray-100 hover:bg-gray-50/70 transition-colors user-row" data-search="{{ strtolower($user->name . ' ' . $user->email . ' ' . ($user->phone ?? '') . ' ' . $user->role->label() . ' ' . $user->status->label()) }}">
+                <tr class="border-b border-gray-100 hover:bg-gray-50/70 transition-colors user-row" data-search="{{ strtolower($user->name . ' ' . $user->email . ' ' . ($user->phone ?? '') . ' ' . $user->role->label() . ' ' . $user->role->value . ' ' . $user->status->label() . ' ' . $user->status->value) }}">
                     {{-- User Details --}}
                     <td class="px-4 py-3.5">
                         @php
@@ -57,11 +143,11 @@
                                 ['bg' => '#fef3c7', 'text' => '#b45309', 'border' => '#fde68a'], // Amber
                             ];
                             $avatarColor = $palette[abs(crc32($user->email ?: $user->name)) % count($palette)];
-                            $userAvatarUrl = \App\Support\MediaUrl::resolve($user->profile?->avatar);
+                            $userAvatarUrl = \App\Support\MediaUrl::resolve($user->profile?->avatar ?? $user->avatar);
                         @endphp
                         <div class="flex items-center gap-3">
                             @if ($userAvatarUrl)
-                                <img src="{{ $userAvatarUrl }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover shrink-0 border border-gray-200 shadow-2xs">
+                                <img src="{{ $userAvatarUrl }}" alt="{{ $user->name }}" class="w-9 h-9 rounded-full object-cover object-top shrink-0 border border-gray-200 shadow-2xs" style="object-position: top center !important;">
                             @else
                                 <div
                                     class="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs select-none transition-transform hover:scale-105"
@@ -149,6 +235,7 @@
                                     'phone' => $user->phone ?? '',
                                     'role' => $user->role->value,
                                     'status' => $user->status->value,
+                                    'avatar_url' => $userAvatarUrl,
                                     'update_url' => route('admin.users.update', $user),
                                 ]) }})"
                                 class="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors border border-transparent hover:border-amber-100 cursor-pointer"
@@ -185,7 +272,14 @@
                         <div class="max-w-xs mx-auto text-center">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                             <p class="font-medium text-gray-600">No users found</p>
-                            <p class="text-xs text-gray-400 mt-1">There are no users to display.</p>
+                            <p class="text-xs text-gray-400 mt-1">
+                                @if (request()->filled('role') || request()->filled('status') || request()->filled('search'))
+                                    No users match your active filters.
+                                    <a href="{{ route('admin.users.index') }}" class="text-brand-600 font-bold hover:underline block mt-1">Clear all filters</a>
+                                @else
+                                    There are no users to display.
+                                @endif
+                            </p>
                         </div>
                     </td>
                 </tr>
@@ -196,8 +290,8 @@
                 <td colspan="5" class="px-4 py-12 text-center text-gray-400 text-sm">
                     <div class="max-w-xs mx-auto text-center">
                         <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        <p class="font-medium text-gray-600">No matching users found</p>
-                        <p class="text-xs text-gray-400 mt-1">Try a different name, email, phone or role.</p>
+                        <p class="font-medium text-gray-600">No matching users found on this page</p>
+                        <p class="text-xs text-gray-400 mt-1">Press Enter or click Filter to search across the entire directory.</p>
                     </div>
                 </td>
             </tr>
@@ -223,9 +317,62 @@
                 </button>
             </div>
 
-            <form id="edit-user-form" method="POST" action="" class="p-6 space-y-4">
+            <form id="edit-user-form" method="POST" action="" enctype="multipart/form-data" class="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
                 @csrf
                 @method('PATCH')
+
+                {{-- Profile Photo / Avatar Upload --}}
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Profile Photo / Avatar</label>
+                    <div class="flex items-center gap-4 p-3 bg-gray-50 border border-gray-200/80 rounded-xl">
+                        {{-- Avatar Preview Container --}}
+                        <div class="relative shrink-0">
+                            <img
+                                id="modal-avatar-preview"
+                                src=""
+                                alt="Avatar Preview"
+                                class="w-16 h-16 rounded-full object-cover object-top border-2 border-white shadow-xs hidden"
+                                style="object-position: top center !important;"
+                            >
+                            <div
+                                id="modal-avatar-placeholder"
+                                class="w-16 h-16 rounded-full bg-brand-50 border border-brand-200 text-brand-700 font-bold text-xl flex items-center justify-center select-none shadow-2xs"
+                            >
+                                U
+                            </div>
+                        </div>
+
+                        {{-- Upload Button & Controls --}}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <label
+                                    for="modal-user-avatar"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+                                >
+                                    <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                    <span>Upload Image</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    id="modal-avatar-remove-btn"
+                                    onclick="removeSelectedAvatar()"
+                                    class="hidden px-2 py-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg font-semibold transition-colors cursor-pointer"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                            <input
+                                type="file"
+                                name="avatar"
+                                id="modal-user-avatar"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                class="hidden"
+                                onchange="previewAvatar(this)"
+                            >
+                            <p class="text-[11px] text-gray-400 mt-1">PNG, JPG, WebP or GIF up to 5MB.</p>
+                        </div>
+                    </div>
+                </div>
 
                 {{-- Name --}}
                 <div>
@@ -372,8 +519,12 @@
         function clearUserSearch() {
             if (userSearchInput) {
                 userSearchInput.value = '';
-                userSearchInput.dispatchEvent(new Event('input'));
-                userSearchInput.focus();
+                if (new URLSearchParams(window.location.search).has('search')) {
+                    userSearchInput.form.submit();
+                } else {
+                    userSearchInput.dispatchEvent(new Event('input'));
+                    userSearchInput.focus();
+                }
             }
         }
 
@@ -395,6 +546,46 @@
             }
         }
 
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarPreview = document.getElementById('modal-avatar-preview');
+                    const avatarPlaceholder = document.getElementById('modal-avatar-placeholder');
+                    const removeBtn = document.getElementById('modal-avatar-remove-btn');
+                    if (avatarPreview) {
+                        avatarPreview.src = e.target.result;
+                        avatarPreview.classList.remove('hidden');
+                    }
+                    if (avatarPlaceholder) {
+                        avatarPlaceholder.classList.add('hidden');
+                    }
+                    if (removeBtn) {
+                        removeBtn.classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeSelectedAvatar() {
+            const avatarFileInput = document.getElementById('modal-user-avatar');
+            const avatarPreview = document.getElementById('modal-avatar-preview');
+            const avatarPlaceholder = document.getElementById('modal-avatar-placeholder');
+            const removeBtn = document.getElementById('modal-avatar-remove-btn');
+            if (avatarFileInput) avatarFileInput.value = '';
+            if (avatarPreview) {
+                avatarPreview.src = '';
+                avatarPreview.classList.add('hidden');
+            }
+            if (avatarPlaceholder) {
+                avatarPlaceholder.classList.remove('hidden');
+            }
+            if (removeBtn) {
+                removeBtn.classList.add('hidden');
+            }
+        }
+
         function openEditModal(userData) {
             const form = document.getElementById('edit-user-form');
             form.action = userData.update_url;
@@ -404,6 +595,34 @@
             document.getElementById('modal-user-phone').value = userData.phone || '';
             document.getElementById('modal-user-role').value = userData.role || '';
             document.getElementById('modal-user-status').value = userData.status || '';
+
+            // Handle Avatar Preview
+            const avatarPreview = document.getElementById('modal-avatar-preview');
+            const avatarPlaceholder = document.getElementById('modal-avatar-placeholder');
+            const avatarFileInput = document.getElementById('modal-user-avatar');
+            const removeBtn = document.getElementById('modal-avatar-remove-btn');
+
+            if (avatarFileInput) avatarFileInput.value = '';
+            if (removeBtn) removeBtn.classList.add('hidden');
+
+            if (userData.avatar_url) {
+                if (avatarPreview) {
+                    avatarPreview.src = userData.avatar_url;
+                    avatarPreview.classList.remove('hidden');
+                }
+                if (avatarPlaceholder) {
+                    avatarPlaceholder.classList.add('hidden');
+                }
+            } else {
+                if (avatarPreview) {
+                    avatarPreview.src = '';
+                    avatarPreview.classList.add('hidden');
+                }
+                if (avatarPlaceholder) {
+                    avatarPlaceholder.textContent = (userData.name || 'U').charAt(0).toUpperCase();
+                    avatarPlaceholder.classList.remove('hidden');
+                }
+            }
             
             const pwdInput = document.getElementById('modal-user-password');
             if (pwdInput) {

@@ -20,21 +20,56 @@ class UserController extends Controller
 
     public function index(Request $request): View
     {
+        $roleInput = strtolower(trim((string) $request->input('role')));
+        $roleValue = match ($roleInput) {
+            'seller', 'saler' => UserRole::Saler->value,
+            'store owner', 'store_owner', 'store-owner', 'business' => UserRole::Business->value,
+            'user', 'customer' => UserRole::Customer->value,
+            'verifier' => UserRole::Verifier->value,
+            'admin' => UserRole::Admin->value,
+            default => UserRole::tryFrom($roleInput)?->value,
+        };
+
+        $statusInput = strtolower(trim((string) $request->input('status')));
+        $statusValue = UserStatus::tryFrom($statusInput)?->value;
+
+        $search = trim((string) $request->input('search'));
+
         $users = User::query()
-            ->when($request->filled('role'), fn ($query) => $query->where('role', $request->string('role')))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $term = '%'.$request->string('search').'%';
-                $query->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('email', 'like', $term)->orWhere('phone', 'like', $term));
+            ->when($roleValue, fn ($query) => $query->where('role', $roleValue))
+            ->when($statusValue, fn ($query) => $query->where('status', $statusValue))
+            ->when($search !== '', function ($query) use ($search) {
+                $term = '%'.$search.'%';
+                $query->where(fn ($q) => $q->where('name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                );
             })
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
+        $roleCounts = [];
+        $rawCounts = User::query()
+            ->toBase()
+            ->selectRaw('role, count(*) as count')
+            ->groupBy('role')
+            ->pluck('count', 'role')
+            ->all();
+
+        foreach ($rawCounts as $r => $cnt) {
+            $key = $r instanceof UserRole ? $r->value : (string) $r;
+            $roleCounts[$key] = (int) $cnt;
+        }
+
+        $totalUsersCount = User::count();
+
         return view('admin.users.index', [
             'users' => $users,
             'roles' => UserRole::cases(),
             'statuses' => UserStatus::cases(),
+            'roleCounts' => $roleCounts,
+            'totalUsersCount' => $totalUsersCount,
         ]);
     }
 
@@ -52,12 +87,19 @@ class UserController extends Controller
             'role' => ['required', Rule::enum(UserRole::class)],
             'status' => ['required', Rule::enum(UserStatus::class)],
             'password' => ['nullable', 'string', 'min:8'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg,gif', 'max:5120'],
         ]);
 
         if (! empty($validated['password'])) {
             $validated['password'] = bcrypt($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            $avatarPath = \App\Helpers\FileUploadHelper::store($request->file('avatar'), 'avatars', 'public');
+            $validated['avatar'] = $avatarPath;
+            $user->profile()->updateOrCreate(['user_id' => $user->id], ['avatar' => $avatarPath]);
         }
 
         $this->users->updateUser($user, $validated);

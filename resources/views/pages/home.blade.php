@@ -13,13 +13,21 @@
                 <div data-hero-track style="display:flex;height:100%;transition:transform 700ms ease-in-out;will-change:transform;">
                 @foreach ($heroSlides as $slide)
                     @php $slideUrl = $slide->product ? route('products.show', $slide->product) : null; @endphp
-                    <div data-hero-slide style="flex:0 0 100%;min-width:0;height:100%;">
+                    <div data-hero-slide style="flex:0 0 100%;min-width:0;height:100%;" class="relative">
                         @if ($slideUrl)
-                            <a href="{{ $slideUrl }}" title="{{ $slide->product->title }}" class="block" style="height:100%;">
-                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->product->title }}" class="block" style="width:100%;height:100%;object-fit:contain;">
+                            <a href="{{ $slideUrl }}" title="{{ $slide->product->title }}" class="block relative w-full h-full group" style="height:100%;">
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->product->title }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;">
+                                @if ($slide->enable_overlay)
+                                    @include('pages.partials.hero-slide-overlay', ['slide' => $slide, 'isLink' => true])
+                                @endif
                             </a>
                         @else
-                            <img src="{{ $slide->imageUrl() }}" alt="{{ config('app.name') }}" class="block" style="width:100%;height:100%;object-fit:contain;">
+                            <div class="relative w-full h-full" style="height:100%;">
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ config('app.name') }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;">
+                                @if ($slide->enable_overlay)
+                                    @include('pages.partials.hero-slide-overlay', ['slide' => $slide, 'isLink' => false])
+                                @endif
+                            </div>
                         @endif
                     </div>
                 @endforeach
@@ -445,32 +453,176 @@
     @endif
 
     @if (feature_enabled('home_top_vendors'))
-        {{-- TOP RATED VENDORS --}}
-        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
+        {{-- TOP RATED VENDORS (Scrollable Carousel) --}}
+        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 overflow-hidden">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Top Rated Vendors</h2>
-                <a href="{{ Route::has('stores.index') ? route('stores.index') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
-                    <span>View All</span>
-                    <span>→</span>
-                </a>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-950 dark:text-white">Top Rated Vendors</h2>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    {{-- Scroll navigation buttons --}}
+                    <div class="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            id="vendors-scroll-prev"
+                            aria-label="Previous vendors"
+                            class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-amber-600 hover:border-amber-300 dark:hover:border-amber-500 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
+                        >
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button
+                            type="button"
+                            id="vendors-scroll-next"
+                            aria-label="Next vendors"
+                            class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-amber-600 hover:border-amber-300 dark:hover:border-amber-500 flex items-center justify-center transition-all cursor-pointer shadow-2xs hover:scale-105"
+                        >
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+
+                    <a href="{{ Route::has('stores.index') ? route('stores.index') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
+                        <span>View All</span>
+                        <span>→</span>
+                    </a>
+                </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                @foreach ($vendors as $vendor)
-                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all">
-                        <div class="w-12 h-12 rounded-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white font-bold flex items-center justify-center text-sm mb-2.5">
-                            {{ strtoupper(substr($vendor['name'], 0, 2)) }}
-                        </div>
-                        <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{{ $vendor['name'] }}</span>
-                        <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-950 dark:text-amber-400 font-semibold">
-                            <span>★</span>
-                            <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>
-                        </div>
-                        <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{{ $vendor['salesCount'] ?? '120' }}+ sales</span>
-                    </div>
-                @endforeach
+            @php
+                $displayVendors = collect($vendors)->values();
+                while ($displayVendors->count() < 10 && $displayVendors->isNotEmpty()) {
+                    $displayVendors = $displayVendors->concat($vendors);
+                }
+                $vendorDuration = max(24, $displayVendors->count() * 3.5);
+            @endphp
+
+            <div class="relative overflow-hidden py-2" id="vendors-viewport">
+                {{-- Left & Right Fade Masks --}}
+                <div class="pointer-events-none absolute left-0 top-0 bottom-0 w-4 sm:w-8 z-10 bg-gradient-to-r from-white dark:from-[#0b0f19] to-transparent"></div>
+                <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-4 sm:w-8 z-10 bg-gradient-to-l from-white dark:from-[#0b0f19] to-transparent"></div>
+
+                {{-- Continuous Auto-Scrolling Track --}}
+                <div
+                    id="vendors-track"
+                    class="vendors-marquee-track flex items-stretch gap-4 w-max select-none py-1"
+                    style="--scroll-duration: {{ $vendorDuration }}s;"
+                >
+                    {{-- Set 1 --}}
+                    @foreach ($displayVendors as $vendor)
+                        <a
+                            href="{{ $vendor['storeUrl'] ?? (Route::has('stores.index') ? route('stores.index') : '#') }}"
+                            class="group shrink-0 w-[155px] sm:w-[185px] bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all cursor-pointer block"
+                        >
+                            <div class="w-14 h-14 rounded-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 overflow-hidden flex items-center justify-center text-sm mb-2.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+                                @if (!empty($vendor['avatar']))
+                                    <img
+                                        src="{{ $vendor['avatar'] }}"
+                                        alt="{{ $vendor['name'] }}"
+                                        class="w-full h-full object-cover object-top"
+                                        style="object-position: top center !important;"
+                                        loading="lazy"
+                                    >
+                                @else
+                                    <span class="font-bold text-gray-800 dark:text-white text-sm">
+                                        {{ strtoupper(substr($vendor['name'], 0, 2)) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-brand-600 transition-colors w-full">{{ $vendor['name'] }}</span>
+                            <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-950 dark:text-amber-400 font-semibold">
+                                <span>★</span>
+                                <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{{ $vendor['salesCount'] ?? '120' }}+ sales</span>
+                        </a>
+                    @endforeach
+
+                    {{-- Set 2 (Duplicate for continuous loop) --}}
+                    @foreach ($displayVendors as $vendor)
+                        <a
+                            href="{{ $vendor['storeUrl'] ?? (Route::has('stores.index') ? route('stores.index') : '#') }}"
+                            class="group shrink-0 w-[155px] sm:w-[185px] bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-gray-900 dark:hover:border-slate-500 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xs hover:shadow-md transition-all cursor-pointer block"
+                            aria-hidden="true"
+                        >
+                            <div class="w-14 h-14 rounded-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 overflow-hidden flex items-center justify-center text-sm mb-2.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+                                @if (!empty($vendor['avatar']))
+                                    <img
+                                        src="{{ $vendor['avatar'] }}"
+                                        alt="{{ $vendor['name'] }}"
+                                        class="w-full h-full object-cover object-top"
+                                        style="object-position: top center !important;"
+                                        loading="lazy"
+                                    >
+                                @else
+                                    <span class="font-bold text-gray-800 dark:text-white text-sm">
+                                        {{ strtoupper(substr($vendor['name'], 0, 2)) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-brand-600 transition-colors w-full">{{ $vendor['name'] }}</span>
+                            <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-950 dark:text-amber-400 font-semibold">
+                                <span>★</span>
+                                <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{{ $vendor['salesCount'] ?? '120' }}+ sales</span>
+                        </a>
+                    @endforeach
+                </div>
             </div>
         </section>
+
+        <style>
+            @keyframes topVendorsScroll {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(-50%);
+                }
+            }
+            .vendors-marquee-track {
+                animation: topVendorsScroll var(--scroll-duration, 30s) linear infinite;
+                will-change: transform;
+            }
+            .vendors-marquee-track:hover,
+            .vendors-marquee-track:focus-within {
+                animation-play-state: paused !important;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .vendors-marquee-track {
+                    animation: none;
+                }
+            }
+        </style>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const track = document.getElementById('vendors-track');
+                const prevBtn = document.getElementById('vendors-scroll-prev');
+                const nextBtn = document.getElementById('vendors-scroll-next');
+
+                if (!track) return;
+
+                let manualOffset = 0;
+                const cardStep = 200;
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function () {
+                        manualOffset += cardStep;
+                        track.style.transition = 'margin-left 0.4s ease';
+                        track.style.marginLeft = manualOffset + 'px';
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function () {
+                        manualOffset -= cardStep;
+                        track.style.transition = 'margin-left 0.4s ease';
+                        track.style.marginLeft = manualOffset + 'px';
+                    });
+                }
+            });
+        </script>
     @endif
 
     @if (feature_enabled('home_start_selling_cta'))

@@ -14,6 +14,20 @@ class HeroSlide extends Model
 
     protected $fillable = [
         'image',
+        'enable_overlay',
+        'badge_text',
+        'badge_bg_color',
+        'badge_text_color',
+        'title_line1',
+        'title_line1_color',
+        'title_line2',
+        'title_line2_color',
+        'subtitle',
+        'subtitle_color',
+        'callout_text',
+        'callout_color',
+        'callout_accent_color',
+        'features',
         'product_id',
         'sort_order',
         'is_active',
@@ -22,6 +36,8 @@ class HeroSlide extends Model
     protected function casts(): array
     {
         return [
+            'enable_overlay' => 'boolean',
+            'features' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];

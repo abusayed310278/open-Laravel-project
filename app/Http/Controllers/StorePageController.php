@@ -17,8 +17,8 @@ class StorePageController extends Controller
     public function index(): View
     {
         return view('pages.stores', [
-            'businesses' => BusinessProfile::query()->where('is_store_active', true)->orderBy('business_name')->get(),
-            'salers' => SalerProfile::query()->where('is_store_active', true)->orderBy('display_name')->get(),
+            'businesses' => BusinessProfile::query()->with(['user.profile'])->where('is_store_active', true)->orderBy('business_name')->get(),
+            'salers' => SalerProfile::query()->with(['user.profile'])->where('is_store_active', true)->orderBy('display_name')->get(),
         ]);
     }
 

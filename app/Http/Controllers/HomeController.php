@@ -130,26 +130,48 @@ class HomeController extends Controller
             ->whereIn('role', [UserRole::Business, UserRole::Saler])
             ->where(fn ($q) => $q->whereHas('businessProfile', fn ($p) => $p->where('is_store_active', true))
                 ->orWhereHas('salerProfile', fn ($p) => $p->where('is_store_active', true)))
+            ->with(['profile', 'businessProfile', 'salerProfile'])
             ->withCount('vendorOrders')
             ->withAvg('approvedReviewsAsSeller', 'rating')
             ->orderByDesc('vendor_orders_count')
-            ->limit(6)
+            ->limit(16)
             ->get()
-            ->map(fn (User $vendor) => [
-                'name' => $vendor->name,
-                'rating' => $vendor->approved_reviews_as_seller_avg_rating ?? 4.9,
-                'salesCount' => $vendor->vendor_orders_count ?: 120,
-            ]);
+            ->map(function (User $vendor) {
+                $rawAvatar = $vendor->profile?->avatar
+                    ?? $vendor->avatar
+                    ?? $vendor->businessProfile?->logo
+                    ?? $vendor->salerProfile?->profile_photo
+                    ?? $vendor->salerProfile?->logo;
+
+                $storeUrl = '#';
+                if ($vendor->role === UserRole::Business && $vendor->businessProfile?->slug) {
+                    $storeUrl = route('stores.business', $vendor->businessProfile->slug);
+                } elseif ($vendor->role === UserRole::Saler && $vendor->salerProfile?->slug) {
+                    $storeUrl = route('stores.saler', $vendor->salerProfile->slug);
+                }
+
+                $storeName = $vendor->businessProfile?->business_name
+                    ?? $vendor->salerProfile?->display_name
+                    ?? $vendor->name;
+
+                return [
+                    'name' => $storeName,
+                    'avatar' => \App\Support\MediaUrl::resolve($rawAvatar),
+                    'rating' => $vendor->approved_reviews_as_seller_avg_rating ?? 4.9,
+                    'salesCount' => $vendor->vendor_orders_count ?: 120,
+                    'storeUrl' => $storeUrl,
+                ];
+            });
 
         // Fallback default vendors if none in DB
         if ($vendors->isEmpty()) {
             $vendors = collect([
-                ['name' => 'Gadget Hub BD', 'rating' => 4.9, 'salesCount' => 1420],
-                ['name' => 'Apple Zone', 'rating' => 5.0, 'salesCount' => 980],
-                ['name' => 'Tech Point', 'rating' => 4.8, 'salesCount' => 840],
-                ['name' => 'Pixel Lab', 'rating' => 4.9, 'salesCount' => 650],
-                ['name' => 'iCenter BD', 'rating' => 4.9, 'salesCount' => 1100],
-                ['name' => 'Smart Store', 'rating' => 4.7, 'salesCount' => 430],
+                ['name' => 'Gadget Hub BD', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 1420, 'storeUrl' => route('stores.index')],
+                ['name' => 'Apple Zone', 'avatar' => null, 'rating' => 5.0, 'salesCount' => 980, 'storeUrl' => route('stores.index')],
+                ['name' => 'Tech Point', 'avatar' => null, 'rating' => 4.8, 'salesCount' => 840, 'storeUrl' => route('stores.index')],
+                ['name' => 'Pixel Lab', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 650, 'storeUrl' => route('stores.index')],
+                ['name' => 'iCenter BD', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 1100, 'storeUrl' => route('stores.index')],
+                ['name' => 'Smart Store', 'avatar' => null, 'rating' => 4.7, 'salesCount' => 430, 'storeUrl' => route('stores.index')],
             ]);
         }
 

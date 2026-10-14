@@ -169,6 +169,24 @@ class SettingsController extends Controller
             'product_id' => ['nullable', 'integer', 'exists:products,id'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['nullable', 'boolean'],
+            'enable_overlay' => ['nullable', 'boolean'],
+            'badge_text' => ['nullable', 'string', 'max:150'],
+            'badge_bg_color' => ['nullable', 'string', 'max:30'],
+            'badge_text_color' => ['nullable', 'string', 'max:30'],
+            'title_line1' => ['nullable', 'string', 'max:150'],
+            'title_line1_color' => ['nullable', 'string', 'max:30'],
+            'title_line2' => ['nullable', 'string', 'max:150'],
+            'title_line2_color' => ['nullable', 'string', 'max:30'],
+            'subtitle' => ['nullable', 'string', 'max:500'],
+            'subtitle_color' => ['nullable', 'string', 'max:30'],
+            'callout_text' => ['nullable', 'string', 'max:255'],
+            'callout_color' => ['nullable', 'string', 'max:30'],
+            'callout_accent_color' => ['nullable', 'string', 'max:30'],
+            'features' => ['nullable', 'array'],
+            'features.*.icon' => ['nullable', 'string', 'max:50'],
+            'features.*.title' => ['nullable', 'string', 'max:100'],
+            'features.*.subtitle' => ['nullable', 'string', 'max:100'],
+            'features.*.color' => ['nullable', 'string', 'max:30'],
         ]);
 
         if ($request->hasFile('image')) {
@@ -179,10 +197,38 @@ class SettingsController extends Controller
             $heroSlide->image = $this->storeUploadedFile($request->file('image'), 'branding', 'public');
         }
 
+        $features = [];
+        if ($request->has('features') && is_array($request->input('features'))) {
+            foreach ($request->input('features') as $f) {
+                if (!empty($f['title']) || !empty($f['subtitle'])) {
+                    $features[] = [
+                        'icon' => $f['icon'] ?? 'shield-check',
+                        'title' => $f['title'] ?? '',
+                        'subtitle' => $f['subtitle'] ?? '',
+                        'color' => $f['color'] ?? '#EAB308',
+                    ];
+                }
+            }
+        }
+
         $heroSlide->update([
             'product_id' => $data['product_id'] ?? null,
             'sort_order' => $data['sort_order'] ?? $heroSlide->sort_order,
             'is_active' => $request->boolean('is_active'),
+            'enable_overlay' => $request->boolean('enable_overlay'),
+            'badge_text' => $data['badge_text'] ?? null,
+            'badge_bg_color' => $data['badge_bg_color'] ?? '#FEF08A',
+            'badge_text_color' => $data['badge_text_color'] ?? '#854D0E',
+            'title_line1' => $data['title_line1'] ?? null,
+            'title_line1_color' => $data['title_line1_color'] ?? '#0F172A',
+            'title_line2' => $data['title_line2'] ?? null,
+            'title_line2_color' => $data['title_line2_color'] ?? '#EAB308',
+            'subtitle' => $data['subtitle'] ?? null,
+            'subtitle_color' => $data['subtitle_color'] ?? '#475569',
+            'callout_text' => $data['callout_text'] ?? null,
+            'callout_color' => $data['callout_color'] ?? '#1E3A8A',
+            'callout_accent_color' => $data['callout_accent_color'] ?? '#EAB308',
+            'features' => $request->has('features') ? $features : $heroSlide->features,
         ]);
 
         ActivityLog::record('settings.hero_slides.updated', properties: ['slide' => $heroSlide->id]);

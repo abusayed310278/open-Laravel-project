@@ -8,9 +8,16 @@
     <div class="grid md:grid-cols-3 gap-5">
         <x-card class="md:col-span-2">
             <div class="flex items-center gap-4 mb-6">
-                <div class="w-14 h-14 bg-gray-800 rounded-md flex items-center justify-center text-white text-xl font-semibold">
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                </div>
+                @php
+                    $userAvatarUrl = \App\Support\MediaUrl::resolve($user->profile?->avatar ?? $user->avatar);
+                @endphp
+                @if ($userAvatarUrl)
+                    <img src="{{ $userAvatarUrl }}" alt="{{ $user->name }}" class="w-14 h-14 rounded-full object-cover object-top border-2 border-gray-100 shadow-xs shrink-0" style="object-position: top center !important;">
+                @else
+                    <div class="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center text-white text-xl font-semibold shrink-0">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    </div>
+                @endif
                 <div>
                     <h2 class="text-lg font-bold text-gray-900">{{ $user->name }}</h2>
                     <p class="text-sm text-gray-500">{{ $user->email }}</p>
