@@ -19,7 +19,7 @@ $req = Request::create('/account/profile', 'PATCH', [
     'name' => $user->name,
     'email' => $user->email,
     'phone' => $user->phone,
-    'company' => 'Test Company Inc',
+    'company' => 'Abu Sayed',
     'designation' => 'Lead Architect Test',
     'location' => 'Dhaka, BD',
 ]);
