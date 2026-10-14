@@ -18,6 +18,6 @@
 
     @include('layouts.partials.scroll-to-top')
     @include('layouts.partials.wishlist-script')
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

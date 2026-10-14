@@ -175,16 +175,18 @@
                         <span>Purchasing items is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                     </div>
                 @elseif (feature_enabled('product_buy_box'))
-                    <form method="POST" action="{{ route('cart.add', $product) }}">
+                    <form id="product-buy-box-form" method="POST" action="{{ route('cart.add', $product) }}">
                         @csrf
                         <div class="flex items-center gap-3 mb-3">
                             <div class="flex items-center border border-gray-200 rounded-md">
-                                <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">&minus;</button>
-                                <input type="number" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
-                                <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800">+</button>
+                                <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Decrease quantity">&minus;</button>
+                                <input type="number" id="product-buy-qty" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
+                                <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Increase quantity">+</button>
                             </div>
-                            <x-button type="submit" class="flex-1 justify-center">Add to Cart</x-button>
-                            <x-button type="submit" name="checkout" value="1" variant="dark" class="flex-1 justify-center">Buy Now</x-button>
+                            <x-button type="submit" id="btn-add-to-cart" class="flex-1 justify-center cursor-pointer">
+                                <span class="js-btn-label">Add to Cart</span>
+                            </x-button>
+                            <x-button type="submit" name="checkout" value="1" variant="dark" class="flex-1 justify-center cursor-pointer">Buy Now</x-button>
                         </div>
                     </form>
                 @endif
@@ -497,6 +499,80 @@
                 input.value = btn.dataset.qty === 'increment' ? value + 1 : Math.max(1, value - 1);
             });
         });
+
+        // Immediate Add-to-Cart without page reload
+        const buyBoxForm = document.getElementById('product-buy-box-form');
+        const addToCartBtn = document.getElementById('btn-add-to-cart');
+        if (buyBoxForm && addToCartBtn) {
+            buyBoxForm.addEventListener('submit', async function (e) {
+                // If clicked "Buy Now", allow normal navigation to checkout
+                if (e.submitter && e.submitter.getAttribute('name') === 'checkout') {
+                    return;
+                }
+
+                e.preventDefault();
+
+                const qtyInput = document.getElementById('product-buy-qty');
+                const quantity = parseInt(qtyInput ? qtyInput.value : '1', 10) || 1;
+                const label = addToCartBtn.querySelector('.js-btn-label') || addToCartBtn;
+                const originalText = label.textContent;
+
+                addToCartBtn.disabled = true;
+                label.textContent = 'Adding...';
+
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const res = await fetch(buyBoxForm.getAttribute('action'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': token || ''
+                        },
+                        body: JSON.stringify({ quantity })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok || data.success === false) {
+                        if (window.showToast) {
+                            window.showToast(data.message || 'Could not add item to cart.', 'error');
+                        }
+                        label.textContent = originalText;
+                        addToCartBtn.disabled = false;
+                        return;
+                    }
+
+                    // Immediately update cart counter badge in header
+                    if (window.updateCartBadge && typeof data.cart_count !== 'undefined') {
+                        window.updateCartBadge(data.cart_count);
+                    }
+
+                    // Show success feedback immediately
+                    if (window.showToast) {
+                        window.showToast(data.message || 'Added to your cart.', 'success');
+                    }
+
+                    label.textContent = '✓ Added to Cart!';
+                    addToCartBtn.classList.add('!bg-emerald-600', '!border-emerald-600');
+
+                    setTimeout(() => {
+                        label.textContent = originalText;
+                        addToCartBtn.classList.remove('!bg-emerald-600', '!border-emerald-600');
+                        addToCartBtn.disabled = false;
+                    }, 1500);
+
+                } catch (err) {
+                    console.error('Add to cart error:', err);
+                    if (window.showToast) {
+                        window.showToast('Could not add item to cart. Please try again.', 'error');
+                    }
+                    label.textContent = originalText;
+                    addToCartBtn.disabled = false;
+                }
+            });
+        }
 
         // Gallery & Lightbox Popup functionality
         const galleryImages = @json($galleryImages);

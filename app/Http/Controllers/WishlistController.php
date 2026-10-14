@@ -46,13 +46,30 @@ class WishlistController extends Controller
         return back()->with('status', $message);
     }
 
-    public function moveToCart(Product $product): RedirectResponse
+    public function moveToCart(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $user = Auth::user();
+
+        if ($user && ! $user->isCustomer()) {
+            $msg = 'Only customer accounts can purchase items on the marketplace.';
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return back()->with('error', $msg);
+        }
 
         $this->carts->add($this->carts->forUser($user), $product);
         $this->wishlists->remove($user, $product);
 
-        return back()->with('status', "\"{$product->title}\" was moved to your cart.");
+        $msg = "\"{$product->title}\" was moved to your cart.";
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $msg,
+                'cart_count' => $this->carts->forUser($user)->totalCount(),
+            ]);
+        }
+
+        return back()->with('status', $msg);
     }
 }

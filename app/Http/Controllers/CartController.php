@@ -80,6 +80,8 @@ class CartController extends Controller
                 'success' => true,
                 'cart_item_id' => $item->id,
                 'quantity' => $newQty,
+                'price' => (float) $item->price,
+                'price_formatted' => number_format((float) $item->price, 2),
                 'line_total' => $newQty > 0 ? '$' . number_format((float) ($item->fresh()?->lineTotal() ?? 0), 2) : '$0.00',
                 'cart_count' => $cart->items()->count(),
                 'grand_total' => (float) $grandTotal,

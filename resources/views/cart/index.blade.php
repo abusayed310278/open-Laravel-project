@@ -38,27 +38,35 @@
 
                                         <div class="flex-1 min-w-0">
                                             <a href="{{ route('products.show', $item->product) }}" class="text-sm font-medium text-gray-900 hover:text-brand-600 line-clamp-1">{{ $item->product->title }}</a>
-                                            <p class="text-xs text-gray-400 mt-1">${{ number_format($item->price, 2) }} each</p>
+                                            <div class="flex flex-wrap items-center gap-1.5 text-xs text-gray-400 mt-1">
+                                                <span>${{ number_format($item->price, 2) }} each</span>
+                                                <span>&bull;</span>
+                                                <span class="text-gray-600 font-medium">
+                                                    <span id="left-item-qty-{{ $item->id }}">{{ $item->quantity }}</span> &times; ${{ number_format($item->price, 2) }} = <span id="left-item-total-{{ $item->id }}">${{ number_format($item->lineTotal(), 2) }}</span>
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div class="flex items-center gap-2">
                                             <button type="button"
                                                     onclick="updateItemQuantity({{ $item->id }}, -1, '{{ route('cart.update', $item) }}', '{{ route('cart.remove', $item) }}')"
-                                                    class="qty-btn w-7 h-7 border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-50 select-none">−</button>
+                                                    class="qty-btn w-7 h-7 border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-50 select-none cursor-pointer"
+                                                    title="Decrease quantity">−</button>
                                             <input id="qty-input-{{ $item->id }}"
                                                    class="qty-input w-10 text-center border border-gray-200 rounded-md text-sm py-1 font-medium bg-white"
                                                    value="{{ $item->quantity }}"
                                                    readonly>
                                             <button type="button"
                                                     onclick="updateItemQuantity({{ $item->id }}, 1, '{{ route('cart.update', $item) }}', '{{ route('cart.remove', $item) }}')"
-                                                    class="qty-btn w-7 h-7 border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-50 select-none">+</button>
+                                                    class="qty-btn w-7 h-7 border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 flex items-center justify-center transition-colors disabled:opacity-50 select-none cursor-pointer"
+                                                    title="Increase quantity">+</button>
                                         </div>
 
                                         <span id="line-total-{{ $item->id }}" class="text-sm font-semibold text-gray-900 w-20 text-right">${{ number_format($item->lineTotal(), 2) }}</span>
 
                                         <button type="button"
                                                 onclick="removeCartItem({{ $item->id }}, '{{ route('cart.remove', $item) }}')"
-                                                class="text-gray-300 hover:text-red-500 transition-colors p-1"
+                                                class="text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
                                                 title="Remove item">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                         </button>
@@ -72,11 +80,29 @@
                 <div>
                     <div class="bg-white border border-gray-100 rounded-md p-7 sticky top-20">
                         <h2 class="font-semibold text-gray-900 mb-5">Order Summary</h2>
-                        <div class="space-y-2.5 text-sm text-gray-600" id="summary-sellers-list">
+                        <div class="space-y-4 text-sm text-gray-600" id="summary-sellers-list">
                             @foreach ($groups as $group)
-                                <div id="summary-seller-row-{{ $group['seller']->id }}" class="flex justify-between">
-                                    <span>{{ $group['seller']->name }}</span>
-                                    <span id="summary-seller-val-{{ $group['seller']->id }}">${{ number_format($group['subtotal'] + $group['shipping'], 2) }}</span>
+                                <div id="summary-seller-row-{{ $group['seller']->id }}" class="border-b border-gray-100 last:border-b-0 pb-3 last:pb-0">
+                                    <div class="flex justify-between font-semibold text-gray-900 mb-2">
+                                        <span class="truncate pr-2">{{ $group['seller']->name }}</span>
+                                        <span id="summary-seller-val-{{ $group['seller']->id }}">${{ number_format($group['subtotal'] + $group['shipping'], 2) }}</span>
+                                    </div>
+
+                                    <div class="space-y-2 pl-2.5 border-l-2 border-gray-100" id="summary-seller-items-{{ $group['seller']->id }}">
+                                        @foreach ($group['items'] as $item)
+                                            <div id="summary-item-row-{{ $item->id }}" class="text-xs">
+                                                <div class="flex justify-between items-start gap-2">
+                                                    <span class="text-gray-700 font-medium line-clamp-1 flex-1">{{ $item->product->title }}</span>
+                                                    <span id="summary-item-total-{{ $item->id }}" class="font-semibold text-gray-900 shrink-0">
+                                                        ${{ number_format($item->lineTotal(), 2) }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-[11px] text-gray-400 mt-0.5">
+                                                    <span id="summary-item-qty-{{ $item->id }}">{{ $item->quantity }}</span> &times; ${{ number_format($item->price, 2) }} = <span id="summary-item-calc-total-{{ $item->id }}">${{ number_format($item->lineTotal(), 2) }}</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -93,7 +119,7 @@
                                 <span>Purchasing is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                             </div>
                         @else
-                            <x-button as="a" :href="route('checkout')" class="w-full justify-center">Proceed to Checkout</x-button>
+                            <x-button as="a" id="btn-proceed-checkout" :href="route('checkout')" class="w-full justify-center cursor-pointer">Proceed to Checkout</x-button>
                         @endif
 
                         <a href="{{ route('shop') }}" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 hover:text-gray-950 font-semibold rounded-md text-xs transition-colors mt-3">
@@ -118,6 +144,29 @@
             const newQty = currentQty + step;
 
             if (newQty <= 0) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Remove item?',
+                        text: 'Are you sure you want to remove this item from your cart?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, remove it',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#94a3b8',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            confirmButton: 'rounded-xl font-semibold px-4 py-2 text-sm cursor-pointer',
+                            cancelButton: 'rounded-xl font-semibold px-4 py-2 text-sm cursor-pointer'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            removeCartItem(itemId, removeUrl);
+                        }
+                    });
+                    return;
+                }
                 if (confirm('Are you sure you want to remove this item from your cart?')) {
                     removeCartItem(itemId, removeUrl);
                 }
@@ -216,6 +265,10 @@
                     const sellerId = row.dataset.sellerId;
                     row.remove();
 
+                    // Remove item row from Order Summary as well
+                    const summaryItemRow = document.getElementById(`summary-item-row-${itemId}`);
+                    if (summaryItemRow) summaryItemRow.remove();
+
                     // Check if seller container still has any items
                     const sellerItems = document.getElementById(`seller-items-${sellerId}`);
                     if (sellerItems && sellerItems.querySelectorAll('[data-item-id]').length === 0) {
@@ -232,6 +285,20 @@
 
                 const lineTotal = document.getElementById(`line-total-${itemId}`);
                 if (lineTotal) lineTotal.textContent = data.line_total;
+
+                // Update left-side product math (quantity * value = total)
+                const leftQty = document.getElementById(`left-item-qty-${itemId}`);
+                if (leftQty) leftQty.textContent = data.quantity;
+                const leftTotal = document.getElementById(`left-item-total-${itemId}`);
+                if (leftTotal) leftTotal.textContent = data.line_total;
+
+                // Update Order Summary product math (quantity * value = total)
+                const summaryQty = document.getElementById(`summary-item-qty-${itemId}`);
+                if (summaryQty) summaryQty.textContent = data.quantity;
+                const summaryTotal = document.getElementById(`summary-item-total-${itemId}`);
+                if (summaryTotal) summaryTotal.textContent = data.line_total;
+                const summaryCalcTotal = document.getElementById(`summary-item-calc-total-${itemId}`);
+                if (summaryCalcTotal) summaryCalcTotal.textContent = data.line_total;
             }
 
             // Update seller subtotals in summary
@@ -254,6 +321,56 @@
             if (window.updateCartBadge && typeof data.cart_count !== 'undefined') {
                 window.updateCartBadge(data.cart_count);
             }
+        }
+
+        // Proceed to Checkout SweetAlert Confirmation
+        const checkoutBtn = document.getElementById('btn-proceed-checkout');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const checkoutUrl = this.getAttribute('href');
+                const grandTotal = document.getElementById('cart-grand-total')?.textContent?.trim() || '0.00';
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Proceed to Checkout?',
+                        html: `
+                            <div class="mt-2 text-sm text-gray-600 space-y-2">
+                                <p>Your order total is <strong class="text-gray-900 font-bold text-base">$${grandTotal}</strong>.</p>
+                                <p class="text-xs text-gray-500">You will be redirected to the secure checkout page to enter your delivery address and choose your payment method.</p>
+                            </div>
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Proceed to Checkout',
+                        cancelButtonText: 'Continue Shopping',
+                        confirmButtonColor: '#f59e0b',
+                        cancelButtonColor: '#94a3b8',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'rounded-2xl',
+                            confirmButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm cursor-pointer',
+                            cancelButton: 'rounded-xl font-semibold px-5 py-2.5 text-sm cursor-pointer'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Redirecting...',
+                                text: 'Taking you to secure checkout...',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                    window.location.href = checkoutUrl;
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    window.location.href = checkoutUrl;
+                }
+            });
         }
     </script>
 @endsection

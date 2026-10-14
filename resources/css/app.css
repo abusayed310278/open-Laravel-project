@@ -88,4 +88,12 @@ dialog::backdrop {
     display: none !important;
 }
 
+/* Quantity steppers & counter interactive cursor */
+.qty-btn,
+[data-qty],
+[data-qty-btn],
+button.qty-btn {
+    cursor: pointer !important;
+}
+
 

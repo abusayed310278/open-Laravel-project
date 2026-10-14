@@ -162,9 +162,11 @@
                         />
                     </div>
                     <div class="p-3.5 sm:p-4 border-t border-gray-100 dark:border-slate-700/60 bg-gray-50/60 dark:bg-slate-800/80 flex items-center gap-2.5">
-                        <form method="POST" action="{{ route('wishlist.move-to-cart', $item->product) }}" class="flex-1">
+                        <form method="POST" action="{{ route('wishlist.move-to-cart', $item->product) }}" class="flex-1 js-move-to-cart-form">
                             @csrf
-                            <x-button type="submit" size="sm" class="w-full justify-center rounded-xl py-2.5 text-xs sm:text-sm font-semibold shadow-xs">Move to Cart</x-button>
+                            <x-button type="submit" size="sm" class="w-full justify-center rounded-xl py-2.5 text-xs sm:text-sm font-semibold shadow-xs cursor-pointer">
+                                <span class="js-move-label">Move to Cart</span>
+                            </x-button>
                         </form>
                         <button type="button" data-wishlist-remove-btn="{{ $item->product->id }}" class="shrink-0 w-[42px] h-[42px] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-all cursor-pointer border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xs" title="Remove from wishlist">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -318,6 +320,79 @@
             document.addEventListener('click', (e) => {
                 if (e.target.closest('[data-wishlist-remove-btn]')) {
                     setTimeout(() => filterAndSort(false), 300);
+                }
+            });
+
+            // Immediate Move to Cart without full page reload
+            document.addEventListener('submit', async (e) => {
+                const form = e.target.closest('.js-move-to-cart-form');
+                if (!form) return;
+
+                e.preventDefault();
+                const card = form.closest('.js-wishlist-card');
+                const btn = form.querySelector('button[type="submit"]');
+                const label = form.querySelector('.js-move-label') || btn;
+                const originalText = label ? label.textContent : 'Move to Cart';
+
+                if (btn) btn.disabled = true;
+                if (label) label.textContent = 'Moving...';
+
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': token || ''
+                        }
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok || data.success === false) {
+                        if (window.showToast) {
+                            window.showToast(data.message || 'Could not move item to cart.', 'error');
+                        }
+                        if (label) label.textContent = originalText;
+                        if (btn) btn.disabled = false;
+                        return;
+                    }
+
+                    // Update header cart count badge immediately
+                    if (window.updateCartBadge && typeof data.cart_count !== 'undefined') {
+                        window.updateCartBadge(data.cart_count);
+                    }
+
+                    // Show success toast
+                    if (window.showToast) {
+                        window.showToast(data.message || 'Item moved to cart.', 'success');
+                    }
+
+                    // Smoothly animate and remove card from grid
+                    if (card) {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            card.remove();
+                            filterAndSort(false);
+                            const remainingCards = getCards();
+                            if (remainingCards.length === 0) {
+                                if (emptyState) emptyState.classList.remove('hidden');
+                                if (toolbar) toolbar.classList.add('hidden');
+                                if (grid) grid.classList.add('hidden');
+                            }
+                        }, 300);
+                    }
+                } catch (err) {
+                    console.error('Move to cart error:', err);
+                    if (window.showToast) {
+                        window.showToast('Could not move item to cart. Please try again.', 'error');
+                    }
+                    if (label) label.textContent = originalText;
+                    if (btn) btn.disabled = false;
                 }
             });
 
