@@ -1,4 +1,4 @@
-<div class="bg-white text-black text-xs py-2 px-4 sm:px-6 border-b border-gray-200" style="background-color: #ffffff; color: #000000;">
+<div id="site-announcement-bar" class="bg-white text-black text-xs py-2 px-4 sm:px-6 border-b border-gray-200" style="background-color: #ffffff; color: #000000;">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
         {{-- Left: Contact Info --}}
         <div class="flex items-center gap-6">

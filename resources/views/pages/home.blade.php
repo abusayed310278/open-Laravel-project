@@ -4,12 +4,63 @@
 
 @section('content')
 
-    @php $heroImageUrl = \App\Support\MediaUrl::resolve(setting('home_hero_image')); @endphp
+<style>
+    :root {
+        --site-header-height: 140px;
+    }
+    @media (min-width: 768px) {
+        #home-first-screen {
+            height: calc(100dvh - var(--site-header-height, 140px));
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        #home-first-screen [data-hero-slider] {
+            flex: 1 1 0%;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #home-first-screen [data-hero-viewport] {
+            flex: 1 1 0%;
+            min-height: 0;
+            height: 100% !important;
+            aspect-ratio: auto !important;
+        }
+        #home-first-screen [data-hero-track],
+        #home-first-screen [data-hero-slide],
+        #home-first-screen [data-hero-slide] > a,
+        #home-first-screen [data-hero-slide] > div {
+            height: 100% !important;
+        }
+        #home-first-screen [data-hero-slide] img {
+            height: 100% !important;
+            width: 100% !important;
+            object-fit: cover !important;
+        }
+        #home-first-screen [data-home-categories] {
+            flex-shrink: 0;
+        }
+    }
+</style>
+
+    @php
+        $heroImageUrl = \App\Support\MediaUrl::resolve(setting('home_hero_image'));
+        $hasHero = feature_enabled('home_hero_section') && ($heroSlides->isNotEmpty() || $heroImageUrl);
+        $hasCategories = feature_enabled('home_browse_categories') && isset($categories) && $categories->isNotEmpty();
+        $wrapFirstScreen = $hasHero && $hasCategories;
+    @endphp
+
+    @if ($wrapFirstScreen)
+        <div id="home-first-screen" class="w-full bg-white dark:bg-[#0b0f19]">
+    @endif
 
     @if (feature_enabled('home_hero_section') && $heroSlides->isNotEmpty())
         {{-- HERO SLIDER (admin-managed slides, each linking to a product) --}}
         <section class="w-full bg-white dark:bg-[#0b0f19]" data-hero-slider>
-            <div data-hero-viewport class="relative overflow-hidden" style="aspect-ratio:3.5/1;">
+            <div data-hero-viewport class="relative overflow-hidden w-full" style="aspect-ratio:3.5/1;">
                 <div data-hero-track style="display:flex;height:100%;transition:transform 700ms ease-in-out;will-change:transform;">
                 @foreach ($heroSlides as $slide)
                     @php $slideUrl = $slide->product ? route('products.show', $slide->product) : null; @endphp
@@ -47,15 +98,37 @@
 
         <script>
             (() => {
-                const root = document.querySelector('[data-hero-slider]');
-                const viewport = root.querySelector('[data-hero-viewport]');
-                const firstImage = root.querySelector('[data-hero-slide] img');
-                const syncHeight = () => {
-                    if (firstImage.naturalWidth && firstImage.naturalHeight) {
-                        viewport.style.aspectRatio = `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`;
+                const syncHeaderAndViewport = () => {
+                    const ann = document.getElementById('site-announcement-bar');
+                    const hdr = document.getElementById('site-header');
+                    const annH = ann ? ann.getBoundingClientRect().height : 0;
+                    const hdrH = hdr ? hdr.getBoundingClientRect().height : 0;
+                    const total = Math.round(annH + hdrH);
+                    if (total > 0) {
+                        document.documentElement.style.setProperty('--site-header-height', total + 'px');
+                    }
+
+                    const root = document.querySelector('[data-hero-slider]');
+                    if (!root) return;
+                    const viewport = root.querySelector('[data-hero-viewport]');
+                    const firstImage = root.querySelector('[data-hero-slide] img');
+                    if (viewport) {
+                        if (window.innerWidth < 768 && firstImage && firstImage.naturalWidth && firstImage.naturalHeight) {
+                            viewport.style.aspectRatio = `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`;
+                        } else {
+                            viewport.style.aspectRatio = 'auto';
+                        }
                     }
                 };
-                firstImage.complete ? syncHeight() : firstImage.addEventListener('load', syncHeight);
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', syncHeaderAndViewport);
+                } else {
+                    syncHeaderAndViewport();
+                }
+
+                window.addEventListener('resize', syncHeaderAndViewport);
+                window.addEventListener('load', syncHeaderAndViewport);
             })();
         </script>
 
@@ -152,7 +225,7 @@
 
     @if (feature_enabled('home_browse_categories') && isset($categories) && $categories->isNotEmpty())
         {{-- BROWSE CATEGORIES (Matches Screenshot 1) --}}
-        <section class="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6">
+        <section data-home-categories class="py-2.5 sm:py-3.5 max-w-7xl mx-auto px-4 sm:px-6 w-full shrink-0">
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2 sm:gap-2.5 lg:gap-3">
                 @foreach ($categories as $cat)
                     @php
@@ -164,8 +237,8 @@
                             ? (Route::has('shop') ? route('shop', ['deal' => 1]) : '#')
                             : (Route::has('shop') ? route('shop', ['category' => $catSlug]) : '#');
                     @endphp
-                    <a href="{{ $catUrl }}" class="group bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-400 rounded-2xl py-4 px-2 sm:py-4.5 sm:px-2 flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 {{ $isDeals ? 'hover:border-red-300 dark:hover:border-red-400' : '' }}">
-                        <div class="mb-2 sm:mb-2.5 flex items-center justify-center transition-colors {{ $isDeals ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400' }}">
+                    <a href="{{ $catUrl }}" class="group bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-400 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-2 flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 {{ $isDeals ? 'hover:border-red-300 dark:hover:border-red-400' : '' }}">
+                        <div class="mb-1.5 sm:mb-2 flex items-center justify-center transition-colors {{ $isDeals ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400' }}">
                             @if (!empty($catImage))
                                 <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
                             @else
@@ -179,6 +252,10 @@
                 @endforeach
             </div>
         </section>
+    @endif
+
+    @if ($wrapFirstScreen)
+        </div>
     @endif
 
     @if (feature_enabled('home_banners') && isset($banners) && $banners->isNotEmpty())

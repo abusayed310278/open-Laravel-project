@@ -1,4 +1,4 @@
-<header class="bg-white dark:bg-[#0f172a] border-b border-gray-100 dark:border-slate-800 sticky top-0 z-40 shadow-xs">
+<header id="site-header" class="bg-white dark:bg-[#0f172a] border-b border-gray-100 dark:border-slate-800 sticky top-0 z-40 shadow-xs">
     <style>
         .all-cat-container:hover .all-cat-dropdown,
         .all-cat-dropdown:hover {
@@ -262,7 +262,7 @@
 
     {{-- Horizontal Category Navigation Bar (Responsive based on Device Width) --}}
     <div class="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] relative z-20 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-h-[42px]">
             @php
                 $dbCategories = \App\Models\Category::cachedTree();
                 if ($dbCategories->isNotEmpty()) {
@@ -604,7 +604,7 @@
                 ];
                 }
             @endphp            {{-- All Categories Dropdown Container (Left Fixed) --}}
-            <div id="all-categories-container" class="relative all-categories-container flex-shrink-0 mr-1 sm:mr-2 z-40">
+            <div id="all-categories-container" class="relative all-categories-container flex-shrink-0 z-40">
                 <button type="button" id="all-categories-btn" class="relative py-2.5 px-2 sm:px-2.5 inline-flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-gray-900 hover:text-black bg-transparent transition-colors whitespace-nowrap group cursor-pointer select-none">
                     <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -679,77 +679,108 @@
                     </div>
                 </div>
             </div>
-            {{-- Categories Navigation Bar (Adapts based on device width) --}}
+            {{-- Product Condition Navigation Bar (Dynamically populated from App\Enums\ProductCondition) --}}
             @php
-                // Show exactly 11 items in the bar next to "All Categories" (Total 12 categories shown)
-                // 10 top categories from DB + Deals (RAM and subsequent categories are excluded from top bar)
-                $horizontalNavCategories = collect($navMenuCategories)
-                    ->reject(fn ($c) => ($c['slug'] ?? '') === 'deals' || !empty($c['is_deals']))
-                    ->take(10)
-                    ->push([
+                $conditionCases = \App\Enums\ProductCondition::cases();
+                // Preferred display order: New, Refurbished, Used, Openbox
+                $preferredOrder = ['new', 'refurbished', 'used', 'openbox'];
+                usort($conditionCases, function ($a, $b) use ($preferredOrder) {
+                    $posA = array_search($a->value, $preferredOrder);
+                    $posB = array_search($b->value, $preferredOrder);
+                    return ($posA === false ? 99 : $posA) <=> ($posB === false ? 99 : $posB);
+                });
+
+                $horizontalNavItems = \Illuminate\Support\Facades\Cache::remember('header_nav_condition_items_v5', 180, function () use ($conditionCases) {
+                    $rows = \Illuminate\Support\Facades\DB::table('categories')
+                        ->join('products', 'categories.id', '=', 'products.category_id')
+                        ->where('products.publication_status', \App\Enums\ProductPublicationStatus::Published->value)
+                        ->select('categories.id', 'categories.name', 'categories.slug', 'products.condition', \Illuminate\Support\Facades\DB::raw('count(products.id) as product_count'))
+                        ->groupBy('categories.id', 'categories.name', 'categories.slug', 'products.condition')
+                        ->orderByDesc('product_count')
+                        ->get();
+
+                    $grouped = [];
+                    $totalCounts = [];
+                    foreach ($rows as $row) {
+                        $grouped[$row->condition][] = [
+                            'name' => $row->name,
+                            'slug' => $row->slug,
+                            'count' => (int) $row->product_count,
+                        ];
+                        $totalCounts[$row->condition] = ($totalCounts[$row->condition] ?? 0) + (int) $row->product_count;
+                    }
+
+                    $items = [];
+                    foreach ($conditionCases as $case) {
+                        $items[] = [
+                            'name' => $case->label(),
+                            'value' => $case->value,
+                            'slug' => $case->value,
+                            'is_deals' => false,
+                            'total_count' => $totalCounts[$case->value] ?? 0,
+                            'categories' => $grouped[$case->value] ?? [],
+                        ];
+                    }
+
+                    // Append Deals at the end
+                    $items[] = [
                         'name' => 'Deals',
+                        'value' => 'deals',
                         'slug' => 'deals',
                         'is_deals' => true,
-                        'children' => [],
-                    ])
-                    ->values();
+                        'total_count' => null,
+                        'categories' => [],
+                    ];
+
+                    return $items;
+                });
             @endphp
-            <nav id="header-main-nav" class="flex items-center flex-1 py-0 justify-start sm:justify-start min-w-0 overflow-hidden">
-                <div id="header-nav-items" class="flex items-center gap-0.5 sm:gap-1 min-w-0 w-full overflow-hidden">
-                    @foreach ($horizontalNavCategories as $index => $navCat)
+            <nav id="header-main-nav" class="flex items-center py-0 min-w-0">
+                <div id="header-nav-items" class="flex items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-w-0">
+                    @foreach ($horizontalNavItems as $index => $navItem)
+                        @php
+                            $isDeals = !empty($navItem['is_deals']);
+                            $isActive = $isDeals ? (request()->boolean('deal') || request()->boolean('deals')) : (request('condition') === $navItem['value']);
+                            $url = $isDeals 
+                                ? (Route::has('shop') ? route('shop', ['deal' => 1]) : '#')
+                                : (Route::has('shop') ? route('shop', ['condition' => $navItem['value']]) : '#');
+                        @endphp
                         <div class="relative nav-item-group flex-shrink-0 js-nav-category-item" data-index="{{ $index }}">
                             {{-- Top Menu Item --}}
-                            @if (!empty($navCat['is_deals']) || $navCat['slug'] === 'deals')
-                                <a href="{{ Route::has('shop') ? route('shop', ['deal' => 1]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center gap-1.5 text-[12.5px] sm:text-[13px] font-bold text-red-600 hover:text-red-700 transition-colors whitespace-nowrap group">
+                            @if ($isDeals)
+                                <a href="{{ $url }}" class="relative py-2.5 px-3 sm:px-3.5 inline-flex items-center gap-1.5 text-[13px] sm:text-[13.5px] font-bold text-red-600 hover:text-red-700 transition-colors whitespace-nowrap group">
                                     <svg class="w-3.5 h-3.5 text-red-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
                                         <line x1="7" y1="7" x2="7.01" y2="7" />
                                     </svg>
                                     <span>Deals</span>
-                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-red-600 transition-all duration-150"></span>
+                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] {{ $isActive ? 'bg-red-600' : 'bg-transparent group-hover:bg-red-600' }} transition-all duration-150"></span>
                                 </a>
                             @else
-                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="relative py-2.5 px-2 sm:px-2.5 lg:px-3 inline-flex items-center text-[12.5px] sm:text-[13px] font-semibold text-gray-800 hover:text-gray-950 transition-colors whitespace-nowrap group">
-                                    <span>{{ $navCat['name'] }}</span>
-                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] bg-transparent group-hover:bg-gray-900 transition-all duration-150"></span>
+                                <a href="{{ $url }}" class="relative py-2.5 px-3 sm:px-3.5 inline-flex items-center text-[13px] sm:text-[13.5px] font-semibold {{ $isActive ? 'text-gray-950 dark:text-white font-bold' : 'text-gray-800 dark:text-gray-200 hover:text-gray-950 dark:hover:text-white' }} transition-colors whitespace-nowrap group">
+                                    <span>{{ $navItem['name'] }}</span>
+                                    <span class="absolute bottom-0 left-0 w-full h-[2.5px] {{ $isActive ? 'bg-gray-900 dark:bg-brand-400' : 'bg-transparent group-hover:bg-gray-900 dark:group-hover:bg-brand-400' }} transition-all duration-150"></span>
                                 </a>
                             @endif
 
-                            {{-- Dropdown Menu on Hover --}}
-                            @if (!empty($navCat['children']))
-                                <div class="nav-dropdown absolute left-0 top-full pt-0.5 hidden z-50 min-w-[220px] max-w-[280px]">
+                            {{-- Dropdown Menu on Hover with Categories for this Condition --}}
+                            @if (!empty($navItem['categories']))
+                                <div class="nav-dropdown absolute left-1/2 -translate-x-1/2 top-full pt-0.5 hidden z-50 min-w-[220px] max-w-[280px]">
                                     <div class="bg-white dark:bg-[#111827] rounded-b-lg shadow-xl border border-gray-100 dark:border-slate-800 py-1.5 text-[13px]">
-                                        @foreach ($navCat['children'] as $child)
-                                             @php
-                                                 $hasGrandchildren = !empty($child['children']);
-                                             @endphp
-                                             <div class="relative nav-sub-item-group group/sub">
-                                                 <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                     <span>{{ $child['name'] }}</span>
-                                                     @if ($hasGrandchildren)
-                                                         <svg class="w-3 h-3 text-gray-400 group-hover/sub:text-gray-950 group-hover/sub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                                         </svg>
-                                                     @endif
-                                                 </a>
-
-                                                 {{-- 2nd Level Flyout Submenu --}}
-                                                 @if ($hasGrandchildren)
-                                                     <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-1.5 hidden z-50">
-                                                         @foreach ($child['children'] as $grandchild)
-                                                             <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
-                                                                 {{ $grandchild['name'] }}
-                                                             </a>
-                                                         @endforeach
-                                                     </div>
-                                                 @endif
-                                             </div>
+                                        <div class="px-4 py-1 text-[10.5px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-50 dark:border-slate-800/80 mb-1">
+                                            {{ $navItem['name'] }} Categories
+                                        </div>
+                                        @foreach (array_slice($navItem['categories'], 0, 10) as $cat)
+                                            <a href="{{ Route::has('shop') ? route('shop', ['condition' => $navItem['value'], 'category' => $cat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800 font-medium transition-colors">
+                                                <span>{{ $cat['name'] }}</span>
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 font-normal">({{ $cat['count'] }})</span>
+                                            </a>
                                         @endforeach
 
-                                        {{-- Show All Link --}}
-                                        <div class="border-t border-gray-100 mt-1 pt-1">
-                                            <a href="{{ Route::has('shop') ? route('shop', ['category' => $navCat['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-950 hover:text-black hover:bg-gray-100/70 font-semibold transition-colors">
-                                                <span>Show All {{ $navCat['name'] }}</span>
+                                        {{-- View All Condition Products Link --}}
+                                        <div class="border-t border-gray-100 dark:border-slate-800 mt-1 pt-1">
+                                            <a href="{{ $url }}" class="flex items-center justify-between px-4 py-2 text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-brand-50/50 dark:hover:bg-gray-800 font-semibold transition-colors">
+                                                <span>View All {{ $navItem['name'] }} ({{ $navItem['total_count'] }})</span>
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                             </a>
                                         </div>
