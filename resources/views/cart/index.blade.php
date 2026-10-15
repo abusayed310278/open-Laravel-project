@@ -372,5 +372,17 @@
                 }
             });
         }
+
+        // Close loading modal immediately when returning to the page via browser Back button (bfcache)
+        window.addEventListener('pageshow', function (event) {
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                Swal.close();
+            }
+        });
+        window.addEventListener('popstate', function () {
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                Swal.close();
+            }
+        });
     </script>
 @endsection
