@@ -22,7 +22,14 @@ class NotificationController extends Controller
 
     public function markRead(string $notification): RedirectResponse
     {
-        Auth::user()->notifications()->where('id', $notification)->first()?->markAsRead();
+        $notif = Auth::user()->notifications()->where('id', $notification)->first();
+        if ($notif) {
+            $notif->markAsRead();
+            $targetUrl = $notif->data['url'] ?? $notif->data['action_url'] ?? null;
+            if ($targetUrl) {
+                return redirect($targetUrl);
+            }
+        }
 
         return back();
     }
@@ -53,6 +60,7 @@ class NotificationController extends Controller
                 'body' => $notification->data['body'] ?? '',
                 'time_ago' => $notification->created_at?->diffForHumans() ?? 'Just now',
                 'read_url' => route('notifications.read', $notification->id),
+                'url' => $notification->data['url'] ?? null,
             ];
         });
 

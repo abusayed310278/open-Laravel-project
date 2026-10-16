@@ -11,6 +11,7 @@ enum NotificationCategory: string
     case Subscriptions = 'subscriptions';
     case Support = 'support';
     case Warehouse = 'warehouse';
+    case Messages = 'messages';
 
     public function label(): string
     {
@@ -22,6 +23,7 @@ enum NotificationCategory: string
             self::Subscriptions => 'Subscriptions',
             self::Support => 'Support tickets',
             self::Warehouse => 'Warehouse',
+            self::Messages => 'Direct messages & chat',
         };
     }
 }

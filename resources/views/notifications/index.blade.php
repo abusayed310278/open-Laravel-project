@@ -21,7 +21,11 @@
             @forelse ($notifications as $notification)
                 <div class="flex items-start justify-between gap-4 py-4 border-b border-gray-50 last:border-0 {{ $notification->read_at ? '' : 'bg-brand-50/40 -mx-2 px-2 rounded-md' }}">
                     <div>
-                        <p class="text-sm font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                        @if (!empty($notification->data['url']))
+                            <a href="{{ $notification->data['url'] }}" class="text-sm font-semibold text-gray-900 hover:text-amber-600 transition-colors">{{ $notification->data['title'] ?? 'Notification' }}</a>
+                        @else
+                            <p class="text-sm font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                        @endif
                         <p class="text-sm text-gray-500 mt-0.5">{{ $notification->data['body'] ?? '' }}</p>
                         <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                     </div>

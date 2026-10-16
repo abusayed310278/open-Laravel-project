@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\NewChatMessage;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -81,6 +84,8 @@ class ChatService
 
         $conversation->update(['last_message_at' => now()]);
 
+        $this->notifyRecipients($conversation, $message, $sender);
+
         return $message;
     }
 
@@ -90,5 +95,57 @@ class ChatService
             ->where('sender_id', '!=', $reader->id)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
+
+        // Auto-mark any in-app database notifications for this conversation as read
+        $reader->unreadNotifications()
+            ->where('data->conversation_id', $conversation->id)
+            ->update(['read_at' => now()]);
+    }
+
+    /**
+     * Determine and notify participants who should receive alerts for this message.
+     */
+    protected function notifyRecipients(ChatConversation $conversation, ChatMessage $message, User $sender): void
+    {
+        $conversation->loadMissing(['buyer', 'seller']);
+
+        $recipients = collect();
+
+        // Check if either party in the conversation is an admin
+        $hasAdminParty = ($conversation->buyer?->isAdmin() || $conversation->seller?->isAdmin());
+
+        if ($sender->isAdmin()) {
+            // Admin replied: notify the non-admin participant (seller, buyer, verifier)
+            $nonAdmin = $conversation->buyer?->isAdmin() ? $conversation->seller : $conversation->buyer;
+            if ($nonAdmin && $nonAdmin->id !== $sender->id) {
+                $recipients->push($nonAdmin);
+            }
+        } elseif ($hasAdminParty) {
+            // A seller or customer is messaging an admin:
+            // Alert all admin users so whoever is active on duty/dashboard receives the notification
+            $admins = User::query()
+                ->where('role', UserRole::Admin)
+                ->where('id', '!=', $sender->id)
+                ->get();
+
+            $recipients = $recipients->merge($admins);
+        } else {
+            // Regular user-to-user (e.g. buyer <-> seller)
+            $other = $conversation->otherParty($sender);
+            if ($other && $other->id !== $sender->id) {
+                $recipients->push($other);
+            }
+        }
+
+        // Deduplicate recipients by ID
+        $recipients = $recipients->unique('id');
+
+        foreach ($recipients as $recipient) {
+            try {
+                $recipient->notify(new NewChatMessage($message));
+            } catch (\Throwable $e) {
+                Log::warning("Failed to notify user #{$recipient->id} about chat message #{$message->id}: {$e->getMessage()}");
+            }
+        }
     }
 }
