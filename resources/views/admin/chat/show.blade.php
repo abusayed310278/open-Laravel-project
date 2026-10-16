@@ -372,6 +372,17 @@
                     .catch(() => {});
             }
 
+            // Real-time WebSocket listener via Laravel Reverb
+            if (window.Echo) {
+                window.Echo.private(`chat.${conversationId}`)
+                    .listen('.ChatMessageSent', (e) => {
+                        if (e.id && e.id > lastId) {
+                            appendMessage(e);
+                            lastId = e.id;
+                        }
+                    });
+            }
+
             container.scrollTop = container.scrollHeight;
             setInterval(poll, 3500);
         })();

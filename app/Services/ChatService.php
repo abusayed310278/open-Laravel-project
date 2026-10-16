@@ -84,6 +84,13 @@ class ChatService
 
         $conversation->update(['last_message_at' => now()]);
 
+        // Real-time WebSocket broadcast via Laravel Reverb
+        try {
+            broadcast(new \App\Events\ChatMessageSent($message));
+        } catch (\Throwable $e) {
+            Log::info("Reverb chat broadcast skipped: {$e->getMessage()}");
+        }
+
         $this->notifyRecipients($conversation, $message, $sender);
 
         return $message;
