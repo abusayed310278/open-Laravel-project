@@ -50,7 +50,6 @@ use App\Http\Controllers\BlogPostCommentController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryPageController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\CheckoutAddressController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\CustomerAccountController;
@@ -128,8 +127,9 @@ Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.add
 Route::patch('/cart/items/{item}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.remove');
 
-Route::get('/checkout/address', [CheckoutAddressController::class, 'show'])->name('checkout.address');
-Route::post('/checkout/address', [CheckoutAddressController::class, 'store'])->middleware('throttle:20,1')->name('checkout.address.store');
+// Checkout is open to guests: placing an order creates a customer account on the fly.
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout.store');
 
 Route::middleware('auth')->group(function () {
     Route::post('/editor/upload-image', [\App\Http\Controllers\EditorMediaController::class, 'upload'])->name('editor.upload-image');
@@ -138,8 +138,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/wishlist/{product}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/wishlist/{product}/move-to-cart', [WishlistController::class, 'moveToCart'])->name('wishlist.move-to-cart');
 
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout.store');
     Route::get('/checkout/stripe-portal/{order}', [CheckoutController::class, 'stripePortal'])->name('checkout.stripe-portal');
     Route::post('/checkout/stripe-confirm/{order}', [CheckoutController::class, 'stripeConfirm'])->name('checkout.stripe-confirm');
     Route::get('/checkout/stripe-success/{order}', [CheckoutController::class, 'stripeSuccess'])->name('checkout.stripe-success');

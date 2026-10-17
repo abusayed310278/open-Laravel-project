@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PaymentMethod;
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\PaymentService;
@@ -14,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -28,16 +33,22 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->isCustomer()) {
+        if ($user && ! $user->isCustomer()) {
             return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
         }
 
-        $cart = $this->carts->forUser($user);
+        if (! $user) {
+            // After signing in from the checkout page, come straight back to it.
+            session(['url.intended' => route('checkout')]);
+        }
+
+        $cart = $user ? $this->carts->forUser($user) : $this->carts->forGuest($this->carts->sessionId());
 
         return view('checkout.index', [
             'summary' => $this->checkout->summary($cart),
-            'addresses' => $user->addresses()->orderByDesc('is_default')->get(),
+            'addresses' => $user ? $user->addresses()->orderByDesc('is_default')->get() : collect(),
             'paymentMethods' => $this->checkout->availablePaymentMethods($cart),
+            'isGuest' => $user === null,
         ]);
     }
 
@@ -45,11 +56,11 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
 
-        if (! $user->isCustomer()) {
+        if ($user && ! $user->isCustomer()) {
             return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
         }
 
-        $cart = $this->carts->forUser($user);
+        $cart = $user ? $this->carts->forUser($user) : $this->carts->forGuest($this->carts->sessionId());
 
         if ($cart->items->isEmpty()) {
             return redirect()->route('cart')->with('error', 'Your cart is empty. Please add items to your cart before proceeding to checkout.');
@@ -60,6 +71,28 @@ class CheckoutController extends Controller
         $request->validate([
             'payment_method' => ['required', Rule::in(array_map(fn (PaymentMethod $m) => $m->value, $available))],
         ]);
+
+        if (! $user) {
+            // Everything is validated before an account is created, so a failed form never leaves one behind.
+            $guest = $request->validate([
+                'guest_email' => ['required', 'email', 'max:255'],
+            ]);
+
+            // A guest has no saved addresses, so the shipping form is always filled in; reuse its name and phone.
+            $shippingInput = $request->validate($this->addressRules('shipping'))['shipping'];
+            $guest['guest_name'] = $shippingInput['name'];
+            $guest['guest_phone'] = $shippingInput['phone'];
+            if (! $request->boolean('same_as_shipping', true)) {
+                $request->validate($this->addressRules('billing'));
+            }
+
+            if (User::query()->where('email', $guest['guest_email'])->exists()) {
+                return back()->withInput()->withErrors(['guest_email' => 'An account with this email already exists. Please log in to continue.']);
+            }
+
+            $user = $this->createGuestAccount($guest);
+            $cart = $this->carts->forUser($user);
+        }
 
         try {
             $shipping = $this->resolveAddress($request, 'shipping');
@@ -161,17 +194,7 @@ class CheckoutController extends Controller
             return Auth::user()->addresses()->findOrFail($request->integer("{$prefix}_address_id"));
         }
 
-        $validated = $request->validate([
-            "{$prefix}.label" => ['nullable', 'string', 'max:50'],
-            "{$prefix}.name" => ['required', 'string', 'max:255'],
-            "{$prefix}.phone" => ['required', 'string', 'max:30'],
-            "{$prefix}.line1" => ['required', 'string', 'max:255'],
-            "{$prefix}.line2" => ['nullable', 'string', 'max:255'],
-            "{$prefix}.city" => ['required', 'string', 'max:120'],
-            "{$prefix}.state" => ['nullable', 'string', 'max:120'],
-            "{$prefix}.country" => ['required', 'string', 'max:120'],
-            "{$prefix}.postal_code" => ['nullable', 'string', 'max:20'],
-        ])[$prefix];
+        $validated = $request->validate($this->addressRules($prefix))[$prefix];
 
         $address = Auth::user()->addresses()->create($validated);
 
@@ -181,6 +204,57 @@ class CheckoutController extends Controller
         }
 
         return $address;
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function addressRules(string $prefix): array
+    {
+        return [
+            "{$prefix}.label" => ['nullable', 'string', 'max:50'],
+            "{$prefix}.name" => ['required', 'string', 'max:255'],
+            "{$prefix}.phone" => ['required', 'string', 'max:30'],
+            "{$prefix}.line1" => ['required', 'string', 'max:255'],
+            "{$prefix}.line2" => ['nullable', 'string', 'max:255'],
+            "{$prefix}.city" => ['required', 'string', 'max:120'],
+            "{$prefix}.state" => ['nullable', 'string', 'max:120'],
+            "{$prefix}.country" => ['required', 'string', 'max:120'],
+            "{$prefix}.postal_code" => ['nullable', 'string', 'max:20'],
+        ];
+    }
+
+    /**
+     * Guest checkout: create a customer account from the contact details, sign it in, and
+     * carry the guest cart over. A password-setup link is emailed so they can log in later.
+     *
+     * @param  array{guest_name: string, guest_email: string, guest_phone: string}  $guest
+     */
+    private function createGuestAccount(array $guest): User
+    {
+        $cartSessionId = $this->carts->sessionId();
+
+        $user = User::query()->create([
+            'name' => Str::title(trim($guest['guest_name'])),
+            'email' => $guest['guest_email'],
+            'phone' => $guest['guest_phone'],
+            'password' => Str::random(40),
+            'role' => UserRole::Customer,
+            'status' => UserStatus::Active,
+        ]);
+        $user->forceFill(['email_verified_at' => now()])->save();
+
+        Auth::login($user);
+        request()->session()->regenerate();
+        $this->carts->mergeGuestCartIntoUser($cartSessionId, $user);
+
+        try {
+            Password::sendResetLink(['email' => $user->email]);
+        } catch (\Throwable $e) {
+            Log::warning('Guest checkout: could not send password setup link: '.$e->getMessage());
+        }
+
+        return $user;
     }
 
     private function authorizeOrderAccess(Order $order): void

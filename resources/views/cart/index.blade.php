@@ -119,7 +119,7 @@
                                 <span>Purchasing is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                             </div>
                         @else
-                            <x-button as="a" id="btn-proceed-checkout" :href="auth()->check() ? route('checkout') : route('checkout.address')" class="w-full justify-center cursor-pointer">Proceed to Checkout</x-button>
+                            <x-button as="a" id="btn-proceed-checkout" :href="route('checkout')" class="w-full justify-center cursor-pointer">Proceed to Checkout</x-button>
                         @endif
 
                         <a href="{{ route('shop') }}" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 hover:text-gray-950 font-semibold rounded-md text-xs transition-colors mt-3">

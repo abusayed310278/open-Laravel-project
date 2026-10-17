@@ -4,7 +4,40 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <h1 class="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+
+        @if ($isGuest)
+            {{-- Guests keep checking out below; these boxes only offer an account. --}}
+            <div class="grid lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 grid md:grid-cols-2 gap-4">
+                {{-- New customer: always the selected option --}}
+                <div class="rounded-2xl border-2 border-brand-400 bg-white p-5 ring-4 ring-brand-100/70">
+                    <div class="flex items-start gap-4">
+                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h2 class="text-base font-bold text-gray-900">New to {{ config('app.name') }}? <a href="{{ route('register') }}" class="text-brand-600 hover:text-brand-700 underline underline-offset-2">Create Account</a></h2>
+                            <p class="text-sm text-gray-500 mt-0.5">Fill in your details below to check out, or create an account to track your order.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Returning customer --}}
+                <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                    <div class="flex items-start gap-4">
+                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 20a8 8 0 0116 0v1H4v-1z" /></svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h2 class="text-base font-bold text-gray-900">Returning customer? <a href="{{ route('login') }}" class="text-brand-600 hover:text-brand-700 underline underline-offset-2">Sign in</a></h2>
+                            <p class="text-sm text-gray-500 mt-0.5">Access your account for faster checkout and order tracking.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        @endif
 
         @if (session('error'))
             <x-alert type="error" class="mb-6">{{ session('error') }}</x-alert>
@@ -100,6 +133,9 @@
                                 <x-input label="Address Label (optional)" name="shipping[label]" type="text" placeholder="Home, Office, Warehouse..." :value="old('shipping.label')" />
                                 <x-input label="Full name" name="shipping[name]" type="text" placeholder="Enter your full name" :value="old('shipping.name', Auth::user()?->name)" />
                                 <x-input label="Phone" name="shipping[phone]" type="tel" placeholder="e.g. +880 1700-000000" :value="old('shipping.phone', Auth::user()?->phone)" />
+                                @if ($isGuest)
+                                    <x-input label="Email" name="guest_email" type="email" placeholder="you@example.com" :value="old('guest_email')" class="sm:col-span-2" required />
+                                @endif
                                 <x-input label="Address line 1" name="shipping[line1]" type="text" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" :value="old('shipping.line1')" />
                                 <x-input label="Address line 2 (optional)" name="shipping[line2]" type="text" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" :value="old('shipping.line2')" />
                                 <x-select label="Country" name="shipping[country]" id="checkout_country_select" placeholder="Select Country" :selected="old('shipping.country', 'United States')" />
@@ -363,6 +399,13 @@
 
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
+        /* Tom Select copies the select's border/padding classes onto its wrapper; keep a single border on the inner control. */
+        .ts-wrapper {
+            border: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
         .ts-control {
             border-radius: 0.375rem !important;
             border-color: #e2e8f0 !important;
@@ -381,6 +424,21 @@
             border: 1px solid #e2e8f0 !important;
             margin-top: 4px !important;
             z-index: 50 !important;
+        }
+        .ts-dropdown .dropdown-input-wrap {
+            padding: 0.5rem !important;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .ts-dropdown .dropdown-input-wrap .dropdown-input {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 0.375rem !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+            box-shadow: none !important;
+        }
+        .ts-dropdown .dropdown-input-wrap .dropdown-input:focus {
+            border-color: #fbbf24 !important;
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4) !important;
         }
         .ts-dropdown .option.active, .ts-dropdown .option:hover {
             background-color: #fffbeb !important;
@@ -464,6 +522,7 @@
                 if (countrySelect && !countryTomSelect) {
                     countryTomSelect = new TomSelect(countrySelect, {
                         create: true,
+                        plugins: ['dropdown_input'],
                         placeholder: 'Search & select country...',
                         allowEmptyOption: true,
                         onChange: function(val) {
@@ -475,6 +534,7 @@
                 if (citySelect && !cityTomSelect) {
                     cityTomSelect = new TomSelect(citySelect, {
                         create: true,
+                        plugins: ['dropdown_input'],
                         placeholder: 'Search & select city...',
                         allowEmptyOption: true,
                     });
@@ -483,6 +543,7 @@
                 if (stateSelect && !stateTomSelect) {
                     stateTomSelect = new TomSelect(stateSelect, {
                         create: true,
+                        plugins: ['dropdown_input'],
                         placeholder: 'Search & select state/area...',
                         allowEmptyOption: true,
                     });
