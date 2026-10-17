@@ -6,38 +6,6 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
 
-        @if ($isGuest)
-            {{-- Guests keep checking out below; these boxes only offer an account. --}}
-            <div class="grid lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2 grid md:grid-cols-2 gap-4">
-                {{-- New customer: always the selected option --}}
-                <div class="rounded-2xl border-2 border-brand-400 bg-white p-5 ring-4 ring-brand-100/70">
-                    <div class="flex items-start gap-4">
-                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-                        </span>
-                        <div class="min-w-0">
-                            <h2 class="text-base font-bold text-gray-900">New to {{ config('app.name') }}? <a href="{{ route('register') }}" class="text-brand-600 hover:text-brand-700 underline underline-offset-2">Create Account</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Fill in your details below to check out, or create an account to track your order.</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Returning customer --}}
-                <div class="rounded-2xl border border-gray-200 bg-white p-5">
-                    <div class="flex items-start gap-4">
-                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 20a8 8 0 0116 0v1H4v-1z" /></svg>
-                        </span>
-                        <div class="min-w-0">
-                            <h2 class="text-base font-bold text-gray-900">Returning customer? <a href="{{ route('login') }}" class="text-brand-600 hover:text-brand-700 underline underline-offset-2">Sign in</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Access your account for faster checkout and order tracking.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-        @endif
 
         @if (session('error'))
             <x-alert type="error" class="mb-6">{{ session('error') }}</x-alert>
@@ -65,6 +33,37 @@
                 @csrf
                 <div class="grid lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
+        @if ($isGuest)
+            {{-- Guests keep checking out below; these boxes only offer an account. --}}
+            <div class="grid md:grid-cols-2 gap-4">
+                {{-- New customer: always the selected option --}}
+                <div class="rounded-2xl border-2 border-brand-400 bg-white p-5 ring-4 ring-brand-100/70">
+                    <div class="flex items-start gap-4">
+                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h2 class="text-base font-bold text-gray-900">New to {{ config('app.name') }}? <a href="{{ route('register') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Create Account</a></h2>
+                            <p class="text-sm text-gray-500 mt-0.5">Fill in your details below to check out, or create an account to track your order.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Returning customer --}}
+                <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                    <div class="flex items-start gap-4">
+                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 20a8 8 0 0116 0v1H4v-1z" /></svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h2 class="text-base font-bold text-gray-900">Returning customer? <a href="{{ route('login') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Sign in</a></h2>
+                            <p class="text-sm text-gray-500 mt-0.5">Access your account for faster checkout and order tracking.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
                         @php
                             $hasAddresses = $addresses->isNotEmpty();
                             $defaultAddressId = $hasAddresses ? (string)$addresses->first()->id : 'new';
