@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProductPublicationStatus;
 use App\Enums\ReviewableType;
+use App\Http\Requests\StoreProductReviewRequest;
 use App\Http\Requests\StoreReviewRequest;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\ReviewService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +23,22 @@ class CustomerReviewController extends Controller
             'reviews' => Auth::user()->reviewsWritten()->with('order')->latest()->paginate(15),
             'eligibleReviewables' => $this->reviews->allEligibleReviewables(Auth::user()),
         ]);
+    }
+
+    public function storeForProduct(StoreProductReviewRequest $request, Product $product): RedirectResponse
+    {
+        abort_unless($product->publication_status === ProductPublicationStatus::Published, 404);
+
+        $this->reviews->createForProduct(
+            Auth::user(),
+            $product,
+            $request->integer('rating'),
+            $request->string('title')->value() ?: null,
+            $request->string('body')->value(),
+        );
+
+        return redirect()->to(route('products.show', $product).'#reviews')
+            ->with('status', 'Thanks for your review — it will show once approved.');
     }
 
     public function store(StoreReviewRequest $request, ?Order $order = null): RedirectResponse

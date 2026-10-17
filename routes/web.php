@@ -50,6 +50,7 @@ use App\Http\Controllers\BlogPostCommentController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryPageController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\CheckoutAddressController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\CustomerAccountController;
@@ -127,6 +128,9 @@ Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.add
 Route::patch('/cart/items/{item}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/items/{item}', [CartController::class, 'destroy'])->name('cart.remove');
 
+Route::get('/checkout/address', [CheckoutAddressController::class, 'show'])->name('checkout.address');
+Route::post('/checkout/address', [CheckoutAddressController::class, 'store'])->middleware('throttle:20,1')->name('checkout.address.store');
+
 Route::middleware('auth')->group(function () {
     Route::post('/editor/upload-image', [\App\Http\Controllers\EditorMediaController::class, 'upload'])->name('editor.upload-image');
 
@@ -141,6 +145,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/stripe-success/{order}', [CheckoutController::class, 'stripeSuccess'])->name('checkout.stripe-success');
     Route::get('/orders/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('orders.confirmation');
 
+    Route::post('/products/{product}/reviews', [CustomerReviewController::class, 'storeForProduct'])->middleware('throttle:10,1')->name('products.reviews.store');
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
 
     Route::post('/products/{product}/chat', [ChatController::class, 'startFromProduct'])->name('chat.start');
@@ -356,6 +361,8 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::post('/settings/why-buy', [HomeContentController::class, 'updateWhyBuy'])->name('settings.why-buy.update');
         Route::get('/settings/promo-cards', [HomeContentController::class, 'promo'])->name('settings.promo');
         Route::post('/settings/promo-cards', [HomeContentController::class, 'updatePromo'])->name('settings.promo.update');
+        Route::get('/settings/start-selling', [HomeContentController::class, 'startSelling'])->name('settings.start-selling');
+        Route::post('/settings/start-selling', [HomeContentController::class, 'updateStartSelling'])->name('settings.start-selling.update');
         Route::get('/settings/newsletter', [HomeContentController::class, 'newsletter'])->name('settings.newsletter');
         Route::post('/settings/newsletter', [HomeContentController::class, 'updateNewsletter'])->name('settings.newsletter.update');
         Route::get('/settings/hero',[SettingsController::class, 'hero'])->name('settings.hero');
@@ -366,6 +373,9 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::put('/settings/hero-slides/{heroSlide}', [SettingsController::class, 'updateHeroSlide'])->name('settings.hero-slides.update');
         Route::delete('/settings/hero-slides/{heroSlide}', [SettingsController::class, 'destroyHeroSlide'])->name('settings.hero-slides.destroy');
 
+        Route::get('/settings/verified-badge', [SettingsController::class, 'verifiedBadge'])->name('settings.verified-badge');
+        Route::post('/settings/verified-badge', [SettingsController::class, 'updateVerifiedBadge'])->name('settings.verified-badge.update');
+        Route::delete('/settings/verified-badge', [SettingsController::class, 'removeVerifiedBadge'])->name('settings.verified-badge.remove');
         Route::get('/settings/siteicon', [SettingsController::class, 'siteicon'])->name('settings.siteicon');
         Route::post('/settings/siteicon', [SettingsController::class, 'updateSiteicon'])->name('settings.siteicon.update');
         Route::delete('/settings/siteicon', [SettingsController::class, 'removeSiteicon'])->name('settings.siteicon.remove');

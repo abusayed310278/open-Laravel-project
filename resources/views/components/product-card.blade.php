@@ -46,6 +46,9 @@
 
     // Resolve Openbox Admin Badge (2nd Badge — Admin Approval)
     $showAdminBadge = true;
+    $verifiedBadgeUrl = \App\Support\MediaUrl::resolve(setting('brand_verified_badge'));
+    $verifiedBadgeSize = max(12, min(64, (int) (setting('brand_verified_badge_size') ?: 24)));
+
     if ($isAdminApproved !== null) {
         $showAdminBadge = (bool) $isAdminApproved;
     } elseif ($product instanceof \App\Models\Product) {
@@ -175,8 +178,8 @@
         @endif
     </div>
 
-    {{-- Rating & Trust Badges (1st: Physical Verifier Badge, 2nd: Openbox Admin Badge) --}}
-    @if ($rating || $showVerifierBadge || $showAdminBadge)
+    {{-- Rating & Physical Verifier Badge --}}
+    @if ($rating || $showVerifierBadge)
         <div class="flex items-center gap-1.5 mb-1">
             @if ($rating)
                 <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
@@ -191,18 +194,13 @@
             {{-- 1st Badge: Verifier Badge (Blue Checkmark) --}}
             @if ($showVerifierBadge)
                 <span class="inline-flex text-blue-500 shrink-0" title="Verifier Checked (Physical Inspection Verified)">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                </span>
-            @endif
-
-            {{-- 2nd Badge: Openbox Admin Badge (Green Checkmark) --}}
-            @if ($showAdminBadge)
-                <span class="inline-flex text-emerald-500 shrink-0" title="Openbox Admin Approved">
-                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
+                    @if ($verifiedBadgeUrl)
+                        <img src="{{ $verifiedBadgeUrl }}" alt="Verified" class="object-contain" style="width: {{ $verifiedBadgeSize }}px; height: {{ $verifiedBadgeSize }}px;" loading="lazy">
+                    @else
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    @endif
                 </span>
             @endif
         </div>
@@ -212,7 +210,7 @@
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
         <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
-        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white dark:bg-slate-800 hover:bg-brand-500 dark:hover:bg-brand-500 text-brand-600 dark:text-brand-400 hover:text-white dark:hover:text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
+        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white dark:bg-slate-800 hover:bg-brand-500 dark:hover:bg-brand-500 text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-black text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>

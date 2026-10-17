@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use GdImage;
+use Illuminate\Support\Facades\Log;
 
 class ImageBackgroundRemover
 {
@@ -55,6 +56,138 @@ class ImageBackgroundRemover
         imagepng($image, $output, 6);
 
         return $output;
+    }
+
+    /**
+     * Removes a light neutral backdrop (white, grey, or a "fake transparent" checkerboard
+     * baked into a JPG) connected to the image edges, then crops to the remaining artwork and
+     * fits it into a square PNG. Meant for small icons/badges, not product photos.
+     *
+     * Returns the path of a temporary transparent PNG, or null when the edges are not mostly
+     * a light neutral backdrop or GD is unavailable.
+     */
+    public function removeNeutralBackdrop(string $path, int $outputSize = 256): ?string
+    {
+        if (! extension_loaded('gd') || ! is_file($path)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        $source = $raw === false ? false : @imagecreatefromstring($raw);
+
+        if (! $source instanceof GdImage) {
+            Log::warning('removeNeutralBackdrop: image could not be decoded', ['path' => $path, 'bytes' => $raw === false ? null : strlen($raw)]);
+
+            return null;
+        }
+
+        if ($this->hasTransparency($source)) {
+            Log::info('removeNeutralBackdrop: image already transparent');
+
+            return null;
+        }
+
+        $size = 512;
+        $image = imagecreatetruecolor($size, $size);
+        imagecopyresampled($image, $source, 0, 0, 0, 0, $size, $size, imagesx($source), imagesy($source));
+
+        $isBackdrop = function (int $x, int $y) use ($image): bool {
+            [$r, $g, $b] = $this->rgb(imagecolorat($image, $x, $y));
+
+            return (max($r, $g, $b) - min($r, $g, $b)) <= 48 && min($r, $g, $b) >= 110;
+        };
+
+        $removed = new \SplFixedArray($size * $size);
+        $queue = new \SplQueue;
+        $edgeTotal = 0;
+        $edgeMatched = 0;
+
+        for ($i = 0; $i < $size; $i++) {
+            foreach ([[$i, 0], [$i, $size - 1], [0, $i], [$size - 1, $i]] as [$x, $y]) {
+                $edgeTotal++;
+                if ($isBackdrop($x, $y)) {
+                    $edgeMatched++;
+                    if (! $removed[$y * $size + $x]) {
+                        $removed[$y * $size + $x] = true;
+                        $queue->enqueue([$x, $y]);
+                    }
+                }
+            }
+        }
+
+        if ($edgeMatched / $edgeTotal < self::MIN_BORDER_MATCH) {
+            Log::info('removeNeutralBackdrop: edges are not a light neutral backdrop', ['edge_match' => round($edgeMatched / $edgeTotal, 3)]);
+
+            return null;
+        }
+
+        while (! $queue->isEmpty()) {
+            [$x, $y] = $queue->dequeue();
+            foreach ([[1, 0], [-1, 0], [0, 1], [0, -1]] as [$dx, $dy]) {
+                $nx = $x + $dx;
+                $ny = $y + $dy;
+                if ($nx < 0 || $ny < 0 || $nx >= $size || $ny >= $size || $removed[$ny * $size + $nx]) {
+                    continue;
+                }
+                if ($isBackdrop($nx, $ny)) {
+                    $removed[$ny * $size + $nx] = true;
+                    $queue->enqueue([$nx, $ny]);
+                }
+            }
+        }
+
+        $minX = $minY = $size;
+        $maxX = $maxY = -1;
+        for ($y = 0; $y < $size; $y++) {
+            for ($x = 0; $x < $size; $x++) {
+                if (! $removed[$y * $size + $x]) {
+                    $minX = min($minX, $x);
+                    $maxX = max($maxX, $x);
+                    $minY = min($minY, $y);
+                    $maxY = max($maxY, $y);
+                }
+            }
+        }
+
+        if ($maxX < 0) {
+            return null;
+        }
+
+        $width = $maxX - $minX + 1;
+        $height = $maxY - $minY + 1;
+        $side = max($width, $height);
+        $scaledWidth = (int) round($outputSize * $width / $side);
+        $scaledHeight = (int) round($outputSize * $height / $side);
+
+        $output = imagecreatetruecolor($outputSize, $outputSize);
+        imagealphablending($output, false);
+        imagesavealpha($output, true);
+        imagefill($output, 0, 0, imagecolorallocatealpha($output, 0, 0, 0, 127));
+
+        // Build a full-alpha crop first so removed pixels are transparent before resampling.
+        $crop = imagecreatetruecolor($width, $height);
+        imagealphablending($crop, false);
+        imagesavealpha($crop, true);
+        $clear = imagecolorallocatealpha($crop, 0, 0, 0, 127);
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $index = ($minY + $y) * $size + ($minX + $x);
+                imagesetpixel($crop, $x, $y, $removed[$index] ? $clear : imagecolorat($image, $minX + $x, $minY + $y));
+            }
+        }
+
+        imagecopyresampled(
+            $output, $crop,
+            intdiv($outputSize - $scaledWidth, 2), intdiv($outputSize - $scaledHeight, 2),
+            0, 0, $scaledWidth, $scaledHeight, $width, $height
+        );
+
+        $temp = tempnam(sys_get_temp_dir(), 'bdg');
+        $file = $temp.'.png';
+        @unlink($temp);
+        imagepng($output, $file, 9);
+
+        return $file;
     }
 
     private function prepare(GdImage $source): GdImage
@@ -224,6 +357,21 @@ class ImageBackgroundRemover
     /**
      * Checks if the image contains any pixels with transparent or semi-transparent alpha.
      */
+    /**
+     * Whether the file at $path is a raster image that already has a transparent background.
+     */
+    public function isTransparent(string $path): bool
+    {
+        if (! extension_loaded('gd') || ! is_file($path)) {
+            return false;
+        }
+
+        $raw = @file_get_contents($path);
+        $image = $raw === false ? false : @imagecreatefromstring($raw);
+
+        return $image instanceof GdImage && $this->hasTransparency($image);
+    }
+
     private function hasTransparency(GdImage $image): bool
     {
         if (imagecolortransparent($image) >= 0) {

@@ -10,8 +10,10 @@ use App\Http\Requests\Admin\Settings\UpdateStorageRequest;
 use App\Models\ActivityLog;
 use App\Models\HeroSlide;
 use App\Models\Product;
+use App\Services\ImageBackgroundRemover;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -388,6 +390,65 @@ class SettingsController extends Controller
         ActivityLog::record('settings.siteicon.removed');
 
         return back()->with('status', 'Custom site icon removed. Default favicon restored.');
+    }
+
+    public function verifiedBadge(): View
+    {
+        return view('admin.settings.verified-badge', [
+            'badge' => \App\Support\MediaUrl::resolve($this->settings->get('brand_verified_badge')),
+            'badgeSize' => (int) ($this->settings->get('brand_verified_badge_size') ?: 24),
+        ]);
+    }
+
+    public function updateVerifiedBadge(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'badge' => ['nullable', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:1024'],
+            'size' => ['required', 'integer', 'between:12,64'],
+        ]);
+
+        $this->settings->set('brand_verified_badge_size', (string) $data['size'], 'branding');
+
+        if ($file = $request->file('badge')) {
+            $remover = app(ImageBackgroundRemover::class);
+            $isSvg = strtolower($file->getClientOriginalExtension()) === 'svg';
+            $cutout = $isSvg
+                ? null
+                : ($remover->removeNeutralBackdrop($file->getRealPath()) ?? $remover->process($file->getRealPath()));
+
+            $this->deleteStoredFile($this->settings->get('brand_verified_badge'));
+
+            if ($cutout) {
+                $path = 'branding/'.Str::random(40).'.png';
+                Storage::disk('public')->put($path, file_get_contents($cutout));
+                @unlink($cutout);
+            } else {
+                $path = $this->storeUploadedFile($file, 'branding', 'public');
+            }
+
+            $this->settings->set('brand_verified_badge', $path, 'branding');
+        }
+
+        ActivityLog::record('settings.verified_badge.updated');
+
+        return back()->with('status', 'Verified badge updated successfully.');
+    }
+
+    public function removeVerifiedBadge(): RedirectResponse
+    {
+        $this->deleteStoredFile($this->settings->get('brand_verified_badge'));
+
+        $this->settings->set('brand_verified_badge', null, 'branding');
+        ActivityLog::record('settings.verified_badge.removed');
+
+        return back()->with('status', 'Custom verified badge removed. Default check icon restored.');
+    }
+
+    private function deleteStoredFile(?string $path): void
+    {
+        if (filled($path) && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     public function footericon(): View

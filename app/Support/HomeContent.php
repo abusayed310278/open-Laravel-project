@@ -28,6 +28,44 @@ final class HomeContent
         'button' => 'Subscribe',
     ];
 
+    public const START_SELLING_DEFAULTS = [
+        'title' => 'Start selling your electronics',
+        'text' => 'Turn your unused gadgets into instant cash. List in minutes as a seller or open a verified store with warehouse fulfillment.',
+        'primary_label' => 'Start Selling Now',
+        'secondary_label' => 'Explore Verified Deals →',
+        'app_heading' => 'Shop and sell on the go',
+        'app_text' => 'Get the app for a faster marketplace experience.',
+        'qr_caption' => 'Scan to download',
+    ];
+
+    /**
+     * Start Selling banner copy, links and app-download media (Settings → Start Selling).
+     *
+     * @return array<string, ?string>
+     */
+    public static function startSelling(): array
+    {
+        $content = [];
+        foreach (self::START_SELLING_DEFAULTS as $key => $default) {
+            $content[$key] = setting("home_sell_{$key}") ?: $default;
+        }
+
+        foreach (['primary_url', 'secondary_url', 'ios_url', 'android_url', 'qr_url'] as $key) {
+            $content[$key] = setting("home_sell_{$key}") ?: null;
+        }
+
+        foreach (['title', 'text'] as $field) {
+            $size = (int) setting("home_sell_{$field}_size");
+            $content["{$field}_size"] = $size > 0 ? $size : null;
+        }
+
+        foreach (['phone_image', 'qr_image'] as $key) {
+            $content[$key] = MediaUrl::resolve(setting("home_sell_{$key}"));
+        }
+
+        return $content;
+    }
+
     /**
      * @return array{heading: string, items: array<int, array{title: string, text: string}>}
      */

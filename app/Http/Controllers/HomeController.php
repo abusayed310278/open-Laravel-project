@@ -83,12 +83,12 @@ class HomeController extends Controller
             $allLiveProducts->whereIn('condition.value', ['used', 'refurbished'])->take(4)
         );
 
-        $mobileTechProducts = $this->productCards(
-            $allLiveProducts->slice(2, 4)
+        $usedProducts = $this->productCards(
+            $allLiveProducts->where('condition.value', 'used')->take(4)
         );
 
         $latestProducts = $this->productCards(
-            $allLiveProducts->take(8)
+            $allLiveProducts->take(4)
         );
 
         $comparableProducts = $this->productCards(
@@ -229,7 +229,7 @@ class HomeController extends Controller
             'heroSlides',
             'featuredProducts',
             'refurbishedDeals',
-            'mobileTechProducts',
+            'usedProducts',
             'latestProducts',
             'whyBuy',
             'promoCards',

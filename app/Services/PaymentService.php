@@ -7,6 +7,7 @@ use App\Enums\PaymentSubmissionStatus;
 use App\Enums\RefundStatus;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
+use App\Helpers\FileUploadHelper;
 use App\Models\ActivityLog;
 use App\Models\ManualPaymentSubmission;
 use App\Models\Refund;
@@ -60,7 +61,7 @@ class PaymentService
             'amount' => $vendorOrder->total,
             'reference' => $reference,
             'bank_name' => $bankName,
-            'proof_file_path' => $proof->store('manual-payments', 'local'),
+            'proof_file_path' => FileUploadHelper::store($proof, 'manual-payments', 'local'),
             'status' => PaymentSubmissionStatus::Pending,
         ]);
 

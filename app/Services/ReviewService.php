@@ -8,6 +8,7 @@ use App\Enums\ReviewReportStatus;
 use App\Enums\ReviewStatus;
 use App\Models\ActivityLog;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Review;
 use App\Models\ReviewReply;
 use App\Models\ReviewReport;
@@ -136,6 +137,40 @@ class ReviewService
             'reviewable_type' => $type,
             'reviewable_id' => $reviewableId,
             'order_id' => $order->id,
+            'rating' => max(1, min(5, $rating)),
+            'title' => $title,
+            'body' => $body,
+            'status' => ReviewStatus::Pending,
+        ]);
+
+        ActivityLog::record('review.submitted', $review);
+
+        return $review;
+    }
+
+    /**
+     * Any logged-in user may review a live product directly from its page, once,
+     * and never their own listing. Goes through the same moderation queue.
+     */
+    public function createForProduct(User $reviewer, Product $product, int $rating, ?string $title, string $body): Review
+    {
+        abort_if($product->user_id === $reviewer->id, 403, 'You cannot review your own product.');
+
+        abort_if(
+            Review::query()
+                ->where('reviewer_id', $reviewer->id)
+                ->where('reviewable_type', ReviewableType::Product)
+                ->where('reviewable_id', $product->id)
+                ->exists(),
+            422,
+            'You have already reviewed this product.'
+        );
+
+        $review = Review::create([
+            'reviewer_id' => $reviewer->id,
+            'reviewable_type' => ReviewableType::Product,
+            'reviewable_id' => $product->id,
+            'order_id' => null,
             'rating' => max(1, min(5, $rating)),
             'title' => $title,
             'body' => $body,

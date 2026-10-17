@@ -189,6 +189,8 @@ class ProductPageController extends Controller
         $products = Product::query()
             ->live()
             ->with(['images', 'category', 'brand', 'user'])
+            ->withAvg('approvedReviews', 'rating')
+            ->withCount('approvedReviews')
             ->tap(fn ($query) => $this->applyKeywordFilters($query, $request))
             ->when($request->filled('seller'), fn ($query) => $query->whereHas('user', fn ($u) => $u
                 ->where('name', 'like', '%'.$request->string('seller').'%')

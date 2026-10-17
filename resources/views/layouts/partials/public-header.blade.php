@@ -269,7 +269,7 @@
 
     {{-- Horizontal Category Navigation Bar (Responsive based on Device Width) --}}
     <div class="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] relative z-20 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-h-[42px]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 min-h-[42px]">
             @php
                 $dbCategories = \App\Models\Category::cachedTree();
                 if ($dbCategories->isNotEmpty()) {
@@ -682,6 +682,11 @@
                                     @endif
                                 </div>
                             @endforeach
+
+                            {{-- All: every product, no category/condition filter --}}
+                            <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors">
+                                <span>All</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -689,15 +694,15 @@
             {{-- Product Condition Navigation Bar (Dynamically populated from App\Enums\ProductCondition) --}}
             @php
                 $conditionCases = \App\Enums\ProductCondition::cases();
-                // Preferred display order: New, Refurbished, Used, Openbox
-                $preferredOrder = ['new', 'refurbished', 'used', 'openbox'];
+                // Preferred display order: New, Openbox, Used, Refurbished
+                $preferredOrder = ['new', 'openbox', 'used', 'refurbished'];
                 usort($conditionCases, function ($a, $b) use ($preferredOrder) {
                     $posA = array_search($a->value, $preferredOrder);
                     $posB = array_search($b->value, $preferredOrder);
                     return ($posA === false ? 99 : $posA) <=> ($posB === false ? 99 : $posB);
                 });
 
-                $horizontalNavItems = \Illuminate\Support\Facades\Cache::remember('header_nav_condition_items_v6', 180, function () use ($conditionCases) {
+                $horizontalNavItems = \Illuminate\Support\Facades\Cache::remember('header_nav_condition_items_v7', 180, function () use ($conditionCases) {
                     $rows = \Illuminate\Support\Facades\DB::table('categories')
                         ->join('products', 'categories.id', '=', 'products.category_id')
                         ->where('categories.status', \App\Enums\PublishStatus::Active->value)
@@ -901,7 +906,14 @@
 
                 const updateFit = () => {
                     if (cachedWidths.length === 0) measure();
-                    const availableWidth = navContainer.clientWidth;
+                    const row = navContainer.parentElement;
+                    const rowStyle = getComputedStyle(row);
+                    const rowGap = parseFloat(rowStyle.columnGap) || 0;
+                    const siblings = Array.from(row.children).filter(el => el !== navContainer && el.offsetWidth > 0);
+                    const availableWidth = row.clientWidth
+                        - parseFloat(rowStyle.paddingLeft) - parseFloat(rowStyle.paddingRight)
+                        - siblings.reduce((sum, el) => sum + el.offsetWidth, 0)
+                        - rowGap * siblings.length;
                     if (availableWidth <= 0) return;
 
                     let accum = 0;

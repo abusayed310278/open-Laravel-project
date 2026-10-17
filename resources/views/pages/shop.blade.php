@@ -154,6 +154,8 @@
                                 :brand="$product->brand?->name"
                                 :price="$product->price"
                                 :compare-price="$product->compare_price"
+                                :rating="$product->approved_reviews_count ? (float) $product->approved_reviews_avg_rating : null"
+                                :rating-count="$product->approved_reviews_count ?: null"
                                 :image="$product->primaryImageUrl()"
                                 :href="route('products.show', $product)"
                             />

@@ -324,7 +324,57 @@
             </div>
 
             @if (feature_enabled('product_reviews'))
-                <div data-tab-content="reviews" class="py-6 hidden">
+                <div data-tab-content="reviews" id="reviews" class="py-6 hidden">
+                    @php
+                        $myReview = auth()->check()
+                            ? $product->reviews()->where('reviewer_id', auth()->id())->first()
+                            : null;
+                        $isOwnProduct = auth()->check() && auth()->id() === $product->user_id;
+                    @endphp
+
+                    {{-- Write a review: any logged-in user, once per product --}}
+                    <div class="mb-8 rounded-xl border border-gray-100 bg-gray-50/60 p-5">
+                        @guest
+                            <p class="text-sm text-gray-600">
+                                <a href="{{ route('login') }}" class="font-semibold text-brand-600 hover:underline">Log in</a> to write a review for this product.
+                            </p>
+                        @elseif ($isOwnProduct)
+                            <p class="text-sm text-gray-500">You can't review your own product.</p>
+                        @elseif ($myReview)
+                            <p class="text-sm text-gray-600">You reviewed this product
+                                @if ($myReview->status === \App\Enums\ReviewStatus::Pending)
+                                    — it will show once approved.
+                                @endif
+                            </p>
+                        @else
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3">Write a review</h3>
+                            <form method="POST" action="{{ route('products.reviews.store', $product) }}" class="space-y-3">
+                                @csrf
+                                <div>
+                                    <div class="flex flex-row-reverse justify-end gap-1 text-gray-300" data-star-input>
+                                        @for ($star = 5; $star >= 1; $star--)
+                                            <input type="radio" name="rating" id="rating-{{ $star }}" value="{{ $star }}" class="peer sr-only" @checked((int) old('rating') === $star) required>
+                                            <label for="rating-{{ $star }}" title="{{ $star }} star{{ $star > 1 ? 's' : '' }}" class="cursor-pointer text-gray-300 hover:text-amber-400 peer-hover:text-amber-400 peer-checked:text-amber-400">
+                                                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" /></svg>
+                                            </label>
+                                        @endfor
+                                    </div>
+                                    @error('rating')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <input type="text" name="title" value="{{ old('title') }}" maxlength="150" placeholder="Title (optional)" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">
+                                    @error('title')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <textarea name="body" rows="4" maxlength="2000" required placeholder="Share your experience with this product" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400">{{ old('body') }}</textarea>
+                                    @error('body')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+                                </div>
+                                <x-button type="submit">Submit review</x-button>
+                                <p class="text-xs text-gray-400">Reviews are checked before they appear.</p>
+                            </form>
+                        @endguest
+                    </div>
+
                     @if ($reviewCount > 0)
                         <div class="flex items-center gap-3 mb-6">
                             <x-star-rating :rating="round($averageRating)" />
@@ -742,5 +792,18 @@
                 document.querySelector(`[data-tab-content="${target}"]`)?.classList.remove('hidden');
             });
         });
+
+        // Toast after submitting a review (success or validation error)
+        @if (session('status'))
+            window.showToast?.(@json(session('status')), 'success');
+        @elseif ($errors->has('rating') || $errors->has('body') || $errors->has('title'))
+            window.showToast?.(@json($errors->first('rating') ?: ($errors->first('body') ?: $errors->first('title'))), 'error');
+        @endif
+
+        // Open the Reviews tab after submitting a review or following a #reviews link
+        if (location.hash === '#reviews' || @json($errors->has('rating') || $errors->has('body') || $errors->has('title'))) {
+            document.querySelector('.tab-btn[data-tab="reviews"]')?.click();
+            document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     </script>
 @endsection

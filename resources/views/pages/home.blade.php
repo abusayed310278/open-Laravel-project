@@ -342,6 +342,41 @@
         </section>
     @endif
 
+    @if (feature_enabled('home_latest_drops'))
+        {{-- LATEST DROPS --}}
+        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Latest Drops</h2>
+                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
+                    <span>View All</span>
+                    <span>→</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                @foreach ($latestProducts as $product)
+                    <x-product-card
+                        :id="$product['id'] ?? null"
+                        :title="$product['title']"
+                        :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
+                        :brand="$product['brand']"
+                        :price="$product['price']"
+                        :compare-price="$product['comparePrice'] ?? null"
+                        :rating="$product['rating'] ?? null"
+                        :rating-count="$product['ratingCount'] ?? null"
+                        :seller="$product['seller'] ?? null"
+                        :is-new="$product['isNew'] ?? false"
+                        :key-features="$product['keyFeatures'] ?? []"
+                        :image="$product['image'] ?? null"
+                        :href="$product['href'] ?? '#'"
+                        :is-verified="$product['isVerified'] ?? true"
+                        :is-admin-approved="$product['isAdminApproved'] ?? true"
+                    />
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @if (feature_enabled('home_why_buy') && collect($promoCards)->contains(fn ($card) => $card['product']))
         {{-- PRODUCT PROMO CARDS (real products, admin-editable text) --}}
         @php
@@ -495,18 +530,18 @@
     @endif
 
     @if (feature_enabled('home_mobile_tech'))
-        {{-- MOBILE & TECH (POPULAR) --}}
+        {{-- USED PRODUCTS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Mobile &amp; Tech</h2>
-                <a href="{{ Route::has('shop') ? route('shop', ['category' => 'phones']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
+                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Used</h2>
+                <a href="{{ Route::has('shop') ? route('shop', ['condition' => 'used']) : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
                     <span>View All</span>
                     <span>→</span>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                @foreach ($mobileTechProducts as $product)
+                @foreach ($usedProducts as $product)
                     <x-product-card
                         :id="$product['id'] ?? null"
                         :title="$product['title']"
@@ -525,6 +560,85 @@
                         :is-admin-approved="$product['isAdminApproved'] ?? true"
                     />
                 @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if (feature_enabled('home_start_selling_cta'))
+        {{-- START SELLING CTA BANNER (admin: Settings → Start Selling) --}}
+        @php
+            $sell = \App\Support\HomeContent::startSelling();
+            $safeLink = fn (?string $link, string $fallback): string => match (true) {
+                blank($link) => $fallback,
+                str_starts_with($link, '/') && ! str_starts_with($link, '//') => url($link),
+                (bool) preg_match('#^https?://#i', $link) => $link,
+                default => $fallback,
+            };
+            $primaryHref = $safeLink($sell['primary_url'], Route::has('register.saler') ? route('register.saler') : (Route::has('register') ? route('register') : '#'));
+            $secondaryHref = $safeLink($sell['secondary_url'], Route::has('shop') ? route('shop') : '#');
+            $sizeStyle = fn (?int $size, int $vw): ?string => $size ? 'font-size:clamp('.round($size * 0.6).'px,'.$vw.'vw,'.$size.'px)' : null;
+            $hasPhone = filled($sell['phone_image']);
+            $hasStores = filled($sell['ios_url']) || filled($sell['android_url']);
+            $hasApp = filled($sell['qr_image']) || $hasStores;
+            $isRich = $hasPhone || $hasApp;
+        @endphp
+        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="relative bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700 rounded-3xl p-8 sm:p-12 shadow-2xs overflow-hidden">
+                <div @class([
+                    'relative items-center',
+                    'max-w-2xl mx-auto text-center' => ! $isRich,
+                    'grid grid-cols-1 gap-10 lg:gap-8 text-center lg:text-left' => $isRich,
+                    'lg:grid-cols-[1.25fr_auto_1fr]' => $hasPhone && $hasApp,
+                    'lg:grid-cols-[1.4fr_auto]' => $hasPhone && ! $hasApp,
+                    'lg:grid-cols-[1.4fr_1fr]' => ! $hasPhone && $hasApp,
+                ])>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl lg:text-6xl font-black text-gray-950 dark:text-white mb-4 tracking-tight leading-[1.05]" style="{{ $sizeStyle($sell['title_size'], 5) }}">{{ $sell['title'] }}</h2>
+                        <p class="text-gray-600 dark:text-gray-300 text-xs sm:text-sm lg:text-lg leading-relaxed mb-8" style="{{ $sizeStyle($sell['text_size'], 3) }}">{{ $sell['text'] }}</p>
+
+                        <div @class(['flex flex-col sm:flex-row items-center gap-4', 'justify-center' => ! $isRich, 'justify-center lg:justify-start' => $isRich])>
+                            <a href="{{ $primaryHref }}" class="w-full sm:w-auto brand-btn-primary font-bold text-sm px-8 py-3.5 rounded-xl shadow-xs transition-all inline-flex items-center justify-center gap-2">{{ $sell['primary_label'] }} <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6"/></svg></a>
+                            <a href="{{ $secondaryHref }}" class="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-900 dark:text-white font-semibold text-sm px-7 py-3.5 rounded-xl border border-gray-200 dark:border-slate-600 shadow-2xs transition-all inline-flex items-center justify-center gap-2">{{ $sell['secondary_label'] }}</a>
+                        </div>
+                    </div>
+
+                    @if ($hasPhone)
+                        <div @class(['flex justify-center', 'lg:border-l lg:border-gray-200 dark:lg:border-slate-700 lg:pl-8' => true])>
+                            <img src="{{ $sell['phone_image'] }}" alt="{{ config('app.name') }} mobile app" loading="lazy" class="h-80 sm:h-96 lg:h-[26rem] w-auto object-contain drop-shadow-xl">
+                        </div>
+                    @endif
+
+                    @if ($hasApp)
+                        <div @class(['flex flex-col items-center lg:items-start', 'lg:border-l lg:border-gray-200 dark:lg:border-slate-700 lg:pl-8' => ! $hasPhone])>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-950 dark:text-white mb-1">{{ $sell['app_heading'] }}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ $sell['app_text'] }}</p>
+
+                            @if (filled($sell['qr_image']))
+                                <div class="bg-white rounded-xl p-2 border border-gray-100 shadow-2xs mb-1">
+                                    <img src="{{ $sell['qr_image'] }}" alt="QR code to download the app" loading="lazy" class="w-28 h-28 sm:w-32 sm:h-32 object-contain">
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $sell['qr_caption'] }}</span>
+                            @endif
+
+                            @if ($hasStores)
+                                <div class="flex flex-wrap justify-center lg:justify-start gap-3">
+                                    @if (filled($sell['ios_url']))
+                                        <a href="{{ $sell['ios_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2.5 hover:bg-gray-800 transition-colors">
+                                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.62c-.02-2.1 1.72-3.11 1.8-3.16-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.54.77-3.2.77-.66 0-1.67-.75-2.75-.73-1.41.02-2.72.82-3.45 2.08-1.47 2.55-.38 6.32 1.06 8.39.7 1.01 1.54 2.15 2.64 2.11 1.06-.04 1.46-.69 2.74-.69 1.28 0 1.64.69 2.76.67 1.14-.02 1.86-1.03 2.55-2.05.8-1.18 1.13-2.32 1.15-2.38-.03-.01-2.2-.84-2.25-3.36zM14.28 6.43c.58-.71.98-1.69.87-2.67-.84.03-1.86.56-2.46 1.26-.54.62-1.01 1.62-.88 2.58.94.07 1.89-.47 2.47-1.17z"/></svg>
+                                            <span class="text-left leading-tight"><span class="block text-[10px]">Download on the</span><span class="block text-base font-semibold">App Store</span></span>
+                                        </a>
+                                    @endif
+                                    @if (filled($sell['android_url']))
+                                        <a href="{{ $sell['android_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2.5 hover:bg-gray-800 transition-colors">
+                                            <svg class="w-6 h-6" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2c-.2.2-.3.6-.3 1v17.6c0 .4.1.8.3 1l.1.1 9.9-9.9v-.2L3.7 2.1z"/><path fill="#ffce00" d="M16.9 15.4l-3.3-3.3v-.2l3.3-3.3.1.1 3.9 2.2c1.1.6 1.1 1.7 0 2.4l-3.9 2.2z"/><path fill="#ff3a44" d="M17 15.3l-3.4-3.4-10 10c.4.4 1 .4 1.7.1z"/><path fill="#00f076" d="M17 8.5L5.3 1.9c-.7-.4-1.3-.3-1.7.1l10 10z"/></svg>
+                                            <span class="text-left leading-tight"><span class="block text-[10px] uppercase">Get it on</span><span class="block text-base font-semibold">Google Play</span></span>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
             </div>
         </section>
     @endif
@@ -700,70 +814,6 @@
                 }
             });
         </script>
-    @endif
-
-    @if (feature_enabled('home_start_selling_cta'))
-        {{-- START SELLING CTA BANNER --}}
-        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="relative bg-gray-50 dark:bg-slate-800/60 border border-gray-100 dark:border-slate-700 rounded-3xl p-8 sm:p-12 text-center shadow-2xs">
-                <div class="relative max-w-2xl mx-auto">
-                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-950 dark:text-white mb-3 tracking-tight">Start selling your electronics</h2>
-                    <p class="text-gray-600 dark:text-gray-300 text-xs sm:text-sm lg:text-base leading-relaxed mb-8">
-                        Turn your unused gadgets into instant cash. List in minutes as a seller or open a verified store with warehouse fulfillment.
-                    </p>
-
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a
-                            href="{{ Route::has('register.saler') ? route('register.saler') : (Route::has('register') ? route('register') : '#') }}"
-                            class="w-full sm:w-auto brand-btn-primary font-bold text-sm px-8 py-3.5 rounded-xl shadow-xs transition-all"
-                        >
-                            Start Selling Now
-                        </a>
-                        <a
-                            href="{{ Route::has('shop') ? route('shop') : '#' }}"
-                            class="w-full sm:w-auto bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-900 dark:text-white font-semibold text-sm px-7 py-3.5 rounded-xl border border-gray-200 dark:border-slate-600 shadow-2xs transition-all"
-                        >
-                            Explore Verified Deals →
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    @endif
-
-    @if (feature_enabled('home_latest_drops'))
-        {{-- LATEST DROPS --}}
-        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-950 dark:text-white">Latest Drops</h2>
-                <a href="{{ Route::has('shop') ? route('shop') : '#' }}" class="text-xs sm:text-sm font-bold text-gray-950 dark:text-gray-300 hover:text-black dark:hover:text-amber-400 flex items-center gap-1 transition-colors">
-                    <span>View All</span>
-                    <span>→</span>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                @foreach ($latestProducts as $product)
-                    <x-product-card
-                        :id="$product['id'] ?? null"
-                        :title="$product['title']"
-                        :category="$product['category'] ?? $product['brand'] ?? 'Electronics'"
-                        :brand="$product['brand']"
-                        :price="$product['price']"
-                        :compare-price="$product['comparePrice'] ?? null"
-                        :rating="$product['rating'] ?? null"
-                        :rating-count="$product['ratingCount'] ?? null"
-                        :seller="$product['seller'] ?? null"
-                        :is-new="$product['isNew'] ?? false"
-                        :key-features="$product['keyFeatures'] ?? []"
-                        :image="$product['image'] ?? null"
-                        :href="$product['href'] ?? '#'"
-                        :is-verified="$product['isVerified'] ?? true"
-                        :is-admin-approved="$product['isAdminApproved'] ?? true"
-                    />
-                @endforeach
-            </div>
-        </section>
     @endif
 
     @if (feature_enabled('home_reviews') && $reviews->isNotEmpty())

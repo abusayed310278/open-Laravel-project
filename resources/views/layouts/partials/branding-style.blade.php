@@ -126,6 +126,8 @@
     .text-brand-500 { color: var(--color-brand-500) !important; }
     .text-brand-600 { color: var(--color-brand-600) !important; }
 
+    .js-add-to-cart:hover:not(:disabled) { color: #000 !important; }
+
     .border-brand-500 { border-color: var(--color-brand-500) !important; }
     .border-brand-400 { border-color: var(--color-brand-400) !important; }
 
