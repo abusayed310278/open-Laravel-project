@@ -50,6 +50,25 @@
                     <dd class="text-gray-800 font-medium mt-0.5">{{ $user->last_login_at?->diffForHumans() ?? 'Never' }}</dd>
                 </div>
             </dl>
+
+            <div class="mt-6 pt-6 border-t border-gray-100 grid sm:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Buyer Activity</span>
+                        <span class="text-xs font-bold text-brand-600">{{ $user->orders()->count() }} orders</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Total Spent: <strong class="text-gray-900">Tk {{ number_format((float) $user->orders()->whereNotIn('status', ['cancelled', 'failed'])->sum('total'), 2) }}</strong></p>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Seller Activity</span>
+                        <span class="text-xs font-bold text-brand-600">{{ $user->products()->count() }} listings</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Store: <strong class="text-gray-900">{{ $user->salerProfile?->display_name ?? $user->businessProfile?->business_name ?? 'Personal Store' }}</strong></p>
+                    <p class="text-xs text-gray-500 mt-0.5">Wallet: <strong class="text-emerald-600">Tk {{ number_format((float) (app(\App\Services\WalletService::class)->walletFor($user)->available_balance ?? 0), 2) }}</strong></p>
+                </div>
+            </div>
         </x-card>
 
         <x-card title="Change Status">

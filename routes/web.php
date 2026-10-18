@@ -666,7 +666,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value.','.UserRole::Customer->value, 'profile.complete'])
     ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerCustomerRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
-        Route::view('/', 'saler.dashboard')->name('dashboard');
+        Route::get('/', fn () => redirect()->route('account.dashboard'))->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
         Route::post('/verification', [VerificationController::class, 'store'])->name('verification.store');

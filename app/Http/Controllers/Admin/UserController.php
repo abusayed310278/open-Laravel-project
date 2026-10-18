@@ -21,13 +21,12 @@ class UserController extends Controller
     public function index(Request $request): View
     {
         $roleInput = strtolower(trim((string) $request->input('role')));
-        $roleValue = match ($roleInput) {
-            'seller', 'saler' => UserRole::Saler->value,
-            'store owner', 'store_owner', 'store-owner', 'business' => UserRole::Business->value,
-            'user', 'customer' => UserRole::Customer->value,
-            'verifier' => UserRole::Verifier->value,
-            'admin' => UserRole::Admin->value,
-            default => UserRole::tryFrom($roleInput)?->value,
+        $roleValues = match ($roleInput) {
+            'seller', 'saler', 'user', 'customer', 'personal' => [UserRole::Customer->value, UserRole::Saler->value],
+            'store owner', 'store_owner', 'store-owner', 'business' => [UserRole::Business->value],
+            'verifier' => [UserRole::Verifier->value],
+            'admin' => [UserRole::Admin->value],
+            default => $roleInput !== '' && UserRole::tryFrom($roleInput) ? [UserRole::tryFrom($roleInput)->value] : null,
         };
 
         $statusInput = strtolower(trim((string) $request->input('status')));
@@ -36,7 +35,8 @@ class UserController extends Controller
         $search = trim((string) $request->input('search'));
 
         $users = User::query()
-            ->when($roleValue, fn ($query) => $query->where('role', $roleValue))
+            ->withCount(['orders', 'products'])
+            ->when($roleValues, fn ($query) => $query->whereIn('role', $roleValues))
             ->when($statusValue, fn ($query) => $query->where('status', $statusValue))
             ->when($search !== '', function ($query) use ($search) {
                 $term = '%'.$search.'%';
@@ -62,11 +62,21 @@ class UserController extends Controller
             $roleCounts[$key] = (int) $cnt;
         }
 
+        // Combine legacy saler and customer counts under customer for clean display
+        $roleCounts[UserRole::Customer->value] = ($roleCounts[UserRole::Customer->value] ?? 0) + ($roleCounts[UserRole::Saler->value] ?? 0);
+
         $totalUsersCount = User::count();
+
+        // Omit legacy Saler from visible tabs so admin sees: Personal (Buy & Sell), Store Owner, Verifier, Admin
+        $visibleRoles = collect(UserRole::cases())
+            ->reject(fn (UserRole $role) => $role === UserRole::Saler)
+            ->values()
+            ->all();
 
         return view('admin.users.index', [
             'users' => $users,
-            'roles' => UserRole::cases(),
+            'roles' => $visibleRoles,
+            'allRoles' => UserRole::cases(),
             'statuses' => UserStatus::cases(),
             'roleCounts' => $roleCounts,
             'totalUsersCount' => $totalUsersCount,

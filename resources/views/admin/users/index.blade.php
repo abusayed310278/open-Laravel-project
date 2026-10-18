@@ -164,6 +164,16 @@
                                 @if($user->phone)
                                     <p class="text-[11px] text-gray-400 font-mono">{{ $user->phone }}</p>
                                 @endif
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded" title="Purchases made">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                        {{ $user->orders_count ?? 0 }} {{ \Illuminate\Support\Str::plural('order', $user->orders_count ?? 0) }}
+                                    </span>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded" title="Products listed for sale">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                        {{ $user->products_count ?? 0 }} {{ \Illuminate\Support\Str::plural('product', $user->products_count ?? 0) }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </td>

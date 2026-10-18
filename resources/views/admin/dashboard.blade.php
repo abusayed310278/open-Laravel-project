@@ -35,7 +35,7 @@
             ['Total Orders', number_format($metrics['totalOrders']), ($ordersChange >= 0 ? '+' : '').$ordersChange.'% vs last month'],
             ['Active Products', number_format($metrics['activeProducts']), number_format($metrics['totalProducts']).' total'],
             ['Pending Review', number_format($metrics['pendingVerifications']), $metrics['pendingKycUsers'].' users · '.$metrics['pendingProducts'].' products'],
-            ['Platform Users', number_format($metrics['totalUsers']), $roleCounts['customer'].' customers · '.($roleCounts['saler'] + $roleCounts['business']).' sellers · '.$roleCounts['verifier'].' verifiers'],
+            ['Platform Users', number_format($metrics['totalUsers']), ($roleCounts['customer'] + $roleCounts['saler']).' individual users (buy & sell) · '.$roleCounts['business'].' store owners · '.$roleCounts['verifier'].' verifiers'],
             ['Earned Commission', 'Tk '.number_format($metrics['totalCommission'], 2), 'Marketplace fees'],
         ];
     @endphp

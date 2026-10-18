@@ -16,8 +16,8 @@ enum UserRole: string
             self::Admin => 'Admin',
             self::Verifier => 'Verifier',
             self::Business => 'Store Owner',
-            self::Saler => 'Seller',
-            self::Customer => 'User',
+            self::Saler => 'Seller (Legacy)',
+            self::Customer => 'Personal (Buy & Sell)',
         };
     }
 
@@ -30,8 +30,7 @@ enum UserRole: string
             self::Admin => 'admin.dashboard',
             self::Verifier => 'verifier.dashboard',
             self::Business => 'business.dashboard',
-            self::Saler => 'saler.dashboard',
-            self::Customer => 'account.dashboard',
+            self::Saler, self::Customer => 'account.dashboard',
         };
     }
 

@@ -266,12 +266,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSaler(): bool
     {
-        return $this->role === UserRole::Saler;
+        return $this->role === UserRole::Saler || $this->role === UserRole::Customer;
     }
 
     public function isCustomer(): bool
     {
-        return $this->role === UserRole::Customer;
+        return $this->role === UserRole::Customer || $this->role === UserRole::Saler;
+    }
+
+    public function isIndividual(): bool
+    {
+        return $this->isCustomer();
     }
 
     public function isActive(): bool
