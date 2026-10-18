@@ -719,7 +719,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-brand-600 transition-colors w-full">{{ $vendor['name'] }}</span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-black transition-colors w-full">{{ $vendor['name'] }}</span>
                             <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-600 dark:text-amber-400 font-normal">
                                 <span class="text-amber-500">★</span>
                                 <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>
@@ -750,7 +750,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-brand-600 transition-colors w-full">{{ $vendor['name'] }}</span>
+                            <span class="text-xs font-medium text-gray-800 dark:text-gray-100 line-clamp-1 group-hover:text-black transition-colors w-full">{{ $vendor['name'] }}</span>
                             <div class="flex items-center gap-1 mt-1 text-[11px] text-gray-600 dark:text-amber-400 font-normal">
                                 <span class="text-amber-500">★</span>
                                 <span>{{ number_format((float) ($vendor['rating'] ?? 4.9), 1) }}</span>

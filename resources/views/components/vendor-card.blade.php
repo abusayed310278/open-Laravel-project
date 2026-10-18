@@ -16,7 +16,7 @@
             </span>
         @endif
     </div>
-    <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-brand-600 transition-colors">{{ $name }}</span>
+    <span class="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-black transition-colors">{{ $name }}</span>
     @if ($rating)
         <span class="text-xs text-brand-500 font-semibold">★ {{ number_format($rating, 1) }}</span>
     @endif

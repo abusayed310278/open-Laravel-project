@@ -388,13 +388,18 @@
     }
     .search-submit-btn:hover,
     .advanced-search-btn:hover {
-        background-color: var(--color-brand-600, #d97706) !important;
-        color: var(--color-brand-contrast, #ffffff) !important;
+        background-color: var(--color-brand-200, #fde68a) !important;
+        color: #000 !important;
     }
     .search-submit-btn svg,
     .advanced-search-btn svg,
     .search-submit-btn .submit-button-text {
         color: var(--color-brand-contrast, #ffffff) !important;
+    }
+    .search-submit-btn:hover svg,
+    .advanced-search-btn:hover svg,
+    .search-submit-btn:hover .submit-button-text {
+        color: #000 !important;
     }
 </style>
 

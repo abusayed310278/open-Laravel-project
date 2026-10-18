@@ -35,8 +35,8 @@
     .brand-btn-primary:hover,
     .brand-cta-button:hover,
     .js-start-selling-cta:hover {
-        background-color: var(--color-brand-600) !important;
-        color: var(--color-brand-contrast) !important;
+        background-color: var(--color-brand-200) !important;
+        color: #000 !important;
     }
 
     /* 2. Promo Cards Action Buttons (Screenshot 2) */
@@ -65,8 +65,8 @@
     #btn-add-to-cart:hover,
     .btn-add-to-cart:hover,
     .add-to-cart-btn:hover {
-        background-color: var(--color-brand-600) !important;
-        color: var(--color-brand-contrast) !important;
+        background-color: var(--color-brand-200) !important;
+        color: #000 !important;
     }
 
     /* 4. Search Bar Action Buttons (Search & Advanced Sliders) */
@@ -79,13 +79,18 @@
     }
     .search-submit-btn:hover,
     .advanced-search-btn:hover {
-        background-color: var(--color-brand-600) !important;
-        color: var(--color-brand-contrast) !important;
+        background-color: var(--color-brand-200) !important;
+        color: #000 !important;
     }
     .search-submit-btn svg,
     .advanced-search-btn svg,
     .search-submit-btn .submit-button-text {
         color: var(--color-brand-contrast) !important;
+    }
+    .search-submit-btn:hover svg,
+    .advanced-search-btn:hover svg,
+    .search-submit-btn:hover .submit-button-text {
+        color: #000 !important;
     }
 
     /* 4. Newsletter Stay Updated Banner (Screenshot 4) */

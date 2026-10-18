@@ -7,7 +7,7 @@
 
 @php
     $variants = [
-        'primary' => 'bg-brand-500 hover:bg-brand-600 text-white font-semibold',
+        'primary' => 'brand-btn-primary font-semibold',
         'secondary' => 'border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium',
         'dark' => 'bg-gray-900 hover:bg-gray-700 text-white font-semibold',
         'danger' => 'bg-red-500 hover:bg-red-600 text-white font-semibold',
