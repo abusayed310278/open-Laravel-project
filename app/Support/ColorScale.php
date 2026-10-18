@@ -15,22 +15,26 @@ class ColorScale
      */
     public static function fromHex(string $hex): array
     {
+        $hex = '#' . strtolower(ltrim($hex, '#'));
         [$h, $s, $l] = self::hexToHsl($hex);
 
-        // Lightness target per step, tuned so the 500 step lands close to
-        // the input color regardless of how light/dark it started.
-        $lightness = [
-            '50' => 97, '100' => 93, '200' => 85, '300' => 74, '400' => 60,
-            '500' => max(35, min(55, $l)), '600' => 42, '700' => 33, '800' => 26, '900' => 20,
+        // 500 is ALWAYS the exact input color so brand primary elements match 1:1.
+        // Shades 50–400 scale smoothly from 97% down towards $l.
+        // Shades 600–900 scale smoothly from $l down towards deep shadow.
+        $l400 = $l > 60 ? ($l + 74.0) / 2 : max(30.0, ($l + 74.0) / 2);
+
+        return [
+            '50'  => self::hslToHex($h, $s, 97.0),
+            '100' => self::hslToHex($h, $s, 93.0),
+            '200' => self::hslToHex($h, $s, 85.0),
+            '300' => self::hslToHex($h, $s, 74.0),
+            '400' => self::hslToHex($h, $s, (float) $l400),
+            '500' => $hex,
+            '600' => self::hslToHex($h, $s, (float) max(12.0, $l * 0.84)),
+            '700' => self::hslToHex($h, $s, (float) max(9.0, $l * 0.68)),
+            '800' => self::hslToHex($h, $s, (float) max(6.0, $l * 0.52)),
+            '900' => self::hslToHex($h, $s, (float) max(4.0, $l * 0.38)),
         ];
-
-        $scale = [];
-
-        foreach ($lightness as $step => $targetL) {
-            $scale[$step] = self::hslToHex($h, $s, (float) $targetL);
-        }
-
-        return $scale;
     }
 
     /**

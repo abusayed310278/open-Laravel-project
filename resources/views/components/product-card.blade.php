@@ -210,7 +210,7 @@
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
         <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
-        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 border border-brand-500 bg-white dark:bg-slate-800 hover:bg-brand-500 dark:hover:bg-brand-500 text-brand-600 dark:text-brand-400 hover:text-black dark:hover:text-black text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer">
+        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>

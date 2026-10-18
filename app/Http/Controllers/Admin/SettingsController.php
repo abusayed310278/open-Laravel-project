@@ -610,26 +610,74 @@ class SettingsController extends Controller
 
     public function color(): View
     {
+        $primary = $this->settings->get('brand_color_primary', '#f59e0b');
+        $base = $this->settings->get('brand_color_base', $primary);
+        $weight = (string) $this->settings->get('brand_color_weight', '500');
+
         return view('admin.settings.color', [
-            'currentColor' => $this->settings->get('brand_color_primary', '#f59e0b'),
+            'currentColor' => $primary,
+            'currentBaseColor' => $base,
+            'currentWeight' => $weight,
+            'currentHoverColor' => $this->settings->get('brand_color_hover', '#fff200'),
+            'currentHoverTextColor' => $this->settings->get('brand_color_hover_text', '#000000'),
         ]);
     }
 
     public function updateColor(Request $request): RedirectResponse
     {
+        $primary = '#'.ltrim(trim($request->string('brand_color_primary')->value()), '#');
+        $base = $request->filled('brand_color_base')
+            ? '#'.ltrim(trim($request->string('brand_color_base')->value()), '#')
+            : $primary;
+        $weight = $request->filled('brand_color_weight')
+            ? trim($request->string('brand_color_weight')->value())
+            : '500';
+        $hover = $request->filled('brand_color_hover')
+            ? '#'.ltrim(trim($request->string('brand_color_hover')->value()), '#')
+            : '#fff200';
+        $hoverText = $request->filled('brand_color_hover_text')
+            ? '#'.ltrim(trim($request->string('brand_color_hover_text')->value()), '#')
+            : '#000000';
+
         $request->merge([
-            'brand_color_primary' => '#'.ltrim(trim($request->string('brand_color_primary')->value()), '#'),
+            'brand_color_primary' => $primary,
+            'brand_color_base' => $base,
+            'brand_color_weight' => $weight,
+            'brand_color_hover' => $hover,
+            'brand_color_hover_text' => $hoverText,
         ]);
 
         $request->validate([
             'brand_color_primary' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_base' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_weight' => ['required', 'in:50,100,200,300,400,500,600,700,800,900'],
+            'brand_color_hover' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_hover_text' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
         $hex = strtolower($request->string('brand_color_primary')->value());
-        $this->settings->set('brand_color_primary', $hex, 'branding');
-        ActivityLog::record('settings.color.updated', properties: ['color' => $hex]);
+        $baseHex = strtolower($request->string('brand_color_base')->value());
+        $weightVal = $request->string('brand_color_weight')->value();
+        $hoverHex = strtolower($request->string('brand_color_hover')->value());
+        $hoverTextHex = strtolower($request->string('brand_color_hover_text')->value());
 
-        return back()->with('status', 'Site brand primary color updated to '.$hex.'.');
+        $this->settings->setMany([
+            'brand_color_primary' => $hex,
+            'brand_color_base' => $baseHex,
+            'brand_color_weight' => $weightVal,
+            'brand_color_hover' => $hoverHex,
+            'brand_color_hover_text' => $hoverTextHex,
+        ], 'branding');
+
+        ActivityLog::record('settings.color.updated', properties: [
+            'color' => $hex,
+            'base' => $baseHex,
+            'weight' => $weightVal,
+            'hover_color' => $hoverHex,
+            'hover_text' => $hoverTextHex,
+        ]);
+
+        return back()->with('status', 'Site brand colors and hover styles updated successfully.');
     }
 
     public function cache(): View

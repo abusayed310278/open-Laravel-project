@@ -25,6 +25,8 @@ class UpdateBrandingRequest extends FormRequest
             'favicon' => ['nullable', 'image', 'mimes:png,jpg,jpeg,ico,svg', 'max:256'],
             'brand_font' => ['nullable', Rule::in(self::FONTS)],
             'brand_color_primary' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_hover' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_hover_text' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ];
     }
 }

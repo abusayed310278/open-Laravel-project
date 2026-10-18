@@ -27,11 +27,33 @@
                     <h2 class="text-base font-semibold text-gray-900">Real-Time Color Sandbox</h2>
                     <p class="text-xs text-gray-500 mt-0.5">Preview how buttons, badges, navigation links, and highlights adapt instantly to your selected brand color.</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400">Current Hex:</span>
-                    <span id="active-hex-badge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold text-gray-800 bg-gray-100 border border-gray-200">
-                        {{ $currentColor }}
-                    </span>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-gray-400">Primary:</span>
+                        <button
+                            type="button"
+                            onclick="document.getElementById('color-wheel').click()"
+                            title="Click to change primary brand color"
+                            class="px-2.5 py-1 rounded-full text-xs font-mono font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all hover:scale-105 cursor-pointer shadow-2xs flex items-center gap-1.5 group"
+                        >
+                            <span id="active-hex-badge">{{ $currentColor }}</span>
+                            <span class="text-[10px] text-gray-400 group-hover:text-gray-600">✎</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-gray-400">Hover:</span>
+                        <button
+                            type="button"
+                            onclick="document.getElementById('hover-color-wheel').click()"
+                            title="Click to change hover color"
+                            id="active-hover-badge"
+                            class="px-2.5 py-1 rounded-full text-xs font-mono font-bold border transition-all hover:scale-105 cursor-pointer shadow-2xs flex items-center gap-1.5 group"
+                            style="background-color: {{ $currentHoverColor ?? '#fff200' }}; color: {{ $currentHoverTextColor ?? '#000000' }}; border-color: #d1d5db;"
+                        >
+                            <span>{{ $currentHoverColor ?? '#fff200' }}</span>
+                            <span class="text-[10px] opacity-70 group-hover:opacity-100">✎</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -39,12 +61,15 @@
             <div class="p-6 rounded-xl border border-gray-200 bg-gray-50/60 space-y-6">
                 {{-- Button Styles --}}
                 <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2">Interactive Buttons</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Interactive Buttons</span>
+                        <span class="text-[10px] text-gray-400">Hover over buttons to test live hover state (#fff200 / black)</span>
+                    </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <button
                             type="button"
                             id="preview-btn-primary"
-                            class="px-5 py-2.5 rounded-lg text-white text-xs font-semibold shadow-sm transition-all"
+                            class="px-5 py-2.5 rounded-lg text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
                             style="background-color: {{ $currentColor }};"
                         >
                             Primary Action Button
@@ -74,7 +99,7 @@
                             <button
                                 type="button"
                                 id="preview-search-submit"
-                                class="px-3 py-1.5 rounded-md text-white text-xs font-semibold shadow-xs transition-all pointer-events-none"
+                                class="px-3 py-1.5 rounded-md text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
                                 style="background-color: {{ $currentColor }};"
                             >
                                 Search
@@ -82,7 +107,7 @@
                             <button
                                 type="button"
                                 id="preview-search-adv"
-                                class="w-7 h-7 flex items-center justify-center rounded-md text-white shadow-xs transition-all pointer-events-none"
+                                class="w-7 h-7 flex items-center justify-center rounded-md text-white shadow-xs transition-all cursor-pointer"
                                 style="background-color: {{ $currentColor }};"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -153,6 +178,8 @@
 
             <form method="POST" action="{{ route('admin.settings.color.update') }}" class="space-y-6">
                 @csrf
+                <input type="hidden" name="brand_color_base" id="brand_color_base" value="{{ $currentBaseColor }}">
+                <input type="hidden" name="brand_color_weight" id="brand_color_weight" value="{{ $currentWeight }}">
 
                 {{-- Curated Presets --}}
                 <div>
@@ -173,7 +200,7 @@
                         @foreach ($presets as $p)
                             <button
                                 type="button"
-                                onclick="setColor('{{ $p['hex'] }}')"
+                                onclick="setBaseColor('{{ $p['hex'] }}')"
                                 class="border-2 rounded-xl p-3 text-left transition-all hover:scale-105 group bg-white preset-btn"
                                 data-hex="{{ $p['hex'] }}"
                                 style="border-color: {{ strtolower($currentColor) === strtolower($p['hex']) ? $p['hex'] : '#e5e7eb' }};"
@@ -186,16 +213,16 @@
                     </div>
                 </div>
 
-                {{-- Custom Hex / Color Input --}}
+                {{-- Custom Hex / Primary Color Input --}}
                 <div class="pt-4 border-t border-gray-100">
-                    <label for="brand_color_hex" class="block text-sm font-medium text-gray-700 mb-2">Custom Hex Color Code</label>
+                    <label for="brand_color_hex" class="block text-sm font-medium text-gray-700 mb-2">Custom Primary Brand Color</label>
                     <div class="flex items-center gap-3 max-w-md">
                         <div class="relative w-12 h-12 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0">
                             <input
                                 type="color"
                                 id="color-wheel"
                                 value="{{ $currentColor }}"
-                                oninput="syncColorFromWheel(this.value)"
+                                oninput="syncBaseFromWheel(this.value)"
                                 class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
                             >
                         </div>
@@ -206,7 +233,7 @@
                                 name="brand_color_primary"
                                 id="brand_color_hex"
                                 value="{{ ltrim($currentColor, '#') }}"
-                                oninput="syncColorFromInput(this.value)"
+                                oninput="syncBaseFromInput(this.value)"
                                 placeholder="f59e0b"
                                 maxlength="7"
                                 required
@@ -217,20 +244,125 @@
                     <p class="text-xs text-gray-400 mt-2">Enter a 6-character hex color without '#'. All Tailwind brand scales (50 to 900) are auto-calculated and selectable above.</p>
                 </div>
 
+                {{-- Brand Hover State Settings --}}
+                <div class="pt-6 border-t border-gray-100 space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-semibold text-gray-900">Button Hover State (Background &amp; Text)</label>
+                            <span class="text-xs text-brand-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Live Synchronized</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">When users hover over primary action buttons (Search, Start Selling, Add to Cart), this background and text color will be applied.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- Hover Background Color --}}
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+                            <label for="brand_color_hover" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Hover Background Color</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                    <input
+                                        type="color"
+                                        id="hover-color-wheel"
+                                        value="{{ $currentHoverColor ?? '#fff200' }}"
+                                        oninput="syncHoverFromWheel(this.value)"
+                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                    >
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                    <input
+                                        type="text"
+                                        name="brand_color_hover"
+                                        id="brand_color_hover"
+                                        value="{{ ltrim($currentHoverColor ?? '#fff200', '#') }}"
+                                        oninput="syncHoverFromInput(this.value)"
+                                        placeholder="fff200"
+                                        maxlength="7"
+                                        required
+                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                    >
+                                </div>
+                            </div>
+
+                            {{-- Quick Hover Background Presets --}}
+                            <div class="flex flex-wrap gap-1.5 mt-3">
+                                <button type="button" onclick="setHoverColor('#fff200', '#000000')" class="px-2.5 py-1 rounded text-[11px] font-mono font-medium border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full border border-black/10" style="background-color: #fff200;"></span>
+                                    #fff200 (Vibrant Yellow)
+                                </button>
+                                <button type="button" onclick="setHoverColor('#fef08a', '#000000')" class="px-2.5 py-1 rounded text-[11px] font-mono font-medium border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full border border-black/10" style="background-color: #fef08a;"></span>
+                                    #fef08a (Soft Gold)
+                                </button>
+                                <button type="button" onclick="setHoverColor('#ffffff', '#0f172a')" class="px-2.5 py-1 rounded text-[11px] font-mono font-medium border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full border border-black/10" style="background-color: #ffffff;"></span>
+                                    #ffffff (White)
+                                </button>
+                                <button type="button" onclick="setHoverColor('#0f172a', '#ffffff')" class="px-2.5 py-1 rounded text-[11px] font-mono font-medium border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full border border-black/10" style="background-color: #0f172a;"></span>
+                                    #0f172a (Dark)
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Hover Text Color --}}
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200">
+                            <label for="brand_color_hover_text" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Hover Text Color</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                    <input
+                                        type="color"
+                                        id="hover-text-color-wheel"
+                                        value="{{ $currentHoverTextColor ?? '#000000' }}"
+                                        oninput="syncHoverTextFromWheel(this.value)"
+                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                    >
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                    <input
+                                        type="text"
+                                        name="brand_color_hover_text"
+                                        id="brand_color_hover_text"
+                                        value="{{ ltrim($currentHoverTextColor ?? '#000000', '#') }}"
+                                        oninput="syncHoverTextFromInput(this.value)"
+                                        placeholder="000000"
+                                        maxlength="7"
+                                        required
+                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                    >
+                                </div>
+                            </div>
+
+                            {{-- Quick Text Presets --}}
+                            <div class="flex gap-2 mt-3">
+                                <button type="button" onclick="setHoverTextColor('#000000')" class="px-3 py-1 rounded text-[11px] font-semibold border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full bg-black"></span>
+                                    Black (#000000)
+                                </button>
+                                <button type="button" onclick="setHoverTextColor('#ffffff')" class="px-3 py-1 rounded text-[11px] font-semibold border border-gray-200 hover:border-gray-400 bg-white shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                                    <span class="w-3 h-3 rounded-full bg-white border border-gray-300"></span>
+                                    White (#ffffff)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                     <x-button type="submit" class="shadow-sm">
                         <svg class="w-4 h-4 mr-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Save Brand Color
+                        Save Brand &amp; Hover Colors
                     </x-button>
 
                     <button
                         type="button"
-                        onclick="setColor('#f59e0b')"
+                        onclick="resetToDefaults()"
                         class="text-xs font-medium text-gray-500 hover:text-gray-700 underline"
                     >
-                        Reset to Openbox Amber (#f59e0b)
+                        Reset to Defaults (Amber #f59e0b &amp; Hover #fff200)
                     </button>
                 </div>
             </form>
@@ -238,6 +370,13 @@
     </div>
 
     <script>
+        let currentBaseColor = '{{ $currentColor }}';
+        let currentSelectedWeight = '500';
+        let currentPrimaryHex = '{{ $currentColor }}';
+        let currentHoverHex = '{{ $currentHoverColor ?? '#fff200' }}';
+        let currentHoverTextHex = '{{ $currentHoverTextColor ?? '#000000' }}';
+        let activeScale = {};
+
         function hexToHsl(hex) {
             hex = hex.replace('#', '');
             if (hex.length === 3) {
@@ -294,25 +433,22 @@
         }
 
         function generateColorScale(hex) {
+            hex = '#' + hex.replace('#', '').toLowerCase();
             const [h, s, l] = hexToHsl(hex);
-            const lightness = {
-                '50': 97,
-                '100': 93,
-                '200': 85,
-                '300': 74,
-                '400': 60,
-                '500': Math.max(35, Math.min(55, l)),
-                '600': 42,
-                '700': 33,
-                '800': 26,
-                '900': 20
-            };
+            const l400 = l > 60 ? (l + 74.0) / 2 : Math.max(30.0, (l + 74.0) / 2);
 
-            const scale = {};
-            for (const [step, targetL] of Object.entries(lightness)) {
-                scale[step] = hslToHex(h, s, targetL);
-            }
-            return scale;
+            return {
+                '50':  hslToHex(h, s, 97.0),
+                '100': hslToHex(h, s, 93.0),
+                '200': hslToHex(h, s, 85.0),
+                '300': hslToHex(h, s, 74.0),
+                '400': hslToHex(h, s, l400),
+                '500': hex,
+                '600': hslToHex(h, s, Math.max(12.0, l * 0.84)),
+                '700': hslToHex(h, s, Math.max(9.0, l * 0.68)),
+                '800': hslToHex(h, s, Math.max(6.0, l * 0.52)),
+                '900': hslToHex(h, s, Math.max(4.0, l * 0.38)),
+            };
         }
 
         function getContrastText(hex) {
@@ -326,74 +462,143 @@
             return yiq >= 155 ? '#0f172a' : '#ffffff';
         }
 
-        function updateLiveElements(hex) {
+        function updateHoverBadge() {
+            const badge = document.getElementById('active-hover-badge');
+            if (badge) {
+                const textSpan = badge.querySelector('span:first-child');
+                if (textSpan) textSpan.textContent = currentHoverHex.toUpperCase();
+                badge.style.backgroundColor = currentHoverHex;
+                badge.style.color = currentHoverTextHex;
+            }
+        }
+
+        function updatePreviewComponents(hex) {
             if (!hex.startsWith('#')) hex = '#' + hex;
             if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
 
+            currentPrimaryHex = hex;
             const contrastColor = getContrastText(hex);
 
-            document.getElementById('active-hex-badge').textContent = hex.toUpperCase();
+            const badgeText = document.getElementById('active-hex-badge');
+            if (badgeText) badgeText.textContent = hex.toUpperCase();
 
             const primaryBtn = document.getElementById('preview-btn-primary');
-            primaryBtn.style.backgroundColor = hex;
-            primaryBtn.style.color = contrastColor;
+            if (primaryBtn) {
+                primaryBtn.style.backgroundColor = hex;
+                primaryBtn.style.color = contrastColor;
+            }
 
             const outlineBtn = document.getElementById('preview-btn-outline');
-            outlineBtn.style.borderColor = hex;
-            outlineBtn.style.color = hex;
+            if (outlineBtn) {
+                outlineBtn.style.borderColor = hex;
+                outlineBtn.style.color = hex;
+            }
 
             const subtleBtn = document.getElementById('preview-btn-subtle');
-            subtleBtn.style.backgroundColor = hex + '1a';
-            subtleBtn.style.color = hex;
+            if (subtleBtn) {
+                subtleBtn.style.backgroundColor = hex + '1a';
+                subtleBtn.style.color = hex;
+            }
 
             const badgeStatus = document.getElementById('preview-badge-status');
-            badgeStatus.style.backgroundColor = hex + '1f';
-            badgeStatus.style.color = hex;
+            if (badgeStatus) {
+                badgeStatus.style.backgroundColor = hex + '1f';
+                badgeStatus.style.color = hex;
+            }
 
             const tabActive = document.getElementById('preview-tab-active');
-            tabActive.style.borderColor = hex;
-            tabActive.style.color = hex;
+            if (tabActive) {
+                tabActive.style.borderColor = hex;
+                tabActive.style.color = hex;
+            }
 
-            document.getElementById('preview-link').style.color = hex;
-            document.getElementById('preview-price').style.color = hex;
+            const link = document.getElementById('preview-link');
+            if (link) link.style.color = hex;
+
+            const price = document.getElementById('preview-price');
+            if (price) price.style.color = hex;
 
             const searchSubmit = document.getElementById('preview-search-submit');
-            const searchAdv = document.getElementById('preview-search-adv');
             if (searchSubmit) {
                 searchSubmit.style.backgroundColor = hex;
                 searchSubmit.style.color = contrastColor;
             }
+
+            const searchAdv = document.getElementById('preview-search-adv');
             if (searchAdv) {
                 searchAdv.style.backgroundColor = hex;
                 searchAdv.style.color = contrastColor;
             }
+        }
 
-            // Generate full mathematical 50-900 tonal scale
-            const scale = generateColorScale(hex);
-            const currentNorm = hex.toLowerCase();
-
+        function renderPalette() {
             let html = '';
-            for (const [step, shadeHex] of Object.entries(scale)) {
-                const isSelected = shadeHex.toLowerCase() === currentNorm;
+            for (const [step, shadeHex] of Object.entries(activeScale)) {
+                const isSelected = (step === currentSelectedWeight);
                 html += `
                     <button
                         type="button"
-                        onclick="setColor('${shadeHex}')"
-                        title="Click to select weight ${step} (${shadeHex.toUpperCase()}) as brand color"
-                        class="flex flex-col items-center justify-between p-1.5 rounded-lg border transition-all hover:scale-105 hover:shadow-md group text-center cursor-pointer ${isSelected ? 'border-gray-900 ring-2 ring-gray-900/20 bg-gray-50 shadow-xs' : 'border-gray-200 hover:border-gray-300 bg-white'}"
+                        onclick="selectWeight('${step}')"
+                        title="Click to select weight ${step} (${shadeHex.toUpperCase()}) as active brand color"
+                        class="flex flex-col items-center justify-between p-1.5 rounded-lg border transition-all hover:scale-105 hover:shadow-md group text-center cursor-pointer ${isSelected ? 'border-gray-900 ring-2 ring-gray-900/30 bg-gray-50 shadow-xs' : 'border-gray-200 hover:border-gray-300 bg-white'}"
                     >
                         <div class="w-full h-8 rounded-md mb-1.5 shadow-2xs relative flex items-center justify-center border border-black/5" style="background-color: ${shadeHex};">
                             ${isSelected ? `<span class="w-4 h-4 rounded-full bg-white/95 text-gray-900 flex items-center justify-center text-[9px] font-bold shadow-xs">✓</span>` : ''}
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="text-[11px] font-bold text-gray-800 leading-none">${step}</span>
+                            <span class="text-[11px] font-bold ${isSelected ? 'text-gray-900 font-extrabold' : 'text-gray-700'} leading-none">${step}</span>
                             ${step === '500' ? '<span class="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-100 text-amber-800 leading-none">Base</span>' : ''}
                         </div>
                         <span class="text-[9px] font-mono text-gray-400 uppercase mt-0.5 leading-none">${shadeHex}</span>
                     </button>
                 `;
             }
-            document.getElementById('palette-swatch-bar').innerHTML = html;
+            const container = document.getElementById('palette-swatch-bar');
+            if (container) container.innerHTML = html;
+        }
+
+        function selectWeight(step) {
+            currentSelectedWeight = String(step);
+            const weightInput = document.getElementById('brand_color_weight');
+            if (weightInput) weightInput.value = currentSelectedWeight;
+
+            const chosenHex = activeScale[currentSelectedWeight];
+            if (!chosenHex) return;
+
+            currentPrimaryHex = chosenHex;
+
+            const wheel = document.getElementById('color-wheel');
+            if (wheel) wheel.value = chosenHex.toLowerCase();
+
+            const hexInput = document.getElementById('brand_color_hex');
+            if (hexInput) hexInput.value = chosenHex.replace('#', '');
+
+            updatePreviewComponents(chosenHex);
+            renderPalette();
+        }
+
+        function setBaseColor(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+
+            currentBaseColor = hex;
+            currentSelectedWeight = '500';
+            const baseInput = document.getElementById('brand_color_base');
+            if (baseInput) baseInput.value = hex;
+            const weightInput = document.getElementById('brand_color_weight');
+            if (weightInput) weightInput.value = '500';
+
+            currentPrimaryHex = hex;
+            activeScale = generateColorScale(hex);
+
+            const wheel = document.getElementById('color-wheel');
+            if (wheel) wheel.value = hex.toLowerCase();
+
+            const hexInput = document.getElementById('brand_color_hex');
+            if (hexInput) hexInput.value = hex.replace('#', '');
+
+            updatePreviewComponents(hex);
+            renderPalette();
 
             // Highlight preset buttons if match
             document.querySelectorAll('.preset-btn').forEach(btn => {
@@ -407,29 +612,114 @@
             });
         }
 
-        function setColor(hex) {
-            if (!hex.startsWith('#')) hex = '#' + hex;
-            document.getElementById('color-wheel').value = hex;
-            document.getElementById('brand_color_hex').value = hex.replace('#', '');
-            updateLiveElements(hex);
+        function syncBaseFromWheel(hex) {
+            setBaseColor(hex);
         }
 
-        function syncColorFromWheel(hex) {
-            document.getElementById('brand_color_hex').value = hex.replace('#', '');
-            updateLiveElements(hex);
-        }
-
-        function syncColorFromInput(raw) {
+        function syncBaseFromInput(raw) {
             let clean = raw.trim().replace('#', '');
             if (clean.length === 6) {
-                const hex = '#' + clean;
-                document.getElementById('color-wheel').value = hex;
-                updateLiveElements(hex);
+                setBaseColor('#' + clean);
             }
         }
 
+        function setHoverColor(hoverHex, textHex) {
+            if (!hoverHex.startsWith('#')) hoverHex = '#' + hoverHex;
+            currentHoverHex = hoverHex;
+            const wheel = document.getElementById('hover-color-wheel');
+            if (wheel) wheel.value = hoverHex.toLowerCase();
+            const input = document.getElementById('brand_color_hover');
+            if (input) input.value = hoverHex.replace('#', '');
+
+            if (textHex) {
+                setHoverTextColor(textHex);
+            } else {
+                updateHoverBadge();
+            }
+        }
+
+        function setHoverTextColor(textHex) {
+            if (!textHex.startsWith('#')) textHex = '#' + textHex;
+            currentHoverTextHex = textHex;
+            const wheel = document.getElementById('hover-text-color-wheel');
+            if (wheel) wheel.value = textHex.toLowerCase();
+            const input = document.getElementById('brand_color_hover_text');
+            if (input) input.value = textHex.replace('#', '');
+            updateHoverBadge();
+        }
+
+        function syncHoverFromWheel(hex) {
+            currentHoverHex = hex;
+            const input = document.getElementById('brand_color_hover');
+            if (input) input.value = hex.replace('#', '');
+            updateHoverBadge();
+        }
+
+        function syncHoverFromInput(raw) {
+            let clean = raw.trim().replace('#', '');
+            if (clean.length === 6) {
+                currentHoverHex = '#' + clean;
+                const wheel = document.getElementById('hover-color-wheel');
+                if (wheel) wheel.value = currentHoverHex.toLowerCase();
+                updateHoverBadge();
+            }
+        }
+
+        function syncHoverTextFromWheel(hex) {
+            currentHoverTextHex = hex;
+            const input = document.getElementById('brand_color_hover_text');
+            if (input) input.value = hex.replace('#', '');
+            updateHoverBadge();
+        }
+
+        function syncHoverTextFromInput(raw) {
+            let clean = raw.trim().replace('#', '');
+            if (clean.length === 6) {
+                currentHoverTextHex = '#' + clean;
+                const wheel = document.getElementById('hover-text-color-wheel');
+                if (wheel) wheel.value = currentHoverTextHex.toLowerCase();
+                updateHoverBadge();
+            }
+        }
+
+        function resetToDefaults() {
+            setBaseColor('#f59e0b');
+            setHoverColor('#fff200', '#000000');
+        }
+
+        function setupButtonHoverListeners() {
+            const hoverTargets = [
+                document.getElementById('preview-btn-primary'),
+                document.getElementById('preview-search-submit'),
+                document.getElementById('preview-search-adv'),
+            ];
+
+            hoverTargets.forEach(el => {
+                if (!el) return;
+                el.addEventListener('mouseenter', () => {
+                    el.style.backgroundColor = currentHoverHex;
+                    el.style.color = currentHoverTextHex;
+                    const svg = el.querySelector('svg');
+                    if (svg) svg.style.color = currentHoverTextHex;
+                });
+                el.addEventListener('mouseleave', () => {
+                    el.style.backgroundColor = currentPrimaryHex;
+                    const normalColor = getContrastText(currentPrimaryHex);
+                    el.style.color = normalColor;
+                    const svg = el.querySelector('svg');
+                    if (svg) svg.style.color = normalColor;
+                });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            updateLiveElements('{{ $currentColor }}');
+            activeScale = generateColorScale('{{ $currentBaseColor }}');
+            currentSelectedWeight = '{{ $currentWeight }}';
+            currentPrimaryHex = '{{ $currentColor }}';
+            updatePreviewComponents('{{ $currentColor }}');
+            renderPalette();
+            updateHoverBadge();
+            setupButtonHoverListeners();
         });
     </script>
 @endsection
