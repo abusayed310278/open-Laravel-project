@@ -33,7 +33,11 @@ class RegistrationService
 
         match ($role) {
             UserRole::Business => $this->createBusinessProfile($user, $data['business_name']),
-            UserRole::Saler => $this->createSalerProfile($user, $data['display_name'], $data['location']),
+            UserRole::Saler, UserRole::Customer => $this->createSalerProfile(
+                $user,
+                $data['display_name'] ?? $data['name'],
+                $data['location'] ?? ''
+            ),
             default => null,
         };
 
@@ -49,13 +53,14 @@ class RegistrationService
         ]);
     }
 
-    private function createSalerProfile(User $user, string $displayName, string $location): SalerProfile
+    private function createSalerProfile(User $user, string $displayName, ?string $location = null): SalerProfile
     {
         return SalerProfile::create([
             'user_id' => $user->id,
             'display_name' => $displayName,
-            'location' => $location,
+            'location' => $location ?: null,
             'slug' => $this->uniqueSlug(SalerProfile::class, $displayName),
+            'is_store_active' => true,
         ]);
     }
 

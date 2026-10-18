@@ -101,7 +101,7 @@ class SubscriptionService
 
     private function grantActiveSubscriptionBenefits(Subscription $subscription, User $user, SubscriptionPlan $plan, ?\Carbon\Carbon $endsAt): void
     {
-        if ($plan->type === SubscriptionType::Saler || $user->role === UserRole::Saler) {
+        if ($plan->type === SubscriptionType::Saler || in_array($user->role, [UserRole::Saler, UserRole::Customer], true)) {
             $creditsCount = $plan->listing_credits ?: 50;
             $subscription->credits()->updateOrCreate(
                 ['subscription_id' => $subscription->id],
@@ -149,7 +149,7 @@ class SubscriptionService
             return true;
         }
 
-        if ($seller->role === UserRole::Saler) {
+        if ($seller->role === UserRole::Saler || $seller->role === UserRole::Customer) {
             $subscription = $seller->activeSubscription;
             if (! $subscription) {
                 return false;
@@ -193,7 +193,7 @@ class SubscriptionService
             return;
         }
 
-        if ($seller->role === UserRole::Saler && $subscription->credits) {
+        if (in_array($seller->role, [UserRole::Saler, UserRole::Customer], true) && $subscription->credits) {
             $subscription->credits->consume();
 
             $product->update([

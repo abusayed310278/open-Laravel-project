@@ -19,6 +19,17 @@
                 ],
             ],
             [
+                'label' => 'Selling',
+                'items' => [
+                    ['route' => 'saler.products.index', 'label' => 'My Products', 'icon' => $icon['box']],
+                    ['route' => 'saler.orders.index', 'label' => 'Sales Orders', 'icon' => $icon['shopping-bag']],
+                    ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
+                    ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield']],
+                    ['route' => 'saler.payouts.index', 'label' => 'Wallet & Payouts', 'icon' => $icon['wallet']],
+                    ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog']],
+                ],
+            ],
+            [
                 'label' => 'Engagement',
                 'items' => [
                     ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],

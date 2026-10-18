@@ -127,8 +127,8 @@ class ProductController extends Controller
         $owner = $product->user ?? Auth::user();
 
         if (! $this->subscriptions->canPublish($owner)) {
-            $message = $owner->isSaler()
-                ? 'The seller has no listing credits left. A subscription plan is required to publish more listings.'
+            $message = ($owner->isSaler() || $owner->isCustomer())
+                ? 'You have no listing credits left. A subscription plan or credit pack is required to publish listings.'
                 : 'An active subscription is required to publish more listings.';
 
             return back()->withErrors(['product' => $message]);

@@ -19,7 +19,7 @@ class ProductPolicy
 
     public function create(User $user): bool
     {
-        return $user->isBusiness() || $user->isSaler() || $user->isAdmin() || $user->isVerifier();
+        return $user->isBusiness() || $user->isSaler() || $user->isCustomer() || $user->isAdmin() || $user->isVerifier();
     }
 
     /**

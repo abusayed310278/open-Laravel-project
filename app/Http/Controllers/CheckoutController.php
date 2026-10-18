@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PaymentMethod;
-use App\Enums\UserRole;
-use App\Enums\UserStatus;
 use App\Models\Address;
 use App\Models\Order;
-use App\Models\User;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\PaymentService;
@@ -17,8 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -40,6 +35,10 @@ class CheckoutController extends Controller
         if (! $user) {
             // After signing in from the checkout page, come straight back to it.
             session(['url.intended' => route('checkout')]);
+        }
+
+        if ($user && session()->has('checkout.draft')) {
+            session()->flashInput(session()->pull('checkout.draft'));
         }
 
         $cart = $user ? $this->carts->forUser($user) : $this->carts->forGuest($this->carts->sessionId());
@@ -73,25 +72,13 @@ class CheckoutController extends Controller
         ]);
 
         if (! $user) {
-            // Everything is validated before an account is created, so a failed form never leaves one behind.
-            $guest = $request->validate([
-                'guest_email' => ['required', 'email', 'max:255'],
+            // Keep what they typed so it is restored once they have signed in or registered.
+            session([
+                'checkout.draft' => $request->except(['_token', 'guest_email']),
+                'url.intended' => route('checkout'),
             ]);
 
-            // A guest has no saved addresses, so the shipping form is always filled in; reuse its name and phone.
-            $shippingInput = $request->validate($this->addressRules('shipping'))['shipping'];
-            $guest['guest_name'] = $shippingInput['name'];
-            $guest['guest_phone'] = $shippingInput['phone'];
-            if (! $request->boolean('same_as_shipping', true)) {
-                $request->validate($this->addressRules('billing'));
-            }
-
-            if (User::query()->where('email', $guest['guest_email'])->exists()) {
-                return back()->withInput()->withErrors(['guest_email' => 'An account with this email already exists. Please log in to continue.']);
-            }
-
-            $user = $this->createGuestAccount($guest);
-            $cart = $this->carts->forUser($user);
+            return redirect()->route('login')->with('status', 'Please sign in or create an account to place your order. Your details are saved.');
         }
 
         try {
@@ -222,39 +209,6 @@ class CheckoutController extends Controller
             "{$prefix}.country" => ['required', 'string', 'max:120'],
             "{$prefix}.postal_code" => ['nullable', 'string', 'max:20'],
         ];
-    }
-
-    /**
-     * Guest checkout: create a customer account from the contact details, sign it in, and
-     * carry the guest cart over. A password-setup link is emailed so they can log in later.
-     *
-     * @param  array{guest_name: string, guest_email: string, guest_phone: string}  $guest
-     */
-    private function createGuestAccount(array $guest): User
-    {
-        $cartSessionId = $this->carts->sessionId();
-
-        $user = User::query()->create([
-            'name' => Str::title(trim($guest['guest_name'])),
-            'email' => $guest['guest_email'],
-            'phone' => $guest['guest_phone'],
-            'password' => Str::random(40),
-            'role' => UserRole::Customer,
-            'status' => UserStatus::Active,
-        ]);
-        $user->forceFill(['email_verified_at' => now()])->save();
-
-        Auth::login($user);
-        request()->session()->regenerate();
-        $this->carts->mergeGuestCartIntoUser($cartSessionId, $user);
-
-        try {
-            Password::sendResetLink(['email' => $user->email]);
-        } catch (\Throwable $e) {
-            Log::warning('Guest checkout: could not send password setup link: '.$e->getMessage());
-        }
-
-        return $user;
     }
 
     private function authorizeOrderAccess(Order $order): void

@@ -31,8 +31,8 @@ class RegisterRequest extends FormRequest
 
             'business_name' => ['required_if:account_type,business', 'nullable', 'string', 'max:255'],
 
-            'display_name' => ['required_if:account_type,saler', 'nullable', 'string', 'max:255'],
-            'location' => ['required_if:account_type,saler', 'nullable', 'string', 'max:255'],
+            'display_name' => ['nullable', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
         ];
     }
 

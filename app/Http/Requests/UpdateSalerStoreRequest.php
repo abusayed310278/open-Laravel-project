@@ -10,7 +10,7 @@ class UpdateSalerStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->isSaler();
+        return $this->user()->isSaler() || $this->user()->isCustomer();
     }
 
     protected function prepareForValidation(): void

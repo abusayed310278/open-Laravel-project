@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Requests\Onboarding\CompleteProfileRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -30,7 +31,7 @@ class OnboardingController extends Controller
         ]);
     }
 
-    public function updateProfile(CompleteProfileRequest $request): RedirectResponse
+    public function updateProfile(CompleteProfileRequest $request): RedirectResponse|JsonResponse
     {
         $user = $request->user();
         $profile = $user->role === UserRole::Business ? $user->businessProfile : $user->salerProfile;
@@ -97,8 +98,15 @@ class OnboardingController extends Controller
             app(\App\Services\KycService::class)->submit($user, array_filter($kycFiles));
         }
 
-        return redirect()->route($user->role->dashboardRoute())
-            ->with('status', 'Your store profile is all set up and verification submitted.');
+        $status = 'Your store profile is all set up and verification submitted.';
+
+        if ($request->expectsJson()) {
+            session()->flash('status', $status);
+
+            return response()->json(['redirect' => route($user->role->dashboardRoute())]);
+        }
+
+        return redirect()->route($user->role->dashboardRoute())->with('status', $status);
     }
 
     /**

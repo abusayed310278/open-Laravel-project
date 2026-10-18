@@ -34,7 +34,7 @@
                 <div class="grid lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
         @if ($isGuest)
-            {{-- Guests keep checking out below; these boxes only offer an account. --}}
+            {{-- Guests can fill in the form, but must sign in or register to place the order. --}}
             <div class="grid md:grid-cols-2 gap-4">
                 {{-- New customer: always the selected option --}}
                 <div class="rounded-2xl border-2 border-brand-400 bg-white p-5 ring-4 ring-brand-100/70">
@@ -44,7 +44,7 @@
                         </span>
                         <div class="min-w-0">
                             <h2 class="text-base font-bold text-gray-900">New to {{ config('app.name') }}? <a href="{{ route('register') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Create Account</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Fill in your details below to check out, or create an account to track your order.</p>
+                            <p class="text-sm text-gray-500 mt-0.5">Create an account to place your order and track it.</p>
                         </div>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                         </span>
                         <div class="min-w-0">
                             <h2 class="text-base font-bold text-gray-900">Returning customer? <a href="{{ route('login') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Sign in</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Access your account for faster checkout and order tracking.</p>
+                            <p class="text-sm text-gray-500 mt-0.5">Sign in to place your order with your saved details.</p>
                         </div>
                     </div>
                 </div>
@@ -132,9 +132,6 @@
                                 <x-input label="Address Label (optional)" name="shipping[label]" type="text" placeholder="Home, Office, Warehouse..." :value="old('shipping.label')" />
                                 <x-input label="Full name" name="shipping[name]" type="text" placeholder="Enter your full name" :value="old('shipping.name', Auth::user()?->name)" />
                                 <x-input label="Phone" name="shipping[phone]" type="tel" placeholder="e.g. +880 1700-000000" :value="old('shipping.phone', Auth::user()?->phone)" />
-                                @if ($isGuest)
-                                    <x-input label="Email" name="guest_email" type="email" placeholder="you@example.com" :value="old('guest_email')" class="sm:col-span-2" required />
-                                @endif
                                 <x-input label="Address line 1" name="shipping[line1]" type="text" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" :value="old('shipping.line1')" />
                                 <x-input label="Address line 2 (optional)" name="shipping[line2]" type="text" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" :value="old('shipping.line2')" />
                                 <x-select label="Country" name="shipping[country]" id="checkout_country_select" placeholder="Select Country" :selected="old('shipping.country', 'United States')" />

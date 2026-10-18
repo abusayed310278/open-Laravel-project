@@ -134,7 +134,7 @@
             @endauth
 
             {{-- Start Selling Button --}}
-            <a href="{{ route('register', ['type' => 'saler']) }}" class="header-start-selling-btn text-xs sm:text-sm font-bold px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
+            <a href="{{ auth()->check() ? route('saler.products.create') : route('register') }}" class="header-start-selling-btn text-xs sm:text-sm font-bold px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 flex-shrink-0">
                 <span class="whitespace-nowrap">Start Selling</span>
             </a>
         </div>

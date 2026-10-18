@@ -321,7 +321,7 @@ class ProductPageController extends Controller
             $isAdminProduct => route('home'),
             ! $sellerProfile => null,
             $seller->isBusiness() => route('stores.business', $sellerProfile->slug),
-            $seller->isSaler() => route('stores.saler', $sellerProfile->slug),
+            $seller->isSaler() || $seller->isCustomer() => route('stores.saler', $sellerProfile->slug),
             default => null,
         };
 

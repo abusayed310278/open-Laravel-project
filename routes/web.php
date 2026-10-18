@@ -664,7 +664,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profi
         $messagingRoutes();
     });
 
-Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value, 'profile.complete'])
+Route::middleware(['auth', 'verified', 'role:'.UserRole::Saler->value.','.UserRole::Customer->value, 'profile.complete'])
     ->prefix('saler')->name('saler.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $salerAppointmentRoutes, $salerWarehouseRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerCustomerRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
         Route::view('/', 'saler.dashboard')->name('dashboard');
 

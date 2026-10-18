@@ -11,13 +11,13 @@
         Complete your store branding, location details, and KYC verification documents to activate your {{ $isBusiness ? 'Store Owner' : 'Seller' }} account.
     </p>
 
-    <form method="POST" action="{{ route('onboarding.profile.store') }}" enctype="multipart/form-data" class="space-y-6">
+    <form id="onboarding-profile-form" method="POST" action="{{ route('onboarding.profile.store') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         {{-- Store Branding: Logo & Cover Photo --}}
         <div class="bg-gray-50/50 p-4 border border-gray-100 rounded-xl space-y-4">
             <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Store Branding</h2>
-            <div class="grid sm:grid-cols-2 gap-4">
+            <div class="onboarding-branding-uploads grid sm:grid-cols-2 gap-4">
                 <x-file-upload name="logo" label="Store Logo" hint="PNG or JPG square image up to 5MB" />
                 <x-file-upload name="cover_image" label="Cover Photo / Banner" hint="PNG or JPG banner image up to 5MB" />
             </div>
@@ -59,7 +59,7 @@
                 <div class="grid sm:grid-cols-2 gap-4">
                     @foreach ($requirements as $req)
                         @php($typeKey = $req->document_type->value)
-                        <div class="bg-white p-3.5 border border-gray-200 rounded-lg space-y-2">
+                        <div class="onboarding-kyc-card bg-white p-3.5 border border-gray-200 rounded-lg space-y-2">
                             <div class="flex items-center justify-between">
                                 <label class="text-xs font-bold text-gray-800">{{ $req->document_type->label() }}</label>
                                 @if ($req->is_required)
@@ -75,13 +75,35 @@
             </div>
         @endif
 
-        <x-button type="submit" class="w-full justify-center text-sm font-bold py-3">
+        <x-button type="submit" id="onboarding-submit-btn" class="w-full justify-center text-sm font-bold py-3">
             Finish Setup & Submit Profile
         </x-button>
     </form>
 
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
+        .onboarding-kyc-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .onboarding-kyc-card .js-file-upload {
+            flex: 1 1 auto;
+        }
+        .onboarding-branding-uploads .js-file-upload,
+        .onboarding-kyc-card .js-file-upload {
+            display: flex;
+            flex-direction: column;
+        }
+        .onboarding-branding-uploads .js-dropzone,
+        .onboarding-kyc-card .js-dropzone {
+            flex: 1 1 auto;
+        }
+        .ts-wrapper {
+            border: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
         .ts-control {
             border-radius: 0.375rem !important;
             border-color: #e2e8f0 !important;
@@ -135,6 +157,11 @@
             const stateSelect = document.getElementById('seller_state_select');
             const citySelect = document.getElementById('seller_city_select');
 
+            function setSearchPlaceholder(tom, text) {
+                const input = tom.dropdown.querySelector('.dropdown-input');
+                if (input) input.placeholder = text;
+            }
+
             let countryTom = null;
             let stateTom = null;
             let cityTom = null;
@@ -143,6 +170,8 @@
                 countryTom = new TomSelect(countrySelect, {
                     create: false,
                     placeholder: 'Select Country',
+                    plugins: ['dropdown_input'],
+                    onInitialize: function () { setSearchPlaceholder(this, 'Search country...'); },
                     onChange: function (val) {
                         updateStatesAndCities(val);
                     }
@@ -152,14 +181,18 @@
             if (stateSelect) {
                 stateTom = new TomSelect(stateSelect, {
                     create: false,
-                    placeholder: 'Select State'
+                    placeholder: 'Select State',
+                    plugins: ['dropdown_input'],
+                    onInitialize: function () { setSearchPlaceholder(this, 'Search state...'); }
                 });
             }
 
             if (citySelect) {
                 cityTom = new TomSelect(citySelect, {
                     create: false,
-                    placeholder: 'Select City'
+                    placeholder: 'Select City',
+                    plugins: ['dropdown_input'],
+                    onInitialize: function () { setSearchPlaceholder(this, 'Search city...'); }
                 });
             }
 
@@ -197,5 +230,68 @@
 
             populateCountries();
         });
+    </script>
+
+    <script>
+        // Submit without a full page reload; validation errors are shown inline under each field.
+        (function () {
+            const form = document.getElementById('onboarding-profile-form');
+            const submitBtn = document.getElementById('onboarding-submit-btn');
+            if (!form) return;
+
+            function clearErrors() {
+                form.querySelectorAll('.js-ajax-error').forEach((el) => el.remove());
+            }
+
+            function showErrors(errors) {
+                let firstError = null;
+                Object.entries(errors).forEach(([key, messages]) => {
+                    const parts = key.split('.');
+                    const name = parts[0] + parts.slice(1).map((part) => '[' + part + ']').join('');
+                    const field = form.querySelector('[name="' + name + '"]');
+                    if (!field) return;
+
+                    const container = field.closest('.js-file-upload') || field.parentElement;
+                    const message = document.createElement('p');
+                    message.className = 'js-ajax-error text-xs text-red-500 mt-1.5';
+                    message.textContent = messages[0];
+                    container.appendChild(message);
+                    firstError = firstError || message;
+                });
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                clearErrors();
+                if (submitBtn) submitBtn.disabled = true;
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        window.location.href = data.redirect;
+                        return;
+                    }
+
+                    if (response.status === 422) {
+                        showErrors((await response.json()).errors || {});
+                    } else {
+                        form.submit();
+                        return;
+                    }
+                } catch (e) {
+                    form.submit();
+                    return;
+                }
+
+                if (submitBtn) submitBtn.disabled = false;
+            });
+        })();
     </script>
 @endsection

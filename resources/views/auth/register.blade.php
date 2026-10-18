@@ -1,7 +1,11 @@
 @php
     $maxWidth = 'max-w-lg';
-    $activeTab = old('account_type', request('type', request('role', 'customer')));
-    if (!in_array($activeTab, ['customer', 'business', 'saler'], true)) {
+    $requestedType = request('type', request('role', 'customer'));
+    if ($requestedType === 'saler') {
+        $requestedType = 'customer';
+    }
+    $activeTab = old('account_type', $requestedType);
+    if (!in_array($activeTab, ['customer', 'business'], true)) {
         $activeTab = 'customer';
     }
 @endphp
@@ -11,12 +15,15 @@
 
 @section('content')
     <h1 class="text-xl font-bold text-gray-900 mb-1">Create your account</h1>
-    <p class="text-sm text-gray-500 mb-6">Buy on Openbox, or start selling as a store owner or seller.</p>
+    <p class="text-sm text-gray-500 mb-6">Shop, buy, or sell products as an individual, or register as a store owner.</p>
 
-    <div class="grid grid-cols-3 gap-2 mb-6">
-        <button type="button" data-tab="customer" data-account-tab class="border-b-2 {{ $activeTab === 'customer' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">User</button>
-        <button type="button" data-tab="business" data-account-tab class="border-b-2 {{ $activeTab === 'business' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Store Owner</button>
-        <button type="button" data-tab="saler" data-account-tab class="border-b-2 {{ $activeTab === 'saler' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors">Seller</button>
+    <div class="grid grid-cols-2 gap-2 mb-6">
+        <button type="button" data-tab="customer" data-account-tab class="border-b-2 {{ $activeTab === 'customer' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors text-center">
+            Personal <span class="text-xs font-normal text-gray-400 block sm:inline sm:ml-1">(Buy & Sell)</span>
+        </button>
+        <button type="button" data-tab="business" data-account-tab class="border-b-2 {{ $activeTab === 'business' ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500' }} text-sm font-semibold py-2 rounded-t-md transition-colors text-center">
+            Store Owner <span class="text-xs font-normal text-gray-400 block sm:inline sm:ml-1">(Business)</span>
+        </button>
     </div>
 
     <form method="POST" action="{{ route('register') }}" class="space-y-4" id="register-form">
@@ -32,11 +39,6 @@
 
         <div data-tab-content="business" class="{{ $activeTab === 'business' ? '' : 'hidden' }} grid gap-4">
             <x-input label="Business name" name="business_name" type="text" :value="old('business_name')" />
-        </div>
-
-        <div data-tab-content="saler" class="{{ $activeTab === 'saler' ? '' : 'hidden' }} grid sm:grid-cols-2 gap-4">
-            <x-input label="Display name" name="display_name" type="text" :value="old('display_name')" />
-            <x-input label="Location" name="location" type="text" :value="old('location')" />
         </div>
 
         <div>

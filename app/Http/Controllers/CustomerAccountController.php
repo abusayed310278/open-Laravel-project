@@ -44,6 +44,10 @@ class CustomerAccountController extends Controller
             'spending' => $spendingByDay,
             'topCategories' => $this->topCategories($user),
             'profileSteps' => $this->profileSteps($user),
+            'activeListingsCount' => $user->products()->where('publication_status', 'published')->count(),
+            'totalProductsCount' => $user->products()->count(),
+            'salesOrdersCount' => \App\Models\VendorOrder::where('vendor_id', $user->id)->count(),
+            'wallet' => app(\App\Services\WalletService::class)->walletFor($user),
         ]);
     }
 

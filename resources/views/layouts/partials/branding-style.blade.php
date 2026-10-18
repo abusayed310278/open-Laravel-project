@@ -35,7 +35,7 @@
     .brand-btn-primary:hover,
     .brand-cta-button:hover,
     .js-start-selling-cta:hover {
-        background-color: var(--color-brand-200) !important;
+        background-color: var(--color-brand-100) !important;
         color: #000 !important;
     }
 
@@ -65,7 +65,7 @@
     #btn-add-to-cart:hover,
     .btn-add-to-cart:hover,
     .add-to-cart-btn:hover {
-        background-color: var(--color-brand-200) !important;
+        background-color: var(--color-brand-100) !important;
         color: #000 !important;
     }
 
@@ -79,7 +79,7 @@
     }
     .search-submit-btn:hover,
     .advanced-search-btn:hover {
-        background-color: var(--color-brand-200) !important;
+        background-color: var(--color-brand-100) !important;
         color: #000 !important;
     }
     .search-submit-btn svg,

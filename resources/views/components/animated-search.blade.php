@@ -388,7 +388,7 @@
     }
     .search-submit-btn:hover,
     .advanced-search-btn:hover {
-        background-color: var(--color-brand-200, #fde68a) !important;
+        background-color: var(--color-brand-100, #fef3c7) !important;
         color: #000 !important;
     }
     .search-submit-btn svg,

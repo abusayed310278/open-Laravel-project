@@ -55,7 +55,9 @@
 
         $quickActions = [
             ['label' => 'Browse Shop', 'route' => 'shop', 'icon' => $icon['shopping-bag']],
+            ['label' => 'Sell a Product', 'route' => 'saler.products.create', 'icon' => $icon['box']],
             ['label' => 'My Orders', 'route' => 'account.orders.index', 'icon' => $icon['clipboard'] ?? $icon['shopping-bag']],
+            ['label' => 'Wallet & Payouts', 'route' => 'saler.payouts.index', 'icon' => $icon['wallet']],
             ['label' => 'Track Returns', 'route' => 'account.returns.index', 'icon' => $icon['undo']],
             ['label' => 'Get Support', 'route' => 'account.support.index', 'icon' => $icon['support']],
         ];
@@ -68,13 +70,61 @@
             <div class="relative overflow-hidden rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5 flex items-center justify-between gap-4">
                 <div class="relative z-10">
                     <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900">{{ $greeting }}, {{ $firstName }}! <span aria-hidden="true">👋</span></h1>
-                    <p class="text-sm text-gray-600 mt-1">Here's what's happening with your account today.</p>
+                    <p class="text-sm text-gray-600 mt-1">Manage your purchases, orders, and seller listings all in one place.</p>
                 </div>
-                <a href="{{ route('account.profile.edit') }}" class="relative z-10 shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-brand-300 bg-white px-4 py-2 text-xs font-bold text-gray-900 hover:bg-brand-50 transition">
-                    Manage Profile
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" /></svg>
-                </a>
+                <div class="relative z-10 flex items-center gap-2">
+                    <a href="{{ route('saler.products.create') }}" class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 px-3.5 py-2 text-xs font-bold text-gray-950 shadow-xs transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Sell Product
+                    </a>
+                    <a href="{{ route('account.profile.edit') }}" class="hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-300 bg-white px-3.5 py-2 text-xs font-bold text-gray-900 hover:bg-brand-50 transition">
+                        Profile
+                    </a>
+                </div>
                 <svg class="hidden md:block absolute right-44 -bottom-3 h-24 w-24 text-brand-300/60" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4h10l3 4v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8l3-4zm0 5a5 5 0 0010 0h-2a3 3 0 01-6 0H7z" /></svg>
+            </div>
+
+            {{-- Seller Hub Quick Panel --}}
+            <div class="bg-gradient-to-r from-gray-900 via-gray-850 to-gray-800 text-white rounded-2xl p-5 shadow-sm border border-gray-800">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-800">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-brand-400/10 text-brand-400 text-[10px] font-extrabold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+                            Seller Hub
+                        </div>
+                        <h2 class="text-base font-bold text-white mt-1">Your Selling Performance</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('saler.products.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-400 text-gray-950 text-xs font-bold transition shadow-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            Add Listing
+                        </a>
+                        <a href="{{ route('saler.products.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition">
+                            My Listings
+                        </a>
+                        <a href="{{ route('saler.payouts.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition">
+                            Wallet
+                        </a>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+                    <a href="{{ route('saler.products.index') }}" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition block">
+                        <p class="text-xs text-gray-400 font-medium">Active Listings</p>
+                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($activeListingsCount) }}</p>
+                    </a>
+                    <a href="{{ route('saler.products.index') }}" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition block">
+                        <p class="text-xs text-gray-400 font-medium">Total Products</p>
+                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($totalProductsCount) }}</p>
+                    </a>
+                    <a href="{{ route('saler.orders.index') }}" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition block">
+                        <p class="text-xs text-gray-400 font-medium">Sales Orders</p>
+                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($salesOrdersCount) }}</p>
+                    </a>
+                    <a href="{{ route('saler.payouts.index') }}" class="p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition block">
+                        <p class="text-xs text-gray-400 font-medium">Available Payout</p>
+                        <p class="text-xl font-black text-emerald-400 mt-0.5">${{ number_format((float) ($wallet->available_balance ?? 0), 2) }}</p>
+                    </a>
+                </div>
             </div>
 
             {{-- Stat cards --}}

@@ -12,7 +12,14 @@
             [
                 'label' => null,
                 'items' => [
-                    ['route' => 'saler.dashboard', 'label' => 'Dashboard', 'icon' => $icon['home']],
+                    ['route' => 'account.dashboard', 'label' => 'Account Overview', 'icon' => $icon['home']],
+                ],
+            ],
+            [
+                'label' => 'Shopping',
+                'items' => [
+                    ['route' => 'account.orders.index', 'label' => 'My Purchases', 'icon' => $icon['shopping-bag']],
+                    ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
                 ],
             ],
             [
