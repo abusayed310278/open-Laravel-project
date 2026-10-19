@@ -29,6 +29,9 @@ class FileUploadHelper
         if (in_array($targetDisk, ['cloudinary', 'r2'], true)) {
             $url = Storage::disk($targetDisk)->url($targetPath);
             if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+                if ($targetDisk === 'cloudinary' && in_array(strtolower($extension), ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'avi', 'mkv'], true)) {
+                    $url = str_replace('/image/upload/', '/video/upload/', $url);
+                }
                 return $url;
             }
         }

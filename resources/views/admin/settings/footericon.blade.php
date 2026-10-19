@@ -36,8 +36,8 @@
                         </span>
                     </div>
 
-                    {{-- Public Footer Dark Mockup --}}
-                    <div class="rounded-xl border border-slate-800 p-5 shadow-inner" style="background-color: #0c0f1d; color: #94a3b8;">
+                    {{-- Public Footer Mockup --}}
+                    <div id="live-footer-bg-preview" class="rounded-xl border border-slate-800 p-5 shadow-inner transition-colors duration-200" style="background-color: {{ $footerBgColor }}; color: #94a3b8;">
                         <div class="max-w-xs">
                             <div id="public-footer-logo-preview" class="mb-3.5 inline-block">
                                 <x-brand-logo :dark="true" :footer="true" />
@@ -54,7 +54,7 @@
                             </p>
                         </div>
 
-                        <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-gray-500 flex items-center justify-between">
+                        <div id="live-footer-bottom-preview" class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-gray-500 flex items-center justify-between rounded px-2.5 py-1.5 transition-colors duration-200" style="background-color: {{ $footerBottomBgColor }};">
                             <span id="live-footer-copy">{!! $footerCopyright !!}</span>
                             <span class="text-gray-400">Public Site</span>
                         </div>
@@ -202,7 +202,180 @@
                     </div>
                 </div>
 
-                {{-- Part 2: Footer Icon / Logo Upload --}}
+                {{-- Part 2: Footer Background Color --}}
+                <div class="border-t border-gray-100 pt-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 4 4 0 014-4h1a1 1 0 001-1V6a3 3 0 013-3 3 3 0 013 3v2a1 1 0 001 1h1a4 4 0 014 4 4 4 0 01-4 4H7z"/>
+                            </svg>
+                            Footer Background Color
+                        </h3>
+                        <button
+                            type="button"
+                            onclick="resetDefaultColors()"
+                            class="text-xs text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
+                        >
+                            Reset to Default (#0c0f1d)
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">Configure the background color for the entire website footer. Changes apply to the whole footer (navigation columns, app download bar, and bottom copyright bar).</p>
+
+                    {{-- Main Unified Color Picker --}}
+                    <div class="rounded-xl border border-gray-200/80 p-5 bg-gray-50/40">
+                        <label for="footer-bg-color-picker" class="block text-sm font-semibold text-gray-800 mb-1">
+                            Whole Footer Background Color
+                        </label>
+                        <p class="text-xs text-gray-500 mb-3.5">Select a color or enter a hex code to style the whole footer.</p>
+
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-12 h-12 rounded-xl border border-gray-300 overflow-hidden shadow-2xs shrink-0 cursor-pointer">
+                                    <input
+                                        type="color"
+                                        id="footer-bg-color-picker"
+                                        value="{{ old('footer_bg_color', $footerBgColor) }}"
+                                        class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer border-0 p-0"
+                                        oninput="handleMainBgInput(this.value)"
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="footer_bg_color"
+                                    id="footer-bg-color-text"
+                                    value="{{ old('footer_bg_color', $footerBgColor) }}"
+                                    class="w-36 rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm font-mono text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 uppercase"
+                                    placeholder="#102C54"
+                                    maxlength="7"
+                                    oninput="handleMainBgInput(this.value)"
+                                >
+                            </div>
+
+                            <div class="text-xs text-gray-400 sm:border-l sm:border-gray-200 sm:pl-3">
+                                Live preview updates automatically above. Click "Save Footer Settings" below to apply to the public site.
+                            </div>
+                        </div>
+
+                        {{-- Optional checkbox for separate bottom bar color --}}
+                        <div class="mt-4 pt-3.5 border-t border-gray-200/60">
+                            <label class="inline-flex items-center gap-2 text-xs font-medium text-gray-700 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    id="toggle-custom-bottom"
+                                    class="rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                    onchange="toggleCustomBottomBar(this.checked)"
+                                    {{ $footerBgColor !== $footerBottomBgColor ? 'checked' : '' }}
+                                >
+                                <span>Customize bottom copyright bar color separately (optional)</span>
+                            </label>
+
+                            <div id="custom-bottom-panel" class="mt-3 {{ $footerBgColor !== $footerBottomBgColor ? '' : 'hidden' }} space-y-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative w-9 h-9 rounded-lg border border-gray-300 overflow-hidden shadow-2xs shrink-0 cursor-pointer">
+                                        <input
+                                            type="color"
+                                            id="footer-bottom-bg-color-picker"
+                                            value="{{ old('footer_bottom_bg_color', $footerBottomBgColor) }}"
+                                            class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer border-0 p-0"
+                                            oninput="handleBottomBgInput(this.value)"
+                                        >
+                                    </div>
+                                    <input
+                                        type="text"
+                                        name="footer_bottom_bg_color"
+                                        id="footer-bottom-bg-color-text"
+                                        value="{{ old('footer_bottom_bg_color', $footerBottomBgColor) }}"
+                                        class="w-36 rounded-xl border border-gray-200 px-3 py-2 text-xs font-mono text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 uppercase"
+                                        placeholder="#102C54"
+                                        maxlength="7"
+                                        oninput="handleBottomBgInput(this.value)"
+                                    >
+                                    <button
+                                        type="button"
+                                        onclick="matchMainBgColor()"
+                                        class="text-xs text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
+                                    >
+                                        Sync with whole footer
+                                    </button>
+                                </div>
+                                <p class="text-[11px] text-gray-400">If unchecked, the bottom bar automatically uses the whole footer background color.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Popular Presets --}}
+                    <div>
+                        <span class="block text-xs font-semibold text-gray-600 mb-2">Popular Footer Color Presets (Applies to Whole Footer):</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#102c54')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #102c54;"></span>
+                                <span>Deep Navy Blue</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#0c0f1d')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #0c0f1d;"></span>
+                                <span>Midnight Navy <span class="text-gray-400 text-[10px]">(Default)</span></span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#0f172a')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #0f172a;"></span>
+                                <span>Slate Obsidian</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#111827')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #111827;"></span>
+                                <span>Deep Charcoal</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#18181b')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #18181b;"></span>
+                                <span>Zinc Dark</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#000000')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #000000;"></span>
+                                <span>Pitch Black</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#1e1b4b')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #1e1b4b;"></span>
+                                <span>Rich Indigo</span>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="applyColorPreset('#062319')"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-brand-400 text-xs font-medium text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                            >
+                                <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0" style="background-color: #062319;"></span>
+                                <span>Dark Forest</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Part 3: Footer Icon / Logo Upload --}}
                 <div class="border-t border-gray-100 pt-6 space-y-4">
                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                         <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,6 +459,8 @@
         const defaultDesc = "Bangladesh's premier verified electronics marketplace. Every device inspected, graded, and warehoused for authentic peace of mind.";
         const defaultAddr = "Dhaka, Bangladesh";
         const defaultCopy = "© {{ date('Y') }} {{ config('app.name', 'Openbox') }}. All rights reserved.";
+        const defaultMainBg = '#0c0f1d';
+        const defaultBottomBg = '#05070f';
 
         const descInput = document.getElementById('footer-desc-input');
         const addrInput = document.getElementById('footer-addr-input');
@@ -294,6 +469,105 @@
         const liveDesc = document.getElementById('live-footer-desc');
         const liveAddr = document.getElementById('live-footer-addr');
         const liveCopy = document.getElementById('live-footer-copy');
+
+        const mainBgPicker = document.getElementById('footer-bg-color-picker');
+        const mainBgText = document.getElementById('footer-bg-color-text');
+        const bottomBgPicker = document.getElementById('footer-bottom-bg-color-picker');
+        const bottomBgText = document.getElementById('footer-bottom-bg-color-text');
+
+        const liveFooterBg = document.getElementById('live-footer-bg-preview');
+        const liveFooterBottom = document.getElementById('live-footer-bottom-preview');
+
+        function isValidHex(hex) {
+            return /^#([0-9A-F]{3}){1,2}$/i.test(hex);
+        }
+
+        function toggleCustomBottomBar(checked) {
+            const panel = document.getElementById('custom-bottom-panel');
+            if (panel) {
+                if (checked) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                    matchMainBgColor();
+                }
+            }
+        }
+
+        function handleMainBgInput(val) {
+            val = (val || '').trim();
+            if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+                val = '#' + val;
+            }
+            if (mainBgText && mainBgText.value !== val) {
+                mainBgText.value = val;
+            }
+            if (isValidHex(val)) {
+                if (mainBgPicker) mainBgPicker.value = val;
+                if (liveFooterBg) liveFooterBg.style.backgroundColor = val;
+
+                const customBottomCheck = document.getElementById('toggle-custom-bottom');
+                if (!customBottomCheck || !customBottomCheck.checked) {
+                    setBottomBgColor(val);
+                }
+            }
+        }
+
+        function handleBottomBgInput(val) {
+            val = (val || '').trim();
+            if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+                val = '#' + val;
+            }
+            if (bottomBgText && bottomBgText.value !== val) {
+                bottomBgText.value = val;
+            }
+            if (isValidHex(val)) {
+                if (bottomBgPicker) bottomBgPicker.value = val;
+                if (liveFooterBottom) liveFooterBottom.style.backgroundColor = val;
+            }
+        }
+
+        function setMainBgColor(hex) {
+            if (mainBgPicker) mainBgPicker.value = hex;
+            if (mainBgText) mainBgText.value = hex;
+            if (liveFooterBg) liveFooterBg.style.backgroundColor = hex;
+
+            const customBottomCheck = document.getElementById('toggle-custom-bottom');
+            if (!customBottomCheck || !customBottomCheck.checked) {
+                setBottomBgColor(hex);
+            }
+        }
+
+        function setBottomBgColor(hex) {
+            if (bottomBgPicker) bottomBgPicker.value = hex;
+            if (bottomBgText) bottomBgText.value = hex;
+            if (liveFooterBottom) liveFooterBottom.style.backgroundColor = hex;
+        }
+
+        function matchMainBgColor() {
+            const currentMain = (mainBgText ? mainBgText.value.trim() : '') || defaultMainBg;
+            setBottomBgColor(isValidHex(currentMain) ? currentMain : defaultMainBg);
+        }
+
+        function resetDefaultColors() {
+            setMainBgColor(defaultMainBg);
+            setBottomBgColor(defaultMainBg);
+            const customBottomCheck = document.getElementById('toggle-custom-bottom');
+            if (customBottomCheck) {
+                customBottomCheck.checked = false;
+                toggleCustomBottomBar(false);
+            }
+        }
+
+        function applyColorPreset(colorHex) {
+            setMainBgColor(colorHex);
+            setBottomBgColor(colorHex);
+            const customBottomCheck = document.getElementById('toggle-custom-bottom');
+            if (customBottomCheck) {
+                customBottomCheck.checked = false;
+                toggleCustomBottomBar(false);
+            }
+        }
 
         // Real-time dynamic typing preview
         if (descInput && liveDesc) {

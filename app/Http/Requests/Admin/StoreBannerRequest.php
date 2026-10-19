@@ -22,9 +22,13 @@ class StoreBannerRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:150'],
-            'image' => [($isUpdate || $hasVideo) ? 'nullable' : 'required', 'nullable', 'file', 'image', 'max:20480'],
+            'image' => ['nullable', 'file', 'image', 'max:20480'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['nullable', 'file', 'image', 'max:20480'],
             'video' => ['nullable', 'file', 'max:512000'],
             'remove_image' => ['nullable', 'boolean'],
+            'remove_images' => ['nullable', 'array'],
+            'remove_images.*' => ['nullable', 'string'],
             'remove_video' => ['nullable', 'boolean'],
             'link' => ['nullable', 'string', 'max:255'],
             'position' => ['required', 'string', 'max:50'],

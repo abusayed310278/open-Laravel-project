@@ -261,18 +261,196 @@
     @if (feature_enabled('home_banners') && isset($banners) && $banners->isNotEmpty())
         {{-- PROMOTIONAL BANNERS --}}
         <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="grid grid-cols-1 md:grid-cols-{{ min($banners->count(), 2) }} gap-6">
+            <div class="grid grid-cols-1 {{ $banners->count() > 1 ? 'md:grid-cols-2' : '' }} gap-6">
                 @foreach ($banners as $b)
-                    <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800">
-                        @if ($b->video_url)
-                            <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="block w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-500"></video>
-                        @else
-                            <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-auto group-hover:scale-[1.02] transition-transform duration-500" onerror="this.parentElement.style.display='none'">
-                        @endif
-                    </a>
+                    @php $mediaItems = $b->media_items; @endphp
+                    @if (count($mediaItems) > 1)
+                        {{-- Multi-Slide Banner (Images + Video with auto-advance on video end) --}}
+                        <div class="banner-slider relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border border-gray-100 dark:border-slate-800 bg-gray-900 w-full" style="aspect-ratio: 1024 / 339; min-height: 200px;" data-banner-id="{{ $b->id }}">
+                            @if ($b->link)
+                                <a href="{{ $b->link }}" class="absolute inset-0 z-20" aria-label="{{ $b->title }}"></a>
+                            @endif
+
+                            <div class="banner-slides-wrapper relative w-full h-full overflow-hidden" style="width: 100%; height: 100%; min-height: 200px;">
+                                @foreach ($mediaItems as $idx => $item)
+                                    <div class="banner-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $idx === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}" style="width: 100%; height: 100%;" data-slide-index="{{ $idx }}" data-slide-type="{{ $item['type'] }}">
+                                        @if ($item['type'] === 'video')
+                                            <video src="{{ $item['url'] }}" playsinline muted class="w-full h-full object-cover block" style="width: 100%; height: 100%; object-fit: cover; display: block;" preload="auto"></video>
+                                        @else
+                                            <img src="{{ $item['url'] }}" alt="{{ $b->title }}" class="w-full h-full object-cover select-none block" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Navigation Dots --}}
+                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-xs">
+                                @foreach ($mediaItems as $idx => $item)
+                                    <button type="button" class="banner-dot w-2 h-2 rounded-full transition-all duration-300 {{ $idx === 0 ? 'w-5 bg-white' : 'bg-white/50 hover:bg-white/80' }}" data-dot-index="{{ $idx }}" aria-label="Slide {{ $idx + 1 }}"></button>
+                                @endforeach
+                            </div>
+
+                            {{-- Prev / Next Arrows on Hover --}}
+                            <button type="button" class="banner-prev absolute left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-sm" aria-label="Previous Slide">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <button type="button" class="banner-next absolute right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-sm" aria-label="Next Slide">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    @else
+                        {{-- Single Item Banner --}}
+                        <a href="{{ $b->link ?: '#' }}" class="block rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group relative border border-gray-100 dark:border-slate-800 bg-gray-900 w-full" style="aspect-ratio: 1024 / 339; min-height: 200px; width: 100%;">
+                            @if ($b->video_url)
+                                <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="block w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" style="width: 100%; height: 100%; object-fit: cover; display: block;"></video>
+                            @else
+                                <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.parentElement.style.display='none'">
+                            @endif
+                        </a>
+                    @endif
                 @endforeach
             </div>
         </section>
+
+        <script>
+            (function () {
+                function initBannerSliders() {
+                    document.querySelectorAll('.banner-slider').forEach(function (slider) {
+                        if (slider.dataset.sliderInitialized === 'true') return;
+                        slider.dataset.sliderInitialized = 'true';
+
+                        const slides = slider.querySelectorAll('.banner-slide');
+                        const dots = slider.querySelectorAll('.banner-dot');
+                        const prevBtn = slider.querySelector('.banner-prev');
+                        const nextBtn = slider.querySelector('.banner-next');
+                        let currentIndex = 0;
+                        let timer = null;
+                        const total = slides.length;
+                        if (total <= 1) return;
+
+                        function activateSlide(index) {
+                            if (timer) {
+                                clearTimeout(timer);
+                                timer = null;
+                            }
+
+                            // Stop previous video if any
+                            const prevSlide = slides[currentIndex];
+                            if (prevSlide) {
+                                const prevVideo = prevSlide.querySelector('video');
+                                if (prevVideo) {
+                                    prevVideo.pause();
+                                    prevVideo.currentTime = 0;
+                                }
+                            }
+
+                            currentIndex = (index + total) % total;
+
+                            // Switch slide visibility
+                            slides.forEach(function (slide, i) {
+                                if (i === currentIndex) {
+                                    slide.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+                                    slide.classList.add('opacity-100', 'pointer-events-auto', 'z-10');
+                                } else {
+                                    slide.classList.remove('opacity-100', 'pointer-events-auto', 'z-10');
+                                    slide.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+                                }
+                            });
+
+                            // Switch dots
+                            dots.forEach(function (dot, i) {
+                                if (i === currentIndex) {
+                                    dot.classList.remove('bg-white/50');
+                                    dot.classList.add('w-5', 'bg-white');
+                                } else {
+                                    dot.classList.remove('w-5', 'bg-white');
+                                    dot.classList.add('bg-white/50');
+                                }
+                            });
+
+                            // Determine slide media behavior
+                            const currentSlide = slides[currentIndex];
+                            const slideType = currentSlide.getAttribute('data-slide-type');
+
+                            if (slideType === 'video') {
+                                const video = currentSlide.querySelector('video');
+                                if (video) {
+                                    video.currentTime = 0;
+                                    video.muted = true;
+
+                                    let advanced = false;
+                                    const advanceNext = function () {
+                                        if (advanced) return;
+                                        advanced = true;
+                                        video.removeEventListener('ended', advanceNext);
+                                        activateSlide(currentIndex + 1);
+                                    };
+
+                                    video.addEventListener('ended', advanceNext);
+
+                                    const playPromise = video.play();
+                                    if (playPromise !== undefined) {
+                                        playPromise.catch(function () {
+                                            // Fallback if autoplay is restricted
+                                            timer = setTimeout(advanceNext, 6000);
+                                        });
+                                    }
+
+                                    // Fallback safety timeout based on duration
+                                    const fallbackDuration = (video.duration && !isNaN(video.duration) && video.duration > 0)
+                                        ? (video.duration * 1000) + 1000
+                                        : 8000;
+                                    timer = setTimeout(advanceNext, Math.min(fallbackDuration, 60000));
+                                } else {
+                                    timer = setTimeout(function () {
+                                        activateSlide(currentIndex + 1);
+                                    }, 5000);
+                                }
+                            } else {
+                                // Standard image slide timer (5 seconds)
+                                timer = setTimeout(function () {
+                                    activateSlide(currentIndex + 1);
+                                }, 5000);
+                            }
+                        }
+
+                        // Dot buttons
+                        dots.forEach(function (dot, idx) {
+                            dot.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                activateSlide(idx);
+                            });
+                        });
+
+                        // Navigation arrows
+                        if (prevBtn) {
+                            prevBtn.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                activateSlide(currentIndex - 1);
+                            });
+                        }
+                        if (nextBtn) {
+                            nextBtn.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                activateSlide(currentIndex + 1);
+                            });
+                        }
+
+                        // Start first slide
+                        activateSlide(0);
+                    });
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initBannerSliders);
+                } else {
+                    initBannerSliders();
+                }
+            })();
+        </script>
     @endif
 
     @if (feature_enabled('home_featured_products'))

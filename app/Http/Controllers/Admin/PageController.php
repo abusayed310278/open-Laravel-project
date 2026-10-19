@@ -8,15 +8,35 @@ use App\Http\Requests\Admin\StorePageRequest;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class PageController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $pages = Page::query()
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%")
+                        ->orWhere('meta_title', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->string('status'));
+            })
+            ->orderBy('id', 'asc')
+            ->paginate(20)
+            ->withQueryString();
+
         return view('admin.pages.index', [
-            'pages' => Page::query()->orderBy('id')->paginate(20),
+            'pages' => $pages,
+            'statuses' => ContentStatus::cases(),
         ]);
     }
 

@@ -25,6 +25,9 @@ class MediaUrl
             if (preg_match('#/storage/(.+)$#i', $path, $matches)) {
                 $cleanPath = ltrim($matches[1], '/');
             } elseif ($isCloudinaryUrl) {
+                if (preg_match('/\.(mp4|webm|ogg|mov|m4v|avi|mkv)(?:[?#]|$)/i', $path)) {
+                    $path = str_replace('/image/upload/', '/video/upload/', $path);
+                }
                 $activeDisk = config('filesystems.default', 'public');
                 if ($activeDisk === 'cloudinary') {
                     return $path;
@@ -83,6 +86,9 @@ class MediaUrl
             try {
                 $remoteUrl = Storage::disk($disk)->url($cleanPath);
                 if (str_starts_with($remoteUrl, 'http://') || str_starts_with($remoteUrl, 'https://')) {
+                    if (str_contains($remoteUrl, 'cloudinary.com') && preg_match('/\.(mp4|webm|ogg|mov|m4v|avi|mkv)(?:[?#]|$)/i', $remoteUrl)) {
+                        $remoteUrl = str_replace('/image/upload/', '/video/upload/', $remoteUrl);
+                    }
                     return $remoteUrl;
                 }
             } catch (\Throwable) {

@@ -621,7 +621,9 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
 
         Route::get('/banners', [AdminBannerController::class, 'index'])->name('banners.index');
+        Route::get('/banners/create', [AdminBannerController::class, 'create'])->name('banners.create');
         Route::post('/banners', [AdminBannerController::class, 'store'])->name('banners.store');
+        Route::get('/banners/{banner}/edit', [AdminBannerController::class, 'edit'])->name('banners.edit');
         Route::patch('/banners/{banner}/toggle-active', [AdminBannerController::class, 'toggleActive'])->name('banners.toggle-active');
         Route::put('/banners/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');
         Route::delete('/banners/{banner}', [AdminBannerController::class, 'destroy'])->name('banners.destroy');

@@ -164,6 +164,12 @@
         } else {
             $effectiveGroups = $navGroups;
         }
+
+        if (!empty($effectiveGroups) && in_array($userRoleSlug, ['customer', 'saler', 'business', 'user', 'seller'])) {
+            $effectiveGroups = array_values(array_filter($effectiveGroups, function ($g) {
+                return !in_array(strtolower((string) ($g['label'] ?? '')), ['account', 'account settings']);
+            }));
+        }
     @endphp
 
     <nav id="sidebar-nav" class="flex-1 px-3 py-3 space-y-3 overflow-y-auto">

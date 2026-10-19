@@ -2,9 +2,11 @@
     $activePageSlugs = \Illuminate\Support\Facades\Cache::remember('published_page_slugs', 3600, function () {
         return \App\Models\Page::published()->pluck('slug')->all();
     });
+    $footerBg = setting('brand_footer_bg_color', '#0c0f1d') ?: '#0c0f1d';
+    $footerBottomBg = setting('brand_footer_bottom_bg_color') ?: $footerBg;
 @endphp
 
-<footer style="background-color: #0c0f1d; color: #94a3b8;" class="text-gray-400">
+<footer style="background-color: {{ $footerBg }}; color: #94a3b8;" class="text-gray-400">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-10">
         {{-- Brand & About --}}
         <div class="col-span-2 md:col-span-1">
@@ -107,7 +109,7 @@
     @endphp
 
     @if ($hasFooterAppOrSocial)
-    <div style="background-color: #080c18; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+    <div style="background-color: {{ $footerBottomBg }}; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row items-center justify-between gap-4">
             {{-- Left: Heading / Label + App Badges --}}
             @if (!empty($footerAppLinks))
@@ -159,7 +161,7 @@
     @endif
 
     {{-- Bottom Copyright Bar --}}
-    <div style="background-color: #05070f;">
+    <div style="background-color: {{ $footerBottomBg }};" class="border-t border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
             <div>
                 <span>{!! setting('brand_footer_copyright') ?: ('&copy; ' . now()->year . ' ' . config('app.name', 'Openbox') . ' Ltd | All rights reserved') !!}</span>

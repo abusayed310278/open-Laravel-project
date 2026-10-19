@@ -213,15 +213,17 @@ class RbacAndFeatureSettingsSeeder extends Seeder
             // Customer (User) Menus
             'customer' => [
                 ['title' => 'Dashboard', 'route_name' => 'account.dashboard', 'group_name' => 'OVERVIEW', 'permission_slug' => null, 'icon' => 'home', 'sort_order' => 1],
-                ['title' => 'My Orders', 'route_name' => 'account.orders.index', 'group_name' => 'SHOPPING', 'permission_slug' => 'orders.manage', 'icon' => 'shopping-bag', 'sort_order' => 2],
-                ['title' => 'Wishlist', 'route_name' => 'account.wishlist.index', 'group_name' => 'SHOPPING', 'permission_slug' => null, 'icon' => 'heart', 'sort_order' => 3],
-                ['title' => 'My Invoices', 'route_name' => 'account.invoices.index', 'group_name' => 'SHOPPING', 'permission_slug' => 'orders.manage', 'icon' => 'banknotes', 'sort_order' => 4],
-                ['title' => 'Return Requests', 'route_name' => 'account.returns.index', 'group_name' => 'SHOPPING', 'permission_slug' => null, 'icon' => 'undo', 'sort_order' => 5],
-                ['title' => 'Saved Addresses', 'route_name' => 'account.addresses.index', 'group_name' => 'ACCOUNT', 'permission_slug' => null, 'icon' => 'map-pin', 'sort_order' => 6],
-                ['title' => 'Update Profile', 'route_name' => 'account.profile.edit', 'group_name' => 'ACCOUNT', 'permission_slug' => null, 'icon' => 'users', 'sort_order' => 7],
-                ['title' => 'Chat Messages', 'route_name' => 'account.messages.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 8],
-                ['title' => 'Support Tickets', 'route_name' => 'account.support.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 9],
-                ['title' => 'My Reviews', 'route_name' => 'account.reviews.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'reviews.manage', 'icon' => 'star', 'sort_order' => 10],
+                ['title' => 'Products', 'route_name' => 'saler.products.index', 'group_name' => 'CATALOG', 'permission_slug' => 'products.manage', 'icon' => 'box', 'sort_order' => 2],
+                ['title' => 'Category Builder', 'route_name' => 'saler.categories.builder', 'group_name' => 'CATALOG', 'permission_slug' => 'categories.manage', 'icon' => 'tag', 'sort_order' => 3],
+                ['title' => 'Brands', 'route_name' => 'saler.brands.index', 'group_name' => 'CATALOG', 'permission_slug' => 'brands.manage', 'icon' => 'tag', 'sort_order' => 4],
+                ['title' => 'Manage Inventory', 'route_name' => 'saler.inventory.index', 'group_name' => 'CATALOG', 'permission_slug' => 'inventory.manage', 'icon' => 'tag', 'sort_order' => 5],
+                ['title' => 'My Orders', 'route_name' => 'account.orders.index', 'group_name' => 'SHOPPING', 'permission_slug' => 'orders.manage', 'icon' => 'shopping-bag', 'sort_order' => 6],
+                ['title' => 'Wishlist', 'route_name' => 'account.wishlist.index', 'group_name' => 'SHOPPING', 'permission_slug' => null, 'icon' => 'heart', 'sort_order' => 7],
+                ['title' => 'My Invoices', 'route_name' => 'account.invoices.index', 'group_name' => 'SHOPPING', 'permission_slug' => 'orders.manage', 'icon' => 'banknotes', 'sort_order' => 8],
+                ['title' => 'Return Requests', 'route_name' => 'account.returns.index', 'group_name' => 'SHOPPING', 'permission_slug' => null, 'icon' => 'undo', 'sort_order' => 9],
+                ['title' => 'Chat Messages', 'route_name' => 'account.messages.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'chat.access', 'icon' => 'chat', 'sort_order' => 10],
+                ['title' => 'Support Tickets', 'route_name' => 'account.support.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'support.manage', 'icon' => 'support', 'sort_order' => 11],
+                ['title' => 'My Reviews', 'route_name' => 'account.reviews.index', 'group_name' => 'SUPPORT & FEEDBACK', 'permission_slug' => 'reviews.manage', 'icon' => 'star', 'sort_order' => 12],
             ],
         ];
 

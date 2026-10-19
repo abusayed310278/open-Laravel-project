@@ -27,9 +27,9 @@ class SiteManagementController extends Controller
         $homepageActiveCount = FeatureSetting::group('homepage')->where('is_enabled', true)->count();
         $productPageFeaturesCount = FeatureSetting::group('product_page')->count();
         $productPageActiveCount = FeatureSetting::group('product_page')->where('is_enabled', true)->count();
-        $rolesCount = Role::count();
+        $rolesCount = Role::where('slug', '!=', 'saler')->count();
         $permissionsCount = Permission::count();
-        $menusCount = DashboardMenu::count();
+        $menusCount = DashboardMenu::where('role_slug', '!=', 'saler')->count();
 
         return view('admin.site-management.index', compact(
             'homepageFeaturesCount',
@@ -85,12 +85,17 @@ class SiteManagementController extends Controller
     /**
      * Manage Roles & Permission Matrix
      */
-    public function roles(): View
+    public function roles(Request $request): View
     {
-        $roles = Role::with('permissions')->get();
+        $roles = Role::where('slug', '!=', 'saler')->with('permissions')->get();
+        $activeRoleSlug = $request->query('role');
+        if (! $activeRoleSlug || ! $roles->contains('slug', $activeRoleSlug)) {
+            $activeRoleSlug = $roles->first()?->slug ?? 'admin';
+        }
+        $activeRole = $roles->firstWhere('slug', $activeRoleSlug);
         $permissionsGrouped = Permission::all()->groupBy('group');
 
-        return view('admin.site-management.roles', compact('roles', 'permissionsGrouped'));
+        return view('admin.site-management.roles', compact('roles', 'activeRole', 'activeRoleSlug', 'permissionsGrouped'));
     }
 
     /**
@@ -106,7 +111,8 @@ class SiteManagementController extends Controller
         $permissionIds = $validated['permissions'] ?? [];
         $this->siteService->updateRolePermissions($role->id, $permissionIds);
 
-        return redirect()->back()->with('status', "Permissions for role '{$role->name}' updated successfully.");
+        return redirect()->route('admin.site-management.roles', ['role' => $role->slug])
+            ->with('status', "Permissions for role '{$role->name}' updated successfully.");
     }
 
     /**
@@ -114,8 +120,12 @@ class SiteManagementController extends Controller
      */
     public function menus(Request $request): View
     {
+        $roles = Role::where('slug', '!=', 'saler')->get();
         $activeRoleSlug = $request->query('role', 'customer');
-        $roles = Role::all();
+        if ($activeRoleSlug === 'saler') {
+            $activeRoleSlug = 'customer';
+        }
+
         $menus = DashboardMenu::forRole($activeRoleSlug)->ordered()->get();
         $permissions = Permission::ordered()->get();
 

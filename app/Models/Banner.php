@@ -10,6 +10,7 @@ class Banner extends Model
     protected $fillable = [
         'title',
         'image',
+        'images',
         'video',
         'link',
         'position',
@@ -22,6 +23,7 @@ class Banner extends Model
     protected function casts(): array
     {
         return [
+            'images' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'starts_at' => 'datetime',
@@ -60,5 +62,53 @@ class Banner extends Model
     public function getVideoUrlAttribute(): ?string
     {
         return $this->videoUrl();
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getImagesUrlsAttribute(): array
+    {
+        $urls = [];
+        if (!empty($this->images) && is_array($this->images)) {
+            foreach ($this->images as $img) {
+                if (filled($img)) {
+                    $resolved = \App\Support\MediaUrl::resolve($img);
+                    if ($resolved) {
+                        $urls[] = $resolved;
+                    }
+                }
+            }
+        } elseif (filled($this->image)) {
+            $resolved = $this->imageUrl();
+            if ($resolved) {
+                $urls[] = $resolved;
+            }
+        }
+
+        return $urls;
+    }
+
+    /**
+     * @return array<array{type: string, url: string}>
+     */
+    public function getMediaItemsAttribute(): array
+    {
+        $items = [];
+        foreach ($this->images_urls as $imgUrl) {
+            $items[] = [
+                'type' => 'image',
+                'url' => $imgUrl,
+            ];
+        }
+
+        if ($this->video_url) {
+            $items[] = [
+                'type' => 'video',
+                'url' => $this->video_url,
+            ];
+        }
+
+        return $items;
     }
 }

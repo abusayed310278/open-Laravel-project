@@ -65,7 +65,7 @@
                 </span>
             </div>
             <div class="text-2xl font-black text-gray-900 mb-1">{{ $menusCount }} Menu Items</div>
-            <p class="text-xs text-gray-500">Dynamic sidebars across 5 user roles.</p>
+            <p class="text-xs text-gray-500">Dynamic sidebars across {{ $rolesCount }} active user roles.</p>
             <a href="{{ route('admin.site-management.menus') }}" class="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-700 mt-3">
                 <span>Customize Sidebar Menus</span>
                 <span>→</span>

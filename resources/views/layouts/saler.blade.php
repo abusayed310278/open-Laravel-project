@@ -12,7 +12,7 @@
             [
                 'label' => null,
                 'items' => [
-                    ['route' => 'account.dashboard', 'label' => 'Account Overview', 'icon' => $icon['home']],
+                    ['route' => 'account.dashboard', 'label' => 'Dashboard', 'icon' => $icon['home']],
                 ],
             ],
             [
@@ -46,7 +46,7 @@
                 ],
             ],
             [
-                'label' => 'Account',
+                'label' => 'Store',
                 'items' => [
                     ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog']],
                     ['route' => 'saler.subscriptions.index', 'label' => 'Subscriptions', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],

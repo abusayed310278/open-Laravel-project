@@ -10,16 +10,13 @@
 
         $navGroups = [
             [
-                'label' => 'Shopping',
+                'label' => 'Overview',
                 'items' => [
-                    ['route' => 'account.dashboard', 'label' => 'Overview', 'icon' => $icon['home']],
-                    ['route' => 'account.orders.index', 'label' => 'My Orders', 'icon' => $icon['shopping-bag']],
-                    ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
-                    ['route' => 'account.returns.index', 'label' => 'Returns', 'icon' => $icon['undo']],
+                    ['route' => 'account.dashboard', 'label' => 'Dashboard', 'icon' => $icon['home']],
                 ],
             ],
             [
-                'label' => 'Selling',
+                'label' => 'Catalog',
                 'items' => [
                     ['route' => 'saler.products.index', 'label' => 'My Products', 'icon' => $icon['box']],
                     ['route' => 'saler.orders.index', 'label' => 'Sales Orders', 'icon' => $icon['shopping-bag']],
@@ -30,18 +27,19 @@
                 ],
             ],
             [
+                'label' => 'Shopping',
+                'items' => [
+                    ['route' => 'account.orders.index', 'label' => 'My Orders', 'icon' => $icon['shopping-bag']],
+                    ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
+                    ['route' => 'account.returns.index', 'label' => 'Returns', 'icon' => $icon['undo']],
+                ],
+            ],
+            [
                 'label' => 'Engagement',
                 'items' => [
                     ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],
                     ['route' => 'account.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star']],
                     ['route' => 'account.support.index', 'label' => 'Support', 'icon' => $icon['support']],
-                ],
-            ],
-            [
-                'label' => 'Account Settings',
-                'items' => [
-                    ['route' => 'account.addresses.index', 'label' => 'Addresses', 'icon' => $icon['map-pin']],
-                    ['route' => 'account.profile.edit', 'label' => 'Profile Settings', 'icon' => $icon['cog']],
                 ],
             ],
         ];

@@ -453,11 +453,16 @@ class SettingsController extends Controller
 
     public function footericon(): View
     {
+        $footerBgColor = $this->settings->get('brand_footer_bg_color', '#0c0f1d') ?: '#0c0f1d';
+        $footerBottomBgColor = $this->settings->get('brand_footer_bottom_bg_color') ?: $footerBgColor;
+
         return view('admin.settings.footericon', [
             'footerIcon' => $this->settings->get('brand_footer_icon'),
             'footerDescription' => $this->settings->get('brand_footer_description', "Bangladesh's premier verified electronics marketplace. Every device inspected, graded, and warehoused for authentic peace of mind."),
             'footerAddress' => $this->settings->get('brand_footer_address', 'Dhaka, Bangladesh'),
             'footerCopyright' => $this->settings->get('brand_footer_copyright', '© ' . now()->year . ' Openbox. All rights reserved.'),
+            'footerBgColor' => $footerBgColor,
+            'footerBottomBgColor' => $footerBottomBgColor,
         ]);
     }
 
@@ -468,6 +473,8 @@ class SettingsController extends Controller
             'footer_description' => ['nullable', 'string', 'max:1000'],
             'footer_address' => ['nullable', 'string', 'max:255'],
             'footer_copyright' => ['nullable', 'string', 'max:255'],
+            'footer_bg_color' => ['nullable', 'string', 'max:30'],
+            'footer_bottom_bg_color' => ['nullable', 'string', 'max:30'],
         ]);
 
         if ($request->hasFile('footer_icon')) {
@@ -490,6 +497,16 @@ class SettingsController extends Controller
 
         if ($request->has('footer_copyright')) {
             $this->settings->set('brand_footer_copyright', $request->input('footer_copyright'), 'branding');
+        }
+
+        if ($request->has('footer_bg_color')) {
+            $footerBg = $request->input('footer_bg_color') ?: '#0c0f1d';
+            $this->settings->set('brand_footer_bg_color', $footerBg, 'branding');
+
+            $footerBottomBg = $request->filled('footer_bottom_bg_color')
+                ? $request->input('footer_bottom_bg_color')
+                : $footerBg;
+            $this->settings->set('brand_footer_bottom_bg_color', $footerBottomBg, 'branding');
         }
 
         ActivityLog::record('settings.footericon.updated');
