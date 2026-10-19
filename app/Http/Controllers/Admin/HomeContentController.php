@@ -127,7 +127,11 @@ class HomeContentController extends Controller
             'text_size' => ['nullable', 'integer', 'between:10,40'],
             'qr_url' => ['nullable', 'string', 'max:500'],
             'ios_url' => ['nullable', 'url', 'max:500'],
+            'ios_subtitle' => ['nullable', 'string', 'max:60'],
+            'ios_title' => ['nullable', 'string', 'max:60'],
             'android_url' => ['nullable', 'url', 'max:500'],
+            'android_subtitle' => ['nullable', 'string', 'max:60'],
+            'android_title' => ['nullable', 'string', 'max:60'],
             'phone_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:3072'],
             'qr_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'qr_generated' => ['nullable', 'string', 'max:200000', 'starts_with:data:image/png;base64,'],
@@ -136,7 +140,7 @@ class HomeContentController extends Controller
         ]);
 
         $values = [];
-        foreach (['title', 'text', 'primary_label', 'primary_url', 'secondary_label', 'secondary_url', 'app_heading', 'app_text', 'qr_caption', 'qr_url', 'ios_url', 'android_url', 'title_size', 'text_size'] as $key) {
+        foreach (['title', 'text', 'primary_label', 'primary_url', 'secondary_label', 'secondary_url', 'app_heading', 'app_text', 'qr_caption', 'qr_url', 'ios_url', 'ios_subtitle', 'ios_title', 'android_url', 'android_subtitle', 'android_title', 'title_size', 'text_size'] as $key) {
             $values["home_sell_{$key}"] = $data[$key] ?? '';
         }
 

@@ -36,6 +36,10 @@ final class HomeContent
         'app_heading' => 'Shop and sell on the go',
         'app_text' => 'Get the app for a faster marketplace experience.',
         'qr_caption' => 'Scan to download',
+        'ios_subtitle' => 'Download on the',
+        'ios_title' => 'App Store',
+        'android_subtitle' => 'Get it on',
+        'android_title' => 'Google Play',
     ];
 
     /**
