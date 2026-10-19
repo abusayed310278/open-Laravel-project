@@ -561,22 +561,22 @@
             $promoStyles = [
                 1 => [
                     'gradient' => 'background: linear-gradient(135deg, #ad7f67 0%, #c6a38f 45%, #e8dedc 100%);',
-                    'title' => 'text-white',
-                    'text' => 'text-white/90',
+                    'title' => 'promo-card-title text-gray-950',
+                    'text' => 'text-gray-900',
                     'body' => 'text-xs mt-1.5 leading-snug',
                     'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
                 ],
                 2 => [
                     'gradient' => 'background: linear-gradient(135deg, #ebeef3 0%, #ccd6e2 100%);',
-                    'title' => 'text-gray-950',
+                    'title' => 'promo-card-title text-gray-950',
                     'text' => 'text-gray-900',
                     'body' => 'text-sm font-semibold mt-1 leading-snug',
                     'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
                 ],
                 3 => [
                     'gradient' => 'background: linear-gradient(135deg, #6283c4 0%, #85a2dc 50%, #c1d3f7 100%);',
-                    'title' => 'text-white',
-                    'text' => 'text-white/90',
+                    'title' => 'promo-card-title text-gray-950',
+                    'text' => 'text-gray-900',
                     'body' => 'text-xs mt-1.5 leading-snug',
                     'img' => 'h-[85%] w-2/5 object-contain p-2 group-hover:scale-105 transition-transform duration-300',
                 ],

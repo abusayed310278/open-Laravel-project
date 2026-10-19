@@ -37,26 +37,38 @@
                     </div>
 
                     {{-- Public Footer Mockup --}}
-                    <div id="live-footer-bg-preview" class="rounded-xl border border-slate-800 p-5 shadow-inner transition-colors duration-200" style="background-color: {{ $footerBgColor }}; color: #94a3b8;">
-                        <div class="max-w-xs">
-                            <div id="public-footer-logo-preview" class="mb-3.5 inline-block">
-                                <x-brand-logo :dark="true" :footer="true" />
+                    <div id="live-footer-bg-preview" class="rounded-xl border border-slate-800 p-5 shadow-inner transition-colors duration-200" style="background-color: {{ $footerBgColor }}; color: {{ $footerTextColor }};">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <div id="public-footer-logo-preview" class="mb-3.5 inline-block">
+                                    <x-brand-logo :dark="true" :footer="true" />
+                                </div>
+                                <p id="live-footer-desc" class="text-xs leading-relaxed mb-3.5 transition-colors" style="color: {{ $footerTextColor }};">
+                                    {{ $footerDescription }}
+                                </p>
+                                <p id="live-footer-addr" class="text-xs font-medium flex items-center gap-1.5 transition-colors" style="color: {{ $footerTextColor }};">
+                                    <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <span>{{ $footerAddress }}</span>
+                                </p>
                             </div>
-                            <p id="live-footer-desc" class="text-xs leading-relaxed text-gray-300 mb-3.5 transition-all">
-                                {{ $footerDescription }}
-                            </p>
-                            <p id="live-footer-addr" class="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-                                <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                                <span>{{ $footerAddress }}</span>
-                            </p>
+                            <div class="border-t sm:border-t-0 sm:border-l border-slate-800/80 pt-3 sm:pt-0 sm:pl-4 space-y-2">
+                                <span id="live-footer-heading-preview" class="text-xs font-bold uppercase tracking-wider block transition-colors" style="color: {{ $footerHeadingColor }};">
+                                    Marketplace Links
+                                </span>
+                                <ul id="live-footer-links-preview" class="text-xs space-y-1.5 transition-colors" style="color: {{ $footerTextColor }};">
+                                    <li><span class="hover:underline cursor-default">Shop All Electronics</span></li>
+                                    <li><span class="hover:underline cursor-default">Refurbished Tech</span></li>
+                                    <li><span class="hover:underline cursor-default">Sell &amp; Trade In</span></li>
+                                </ul>
+                            </div>
                         </div>
 
-                        <div id="live-footer-bottom-preview" class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-gray-500 flex items-center justify-between rounded px-2.5 py-1.5 transition-colors duration-200" style="background-color: {{ $footerBottomBgColor }};">
+                        <div id="live-footer-bottom-preview" class="mt-4 pt-3 border-t border-slate-800/80 text-[11px] flex items-center justify-between rounded px-2.5 py-1.5 transition-colors duration-200" style="background-color: {{ $footerBottomBgColor }}; color: {{ $footerBottomTextColor }};">
                             <span id="live-footer-copy">{!! $footerCopyright !!}</span>
-                            <span class="text-gray-400">Public Site</span>
+                            <span id="live-footer-bottom-label" style="color: {{ $footerBottomTextColor }};">Public Site</span>
                         </div>
                     </div>
                 </div>
@@ -373,9 +385,146 @@
                             </button>
                         </div>
                     </div>
+                {{-- Part 3: Footer Text & Typography Colors --}}
+                <div class="border-t border-gray-100 pt-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                            </svg>
+                            Footer Text &amp; Typography Colors
+                        </h3>
+                        <button
+                            type="button"
+                            onclick="resetDefaultTextColors()"
+                            class="text-xs text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
+                        >
+                            Reset Text Colors to Defaults
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">Configure text colors for navigation links, column headings, and bottom bar copyright notices. Real-time changes appear immediately in the preview above.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- 1. Body & Links Text Color --}}
+                        <div class="rounded-xl border border-gray-200/80 p-4 bg-gray-50/40 space-y-3">
+                            <div>
+                                <label for="footer-text-color-picker" class="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                                    Links &amp; Description Text
+                                </label>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Bio text, address, and category navigation links.</p>
+                            </div>
+
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-10 h-10 rounded-lg border border-gray-300 overflow-hidden shadow-2xs shrink-0 cursor-pointer">
+                                    <input
+                                        type="color"
+                                        id="footer-text-color-picker"
+                                        value="{{ old('footer_text_color', $footerTextColor) }}"
+                                        class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer border-0 p-0"
+                                        oninput="handleTextColorInput(this.value)"
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="footer_text_color"
+                                    id="footer-text-color-text"
+                                    value="{{ old('footer_text_color', $footerTextColor) }}"
+                                    class="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs font-mono text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 uppercase bg-white"
+                                    placeholder="#94A3B8"
+                                    maxlength="7"
+                                    oninput="handleTextColorInput(this.value)"
+                                >
+                            </div>
+
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setTextColor('#94a3b8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#94a3b8 (Default)</button>
+                                <button type="button" onclick="setTextColor('#ffffff')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#ffffff (White)</button>
+                                <button type="button" onclick="setTextColor('#cbd5e1')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#cbd5e1 (Silver)</button>
+                                <button type="button" onclick="setTextColor('#fef08a')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#fef08a (Gold)</button>
+                            </div>
+                        </div>
+
+                        {{-- 2. Column Headings Color --}}
+                        <div class="rounded-xl border border-gray-200/80 p-4 bg-gray-50/40 space-y-3">
+                            <div>
+                                <label for="footer-heading-color-picker" class="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                                    Column Headings Color
+                                </label>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Section headers (Marketplace, Sell, Support, Company).</p>
+                            </div>
+
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-10 h-10 rounded-lg border border-gray-300 overflow-hidden shadow-2xs shrink-0 cursor-pointer">
+                                    <input
+                                        type="color"
+                                        id="footer-heading-color-picker"
+                                        value="{{ old('footer_heading_color', $footerHeadingColor) }}"
+                                        class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer border-0 p-0"
+                                        oninput="handleHeadingColorInput(this.value)"
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="footer_heading_color"
+                                    id="footer-heading-color-text"
+                                    value="{{ old('footer_heading_color', $footerHeadingColor) }}"
+                                    class="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs font-mono text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 uppercase bg-white"
+                                    placeholder="#FFFFFF"
+                                    maxlength="7"
+                                    oninput="handleHeadingColorInput(this.value)"
+                                >
+                            </div>
+
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setHeadingColor('#ffffff')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#ffffff (Default)</button>
+                                <button type="button" onclick="setHeadingColor('#f8fafc')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#f8fafc (Ghost)</button>
+                                <button type="button" onclick="setHeadingColor('#f59e0b')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#f59e0b (Amber)</button>
+                                <button type="button" onclick="setHeadingColor('#38bdf8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#38bdf8 (Sky)</button>
+                            </div>
+                        </div>
+
+                        {{-- 3. Bottom Bar / Copyright Text Color --}}
+                        <div class="rounded-xl border border-gray-200/80 p-4 bg-gray-50/40 space-y-3">
+                            <div>
+                                <label for="footer-bottom-text-color-picker" class="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+                                    Bottom Bar / Copyright Text
+                                </label>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Bottom bar copyright, powered-by, and legal notes.</p>
+                            </div>
+
+                            <div class="flex items-center gap-2.5">
+                                <div class="relative w-10 h-10 rounded-lg border border-gray-300 overflow-hidden shadow-2xs shrink-0 cursor-pointer">
+                                    <input
+                                        type="color"
+                                        id="footer-bottom-text-color-picker"
+                                        value="{{ old('footer_bottom_text_color', $footerBottomTextColor) }}"
+                                        class="absolute inset-0 w-[150%] h-[150%] -top-1/4 -left-1/4 cursor-pointer border-0 p-0"
+                                        oninput="handleBottomTextColorInput(this.value)"
+                                    >
+                                </div>
+                                <input
+                                    type="text"
+                                    name="footer_bottom_text_color"
+                                    id="footer-bottom-text-color-text"
+                                    value="{{ old('footer_bottom_text_color', $footerBottomTextColor) }}"
+                                    class="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs font-mono text-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 uppercase bg-white"
+                                    placeholder="#64748B"
+                                    maxlength="7"
+                                    oninput="handleBottomTextColorInput(this.value)"
+                                >
+                            </div>
+
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setBottomTextColor('#64748b')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#64748b (Default)</button>
+                                <button type="button" onclick="setBottomTextColor('#94a3b8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#94a3b8 (Silver)</button>
+                                <button type="button" onclick="setBottomTextColor('#a1a1aa')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#a1a1aa (Zinc)</button>
+                                <button type="button" onclick="setBottomTextColor('#ffffff')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#ffffff (White)</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Part 3: Footer Icon / Logo Upload --}}
+                {{-- Part 4: Footer Icon / Logo Upload --}}
                 <div class="border-t border-gray-100 pt-6 space-y-4">
                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                         <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -461,6 +610,9 @@
         const defaultCopy = "© {{ date('Y') }} {{ config('app.name', 'Openbox') }}. All rights reserved.";
         const defaultMainBg = '#0c0f1d';
         const defaultBottomBg = '#05070f';
+        const defaultTextColor = '#94a3b8';
+        const defaultHeadingColor = '#ffffff';
+        const defaultBottomTextColor = '#64748b';
 
         const descInput = document.getElementById('footer-desc-input');
         const addrInput = document.getElementById('footer-addr-input');
@@ -475,8 +627,18 @@
         const bottomBgPicker = document.getElementById('footer-bottom-bg-color-picker');
         const bottomBgText = document.getElementById('footer-bottom-bg-color-text');
 
+        const textColorPicker = document.getElementById('footer-text-color-picker');
+        const textColorText = document.getElementById('footer-text-color-text');
+        const headingColorPicker = document.getElementById('footer-heading-color-picker');
+        const headingColorText = document.getElementById('footer-heading-color-text');
+        const bottomTextColorPicker = document.getElementById('footer-bottom-text-color-picker');
+        const bottomTextColorText = document.getElementById('footer-bottom-text-color-text');
+
         const liveFooterBg = document.getElementById('live-footer-bg-preview');
         const liveFooterBottom = document.getElementById('live-footer-bottom-preview');
+        const liveFooterHeading = document.getElementById('live-footer-heading-preview');
+        const liveFooterLinks = document.getElementById('live-footer-links-preview');
+        const liveFooterBottomLabel = document.getElementById('live-footer-bottom-label');
 
         function isValidHex(hex) {
             return /^#([0-9A-F]{3}){1,2}$/i.test(hex);
@@ -567,6 +729,78 @@
                 customBottomCheck.checked = false;
                 toggleCustomBottomBar(false);
             }
+        }
+
+        function handleTextColorInput(val) {
+            val = (val || '').trim();
+            if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+                val = '#' + val;
+            }
+            if (textColorText && textColorText.value !== val) {
+                textColorText.value = val;
+            }
+            if (isValidHex(val)) {
+                if (textColorPicker) textColorPicker.value = val;
+                if (liveDesc) liveDesc.style.color = val;
+                if (liveAddr) liveAddr.style.color = val;
+                if (liveFooterLinks) liveFooterLinks.style.color = val;
+            }
+        }
+
+        function setTextColor(hex) {
+            if (textColorPicker) textColorPicker.value = hex;
+            if (textColorText) textColorText.value = hex;
+            if (liveDesc) liveDesc.style.color = hex;
+            if (liveAddr) liveAddr.style.color = hex;
+            if (liveFooterLinks) liveFooterLinks.style.color = hex;
+        }
+
+        function handleHeadingColorInput(val) {
+            val = (val || '').trim();
+            if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+                val = '#' + val;
+            }
+            if (headingColorText && headingColorText.value !== val) {
+                headingColorText.value = val;
+            }
+            if (isValidHex(val)) {
+                if (headingColorPicker) headingColorPicker.value = val;
+                if (liveFooterHeading) liveFooterHeading.style.color = val;
+            }
+        }
+
+        function setHeadingColor(hex) {
+            if (headingColorPicker) headingColorPicker.value = hex;
+            if (headingColorText) headingColorText.value = hex;
+            if (liveFooterHeading) liveFooterHeading.style.color = hex;
+        }
+
+        function handleBottomTextColorInput(val) {
+            val = (val || '').trim();
+            if (val && !val.startsWith('#') && /^[0-9A-F]{3,6}$/i.test(val)) {
+                val = '#' + val;
+            }
+            if (bottomTextColorText && bottomTextColorText.value !== val) {
+                bottomTextColorText.value = val;
+            }
+            if (isValidHex(val)) {
+                if (bottomTextColorPicker) bottomTextColorPicker.value = val;
+                if (liveCopy) liveCopy.style.color = val;
+                if (liveFooterBottomLabel) liveFooterBottomLabel.style.color = val;
+            }
+        }
+
+        function setBottomTextColor(hex) {
+            if (bottomTextColorPicker) bottomTextColorPicker.value = hex;
+            if (bottomTextColorText) bottomTextColorText.value = hex;
+            if (liveCopy) liveCopy.style.color = hex;
+            if (liveFooterBottomLabel) liveFooterBottomLabel.style.color = hex;
+        }
+
+        function resetDefaultTextColors() {
+            setTextColor(defaultTextColor);
+            setHeadingColor(defaultHeadingColor);
+            setBottomTextColor(defaultBottomTextColor);
         }
 
         // Real-time dynamic typing preview

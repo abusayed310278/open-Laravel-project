@@ -160,16 +160,15 @@
     }
     .newsletter-brand-banner .newsletter-heading,
     .newsletter-brand-banner h2 {
-        color: var(--color-brand-contrast) !important;
+        color: var(--color-site-heading) !important;
     }
     .newsletter-brand-banner .newsletter-icon,
     .newsletter-brand-banner svg {
-        color: var(--color-brand-contrast) !important;
+        color: var(--color-site-heading) !important;
     }
     .newsletter-brand-banner .newsletter-desc,
     .newsletter-brand-banner p {
-        color: var(--color-brand-contrast) !important;
-        opacity: 0.85 !important;
+        color: var(--color-site-text) !important;
     }
 
     /* Brand Utility Overrides */
@@ -276,29 +275,74 @@
             color: var(--color-site-text) !important;
         }
 
-        h1:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
-        h2:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
-        h3:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
-        h4:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
-        h5:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
-        h6:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]) {
+        /* 1. All Headings & Section Titles */
+        h1:not(.site-public-footer *):not(.pc-title),
+        h2:not(.site-public-footer *):not(.pc-title),
+        h3:not(.site-public-footer *):not(.pc-title),
+        h4:not(.site-public-footer *):not(.pc-title),
+        h5:not(.site-public-footer *):not(.pc-title),
+        h6:not(.site-public-footer *):not(.pc-title),
+        .promo-card-title,
+        .promo-card-title * {
             color: var(--color-site-heading) !important;
         }
 
-        .text-gray-950:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
-        .text-gray-900:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+        /* 2. Deep & Primary Text (includes header category bar, black, and dark grays) */
+        .text-gray-950:not(.site-public-footer *):not(.pc-title):not(.pc-price),
+        .text-gray-900:not(.site-public-footer *):not(.pc-title):not(.pc-price),
+        .text-black:not(.site-public-footer *):not(.pc-title):not(.pc-price),
+        [class*="text-gray-950"]:not(.site-public-footer *):not(.pc-title):not(.pc-price),
+        [class*="text-gray-900"]:not(.site-public-footer *):not(.pc-title):not(.pc-price),
+        #header-nav-items a:not([class*="text-red"]),
+        #header-nav-items a:not([class*="text-red"]) span {
             color: var(--color-site-heading) !important;
         }
 
-        .text-gray-800:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
-        .text-gray-700:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+        /* 3. Announcement Top Bar (Contact & Quick Links) */
+        #site-announcement-bar,
+        #site-announcement-bar a,
+        #site-announcement-bar span,
+        #site-announcement-bar svg {
             color: var(--color-site-text) !important;
         }
 
-        .text-gray-600:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
-        .text-gray-500:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
-        .text-gray-400:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+        /* 4. Body Copy & Mid Grays */
+        .text-gray-800:not(.site-public-footer *),
+        .text-gray-700:not(.site-public-footer *),
+        [class*="text-gray-800"]:not(.site-public-footer *),
+        [class*="text-gray-700"]:not(.site-public-footer *) {
+            color: var(--color-site-text) !important;
+        }
+
+        /* 5. Muted Text, Captions & Input Placeholders */
+        .text-gray-600:not(.site-public-footer *):not(.pc-vendor),
+        .text-gray-500:not(.site-public-footer *):not(.pc-vendor):not(.pc-old-price),
+        .text-gray-400:not(.site-public-footer *):not(.pc-vendor):not(.pc-old-price),
+        [class*="text-gray-600"]:not(.site-public-footer *):not(.pc-vendor),
+        [class*="text-gray-500"]:not(.site-public-footer *):not(.pc-vendor):not(.pc-old-price),
+        [class*="text-gray-400"]:not(.site-public-footer *):not(.pc-vendor):not(.pc-old-price),
+        input::placeholder,
+        textarea::placeholder {
             color: var(--color-site-muted) !important;
+        }
+
+        /* 6. Newsletter Banner Texts & Subscribe Button */
+        .newsletter-brand-banner h2,
+        .newsletter-brand-banner .newsletter-heading,
+        .newsletter-brand-banner svg {
+            color: var(--color-site-heading) !important;
+        }
+        .newsletter-brand-banner p,
+        .newsletter-brand-banner .newsletter-desc {
+            color: var(--color-site-text) !important;
+            opacity: 1 !important;
+        }
+        .newsletter-brand-banner input::placeholder {
+            color: var(--color-site-muted) !important;
+            opacity: 0.8 !important;
+        }
+        .newsletter-brand-banner button[type="submit"] {
+            color: var(--color-site-heading) !important;
         }
     @endif
 </style>

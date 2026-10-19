@@ -455,6 +455,9 @@ class SettingsController extends Controller
     {
         $footerBgColor = $this->settings->get('brand_footer_bg_color', '#0c0f1d') ?: '#0c0f1d';
         $footerBottomBgColor = $this->settings->get('brand_footer_bottom_bg_color') ?: $footerBgColor;
+        $footerTextColor = $this->settings->get('brand_footer_text_color', '#94a3b8') ?: '#94a3b8';
+        $footerHeadingColor = $this->settings->get('brand_footer_heading_color', '#ffffff') ?: '#ffffff';
+        $footerBottomTextColor = $this->settings->get('brand_footer_bottom_text_color', '#64748b') ?: '#64748b';
 
         return view('admin.settings.footericon', [
             'footerIcon' => $this->settings->get('brand_footer_icon'),
@@ -463,6 +466,9 @@ class SettingsController extends Controller
             'footerCopyright' => $this->settings->get('brand_footer_copyright', '© ' . now()->year . ' Openbox. All rights reserved.'),
             'footerBgColor' => $footerBgColor,
             'footerBottomBgColor' => $footerBottomBgColor,
+            'footerTextColor' => $footerTextColor,
+            'footerHeadingColor' => $footerHeadingColor,
+            'footerBottomTextColor' => $footerBottomTextColor,
         ]);
     }
 
@@ -475,6 +481,9 @@ class SettingsController extends Controller
             'footer_copyright' => ['nullable', 'string', 'max:255'],
             'footer_bg_color' => ['nullable', 'string', 'max:30'],
             'footer_bottom_bg_color' => ['nullable', 'string', 'max:30'],
+            'footer_text_color' => ['nullable', 'string', 'max:30'],
+            'footer_heading_color' => ['nullable', 'string', 'max:30'],
+            'footer_bottom_text_color' => ['nullable', 'string', 'max:30'],
         ]);
 
         if ($request->hasFile('footer_icon')) {
@@ -507,6 +516,18 @@ class SettingsController extends Controller
                 ? $request->input('footer_bottom_bg_color')
                 : $footerBg;
             $this->settings->set('brand_footer_bottom_bg_color', $footerBottomBg, 'branding');
+        }
+
+        if ($request->has('footer_text_color')) {
+            $this->settings->set('brand_footer_text_color', $request->input('footer_text_color') ?: '#94a3b8', 'branding');
+        }
+
+        if ($request->has('footer_heading_color')) {
+            $this->settings->set('brand_footer_heading_color', $request->input('footer_heading_color') ?: '#ffffff', 'branding');
+        }
+
+        if ($request->has('footer_bottom_text_color')) {
+            $this->settings->set('brand_footer_bottom_text_color', $request->input('footer_bottom_text_color') ?: '#64748b', 'branding');
         }
 
         ActivityLog::record('settings.footericon.updated');
