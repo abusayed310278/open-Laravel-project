@@ -20,10 +20,21 @@ class PaymentVerificationController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $submissions = ManualPaymentSubmission::query()
             ->with(['vendorOrder.vendor', 'order'])
             ->whereHas('vendorOrder', fn ($query) => $query->where('payment_route', PaymentRoute::Openbox))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('reference', 'like', "%{$search}%")
+                        ->orWhere('bank_name', 'like', "%{$search}%")
+                        ->orWhere('amount', 'like', "%{$search}%")
+                        ->orWhereHas('order', fn ($oq) => $oq->where('order_number', 'like', "%{$search}%"))
+                        ->orWhereHas('vendorOrder.vendor', fn ($vq) => $vq->where('name', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
             ->paginate(20)
             ->withQueryString();

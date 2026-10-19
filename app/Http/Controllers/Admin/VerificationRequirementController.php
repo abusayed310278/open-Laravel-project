@@ -8,15 +8,26 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreVerificationRequirementRequest;
 use App\Models\VerificationRequirement;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class VerificationRequirementController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $requirementsQuery = VerificationRequirement::query()
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('document_type', 'like', "%{$search}%")
+                        ->orWhere('role', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('sort_order');
+
         return view('admin.verification-requirements.index', [
-            'requirementsByRole' => VerificationRequirement::query()
-                ->orderBy('sort_order')
+            'requirementsByRole' => $requirementsQuery
                 ->get()
                 ->groupBy(fn (VerificationRequirement $requirement) => $requirement->role->value),
             'roles' => [UserRole::Business, UserRole::Saler],

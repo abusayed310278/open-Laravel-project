@@ -32,9 +32,15 @@
                         type="text" 
                         name="search" 
                         value="{{ request('search') }}" 
+                        autocomplete="off"
                         placeholder="Search products by title, SKU, brand, seller..." 
-                        class="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                        class="w-full border border-gray-200 rounded-lg pl-9 pr-8 py-2 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                     >
+                    @if (request()->filled('search'))
+                        <a href="{{ route('admin.products.index', ['status' => request('status')]) }}" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 search-clear-btn" title="Clear">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                    @endif
                 </div>
 
                 <select name="status" onchange="this.form.submit()" class="border border-gray-200 rounded-lg px-3.5 py-2 text-sm bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0">
@@ -70,6 +76,7 @@
             </div>
         </div>
 
+        <div id="search-results-wrapper">
         <x-table :headers="['<input type=\'checkbox\' id=\'select-all-products\' class=\'rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer\'>', 'Product', 'Seller', 'Category', 'Price', 'Status', 'Approval', 'Actions']" id="products-table" class="min-w-[1200px]">
             @forelse ($products as $product)
                 @php
@@ -316,6 +323,7 @@
         </x-table>
 
         <x-pagination :paginator="$products" />
+        </div>
     </x-card>
 
     <script>

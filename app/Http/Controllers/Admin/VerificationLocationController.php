@@ -6,14 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreVerificationLocationRequest;
 use App\Models\VerificationLocation;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class VerificationLocationController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $locations = VerificationLocation::query()
+            ->withCount('verifiers')
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('city', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%")
+                        ->orWhere('country', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.verification-locations.index', [
-            'locations' => VerificationLocation::query()->withCount('verifiers')->orderBy('name')->simplePaginate(15),
+            'locations' => $locations,
         ]);
     }
 

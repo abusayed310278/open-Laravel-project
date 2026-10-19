@@ -20,9 +20,18 @@ class VerificationController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $applications = UserVerification::query()
             ->with(['user', 'documents'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('notes', 'like', "%{$search}%")
+                        ->orWhere('rejection_reason', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"));
+                });
+            })
             ->orderByRaw('submitted_at IS NULL, submitted_at DESC, updated_at DESC')
             ->paginate(20)
             ->withQueryString();

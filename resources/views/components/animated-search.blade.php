@@ -17,7 +17,7 @@
 >
     <div
         id="searchBox"
-        class="search-box relative flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] dark:bg-slate-900/90 hover:bg-gray-100/90 dark:hover:bg-slate-800/90 focus-within:bg-white dark:focus-within:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 focus-within:border-brand-500 dark:focus-within:border-brand-500 rounded-lg shadow-2xs transition-all duration-200 pl-3 sm:pl-4 pr-1.5 sm:pr-2 overflow-hidden group"
+        class="search-box relative flex items-center w-full h-10 sm:h-11 bg-[#f8fafc] dark:bg-slate-900/90 hover:bg-gray-100/90 dark:hover:bg-slate-800/90 focus-within:bg-white dark:focus-within:bg-slate-900 border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600 focus-within:border-brand-500 dark:focus-within:border-brand-500 rounded-lg shadow-2xs transition-all duration-200 pl-3 sm:pl-4 pr-2 sm:pr-2.5 overflow-hidden group"
     >
         {{-- Left: Animated Icon Wrapper (Search Icon + Success Check Icon) --}}
         <button
@@ -75,7 +75,7 @@
         </button>
 
         {{-- Right Controls: Search Submit Button + Advanced (Sliders) Button --}}
-        <div class="flex items-center gap-1.5 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0">
             {{-- Search Submit Button --}}
             <button
                 type="submit"
@@ -92,7 +92,7 @@
             <a
                 href="{{ route('search.advanced') }}"
                 id="searchButton"
-                class="advanced-search-btn relative inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-md shadow-xs transition-all duration-200 cursor-pointer overflow-hidden flex-shrink-0 group/btn"
+                class="advanced-search-btn relative inline-flex items-center justify-center px-3.5 sm:px-4 h-7 sm:h-8 rounded-md shadow-xs transition-all duration-200 cursor-pointer overflow-hidden flex-shrink-0 group/btn"
                 title="Advanced Search"
                 aria-label="Advanced Search"
             >

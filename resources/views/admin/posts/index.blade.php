@@ -36,6 +36,29 @@
     <x-card>
         <x-slot:title>Blog Posts</x-slot:title>
 
+        {{-- Live Search Toolbar --}}
+        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <form method="GET" action="{{ route('admin.blog.index') }}" class="flex items-center gap-2 w-full sm:w-80">
+                <div class="relative w-full">
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search posts by title, slug, excerpt..."
+                        autocomplete="off"
+                        class="w-full text-xs pl-8 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-hidden focus:border-brand-500 bg-white"
+                    >
+                    <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    @if (request()->filled('search'))
+                        <a href="{{ route('admin.blog.index') }}" class="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600 text-xs search-clear-btn" title="Clear">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <div id="search-results-wrapper">
         <x-table :headers="['Title', 'Category', 'Author', 'Status', 'Published', 'Actions']" id="admin-posts-table">
             @forelse ($posts as $post)
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
@@ -123,86 +146,84 @@
         </x-table>
 
         <x-pagination :paginator="$posts" />
-    </x-card>
 
-    {{-- View Post Modals --}}
-    @foreach ($posts as $post)
-        <x-modal id="view-post-modal-{{ $post->id }}" title="Post Details" maxWidth="max-w-2xl">
-            <div class="space-y-4">
-                {{-- Header & Meta --}}
-                <div class="flex items-start justify-between pb-3 border-b border-gray-100 gap-4">
-                    <div>
-                        <h3 class="text-base font-bold text-gray-900 leading-snug">{{ $post->title }}</h3>
-                        <div class="text-xs text-gray-400 font-mono mt-0.5">/{{ $post->slug }}</div>
-                    </div>
-                    <div class="shrink-0">
-                        <x-badge :color="$post->status->badgeColor()">{{ $post->status->label() }}</x-badge>
-                    </div>
-                </div>
-
-                {{-- Post Meta Info --}}
-                <div class="grid grid-cols-3 gap-3 bg-gray-50 p-3 rounded-lg text-xs">
-                    <div>
-                        <span class="text-gray-400 block font-medium">Category</span>
-                        <span class="font-semibold text-gray-800">{{ $post->category?->name ?? 'None' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 block font-medium">Author</span>
-                        <span class="font-semibold text-gray-800">{{ $post->author?->name ?? '—' }}</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400 block font-medium">Published Date</span>
-                        <span class="font-semibold text-gray-800">{{ $post->published_at?->format('M j, Y g:i A') ?? 'Not published' }}</span>
-                    </div>
-                </div>
-
-                {{-- Featured Image --}}
-                @if ($post->featured_image_url)
-                    <div>
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Featured Image</div>
-                        <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" class="w-full max-h-60 object-cover rounded-lg border border-gray-100" onerror="this.parentElement.style.display='none'">
-                    </div>
-                @endif
-
-                {{-- Excerpt --}}
-                @if ($post->excerpt)
-                    <div>
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Excerpt</div>
-                        <p class="text-xs text-gray-600 bg-gray-50 p-2.5 rounded-lg italic">{{ $post->excerpt }}</p>
-                    </div>
-                @endif
-
-                {{-- Content --}}
-                <div>
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Content</div>
-                    <div class="text-xs text-gray-700 bg-gray-50 p-3.5 rounded-lg max-h-56 overflow-y-auto leading-relaxed border border-gray-100 prose prose-sm max-w-none">
-                        {!! $post->content !!}
-                    </div>
-                </div>
-
-                {{-- Tags --}}
-                @if ($post->tags && $post->tags->count() > 0)
-                    <div>
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Tags</div>
-                        <div class="flex flex-wrap gap-1.5">
-                            @foreach ($post->tags as $tag)
-                                <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700">#{{ $tag->name }}</span>
-                            @endforeach
+        {{-- View Post Modals --}}
+        @foreach ($posts as $post)
+            <x-modal id="view-post-modal-{{ $post->id }}" title="Post Details" maxWidth="max-w-2xl">
+                <div class="space-y-4">
+                    {{-- Header & Meta --}}
+                    <div class="flex items-start justify-between pb-3 border-b border-gray-100 gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 leading-snug">{{ $post->title }}</h3>
+                            <div class="text-xs text-gray-400 font-mono mt-0.5">/{{ $post->slug }}</div>
+                        </div>
+                        <div class="shrink-0">
+                            <x-badge :color="$post->status->badgeColor()">{{ $post->status->label() }}</x-badge>
                         </div>
                     </div>
-                @endif
 
-                {{-- Modal Action Footer --}}
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
-                    <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
-                        Close
-                    </button>
-                    <a href="{{ route('admin.blog.edit', $post) }}" class="whitespace-nowrap px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition inline-flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                        Edit Post
-                    </a>
+                    {{-- Post Meta Info --}}
+                    <div class="grid grid-cols-3 gap-3 bg-gray-50 p-3 rounded-lg text-xs">
+                        <div>
+                            <span class="text-gray-400 block font-medium">Category</span>
+                            <span class="font-semibold text-gray-800">{{ $post->category?->name ?? 'None' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block font-medium">Author</span>
+                            <span class="font-semibold text-gray-800">{{ $post->author?->name ?? '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block font-medium">Published Date</span>
+                            <span class="font-semibold text-gray-800">{{ $post->published_at?->format('M j, Y g:i A') ?? 'Not published' }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Featured Image --}}
+                    @if ($post->featured_image_url)
+                        <div class="rounded-xl overflow-hidden border border-gray-100 max-h-60 bg-gray-50">
+                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" class="w-full h-full object-cover">
+                        </div>
+                    @endif
+
+                    {{-- Excerpt --}}
+                    @if ($post->excerpt)
+                        <div class="bg-amber-50/60 border border-amber-100/80 rounded-xl p-3 text-xs text-amber-900">
+                            <span class="font-bold block mb-1">Excerpt:</span>
+                            <p class="leading-relaxed">{{ $post->excerpt }}</p>
+                        </div>
+                    @endif
+
+                    {{-- Content Preview --}}
+                    <div class="border border-gray-100 rounded-xl p-3 max-h-48 overflow-y-auto text-xs text-gray-600 leading-relaxed bg-gray-50/40">
+                        <span class="font-bold text-gray-900 block mb-1">Content Preview:</span>
+                        {!! nl2br(e(Str::limit(strip_tags($post->body), 500))) !!}
+                    </div>
+
+                    {{-- Tags --}}
+                    @if ($post->tags->isNotEmpty())
+                        <div class="space-y-1">
+                            <span class="text-xs font-semibold text-gray-500">Tags</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                @foreach ($post->tags as $tag)
+                                    <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700">#{{ $tag->name }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Modal Action Footer --}}
+                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+                        <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">
+                            Close
+                        </button>
+                        <a href="{{ route('admin.blog.edit', $post) }}" class="whitespace-nowrap px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition inline-flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            Edit Post
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </x-modal>
-    @endforeach
+            </x-modal>
+        @endforeach
+        </div>
+    </x-card>
 @endsection

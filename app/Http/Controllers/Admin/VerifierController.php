@@ -20,14 +20,30 @@ use Illuminate\View\View;
 
 class VerifierController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $verifiers = User::query()
+            ->where('role', UserRole::Verifier)
+            ->with('verifierProfile.location')
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhereHas('verifierProfile', function ($vq) use ($search) {
+                            $vq->where('employee_id', 'like', "%{$search}%")
+                                ->orWhereHas('location', fn ($lq) => $lq->where('name', 'like', "%{$search}%"));
+                        });
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.verifiers.index', [
-            'verifiers' => User::query()
-                ->where('role', UserRole::Verifier)
-                ->with('verifierProfile.location')
-                ->orderBy('name')
-                ->simplePaginate(15),
+            'verifiers' => $verifiers,
             'locations' => VerificationLocation::query()->orderBy('name')->get(),
         ]);
     }

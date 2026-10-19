@@ -6,14 +6,30 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBannerRequest;
 use App\Models\Banner;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BannerController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $banners = Banner::query()
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('title', 'like', "%{$search}%")
+                        ->orWhere('link', 'like', "%{$search}%")
+                        ->orWhere('position', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('position')
+            ->orderBy('sort_order')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.banners.index', [
-            'banners' => Banner::query()->orderBy('position')->orderBy('sort_order')->simplePaginate(15),
+            'banners' => $banners,
         ]);
     }
 

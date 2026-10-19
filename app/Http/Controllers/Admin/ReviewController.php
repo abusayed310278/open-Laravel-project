@@ -20,11 +20,22 @@ class ReviewController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $reviews = Review::query()
             ->with(['reviewer', 'images'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('title', 'like', "%{$search}%")
+                        ->orWhere('body', 'like', "%{$search}%")
+                        ->orWhere('reviewer_name', 'like', "%{$search}%")
+                        ->orWhere('city', 'like', "%{$search}%")
+                        ->orWhereHas('reviewer', fn ($rq) => $rq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
-            ->simplePaginate(15)
+            ->paginate(15)
             ->withQueryString();
 
         $users = User::query()->select('id', 'name', 'email')->orderBy('name')->limit(150)->get();

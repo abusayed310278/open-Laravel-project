@@ -71,17 +71,19 @@
                         name="search"
                         value="{{ request('search') }}"
                         placeholder="Search author, text..."
+                        autocomplete="off"
                         class="w-full text-xs pl-8 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-hidden focus:border-brand-500 bg-white"
                     >
                     <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
                 <button type="submit" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition">Filter</button>
                 @if (request('search'))
-                    <a href="{{ route('admin.blog.comments.index', ['status' => request('status', 'all')]) }}" class="p-2 text-gray-400 hover:text-gray-600 text-xs">Clear</a>
+                    <a href="{{ route('admin.blog.comments.index', ['status' => request('status', 'all')]) }}" class="p-2 text-gray-400 hover:text-gray-600 text-xs search-clear-btn">Clear</a>
                 @endif
             </form>
         </div>
 
+        <div id="search-results-wrapper">
         {{-- Comments Table --}}
         <div class="overflow-x-auto">
             <x-table :headers="['Author', 'Comment & Article', 'Status', 'Submitted', 'Actions']" id="admin-comments-table">
@@ -205,6 +207,7 @@
 
         <div class="p-4 border-t border-gray-50">
             <x-pagination :paginator="$comments" />
+        </div>
         </div>
     </x-card>
 @endsection

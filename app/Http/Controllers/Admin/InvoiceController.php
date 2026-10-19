@@ -16,9 +16,20 @@ class InvoiceController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $invoices = Invoice::query()
             ->with(['vendorOrder', 'seller', 'buyer'])
             ->when($request->filled('status'), fn ($query) => $query->where('payment_status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhere('total', 'like', "%{$search}%")
+                        ->orWhereHas('seller', fn ($sq) => $sq->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('buyer', fn ($bq) => $bq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhereHas('vendorOrder', fn ($voq) => $voq->where('vendor_order_number', 'like', "%{$search}%"));
+                });
+            })
             ->latest('issued_at')
             ->paginate(20)
             ->withQueryString();

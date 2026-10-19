@@ -17,9 +17,19 @@ class PayoutController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $payouts = SellerPayout::query()
             ->with('user')
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('payout_number', 'like', "%{$search}%")
+                        ->orWhere('amount', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
             ->paginate(20)
             ->withQueryString();

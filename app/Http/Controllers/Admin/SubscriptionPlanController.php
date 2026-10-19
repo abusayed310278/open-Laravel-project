@@ -7,15 +7,40 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSubscriptionPlanRequest;
 use App\Models\SubscriptionPlan;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SubscriptionPlanController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $salerPlans = SubscriptionPlan::query()
+            ->forType(SubscriptionType::Saler)
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('sort_order')
+            ->get();
+
+        $businessPlans = SubscriptionPlan::query()
+            ->forType(SubscriptionType::Business)
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('sort_order')
+            ->get();
+
         return view('admin.subscription-plans.index', [
-            'salerPlans' => SubscriptionPlan::query()->forType(SubscriptionType::Saler)->orderBy('sort_order')->get(),
-            'businessPlans' => SubscriptionPlan::query()->forType(SubscriptionType::Business)->orderBy('sort_order')->get(),
+            'salerPlans' => $salerPlans,
+            'businessPlans' => $businessPlans,
         ]);
     }
 

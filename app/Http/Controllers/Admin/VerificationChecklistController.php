@@ -7,14 +7,30 @@ use App\Http\Requests\Admin\StoreVerificationChecklistRequest;
 use App\Models\Category;
 use App\Models\VerificationChecklist;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class VerificationChecklistController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $items = VerificationChecklist::query()
+            ->with('category')
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('item_name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->orderBy('sort_order')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.verification-checklists.index', [
-            'items' => VerificationChecklist::query()->with('category')->orderBy('sort_order')->simplePaginate(15),
+            'items' => $items,
             'categories' => Category::query()->active()->orderBy('name')->get(),
         ]);
     }

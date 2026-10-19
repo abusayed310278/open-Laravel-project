@@ -26,6 +26,29 @@
             </a>
         </x-slot:action>
 
+        {{-- Live Search Toolbar --}}
+        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <form method="GET" action="{{ route('admin.banners.index') }}" class="flex items-center gap-2 w-full sm:w-80">
+                <div class="relative w-full">
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search banners by title, link, position..."
+                        autocomplete="off"
+                        class="w-full text-xs pl-8 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-hidden focus:border-brand-500 bg-white"
+                    >
+                    <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    @if (request()->filled('search'))
+                        <a href="{{ route('admin.banners.index') }}" class="absolute right-2.5 top-2 text-gray-400 hover:text-gray-600 text-xs search-clear-btn" title="Clear">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <div id="search-results-wrapper">
         <x-table :headers="['Thumbnail', 'Title', 'Position', 'Order', 'Status', 'Schedule', 'Actions']" id="admin-banners-table">
             @forelse ($banners as $banner)
                 <tr class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
@@ -144,5 +167,6 @@
         </x-table>
 
         <x-pagination :paginator="$banners" />
+        </div>
     </x-card>
 @endsection

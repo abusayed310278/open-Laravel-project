@@ -8,14 +8,35 @@ use App\Http\Requests\Admin\StoreWarehouseRequest;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class WarehouseController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $warehouses = Warehouse::query()
+            ->withCount('warehouseProducts')
+            ->with('manager')
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('city', 'like', "%{$search}%")
+                        ->orWhere('country', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhereHas('manager', fn ($mq) => $mq->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.warehouses.index', [
-            'warehouses' => Warehouse::query()->withCount('warehouseProducts')->with('manager')->orderBy('name')->simplePaginate(15),
+            'warehouses' => $warehouses,
             'admins' => User::query()->where('role', UserRole::Admin)->orderBy('name')->get(),
         ]);
     }

@@ -27,8 +27,21 @@ class BrandController extends Controller
 
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $brands = Brand::query()
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.brands.index', [
-            'brands' => Brand::query()->orderBy('name')->simplePaginate(10),
+            'brands' => $brands,
         ]);
     }
 

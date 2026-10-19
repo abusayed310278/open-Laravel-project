@@ -9,6 +9,7 @@ use App\Models\BlogCategory;
 use App\Models\Post;
 use App\Services\BlogService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -16,10 +17,27 @@ class PostController extends Controller
 {
     public function __construct(private readonly BlogService $blog) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
+        $posts = Post::query()
+            ->with(['category', 'author', 'tags'])
+            ->when($request->filled('search'), function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('title', 'like', "%{$search}%")
+                        ->orWhere('slug', 'like', "%{$search}%")
+                        ->orWhere('excerpt', 'like', "%{$search}%")
+                        ->orWhereHas('category', fn ($cq) => $cq->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('author', fn ($aq) => $aq->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
         return view('admin.posts.index', [
-            'posts' => Post::query()->with(['category', 'author', 'tags'])->latest()->simplePaginate(15),
+            'posts' => $posts,
         ]);
     }
 

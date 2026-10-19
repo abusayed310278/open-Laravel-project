@@ -113,6 +113,170 @@
         </footer>
     </div>
 
+    {{-- Global Admin Live Search & Real-time Filter Engine --}}
+    <script>
+        (function() {
+            let debounceTimer = null;
+            let activeAbortController = null;
 
+            function triggerLiveSearch(input, immediate = false) {
+                clearTimeout(debounceTimer);
+                const delay = immediate ? 0 : 200;
+
+                debounceTimer = setTimeout(() => {
+                    const form = input.closest('form');
+                    let targetUrl;
+
+                    if (form) {
+                        const formData = new FormData(form);
+                        const params = new URLSearchParams();
+                        for (const [key, value] of formData.entries()) {
+                            if (value !== '' && value !== null) {
+                                params.set(key, value);
+                            }
+                        }
+                        const actionUrl = form.getAttribute('action') || window.location.pathname;
+                        targetUrl = actionUrl + (params.toString() ? '?' + params.toString() : '');
+                    } else {
+                        const currentParams = new URLSearchParams(window.location.search);
+                        if (input.value.trim() !== '') {
+                            currentParams.set('search', input.value.trim());
+                        } else {
+                            currentParams.delete('search');
+                        }
+                        targetUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '');
+                    }
+
+                    // Find container to update
+                    const resultsWrapper = document.getElementById('search-results-wrapper') 
+                        || document.getElementById('pages-results-wrapper')
+                        || document.querySelector('[data-search-results]');
+
+                    if (!resultsWrapper) {
+                        if (immediate && form) {
+                            form.submit();
+                        }
+                        return;
+                    }
+
+                    if (activeAbortController) {
+                        activeAbortController.abort();
+                    }
+                    activeAbortController = new AbortController();
+
+                    // Optional spinner / loading indicator
+                    const spinner = document.getElementById('search-spinner') || form?.querySelector('.search-spinner');
+                    if (spinner) spinner.classList.remove('hidden');
+                    resultsWrapper.style.opacity = '0.6';
+                    resultsWrapper.style.pointerEvents = 'none';
+
+                    fetch(targetUrl, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        signal: activeAbortController.signal
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network error');
+                        return response.text();
+                    })
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        const targetId = resultsWrapper.id;
+                        const newResults = targetId ? doc.getElementById(targetId) : doc.querySelector('[data-search-results]');
+
+                        if (newResults) {
+                            resultsWrapper.innerHTML = newResults.innerHTML;
+                        }
+
+                        // Update any counts if present
+                        const countBadge = document.getElementById('search-count-badge');
+                        const newCountBadge = doc.getElementById('search-count-badge');
+                        if (countBadge && newCountBadge) {
+                            countBadge.innerHTML = newCountBadge.innerHTML;
+                        }
+
+                        // Toggle clear button
+                        const clearBtn = form?.querySelector('.search-clear-btn');
+                        if (clearBtn) {
+                            if (input.value.trim() !== '') {
+                                clearBtn.classList.remove('hidden');
+                            } else {
+                                clearBtn.classList.add('hidden');
+                            }
+                        }
+
+                        window.history.replaceState({}, '', targetUrl);
+                    })
+                    .catch(err => {
+                        if (err.name !== 'AbortError') {
+                            console.error('Live search error:', err);
+                        }
+                    })
+                    .finally(() => {
+                        resultsWrapper.style.opacity = '1';
+                        resultsWrapper.style.pointerEvents = '';
+                        if (spinner) spinner.classList.add('hidden');
+                    });
+                }, delay);
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target && e.target.matches('input[name="search"]')) {
+                    triggerLiveSearch(e.target);
+                }
+            });
+
+            document.addEventListener('submit', function(e) {
+                const searchInput = e.target.querySelector('input[name="search"]');
+                if (searchInput) {
+                    const resultsWrapper = document.getElementById('search-results-wrapper') 
+                        || document.getElementById('pages-results-wrapper')
+                        || document.querySelector('[data-search-results]');
+                    if (resultsWrapper) {
+                        e.preventDefault();
+                        triggerLiveSearch(searchInput, true);
+                    }
+                }
+            });
+
+            // Handle AJAX pagination inside results wrappers
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a');
+                if (!link || !link.href) return;
+
+                const resultsWrapper = link.closest('#search-results-wrapper') || link.closest('#pages-results-wrapper');
+                if (!resultsWrapper) return;
+
+                // Check if this link is a pagination link
+                const isPagination = link.closest('nav[role="navigation"]') || link.href.includes('page=') || link.closest('.pagination');
+                if (!isPagination) return;
+
+                e.preventDefault();
+                resultsWrapper.style.opacity = '0.6';
+                resultsWrapper.style.pointerEvents = 'none';
+
+                fetch(link.href, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const targetId = resultsWrapper.id;
+                    const newResults = doc.getElementById(targetId);
+                    if (newResults) {
+                        resultsWrapper.innerHTML = newResults.innerHTML;
+                        window.history.replaceState({}, '', link.href);
+                        resultsWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                })
+                .finally(() => {
+                    resultsWrapper.style.opacity = '1';
+                    resultsWrapper.style.pointerEvents = '';
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

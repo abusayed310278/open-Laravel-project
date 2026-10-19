@@ -13,11 +13,20 @@ class OrderController extends Controller
 {
     public function index(Request $request): View
     {
+        $search = trim($request->string('search'));
+
         $orders = Order::query()
             ->with(['customer', 'vendorOrders'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('search'), function ($query) use ($search) {
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('order_number', 'like', "%{$search}%")
+                        ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
+                        ->orWhereHas('vendorOrders', fn ($voq) => $voq->where('order_number', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
-            ->simplePaginate(15)
+            ->paginate(15)
             ->withQueryString();
 
         return view('admin.orders.index', [
