@@ -697,6 +697,112 @@ class SettingsController extends Controller
         return back()->with('status', 'Site brand colors and hover styles updated successfully.');
     }
 
+    public function productCard(): View
+    {
+        return view('admin.settings.product-card', [
+            'categoryColor' => $this->settings->get('product_card_category_color', '#ea580c'),
+            'categorySize' => (int) $this->settings->get('product_card_category_size', 11),
+
+            'titleColor' => $this->settings->get('product_card_title_color', '#090d16'),
+            'titleHoverColor' => $this->settings->get('product_card_title_hover_color', '#ea580c'),
+            'titleSize' => (int) $this->settings->get('product_card_title_size', 14),
+
+            'priceColor' => $this->settings->get('product_card_price_color', '#090d16'),
+            'priceSize' => (int) $this->settings->get('product_card_price_size', 16),
+            'oldPriceColor' => $this->settings->get('product_card_old_price_color', '#94a3b8'),
+            'oldPriceSize' => (int) $this->settings->get('product_card_old_price_size', 12),
+
+            'starColor' => $this->settings->get('product_card_star_color', '#fbbf24'),
+            'ratingColor' => $this->settings->get('product_card_rating_color', '#1e293b'),
+            'ratingCountColor' => $this->settings->get('product_card_rating_count_color', '#94a3b8'),
+            'ratingSize' => (int) $this->settings->get('product_card_rating_size', 12),
+
+            'vendorColor' => $this->settings->get('product_card_vendor_color', '#64748b'),
+            'vendorSize' => (int) $this->settings->get('product_card_vendor_size', 12),
+
+            'btnBg' => $this->settings->get('product_card_btn_bg', $this->settings->get('brand_color_primary', '#656c19')),
+            'btnText' => $this->settings->get('product_card_btn_text', '#ffffff'),
+            'btnSize' => (int) $this->settings->get('product_card_btn_size', 12),
+            'btnHoverBg' => $this->settings->get('product_card_btn_hover_bg', $this->settings->get('brand_color_hover', '#fff200')),
+            'btnHoverText' => $this->settings->get('product_card_btn_hover_text', '#000000'),
+        ]);
+    }
+
+    public function updateProductCard(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'product_card_category_color' => ['nullable', 'string', 'max:30'],
+            'product_card_category_size' => ['nullable', 'integer', 'min:8', 'max:32'],
+
+            'product_card_title_color' => ['nullable', 'string', 'max:30'],
+            'product_card_title_hover_color' => ['nullable', 'string', 'max:30'],
+            'product_card_title_size' => ['nullable', 'integer', 'min:8', 'max:36'],
+
+            'product_card_price_color' => ['nullable', 'string', 'max:30'],
+            'product_card_price_size' => ['nullable', 'integer', 'min:8', 'max:48'],
+            'product_card_old_price_color' => ['nullable', 'string', 'max:30'],
+            'product_card_old_price_size' => ['nullable', 'integer', 'min:8', 'max:36'],
+
+            'product_card_star_color' => ['nullable', 'string', 'max:30'],
+            'product_card_rating_color' => ['nullable', 'string', 'max:30'],
+            'product_card_rating_count_color' => ['nullable', 'string', 'max:30'],
+            'product_card_rating_size' => ['nullable', 'integer', 'min:8', 'max:32'],
+
+            'product_card_vendor_color' => ['nullable', 'string', 'max:30'],
+            'product_card_vendor_size' => ['nullable', 'integer', 'min:8', 'max:32'],
+
+            'product_card_btn_bg' => ['nullable', 'string', 'max:30'],
+            'product_card_btn_text' => ['nullable', 'string', 'max:30'],
+            'product_card_btn_size' => ['nullable', 'integer', 'min:8', 'max:32'],
+            'product_card_btn_hover_bg' => ['nullable', 'string', 'max:30'],
+            'product_card_btn_hover_text' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        foreach ($validated as $key => $val) {
+            if ($val !== null && trim((string) $val) !== '') {
+                $this->settings->set($key, is_string($val) ? trim($val) : (string) $val, 'branding');
+            }
+        }
+
+        ActivityLog::record('settings.product_card.updated');
+
+        return back()->with('status', 'Product card styling settings updated successfully.');
+    }
+
+    public function resetProductCard(): RedirectResponse
+    {
+        $keys = [
+            'product_card_category_color',
+            'product_card_category_size',
+            'product_card_title_color',
+            'product_card_title_hover_color',
+            'product_card_title_size',
+            'product_card_price_color',
+            'product_card_price_size',
+            'product_card_old_price_color',
+            'product_card_old_price_size',
+            'product_card_star_color',
+            'product_card_rating_color',
+            'product_card_rating_count_color',
+            'product_card_rating_size',
+            'product_card_vendor_color',
+            'product_card_vendor_size',
+            'product_card_btn_bg',
+            'product_card_btn_text',
+            'product_card_btn_size',
+            'product_card_btn_hover_bg',
+            'product_card_btn_hover_text',
+        ];
+
+        foreach ($keys as $k) {
+            $this->settings->set($k, null, 'branding');
+        }
+
+        ActivityLog::record('settings.product_card.reset');
+
+        return back()->with('status', 'Product card styling reset to default values.');
+    }
+
     public function cache(): View
     {
         return view('admin.settings.cache', [

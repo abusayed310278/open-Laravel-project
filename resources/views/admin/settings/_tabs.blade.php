@@ -7,6 +7,7 @@
                 'siteicon' => ['label' => 'Site Icon', 'route' => 'admin.settings.siteicon', 'desc' => 'Favicon & browser tab icons'],
                 'font' => ['label' => 'Font', 'route' => 'admin.settings.font', 'desc' => 'Typography & Google font setup'],
                 'color' => ['label' => 'Color', 'route' => 'admin.settings.color', 'desc' => 'Theme primary & accent colors'],
+                'product-card' => ['label' => 'Product Card', 'route' => 'admin.settings.product-card', 'desc' => 'Card typography, colors & button styles'],
             ],
         ],
         'Homepage & Content' => [

@@ -392,6 +392,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/settings/color', [SettingsController::class, 'color'])->name('settings.color');
         Route::post('/settings/color', [SettingsController::class, 'updateColor'])->name('settings.color.update');
 
+        Route::get('/settings/product-card', [SettingsController::class, 'productCard'])->name('settings.product-card');
+        Route::post('/settings/product-card', [SettingsController::class, 'updateProductCard'])->name('settings.product-card.update');
+        Route::post('/settings/product-card/reset', [SettingsController::class, 'resetProductCard'])->name('settings.product-card.reset');
+
         Route::get('/settings/cache', [SettingsController::class, 'cache'])->name('settings.cache');
         Route::post('/settings/cache/{action?}', [SettingsController::class, 'clearCache'])->name('settings.cache.clear');
 

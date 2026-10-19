@@ -146,7 +146,7 @@
 
     {{-- Category Heading + New Badge --}}
     <div class="flex items-center justify-between gap-2 mb-1">
-        <span class="text-[10px] sm:text-[11px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
+        <span class="pc-category text-[10px] sm:text-[11px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wide">
             {{ $categoryHeading }}
         </span>
         @if ($isNew)
@@ -155,7 +155,7 @@
     </div>
 
     {{-- Product Title --}}
-    <a href="{{ $href }}" class="text-sm font-bold text-gray-950 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 leading-snug mb-1 transition-colors truncate">
+    <a href="{{ $href }}" class="pc-title text-sm font-bold text-gray-950 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 leading-snug mb-1 transition-colors truncate">
         {{ $title }}
     </a>
 
@@ -168,11 +168,11 @@
 
     {{-- Price --}}
     <div class="flex items-baseline gap-2 mb-1.5">
-        <span class="text-sm sm:text-base font-bold text-gray-950 dark:text-white font-mono">
+        <span class="pc-price text-sm sm:text-base font-bold text-gray-950 dark:text-white font-mono">
             ${{ number_format($price) }}
         </span>
         @if ($discountPercent)
-            <span class="text-xs text-gray-400 dark:text-gray-500 line-through font-mono">
+            <span class="pc-old-price text-xs text-gray-400 dark:text-gray-500 line-through font-mono">
                 ${{ number_format($comparePrice) }}
             </span>
         @endif
@@ -182,12 +182,12 @@
     @if ($rating || $showVerifierBadge)
         <div class="flex items-center gap-1.5 mb-1">
             @if ($rating)
-                <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
+                <svg class="pc-star w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20">
                     <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
                 </svg>
-                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">{{ number_format($rating, 1) }}</span>
+                <span class="pc-rating text-xs font-semibold text-gray-800 dark:text-gray-200">{{ number_format($rating, 1) }}</span>
                 @if ($ratingCount)
-                    <span class="text-xs text-gray-400 dark:text-gray-500">({{ $ratingCount }})</span>
+                    <span class="pc-rating-count text-xs text-gray-400 dark:text-gray-500">({{ $ratingCount }})</span>
                 @endif
             @endif
 
@@ -209,8 +209,8 @@
 
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
-        <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
-        <button type="button" data-product-id="{{ $id }}" class="js-add-to-cart shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs">
+        <span class="pc-vendor text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
+        <button type="button" data-product-id="{{ $id }}" class="pc-add-btn js-add-to-cart shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>

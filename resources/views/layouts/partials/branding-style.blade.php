@@ -26,6 +26,34 @@
         @foreach ($scale as $step => $hex)
             --color-brand-{{ $step }}: {{ $hex }};
         @endforeach
+
+        /* Product Card Typography & Colors */
+        --pc-cat-color: {{ setting('product_card_category_color', '#ea580c') }};
+        --pc-cat-size: {{ setting('product_card_category_size', '11') }}px;
+
+        --pc-title-color: {{ setting('product_card_title_color', '#090d16') }};
+        --pc-title-hover: {{ setting('product_card_title_hover_color', '#ea580c') }};
+        --pc-title-size: {{ setting('product_card_title_size', '14') }}px;
+
+        --pc-price-color: {{ setting('product_card_price_color', '#090d16') }};
+        --pc-price-size: {{ setting('product_card_price_size', '16') }}px;
+
+        --pc-old-price-color: {{ setting('product_card_old_price_color', '#94a3b8') }};
+        --pc-old-price-size: {{ setting('product_card_old_price_size', '12') }}px;
+
+        --pc-star-color: {{ setting('product_card_star_color', '#fbbf24') }};
+        --pc-rating-color: {{ setting('product_card_rating_color', '#1e293b') }};
+        --pc-rating-count-color: {{ setting('product_card_rating_count_color', '#94a3b8') }};
+        --pc-rating-size: {{ setting('product_card_rating_size', '12') }}px;
+
+        --pc-vendor-color: {{ setting('product_card_vendor_color', '#64748b') }};
+        --pc-vendor-size: {{ setting('product_card_vendor_size', '12') }}px;
+
+        --pc-btn-bg: {{ setting('product_card_btn_bg') ?: 'var(--color-brand-primary, #656c19)' }};
+        --pc-btn-text: {{ setting('product_card_btn_text') ?: 'var(--color-brand-contrast, #ffffff)' }};
+        --pc-btn-size: {{ setting('product_card_btn_size', '12') }}px;
+        --pc-btn-hover-bg: {{ setting('product_card_btn_hover_bg') ?: 'var(--color-brand-hover, #fff200)' }};
+        --pc-btn-hover-text: {{ setting('product_card_btn_hover_text') ?: 'var(--color-brand-hover-text, #000000)' }};
     }
 
     /* 1. Start Selling CTA Button (Screenshot 1 & 4) */
@@ -172,4 +200,65 @@
 
     .ring-brand-500 { --tw-ring-color: var(--color-brand-primary) !important; }
     .focus\:ring-brand-400:focus { --tw-ring-color: var(--color-brand-primary) !important; }
+
+    /* Product Card Custom Elements */
+    .pc-category {
+        color: var(--pc-cat-color) !important;
+        font-size: var(--pc-cat-size) !important;
+    }
+    .pc-title {
+        color: var(--pc-title-color) !important;
+        font-size: var(--pc-title-size) !important;
+    }
+    .pc-title:hover {
+        color: var(--pc-title-hover) !important;
+    }
+    .pc-price {
+        color: var(--pc-price-color) !important;
+        font-size: var(--pc-price-size) !important;
+    }
+    .pc-old-price {
+        color: var(--pc-old-price-color) !important;
+        font-size: var(--pc-old-price-size) !important;
+    }
+    .pc-star {
+        color: var(--pc-star-color) !important;
+        width: calc(var(--pc-rating-size) * 1.15) !important;
+        height: calc(var(--pc-rating-size) * 1.15) !important;
+    }
+    .pc-rating {
+        color: var(--pc-rating-color) !important;
+        font-size: var(--pc-rating-size) !important;
+    }
+    .pc-rating-count {
+        color: var(--pc-rating-count-color) !important;
+        font-size: var(--pc-rating-size) !important;
+    }
+    .pc-vendor {
+        color: var(--pc-vendor-color) !important;
+        font-size: var(--pc-vendor-size) !important;
+    }
+    .pc-add-btn,
+    .pc-add-btn.js-add-to-cart {
+        background-color: var(--pc-btn-bg) !important;
+        color: var(--pc-btn-text) !important;
+        font-size: var(--pc-btn-size) !important;
+        border-color: transparent !important;
+    }
+    .pc-add-btn:hover,
+    .pc-add-btn.js-add-to-cart:hover:not(:disabled) {
+        background-color: var(--pc-btn-hover-bg) !important;
+        color: var(--pc-btn-hover-text) !important;
+    }
+    .pc-add-btn svg,
+    .pc-add-btn.js-add-to-cart svg {
+        color: inherit !important;
+        stroke: currentColor !important;
+        width: calc(var(--pc-btn-size) * 1.15) !important;
+        height: calc(var(--pc-btn-size) * 1.15) !important;
+    }
+    .pc-add-btn:hover svg,
+    .pc-add-btn.js-add-to-cart:hover svg {
+        color: var(--pc-btn-hover-text) !important;
+    }
 </style>
