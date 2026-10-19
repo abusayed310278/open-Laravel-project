@@ -129,15 +129,21 @@
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Badge Background Color</label>
                                         <div class="flex items-center gap-2">
-                                            <input type="color" value="{{ old('badge_bg_color', $slide->badge_bg_color ?: '#FEF08A') }}" oninput="this.nextElementSibling.value = this.value" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="badge_bg_color" value="{{ old('badge_bg_color', $slide->badge_bg_color ?: '#FEF08A') }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono">
+                                            <input type="color" value="{{ old('badge_bg_color', $slide->badge_bg_color ?: '#FEF08A') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                            <div class="relative flex items-center min-w-0 flex-1 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                                <span class="pl-2.5 pr-0.5 text-xs font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                <input type="text" name="badge_bg_color" value="{{ ltrim(old('badge_bg_color', $slide->badge_bg_color ?: '#FEF08A'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="FEF08A" maxlength="7" class="w-full border-0 py-1 pl-0.5 pr-2 text-xs font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Badge Text Color</label>
                                         <div class="flex items-center gap-2">
-                                            <input type="color" value="{{ old('badge_text_color', $slide->badge_text_color ?: '#854D0E') }}" oninput="this.nextElementSibling.value = this.value" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="badge_text_color" value="{{ old('badge_text_color', $slide->badge_text_color ?: '#854D0E') }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono">
+                                            <input type="color" value="{{ old('badge_text_color', $slide->badge_text_color ?: '#854D0E') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                            <div class="relative flex items-center min-w-0 flex-1 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                                <span class="pl-2.5 pr-0.5 text-xs font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                <input type="text" name="badge_text_color" value="{{ ltrim(old('badge_text_color', $slide->badge_text_color ?: '#854D0E'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="854D0E" maxlength="7" class="w-full border-0 py-1 pl-0.5 pr-2 text-xs font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -154,10 +160,13 @@
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Headline Line 1</label>
                                         <input type="text" name="title_line1" value="{{ old('title_line1', $slide->title_line1) }}" placeholder="e.g. Top Brands." class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-brand-400 mb-1.5">
                                         <div class="flex items-center gap-3">
-                                            <div class="flex items-center gap-1">
+                                            <div class="flex items-center gap-1.5">
                                                 <span class="text-[10px] text-gray-500">Color:</span>
-                                                <input type="color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                                <input type="text" name="title_line1_color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                                <input type="color" value="{{ old('title_line1_color', $slide->title_line1_color ?: '#0F172A') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                                <div class="relative flex items-center min-w-0 w-24 border border-gray-200 rounded bg-white overflow-hidden focus-within:ring-1 focus-within:ring-brand-400">
+                                                    <span class="pl-1.5 pr-0.5 text-[10px] font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                    <input type="text" name="title_line1_color" value="{{ ltrim(old('title_line1_color', $slide->title_line1_color ?: '#0F172A'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="0F172A" maxlength="7" class="w-full border-0 py-0.5 pl-0.5 pr-1 text-[10px] font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                                </div>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 <span class="text-[10px] text-gray-500">Size:</span>
@@ -174,10 +183,13 @@
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Headline Line 2 (Highlight)</label>
                                         <input type="text" name="title_line2" value="{{ old('title_line2', $slide->title_line2) }}" placeholder="e.g. Better Value." class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-brand-400 mb-1.5">
                                         <div class="flex items-center gap-3">
-                                            <div class="flex items-center gap-1">
+                                            <div class="flex items-center gap-1.5">
                                                 <span class="text-[10px] text-gray-500">Color:</span>
-                                                <input type="color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                                <input type="text" name="title_line2_color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                                <input type="color" value="{{ old('title_line2_color', $slide->title_line2_color ?: '#EAB308') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                                <div class="relative flex items-center min-w-0 w-24 border border-gray-200 rounded bg-white overflow-hidden focus-within:ring-1 focus-within:ring-brand-400">
+                                                    <span class="pl-1.5 pr-0.5 text-[10px] font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                    <input type="text" name="title_line2_color" value="{{ ltrim(old('title_line2_color', $slide->title_line2_color ?: '#EAB308'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="EAB308" maxlength="7" class="w-full border-0 py-0.5 pl-0.5 pr-1 text-[10px] font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                                </div>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 <span class="text-[10px] text-gray-500">Size:</span>
@@ -195,10 +207,13 @@
                                     <div class="flex items-center justify-between mb-1">
                                         <label class="text-[11px] font-medium text-gray-700">Subtitle Description</label>
                                         <div class="flex items-center gap-3 text-xs text-gray-500">
-                                            <div class="flex items-center gap-1">
+                                            <div class="flex items-center gap-1.5">
                                                 <span class="text-[10px]">Color:</span>
-                                                <input type="color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.nextElementSibling.value = this.value" class="w-5 h-5 rounded border border-gray-200 cursor-pointer p-0.5">
-                                                <input type="text" name="subtitle_color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.previousElementSibling.value = this.value" class="w-20 border border-gray-200 rounded px-1.5 py-0.5 text-[10px] font-mono">
+                                                <input type="color" value="{{ old('subtitle_color', $slide->subtitle_color ?: '#475569') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-5 h-5 rounded border border-gray-200 cursor-pointer p-0.5 bg-white shrink-0">
+                                                <div class="relative flex items-center min-w-0 w-24 border border-gray-200 rounded bg-white overflow-hidden focus-within:ring-1 focus-within:ring-brand-400">
+                                                    <span class="pl-1.5 pr-0.5 text-[10px] font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                    <input type="text" name="subtitle_color" value="{{ ltrim(old('subtitle_color', $slide->subtitle_color ?: '#475569'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="475569" maxlength="7" class="w-full border-0 py-0.5 pl-0.5 pr-1 text-[10px] font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                                </div>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 <span class="text-[10px]">Size:</span>
@@ -239,15 +254,21 @@
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Text Color</label>
                                         <div class="flex items-center gap-2">
-                                            <input type="color" value="{{ old('callout_color', $slide->callout_color ?: '#1E3A8A') }}" oninput="this.nextElementSibling.value = this.value" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="callout_color" value="{{ old('callout_color', $slide->callout_color ?: '#1E3A8A') }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono">
+                                            <input type="color" value="{{ old('callout_color', $slide->callout_color ?: '#1E3A8A') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                            <div class="relative flex items-center min-w-0 flex-1 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                                <span class="pl-2.5 pr-0.5 text-xs font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                <input type="text" name="callout_color" value="{{ ltrim(old('callout_color', $slide->callout_color ?: '#1E3A8A'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="1E3A8A" maxlength="7" class="w-full border-0 py-1 pl-0.5 pr-2 text-xs font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-medium text-gray-700 mb-1">Swoosh Underline Color</label>
                                         <div class="flex items-center gap-2">
-                                            <input type="color" value="{{ old('callout_accent_color', $slide->callout_accent_color ?: '#EAB308') }}" oninput="this.nextElementSibling.value = this.value" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                            <input type="text" name="callout_accent_color" value="{{ old('callout_accent_color', $slide->callout_accent_color ?: '#EAB308') }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs font-mono">
+                                            <input type="color" value="{{ old('callout_accent_color', $slide->callout_accent_color ?: '#EAB308') }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-7 h-7 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                            <div class="relative flex items-center min-w-0 flex-1 border border-gray-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-brand-400">
+                                                <span class="pl-2.5 pr-0.5 text-xs font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                <input type="text" name="callout_accent_color" value="{{ ltrim(old('callout_accent_color', $slide->callout_accent_color ?: '#EAB308'), '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="EAB308" maxlength="7" class="w-full border-0 py-1 pl-0.5 pr-2 text-xs font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -293,9 +314,12 @@
                                             <div class="grid grid-cols-2 gap-2">
                                                 <div>
                                                     <label class="block text-[10px] font-medium text-gray-700 mb-0.5">Icon Color</label>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="color" value="{{ $item['color'] ?? '#EAB308' }}" oninput="this.nextElementSibling.value = this.value" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0">
-                                                        <input type="text" name="features[{{ $i }}][color]" value="{{ $item['color'] ?? '#EAB308' }}" oninput="this.previousElementSibling.value = this.value" class="w-full border border-gray-200 rounded px-1 py-0.5 text-[10px] font-mono">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <input type="color" value="{{ $item['color'] ?? '#EAB308' }}" oninput="this.nextElementSibling.querySelector('input').value = this.value.replace(/^#/, '');" class="w-6 h-6 rounded border border-gray-200 cursor-pointer p-0.5 shrink-0 bg-white">
+                                                        <div class="relative flex items-center min-w-0 flex-1 border border-gray-200 rounded bg-white overflow-hidden focus-within:ring-1 focus-within:ring-brand-400">
+                                                            <span class="pl-1.5 pr-0.5 text-[10px] font-mono font-bold text-gray-400 select-none pointer-events-none">#</span>
+                                                            <input type="text" name="features[{{ $i }}][color]" value="{{ ltrim($item['color'] ?? '#EAB308', '#') }}" oninput="let v=this.value.replace(/[^0-9a-fA-F]/g, ''); this.value=v; if(v.length===6||v.length===3){ this.closest('.flex').querySelector('input[type=color]').value = (v.length===6 ? '#'+v : '#'+v[0]+v[0]+v[1]+v[1]+v[2]+v[2]); }" placeholder="EAB308" maxlength="7" class="w-full border-0 py-0.5 pl-0.5 pr-1 text-[10px] font-mono font-semibold uppercase text-gray-900 focus:outline-hidden focus:ring-0 bg-transparent">
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div>

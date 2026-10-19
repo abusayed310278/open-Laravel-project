@@ -345,6 +345,23 @@
                                     White (#ffffff)
                                 </button>
                             </div>
+
+                            {{-- Hover Text Weight --}}
+                            <div class="mt-3 pt-3 border-t border-gray-200/70 flex items-center justify-between gap-2">
+                                <label for="brand_color_hover_text_weight" class="text-xs font-semibold uppercase tracking-wider text-gray-500 shrink-0">Font Weight</label>
+                                <select
+                                    name="brand_color_hover_text_weight"
+                                    id="brand_color_hover_text_weight"
+                                    onchange="syncHoverTextWeight(this.value)"
+                                    class="border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-800 bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer"
+                                >
+                                    <option value="400" @selected(($currentHoverTextWeight ?? '700') == '400')>400 (Regular)</option>
+                                    <option value="500" @selected(($currentHoverTextWeight ?? '700') == '500')>500 (Medium)</option>
+                                    <option value="600" @selected(($currentHoverTextWeight ?? '700') == '600')>600 (Semi-Bold)</option>
+                                    <option value="700" @selected(($currentHoverTextWeight ?? '700') == '700')>700 (Bold - Default)</option>
+                                    <option value="800" @selected(($currentHoverTextWeight ?? '700') == '800')>800 (Extra-Bold)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 {{-- Global Website Text Colors Section --}}
@@ -363,119 +380,179 @@
                     {{-- Live Text Preview Box --}}
                     <div id="site-text-preview-box" class="p-4 rounded-xl border border-gray-200 bg-gray-50/70 space-y-2">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Live Typography Sandbox</span>
-                        <h4 id="preview-text-heading" class="text-base font-bold transition-colors" style="color: {{ $currentHeadingColor ?? '#0f172a' }};">
+                        <h4 id="preview-text-heading" class="text-base transition-all" style="color: {{ $currentHeadingColor ?? '#0f172a' }}; font-weight: {{ $currentHeadingWeight ?? '700' }};">
                             Experience Next-Gen Electronics Marketplace
                         </h4>
-                        <p id="preview-text-body" class="text-xs transition-colors" style="color: {{ $currentTextColor ?? '#1f2937' }};">
+                        <p id="preview-text-body" class="text-xs transition-all" style="color: {{ $currentTextColor ?? '#1f2937' }}; font-weight: {{ $currentTextWeight ?? '400' }};">
                             Browse certified open-box tech, brand-new devices, and quality refurbished electronics with transparent warranties and fast local delivery.
                         </p>
-                        <p id="preview-text-muted" class="text-[11px] transition-colors" style="color: {{ $currentMutedColor ?? '#64748b' }};">
+                        <p id="preview-text-muted" class="text-[11px] transition-all" style="color: {{ $currentMutedColor ?? '#64748b' }}; font-weight: {{ $currentMutedWeight ?? '400' }};">
                             Verified seller store • 24/7 customer support • Safe secure escrow checkout
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {{-- 1. Main Body Text Color --}}
-                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
-                            <label for="site_text_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Main Body Text Color</label>
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
-                                    <input
-                                        type="color"
-                                        id="site-text-color-wheel"
-                                        value="{{ $currentTextColor ?? '#1f2937' }}"
-                                        oninput="syncSiteTextFromWheel(this.value)"
-                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
-                                    >
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3 flex flex-col justify-between">
+                            <div>
+                                <label for="site_text_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Main Body Text Color</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                        <input
+                                            type="color"
+                                            id="site-text-color-wheel"
+                                            value="{{ $currentTextColor ?? '#1f2937' }}"
+                                            oninput="syncSiteTextFromWheel(this.value)"
+                                            class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                        >
+                                    </div>
+                                    <div class="relative flex-1">
+                                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                        <input
+                                            type="text"
+                                            name="site_text_color"
+                                            id="site_text_color"
+                                            value="{{ ltrim($currentTextColor ?? '#1f2937', '#') }}"
+                                            oninput="syncSiteTextFromInput(this.value)"
+                                            placeholder="1f2937"
+                                            maxlength="7"
+                                            class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                        >
+                                    </div>
                                 </div>
-                                <div class="relative flex-1">
-                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
-                                    <input
-                                        type="text"
-                                        name="site_text_color"
-                                        id="site_text_color"
-                                        value="{{ ltrim($currentTextColor ?? '#1f2937', '#') }}"
-                                        oninput="syncSiteTextFromInput(this.value)"
-                                        placeholder="1f2937"
-                                        maxlength="7"
-                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
-                                    >
+                                <div class="flex flex-wrap gap-1.5 pt-2">
+                                    <button type="button" onclick="setSiteTextColor('#1f2937')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#1f2937 (Default)</button>
+                                    <button type="button" onclick="setSiteTextColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
+                                    <button type="button" onclick="setSiteTextColor('#334155')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#334155 (Slate)</button>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1.5 pt-1">
-                                <button type="button" onclick="setSiteTextColor('#1f2937')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#1f2937 (Default)</button>
-                                <button type="button" onclick="setSiteTextColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
-                                <button type="button" onclick="setSiteTextColor('#334155')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#334155 (Slate)</button>
+
+                            {{-- Font Weight Selector --}}
+                            <div class="mt-3 pt-3 border-t border-gray-200/70 flex items-center justify-between gap-2">
+                                <label for="site_text_weight" class="text-xs font-semibold uppercase tracking-wider text-gray-500 shrink-0">Font Weight</label>
+                                <select
+                                    name="site_text_weight"
+                                    id="site_text_weight"
+                                    onchange="syncSiteTextWeight(this.value)"
+                                    class="border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-800 bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer"
+                                >
+                                    <option value="300" @selected(($currentTextWeight ?? '400') == '300')>300 (Light)</option>
+                                    <option value="400" @selected(($currentTextWeight ?? '400') == '400')>400 (Regular - Default)</option>
+                                    <option value="500" @selected(($currentTextWeight ?? '400') == '500')>500 (Medium)</option>
+                                    <option value="600" @selected(($currentTextWeight ?? '400') == '600')>600 (Semi-Bold)</option>
+                                    <option value="700" @selected(($currentTextWeight ?? '400') == '700')>700 (Bold)</option>
+                                </select>
                             </div>
                         </div>
 
                         {{-- 2. Headings & Titles Color --}}
-                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
-                            <label for="site_heading_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Headings &amp; Titles Color</label>
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
-                                    <input
-                                        type="color"
-                                        id="site-heading-color-wheel"
-                                        value="{{ $currentHeadingColor ?? '#0f172a' }}"
-                                        oninput="syncSiteHeadingFromWheel(this.value)"
-                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
-                                    >
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3 flex flex-col justify-between">
+                            <div>
+                                <label for="site_heading_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Headings &amp; Titles Color</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                        <input
+                                            type="color"
+                                            id="site-heading-color-wheel"
+                                            value="{{ $currentHeadingColor ?? '#0f172a' }}"
+                                            oninput="syncSiteHeadingFromWheel(this.value)"
+                                            class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                        >
+                                    </div>
+                                    <div class="relative flex-1">
+                                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                        <input
+                                            type="text"
+                                            name="site_heading_color"
+                                            id="site_heading_color"
+                                            value="{{ ltrim($currentHeadingColor ?? '#0f172a', '#') }}"
+                                            oninput="syncSiteHeadingFromInput(this.value)"
+                                            placeholder="0f172a"
+                                            maxlength="7"
+                                            class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                        >
+                                    </div>
                                 </div>
-                                <div class="relative flex-1">
-                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
-                                    <input
-                                        type="text"
-                                        name="site_heading_color"
-                                        id="site_heading_color"
-                                        value="{{ ltrim($currentHeadingColor ?? '#0f172a', '#') }}"
-                                        oninput="syncSiteHeadingFromInput(this.value)"
-                                        placeholder="0f172a"
-                                        maxlength="7"
-                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
-                                    >
+                                <div class="flex flex-wrap gap-1.5 pt-2">
+                                    <button type="button" onclick="setSiteHeadingColor('#0f172a')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#0f172a (Default)</button>
+                                    <button type="button" onclick="setSiteHeadingColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
+                                    <button type="button" onclick="setSiteHeadingColor('#111827')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#111827 (Deep)</button>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1.5 pt-1">
-                                <button type="button" onclick="setSiteHeadingColor('#0f172a')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#0f172a (Default)</button>
-                                <button type="button" onclick="setSiteHeadingColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
-                                <button type="button" onclick="setSiteHeadingColor('#111827')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#111827 (Deep)</button>
+
+                            {{-- Font Weight Selector --}}
+                            <div class="mt-3 pt-3 border-t border-gray-200/70 flex items-center justify-between gap-2">
+                                <label for="site_heading_weight" class="text-xs font-semibold uppercase tracking-wider text-gray-500 shrink-0">Font Weight</label>
+                                <select
+                                    name="site_heading_weight"
+                                    id="site_heading_weight"
+                                    onchange="syncSiteHeadingWeight(this.value)"
+                                    class="border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-800 bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer"
+                                >
+                                    <option value="400" @selected(($currentHeadingWeight ?? '700') == '400')>400 (Regular)</option>
+                                    <option value="500" @selected(($currentHeadingWeight ?? '700') == '500')>500 (Medium)</option>
+                                    <option value="600" @selected(($currentHeadingWeight ?? '700') == '600')>600 (Semi-Bold)</option>
+                                    <option value="700" @selected(($currentHeadingWeight ?? '700') == '700')>700 (Bold - Default)</option>
+                                    <option value="800" @selected(($currentHeadingWeight ?? '700') == '800')>800 (Extra-Bold)</option>
+                                    <option value="900" @selected(($currentHeadingWeight ?? '700') == '900')>900 (Black)</option>
+                                </select>
                             </div>
                         </div>
 
                         {{-- 3. Muted / Secondary Text Color --}}
-                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
-                            <label for="site_muted_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Muted / Subtitle Color</label>
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
-                                    <input
-                                        type="color"
-                                        id="site-muted-color-wheel"
-                                        value="{{ $currentMutedColor ?? '#64748b' }}"
-                                        oninput="syncSiteMutedFromWheel(this.value)"
-                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
-                                    >
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3 flex flex-col justify-between">
+                            <div>
+                                <label for="site_muted_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Muted / Subtitle Color</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                        <input
+                                            type="color"
+                                            id="site-muted-color-wheel"
+                                            value="{{ $currentMutedColor ?? '#64748b' }}"
+                                            oninput="syncSiteMutedFromWheel(this.value)"
+                                            class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                        >
+                                    </div>
+                                    <div class="relative flex-1">
+                                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                        <input
+                                            type="text"
+                                            name="site_muted_color"
+                                            id="site_muted_color"
+                                            value="{{ ltrim($currentMutedColor ?? '#64748b', '#') }}"
+                                            oninput="syncSiteMutedFromInput(this.value)"
+                                            placeholder="64748b"
+                                            maxlength="7"
+                                            class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                        >
+                                    </div>
                                 </div>
-                                <div class="relative flex-1">
-                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
-                                    <input
-                                        type="text"
-                                        name="site_muted_color"
-                                        id="site_muted_color"
-                                        value="{{ ltrim($currentMutedColor ?? '#64748b', '#') }}"
-                                        oninput="syncSiteMutedFromInput(this.value)"
-                                        placeholder="64748b"
-                                        maxlength="7"
-                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
-                                    >
+                                <div class="flex flex-wrap gap-1.5 pt-2">
+                                    <button type="button" onclick="setSiteMutedColor('#64748b')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#64748b (Default)</button>
+                                    <button type="button" onclick="setSiteMutedColor('#6b7280')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#6b7280 (Gray)</button>
+                                    <button type="button" onclick="setSiteMutedColor('#94a3b8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#94a3b8 (Light)</button>
                                 </div>
                             </div>
-                            <div class="flex flex-wrap gap-1.5 pt-1">
-                                <button type="button" onclick="setSiteMutedColor('#64748b')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#64748b (Default)</button>
-                                <button type="button" onclick="setSiteMutedColor('#6b7280')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#6b7280 (Gray)</button>
-                                <button type="button" onclick="setSiteMutedColor('#94a3b8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#94a3b8 (Light)</button>
+
+                            {{-- Font Weight Selector --}}
+                            <div class="mt-3 pt-3 border-t border-gray-200/70 flex items-center justify-between gap-2">
+                                <label for="site_muted_weight" class="text-xs font-semibold uppercase tracking-wider text-gray-500 shrink-0">Font Weight</label>
+                                <select
+                                    name="site_muted_weight"
+                                    id="site_muted_weight"
+                                    onchange="syncSiteMutedWeight(this.value)"
+                                    class="border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-gray-800 bg-white shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-400 cursor-pointer"
+                                >
+                                    <option value="300" @selected(($currentMutedWeight ?? '400') == '300')>300 (Light)</option>
+                                    <option value="400" @selected(($currentMutedWeight ?? '400') == '400')>400 (Regular - Default)</option>
+                                    <option value="500" @selected(($currentMutedWeight ?? '400') == '500')>500 (Medium)</option>
+                                    <option value="600" @selected(($currentMutedWeight ?? '400') == '600')>600 (Semi-Bold)</option>
+                                    <option value="700" @selected(($currentMutedWeight ?? '400') == '700')>700 (Bold)</option>
+                                </select>
                             </div>
                         </div>
+                    </div>
+                </div>
                     </div>
                 </div>
 
@@ -505,6 +582,7 @@
         let currentPrimaryHex = '{{ $currentColor }}';
         let currentHoverHex = '{{ $currentHoverColor ?? '#fff200' }}';
         let currentHoverTextHex = '{{ $currentHoverTextColor ?? '#000000' }}';
+        let currentHoverTextWeight = '{{ $currentHoverTextWeight ?? '700' }}';
         let activeScale = {};
 
         function hexToHsl(hex) {
@@ -599,6 +677,7 @@
                 if (textSpan) textSpan.textContent = currentHoverHex.toUpperCase();
                 badge.style.backgroundColor = currentHoverHex;
                 badge.style.color = currentHoverTextHex;
+                badge.style.fontWeight = currentHoverTextWeight;
             }
         }
 
@@ -899,12 +978,60 @@
             if (preview) preview.style.color = hex;
         }
 
+        function syncHoverTextWeight(weight) {
+            currentHoverTextWeight = weight;
+            updateHoverBadge();
+        }
+
+        function syncSiteTextWeight(weight) {
+            const preview = document.getElementById('preview-text-body');
+            if (preview) preview.style.fontWeight = weight;
+        }
+
+        function syncSiteHeadingWeight(weight) {
+            const preview = document.getElementById('preview-text-heading');
+            if (preview) preview.style.fontWeight = weight;
+        }
+
+        function syncSiteMutedWeight(weight) {
+            const preview = document.getElementById('preview-text-muted');
+            if (preview) preview.style.fontWeight = weight;
+        }
+
+        function setHoverTextWeight(weight) {
+            const select = document.getElementById('brand_color_hover_text_weight');
+            if (select) select.value = weight;
+            syncHoverTextWeight(weight);
+        }
+
+        function setSiteTextWeight(weight) {
+            const select = document.getElementById('site_text_weight');
+            if (select) select.value = weight;
+            syncSiteTextWeight(weight);
+        }
+
+        function setSiteHeadingWeight(weight) {
+            const select = document.getElementById('site_heading_weight');
+            if (select) select.value = weight;
+            syncSiteHeadingWeight(weight);
+        }
+
+        function setSiteMutedWeight(weight) {
+            const select = document.getElementById('site_muted_weight');
+            if (select) select.value = weight;
+            syncSiteMutedWeight(weight);
+        }
+
         function resetToDefaults() {
             setBaseColor('#f59e0b');
             setHoverColor('#fff200', '#000000');
+            setHoverTextWeight('700');
             setSiteTextColor('#1f2937');
+            setSiteTextWeight('400');
             setSiteHeadingColor('#0f172a');
+            setSiteHeadingWeight('700');
             setSiteMutedColor('#64748b');
+            setSiteMutedWeight('400');
         }
 
         function setupButtonHoverListeners() {
@@ -916,9 +1043,11 @@
 
             hoverTargets.forEach(el => {
                 if (!el) return;
+                const originalWeight = el.style.fontWeight || '';
                 el.addEventListener('mouseenter', () => {
                     el.style.backgroundColor = currentHoverHex;
                     el.style.color = currentHoverTextHex;
+                    el.style.fontWeight = currentHoverTextWeight;
                     const svg = el.querySelector('svg');
                     if (svg) svg.style.color = currentHoverTextHex;
                 });
@@ -926,6 +1055,7 @@
                     el.style.backgroundColor = currentPrimaryHex;
                     const normalColor = getContrastText(currentPrimaryHex);
                     el.style.color = normalColor;
+                    el.style.fontWeight = originalWeight;
                     const svg = el.querySelector('svg');
                     if (svg) svg.style.color = normalColor;
                 });

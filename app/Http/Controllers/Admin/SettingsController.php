@@ -207,6 +207,20 @@ class SettingsController extends Controller
             $heroSlide->image = $this->storeUploadedFile($request->file('image'), 'branding', 'public');
         }
 
+        foreach ([
+            'badge_bg_color',
+            'badge_text_color',
+            'title_line1_color',
+            'title_line2_color',
+            'subtitle_color',
+            'callout_color',
+            'callout_accent_color',
+        ] as $colorField) {
+            if (!empty($data[$colorField])) {
+                $data[$colorField] = '#'.ltrim(trim((string) $data[$colorField]), '#');
+            }
+        }
+
         $features = [];
         if ($request->has('features') && is_array($request->input('features'))) {
             foreach ($request->input('features') as $f) {
@@ -215,7 +229,7 @@ class SettingsController extends Controller
                         'icon' => $f['icon'] ?? 'shield-check',
                         'title' => $f['title'] ?? '',
                         'subtitle' => $f['subtitle'] ?? '',
-                        'color' => $f['color'] ?? '#EAB308',
+                        'color' => !empty($f['color']) ? '#'.ltrim(trim((string) $f['color']), '#') : '#EAB308',
                         'icon_size' => !empty($f['icon_size']) ? (int) $f['icon_size'] : null,
                         'title_size' => !empty($f['title_size']) ? (int) $f['title_size'] : null,
                         'subtitle_size' => !empty($f['subtitle_size']) ? (int) $f['subtitle_size'] : null,
@@ -658,9 +672,13 @@ class SettingsController extends Controller
             'currentWeight' => $weight,
             'currentHoverColor' => $this->settings->get('brand_color_hover', '#fff200'),
             'currentHoverTextColor' => $this->settings->get('brand_color_hover_text', '#000000'),
+            'currentHoverTextWeight' => (string) $this->settings->get('brand_color_hover_text_weight', '700'),
             'currentTextColor' => $this->settings->get('site_text_color', '#1f2937'),
+            'currentTextWeight' => (string) $this->settings->get('site_text_weight', '400'),
             'currentHeadingColor' => $this->settings->get('site_heading_color', '#0f172a'),
+            'currentHeadingWeight' => (string) $this->settings->get('site_heading_weight', '700'),
             'currentMutedColor' => $this->settings->get('site_muted_color', '#64748b'),
+            'currentMutedWeight' => (string) $this->settings->get('site_muted_weight', '400'),
         ]);
     }
 
@@ -679,15 +697,27 @@ class SettingsController extends Controller
         $hoverText = $request->filled('brand_color_hover_text')
             ? '#'.ltrim(trim($request->string('brand_color_hover_text')->value()), '#')
             : '#000000';
+        $hoverTextWeight = $request->filled('brand_color_hover_text_weight')
+            ? trim($request->string('brand_color_hover_text_weight')->value())
+            : '700';
         $siteTextColor = $request->filled('site_text_color')
             ? '#'.ltrim(trim($request->string('site_text_color')->value()), '#')
             : '#1f2937';
+        $siteTextWeight = $request->filled('site_text_weight')
+            ? trim($request->string('site_text_weight')->value())
+            : '400';
         $siteHeadingColor = $request->filled('site_heading_color')
             ? '#'.ltrim(trim($request->string('site_heading_color')->value()), '#')
             : '#0f172a';
+        $siteHeadingWeight = $request->filled('site_heading_weight')
+            ? trim($request->string('site_heading_weight')->value())
+            : '700';
         $siteMutedColor = $request->filled('site_muted_color')
             ? '#'.ltrim(trim($request->string('site_muted_color')->value()), '#')
             : '#64748b';
+        $siteMutedWeight = $request->filled('site_muted_weight')
+            ? trim($request->string('site_muted_weight')->value())
+            : '400';
 
         $request->merge([
             'brand_color_primary' => $primary,
@@ -695,9 +725,13 @@ class SettingsController extends Controller
             'brand_color_weight' => $weight,
             'brand_color_hover' => $hover,
             'brand_color_hover_text' => $hoverText,
+            'brand_color_hover_text_weight' => $hoverTextWeight,
             'site_text_color' => $siteTextColor,
+            'site_text_weight' => $siteTextWeight,
             'site_heading_color' => $siteHeadingColor,
+            'site_heading_weight' => $siteHeadingWeight,
             'site_muted_color' => $siteMutedColor,
+            'site_muted_weight' => $siteMutedWeight,
         ]);
 
         $request->validate([
@@ -706,9 +740,13 @@ class SettingsController extends Controller
             'brand_color_weight' => ['required', 'in:50,100,200,300,400,500,600,700,800,900'],
             'brand_color_hover' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_hover_text' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'brand_color_hover_text_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
             'site_text_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_text_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
             'site_heading_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_heading_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
             'site_muted_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_muted_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
         ]);
 
         $hex = strtolower($request->string('brand_color_primary')->value());
@@ -723,9 +761,13 @@ class SettingsController extends Controller
             'brand_color_weight' => $weightVal,
             'brand_color_hover' => $hoverHex,
             'brand_color_hover_text' => $hoverTextHex,
+            'brand_color_hover_text_weight' => $hoverTextWeight,
             'site_text_color' => strtolower($siteTextColor),
+            'site_text_weight' => $siteTextWeight,
             'site_heading_color' => strtolower($siteHeadingColor),
+            'site_heading_weight' => $siteHeadingWeight,
             'site_muted_color' => strtolower($siteMutedColor),
+            'site_muted_weight' => $siteMutedWeight,
         ], 'branding');
 
         ActivityLog::record('settings.color.updated', properties: [
@@ -734,12 +776,16 @@ class SettingsController extends Controller
             'weight' => $weightVal,
             'hover_color' => $hoverHex,
             'hover_text' => $hoverTextHex,
+            'hover_text_weight' => $hoverTextWeight,
             'site_text_color' => strtolower($siteTextColor),
+            'site_text_weight' => $siteTextWeight,
             'site_heading_color' => strtolower($siteHeadingColor),
+            'site_heading_weight' => $siteHeadingWeight,
             'site_muted_color' => strtolower($siteMutedColor),
+            'site_muted_weight' => $siteMutedWeight,
         ]);
 
-        return back()->with('status', 'Site brand colors and hover styles updated successfully.');
+        return back()->with('status', 'Site brand colors and typography weights updated successfully.');
     }
 
     public function productCard(): View

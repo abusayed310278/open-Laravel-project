@@ -9,12 +9,16 @@
     $siteTextColor = setting('site_text_color', '#1f2937');
     $siteHeadingColor = setting('site_heading_color', '#0f172a');
     $siteMutedColor = setting('site_muted_color', '#64748b');
+    $siteTextWeight = setting('site_text_weight', '400');
+    $siteHeadingWeight = setting('site_heading_weight', '700');
+    $siteMutedWeight = setting('site_muted_weight', '400');
+    $hoverTextWeight = setting('brand_color_hover_text_weight', '700');
 @endphp
 
 @if ($brandFont && !in_array($brandFont, ['Inter', 'Montserrat'], true))
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $brandFont) }}:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $brandFont) }}:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 @endif
 
 <style id="site-branding-css">
@@ -30,10 +34,14 @@
             --color-brand-{{ $step }}: {{ $hex }};
         @endforeach
 
-        /* Global Website Text & Typography Colors */
+        /* Global Website Text & Typography Colors & Weights */
         --color-site-text: {{ $siteTextColor }};
         --color-site-heading: {{ $siteHeadingColor }};
         --color-site-muted: {{ $siteMutedColor }};
+        --font-weight-site-text: {{ $siteTextWeight }};
+        --font-weight-site-heading: {{ $siteHeadingWeight }};
+        --font-weight-site-muted: {{ $siteMutedWeight }};
+        --font-weight-hover-text: {{ $hoverTextWeight }};
 
         /* Product Card Typography & Colors */
         --pc-cat-color: {{ setting('product_card_category_color', '#ea580c') }};
@@ -78,6 +86,7 @@
     .js-start-selling-cta:hover {
         background-color: var(--color-brand-hover) !important;
         color: var(--color-brand-hover-text) !important;
+        font-weight: var(--font-weight-hover-text) !important;
     }
     .brand-btn-primary svg,
     .brand-cta-button svg,
@@ -96,6 +105,7 @@
     .promo-card-btn:hover {
         background-color: var(--color-brand-hover) !important;
         color: var(--color-brand-hover-text) !important;
+        font-weight: var(--font-weight-hover-text) !important;
         opacity: 1 !important;
     }
     .promo-card-btn span {
@@ -120,6 +130,7 @@
     .js-add-to-cart:hover:not(:disabled) {
         background-color: var(--color-brand-hover) !important;
         color: var(--color-brand-hover-text) !important;
+        font-weight: var(--font-weight-hover-text) !important;
     }
     .header-start-selling-btn svg,
     .js-add-to-cart svg {
@@ -152,6 +163,7 @@
     .advanced-search-btn:hover svg,
     .search-submit-btn:hover .submit-button-text {
         color: var(--color-brand-hover-text) !important;
+        font-weight: var(--font-weight-hover-text) !important;
     }
 
     /* 5. Newsletter Stay Updated Banner (Screenshot 5) */
@@ -270,9 +282,10 @@
     }
 
     @if (!request()->is('admin/*'))
-        /* Global Website Text Color Overrides (Customer / Public Pages) */
+        /* Global Website Typography Overrides (Customer / Public Pages) */
         body {
             color: var(--color-site-text) !important;
+            font-weight: var(--font-weight-site-text) !important;
         }
 
         /* 1. All Headings & Section Titles */
@@ -285,6 +298,7 @@
         .promo-card-title,
         .promo-card-title * {
             color: var(--color-site-heading) !important;
+            font-weight: var(--font-weight-site-heading) !important;
         }
 
         /* 2. Deep & Primary Text (includes header category bar, black, and dark grays) */
@@ -312,6 +326,7 @@
         [class*="text-gray-800"]:not(.site-public-footer *),
         [class*="text-gray-700"]:not(.site-public-footer *) {
             color: var(--color-site-text) !important;
+            font-weight: var(--font-weight-site-text) !important;
         }
 
         /* 5. Muted Text, Captions & Input Placeholders */
@@ -324,6 +339,7 @@
         input::placeholder,
         textarea::placeholder {
             color: var(--color-site-muted) !important;
+            font-weight: var(--font-weight-site-muted) !important;
         }
 
         /* 6. Newsletter Banner Texts & Subscribe Button */
@@ -341,8 +357,16 @@
             color: var(--color-site-muted) !important;
             opacity: 0.8 !important;
         }
-        .newsletter-brand-banner button[type="submit"] {
-            color: var(--color-site-heading) !important;
-        }
     @endif
+
+    @php
+        $nlBtnTextColor = setting('home_newsletter_button_text_color');
+        $nlBtnTextColor = filled($nlBtnTextColor) ? '#'.ltrim($nlBtnTextColor, '#') : '#ffffff';
+        $nlBtnBgColor = setting('home_newsletter_button_bg_color');
+        $nlBtnBgColor = filled($nlBtnBgColor) ? '#'.ltrim($nlBtnBgColor, '#') : '#090d16';
+    @endphp
+    .newsletter-brand-banner button[type="submit"] {
+        color: {{ $nlBtnTextColor }} !important;
+        background-color: {{ $nlBtnBgColor }} !important;
+    }
 </style>

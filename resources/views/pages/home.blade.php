@@ -490,29 +490,73 @@
 
     @if (feature_enabled('home_why_buy'))
         {{-- WHY BUY ON OPENBOX --}}
-        @php
-            $whyBuyStyles = [
-                ['title' => 'Verified Quality', 'text' => 'All products tested and verified', 'bg' => 'bg-amber-100', 'color' => 'text-gray-900', 'icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-                ['title' => 'Fast & Reliable Delivery', 'text' => 'Across Abu Dhabi & UAE', 'bg' => 'bg-orange-100', 'color' => 'text-gray-900', 'icon' => 'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0'],
-                ['title' => 'A More Sustainable Choice', 'text' => 'Give tech a second life', 'bg' => 'bg-green-100', 'color' => 'text-green-600', 'icon' => 'M5 19c0-9 5-14 15-14 0 10-5 15-14 15m-1 1c2-5 5-8 9-10'],
-                ['title' => 'Dedicated Support', 'text' => "We're here to help", 'bg' => 'bg-orange-100', 'color' => 'text-gray-900', 'icon' => 'M4 14v-2a8 8 0 0116 0v2M4 14a2 2 0 012-2h1v6H6a2 2 0 01-2-2v-2zm16 0a2 2 0 00-2-2h-1v6h1a2 2 0 002-2v-2zm-3 6c0 1-2 2-5 2'],
-            ];
-        @endphp
-        <section class="py-6 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center gap-2 mb-4">
-                <span class="w-1 h-4 rounded-full bg-brand-400"></span>
-                <h2 class="text-lg font-bold text-gray-950 dark:text-white">{{ $whyBuyContent['heading'] }}</h2>
+        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center gap-4 mb-7">
+                <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-brand-300 to-brand-600 shadow-[0_0_14px] shadow-brand-400/50"></span>
+                <h2
+                    class="text-gray-950 dark:text-white tracking-tight"
+                    style="font-size: {{ $whyBuyContent['heading_size'] ?? 18 }}px; font-weight: {{ $whyBuyContent['heading_weight'] ?? '700' }}; color: {{ $whyBuyContent['heading_color'] ?? '#030712' }};"
+                >
+                    {{ $whyBuyContent['heading'] }}
+                </h2>
+                <span class="hidden sm:block h-px flex-1 bg-gradient-to-r from-gray-200 via-gray-100 to-transparent dark:from-slate-700 dark:via-slate-800"></span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                @foreach ($whyBuyStyles as $i => $item)
-                    <div class="bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 rounded-xl px-6 py-5 flex items-center gap-5 shadow-2xs">
-                        <div class="w-14 h-14 shrink-0 rounded-full {{ $item['bg'] }} {{ $item['color'] }} flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $item['icon'] }}" /></svg>
-                        </div>
-                        <div class="min-w-0">
-                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">{{ $whyBuyContent['items'][$i]['title'] }}</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $whyBuyContent['items'][$i]['text'] }}</p>
+                @foreach ($whyBuyContent['items'] as $item)
+                    <div
+                        class="group relative overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 p-6 shadow-sm ring-1 ring-transparent transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-brand-500/10 hover:ring-brand-200 dark:hover:ring-brand-500/40"
+                        style="background-color: {{ $item['card_bg'] ?? '#ffffff' }};"
+                    >
+                        <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-300 via-brand-500 to-brand-300 scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100"></span>
+                        <span
+                            class="pointer-events-none absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-40 blur-2xl transition-all duration-500 group-hover:opacity-80 group-hover:scale-125"
+                            style="background-color: {{ $item['icon_bg'] }};"
+                        ></span>
+                        <span class="pointer-events-none absolute right-4 bottom-1 text-7xl font-black leading-none text-gray-900/[0.04] dark:text-white/[0.05] select-none">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+
+                        <div class="relative">
+                            <div class="relative w-16 h-16 mb-5">
+                                <span
+                                    class="absolute inset-0 rounded-2xl rotate-6 opacity-60 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+                                    style="background-color: {{ $item['icon_bg'] }};"
+                                ></span>
+                                <div
+                                    class="relative w-full h-full rounded-2xl flex items-center justify-center shadow-md ring-4 ring-white/70 dark:ring-slate-900/40 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105"
+                                    style="background-color: {{ $item['icon_bg'] }}; color: {{ $item['icon_color'] }};"
+                                >
+                                    @if (!empty($item['custom_icon']))
+                                        <img
+                                            src="{{ $item['custom_icon'] }}"
+                                            alt="{{ $item['title'] }}"
+                                            class="object-contain"
+                                            style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
+                                        >
+                                    @else
+                                        <svg
+                                            style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $item['icon_svg_d'] }}" />
+                                        </svg>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <h3
+                                class="leading-snug tracking-tight"
+                                style="font-size: {{ $item['title_size'] ?? 14 }}px; font-weight: {{ $item['title_weight'] ?? '700' }}; color: {{ $item['title_color'] ?? '#0f172a' }};"
+                            >
+                                {{ $item['title'] }}
+                            </h3>
+                            <p
+                                class="mt-1.5 leading-relaxed"
+                                style="font-size: {{ $item['text_size'] ?? 12 }}px; font-weight: {{ $item['text_weight'] ?? '400' }}; color: {{ $item['text_color'] ?? '#64748b' }};"
+                            >
+                                {{ $item['text'] }}
+                            </p>
                         </div>
                     </div>
                 @endforeach
@@ -1207,7 +1251,8 @@
                     >
                     <button
                         type="submit"
-                        class="bg-gray-950 hover:bg-black text-white font-bold px-8 py-3 rounded-md text-sm transition-colors"
+                        style="color: {{ $newsletter['button_text_color'] ?? '#ffffff' }} !important; background-color: {{ $newsletter['button_bg_color'] ?? '#090d16' }} !important;"
+                        class="font-bold px-8 py-3 rounded-md text-sm transition-opacity hover:opacity-90 shadow-sm shrink-0"
                     >
                         {{ $newsletter['button'] }}
                     </button>

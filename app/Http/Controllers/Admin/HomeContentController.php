@@ -21,29 +21,92 @@ class HomeContentController extends Controller
 
     public function whyBuy(): View
     {
-        return view('admin.settings.why-buy', ['content' => HomeContent::whyBuy()]);
+        return view('admin.settings.why-buy', [
+            'content' => HomeContent::whyBuy(),
+            'icons' => HomeContent::WHY_BUY_ICONS,
+        ]);
     }
 
     public function updateWhyBuy(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'heading' => ['required', 'string', 'max:120'],
+            'heading_size' => ['nullable', 'integer', 'min:12', 'max:60'],
+            'heading_weight' => ['nullable', 'in:400,500,600,700,800,900'],
+            'heading_color' => ['nullable', 'string', 'max:30'],
             'items' => ['required', 'array', 'size:4'],
-            'items.*.title' => ['required', 'string', 'max:80'],
-            'items.*.text' => ['required', 'string', 'max:160'],
+            'items.*.title' => ['required', 'string', 'max:120'],
+            'items.*.text' => ['required', 'string', 'max:255'],
+            'items.*.icon' => ['nullable', 'string', 'max:50'],
+            'items.*.icon_bg' => ['nullable', 'string', 'max:30'],
+            'items.*.icon_color' => ['nullable', 'string', 'max:30'],
+            'items.*.icon_size' => ['nullable', 'integer', 'min:12', 'max:80'],
+            'items.*.title_size' => ['nullable', 'integer', 'min:10', 'max:40'],
+            'items.*.title_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
+            'items.*.title_color' => ['nullable', 'string', 'max:30'],
+            'items.*.text_size' => ['nullable', 'integer', 'min:9', 'max:30'],
+            'items.*.text_weight' => ['nullable', 'in:300,400,500,600,700,800,900'],
+            'items.*.text_color' => ['nullable', 'string', 'max:30'],
+            'items.*.card_bg' => ['nullable', 'string', 'max:30'],
+            'items.*.custom_icon' => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:2048'],
+            'items.*.remove_custom_icon' => ['nullable', 'boolean'],
         ]);
 
-        $values = ['home_whybuy_heading' => $data['heading']];
+        $headingColor = $request->filled('heading_color') ? '#'.ltrim(trim($request->string('heading_color')->value()), '#') : '#030712';
+
+        $values = [
+            'home_whybuy_heading' => $data['heading'],
+            'home_whybuy_heading_size' => $request->filled('heading_size') ? (int) $request->input('heading_size') : 18,
+            'home_whybuy_heading_weight' => $request->filled('heading_weight') ? $request->input('heading_weight') : '700',
+            'home_whybuy_heading_color' => $headingColor,
+        ];
+
         foreach (array_values($data['items']) as $index => $item) {
             $number = $index + 1;
             $values["home_whybuy_{$number}_title"] = $item['title'];
             $values["home_whybuy_{$number}_text"] = $item['text'];
+            $values["home_whybuy_{$number}_icon"] = $item['icon'] ?? 'shield';
+
+            $iconBg = !empty($item['icon_bg']) ? '#'.ltrim(trim($item['icon_bg']), '#') : null;
+            $iconColor = !empty($item['icon_color']) ? '#'.ltrim(trim($item['icon_color']), '#') : null;
+            $titleColor = !empty($item['title_color']) ? '#'.ltrim(trim($item['title_color']), '#') : null;
+            $textColor = !empty($item['text_color']) ? '#'.ltrim(trim($item['text_color']), '#') : null;
+            $cardBg = !empty($item['card_bg']) ? '#'.ltrim(trim($item['card_bg']), '#') : null;
+
+            if ($iconBg) {
+                $values["home_whybuy_{$number}_icon_bg"] = $iconBg;
+            }
+            if ($iconColor) {
+                $values["home_whybuy_{$number}_icon_color"] = $iconColor;
+            }
+            if ($titleColor) {
+                $values["home_whybuy_{$number}_title_color"] = $titleColor;
+            }
+            if ($textColor) {
+                $values["home_whybuy_{$number}_text_color"] = $textColor;
+            }
+            if ($cardBg) {
+                $values["home_whybuy_{$number}_card_bg"] = $cardBg;
+            }
+
+            $values["home_whybuy_{$number}_icon_size"] = !empty($item['icon_size']) ? (int) $item['icon_size'] : 24;
+            $values["home_whybuy_{$number}_title_size"] = !empty($item['title_size']) ? (int) $item['title_size'] : 14;
+            $values["home_whybuy_{$number}_title_weight"] = !empty($item['title_weight']) ? $item['title_weight'] : '700';
+            $values["home_whybuy_{$number}_text_size"] = !empty($item['text_size']) ? (int) $item['text_size'] : 12;
+            $values["home_whybuy_{$number}_text_weight"] = !empty($item['text_weight']) ? $item['text_weight'] : '400';
+
+            $currentCustomIcon = $this->settings->get("home_whybuy_{$number}_custom_icon");
+            $uploadedFile = $request->file("items.{$index}.custom_icon");
+            $removeCustomIcon = $request->boolean("items.{$index}.remove_custom_icon");
+
+            $newCustomIcon = $this->resolveImage($uploadedFile, $removeCustomIcon, $currentCustomIcon);
+            $values["home_whybuy_{$number}_custom_icon"] = $newCustomIcon;
         }
 
         $this->settings->setMany($values, 'home');
         ActivityLog::record('settings.home_why_buy.updated');
 
-        return back()->with('status', 'Why Buy section updated successfully.');
+        return back()->with('status', 'Why Buy section styling and content updated successfully.');
     }
 
     public function promo(): View
@@ -86,11 +149,26 @@ class HomeContentController extends Controller
 
     public function updateNewsletter(Request $request): RedirectResponse
     {
+        $buttonTextColor = $request->filled('button_text_color')
+            ? '#'.ltrim(trim((string) $request->input('button_text_color')), '#')
+            : '#ffffff';
+
+        $buttonBgColor = $request->filled('button_bg_color')
+            ? '#'.ltrim(trim((string) $request->input('button_bg_color')), '#')
+            : '#090d16';
+
+        $request->merge([
+            'button_text_color' => $buttonTextColor,
+            'button_bg_color' => $buttonBgColor,
+        ]);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:80'],
             'text' => ['required', 'string', 'max:160'],
             'placeholder' => ['required', 'string', 'max:60'],
             'button' => ['required', 'string', 'max:30'],
+            'button_text_color' => ['required', 'regex:/^#[0-9a-fA-F]{3,8}$/'],
+            'button_bg_color' => ['required', 'regex:/^#[0-9a-fA-F]{3,8}$/'],
         ]);
 
         $this->settings->setMany([
@@ -98,6 +176,8 @@ class HomeContentController extends Controller
             'home_newsletter_text' => $data['text'],
             'home_newsletter_placeholder' => $data['placeholder'],
             'home_newsletter_button' => $data['button'],
+            'home_newsletter_button_text_color' => strtolower($data['button_text_color']),
+            'home_newsletter_button_bg_color' => strtolower($data['button_bg_color']),
         ], 'home');
         ActivityLog::record('settings.home_newsletter.updated');
 
