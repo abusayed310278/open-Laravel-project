@@ -637,6 +637,9 @@ class SettingsController extends Controller
             'currentWeight' => $weight,
             'currentHoverColor' => $this->settings->get('brand_color_hover', '#fff200'),
             'currentHoverTextColor' => $this->settings->get('brand_color_hover_text', '#000000'),
+            'currentTextColor' => $this->settings->get('site_text_color', '#1f2937'),
+            'currentHeadingColor' => $this->settings->get('site_heading_color', '#0f172a'),
+            'currentMutedColor' => $this->settings->get('site_muted_color', '#64748b'),
         ]);
     }
 
@@ -655,6 +658,15 @@ class SettingsController extends Controller
         $hoverText = $request->filled('brand_color_hover_text')
             ? '#'.ltrim(trim($request->string('brand_color_hover_text')->value()), '#')
             : '#000000';
+        $siteTextColor = $request->filled('site_text_color')
+            ? '#'.ltrim(trim($request->string('site_text_color')->value()), '#')
+            : '#1f2937';
+        $siteHeadingColor = $request->filled('site_heading_color')
+            ? '#'.ltrim(trim($request->string('site_heading_color')->value()), '#')
+            : '#0f172a';
+        $siteMutedColor = $request->filled('site_muted_color')
+            ? '#'.ltrim(trim($request->string('site_muted_color')->value()), '#')
+            : '#64748b';
 
         $request->merge([
             'brand_color_primary' => $primary,
@@ -662,6 +674,9 @@ class SettingsController extends Controller
             'brand_color_weight' => $weight,
             'brand_color_hover' => $hover,
             'brand_color_hover_text' => $hoverText,
+            'site_text_color' => $siteTextColor,
+            'site_heading_color' => $siteHeadingColor,
+            'site_muted_color' => $siteMutedColor,
         ]);
 
         $request->validate([
@@ -670,6 +685,9 @@ class SettingsController extends Controller
             'brand_color_weight' => ['required', 'in:50,100,200,300,400,500,600,700,800,900'],
             'brand_color_hover' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_color_hover_text' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_text_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_heading_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'site_muted_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
         $hex = strtolower($request->string('brand_color_primary')->value());
@@ -684,6 +702,9 @@ class SettingsController extends Controller
             'brand_color_weight' => $weightVal,
             'brand_color_hover' => $hoverHex,
             'brand_color_hover_text' => $hoverTextHex,
+            'site_text_color' => strtolower($siteTextColor),
+            'site_heading_color' => strtolower($siteHeadingColor),
+            'site_muted_color' => strtolower($siteMutedColor),
         ], 'branding');
 
         ActivityLog::record('settings.color.updated', properties: [
@@ -692,6 +713,9 @@ class SettingsController extends Controller
             'weight' => $weightVal,
             'hover_color' => $hoverHex,
             'hover_text' => $hoverTextHex,
+            'site_text_color' => strtolower($siteTextColor),
+            'site_heading_color' => strtolower($siteHeadingColor),
+            'site_muted_color' => strtolower($siteMutedColor),
         ]);
 
         return back()->with('status', 'Site brand colors and hover styles updated successfully.');

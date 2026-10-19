@@ -6,6 +6,9 @@
     $brandHoverTextColor = setting('brand_color_hover_text') ?: '#000000';
     $scale = \App\Support\ColorScale::fromHex($brandBase);
     $contrastText = \App\Support\ColorScale::contrastText($brandColor);
+    $siteTextColor = setting('site_text_color', '#1f2937');
+    $siteHeadingColor = setting('site_heading_color', '#0f172a');
+    $siteMutedColor = setting('site_muted_color', '#64748b');
 @endphp
 
 @if ($brandFont && !in_array($brandFont, ['Inter', 'Montserrat'], true))
@@ -26,6 +29,11 @@
         @foreach ($scale as $step => $hex)
             --color-brand-{{ $step }}: {{ $hex }};
         @endforeach
+
+        /* Global Website Text & Typography Colors */
+        --color-site-text: {{ $siteTextColor }};
+        --color-site-heading: {{ $siteHeadingColor }};
+        --color-site-muted: {{ $siteMutedColor }};
 
         /* Product Card Typography & Colors */
         --pc-cat-color: {{ setting('product_card_category_color', '#ea580c') }};
@@ -261,4 +269,36 @@
     .pc-add-btn.js-add-to-cart:hover svg {
         color: var(--pc-btn-hover-text) !important;
     }
+
+    @if (!request()->is('admin/*'))
+        /* Global Website Text Color Overrides (Customer / Public Pages) */
+        body {
+            color: var(--color-site-text) !important;
+        }
+
+        h1:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
+        h2:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
+        h3:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
+        h4:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
+        h5:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]),
+        h6:not([class*="text-white"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-brand"]):not([class*="pc-"]) {
+            color: var(--color-site-heading) !important;
+        }
+
+        .text-gray-950:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
+        .text-gray-900:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+            color: var(--color-site-heading) !important;
+        }
+
+        .text-gray-800:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
+        .text-gray-700:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+            color: var(--color-site-text) !important;
+        }
+
+        .text-gray-600:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
+        .text-gray-500:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]),
+        .text-gray-400:not([class*="text-white"]):not([class*="pc-"]):not([class*="btn"]):not([class*="badge"]) {
+            color: var(--color-site-muted) !important;
+        }
+    @endif
 </style>

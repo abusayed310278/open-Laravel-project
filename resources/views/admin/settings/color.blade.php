@@ -347,6 +347,136 @@
                             </div>
                         </div>
                     </div>
+                {{-- Global Website Text Colors Section --}}
+                <div class="pt-6 border-t border-gray-100 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                Global Website Text Colors (Applies Site-Wide)
+                            </label>
+                            <p class="text-xs text-gray-500 mt-0.5">Control the default body text, headings, and muted descriptions across all public pages of the website.</p>
+                        </div>
+                        <span class="text-xs text-blue-600 font-semibold bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">Site-Wide Typography</span>
+                    </div>
+
+                    {{-- Live Text Preview Box --}}
+                    <div id="site-text-preview-box" class="p-4 rounded-xl border border-gray-200 bg-gray-50/70 space-y-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Live Typography Sandbox</span>
+                        <h4 id="preview-text-heading" class="text-base font-bold transition-colors" style="color: {{ $currentHeadingColor ?? '#0f172a' }};">
+                            Experience Next-Gen Electronics Marketplace
+                        </h4>
+                        <p id="preview-text-body" class="text-xs transition-colors" style="color: {{ $currentTextColor ?? '#1f2937' }};">
+                            Browse certified open-box tech, brand-new devices, and quality refurbished electronics with transparent warranties and fast local delivery.
+                        </p>
+                        <p id="preview-text-muted" class="text-[11px] transition-colors" style="color: {{ $currentMutedColor ?? '#64748b' }};">
+                            Verified seller store • 24/7 customer support • Safe secure escrow checkout
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {{-- 1. Main Body Text Color --}}
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
+                            <label for="site_text_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Main Body Text Color</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                    <input
+                                        type="color"
+                                        id="site-text-color-wheel"
+                                        value="{{ $currentTextColor ?? '#1f2937' }}"
+                                        oninput="syncSiteTextFromWheel(this.value)"
+                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                    >
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                    <input
+                                        type="text"
+                                        name="site_text_color"
+                                        id="site_text_color"
+                                        value="{{ ltrim($currentTextColor ?? '#1f2937', '#') }}"
+                                        oninput="syncSiteTextFromInput(this.value)"
+                                        placeholder="1f2937"
+                                        maxlength="7"
+                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                    >
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setSiteTextColor('#1f2937')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#1f2937 (Default)</button>
+                                <button type="button" onclick="setSiteTextColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
+                                <button type="button" onclick="setSiteTextColor('#334155')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#334155 (Slate)</button>
+                            </div>
+                        </div>
+
+                        {{-- 2. Headings & Titles Color --}}
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
+                            <label for="site_heading_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Headings &amp; Titles Color</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                    <input
+                                        type="color"
+                                        id="site-heading-color-wheel"
+                                        value="{{ $currentHeadingColor ?? '#0f172a' }}"
+                                        oninput="syncSiteHeadingFromWheel(this.value)"
+                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                    >
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                    <input
+                                        type="text"
+                                        name="site_heading_color"
+                                        id="site_heading_color"
+                                        value="{{ ltrim($currentHeadingColor ?? '#0f172a', '#') }}"
+                                        oninput="syncSiteHeadingFromInput(this.value)"
+                                        placeholder="0f172a"
+                                        maxlength="7"
+                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                    >
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setSiteHeadingColor('#0f172a')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#0f172a (Default)</button>
+                                <button type="button" onclick="setSiteHeadingColor('#000000')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#000000 (Black)</button>
+                                <button type="button" onclick="setSiteHeadingColor('#111827')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#111827 (Deep)</button>
+                            </div>
+                        </div>
+
+                        {{-- 3. Muted / Secondary Text Color --}}
+                        <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-200 space-y-3">
+                            <label for="site_muted_color" class="block text-xs font-semibold uppercase tracking-wider text-gray-500">Muted / Subtitle Color</label>
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-11 h-11 rounded-xl border border-gray-200 overflow-hidden shadow-xs shrink-0 bg-white">
+                                    <input
+                                        type="color"
+                                        id="site-muted-color-wheel"
+                                        value="{{ $currentMutedColor ?? '#64748b' }}"
+                                        oninput="syncSiteMutedFromWheel(this.value)"
+                                        class="absolute -top-2 -left-2 w-16 h-16 cursor-pointer border-0"
+                                    >
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 font-mono text-sm">#</span>
+                                    <input
+                                        type="text"
+                                        name="site_muted_color"
+                                        id="site_muted_color"
+                                        value="{{ ltrim($currentMutedColor ?? '#64748b', '#') }}"
+                                        oninput="syncSiteMutedFromInput(this.value)"
+                                        placeholder="64748b"
+                                        maxlength="7"
+                                        class="w-full border border-gray-200 rounded-lg pl-8 pr-4 py-2.5 text-sm font-mono font-semibold uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent bg-white shadow-xs"
+                                    >
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button type="button" onclick="setSiteMutedColor('#64748b')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#64748b (Default)</button>
+                                <button type="button" onclick="setSiteMutedColor('#6b7280')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#6b7280 (Gray)</button>
+                                <button type="button" onclick="setSiteMutedColor('#94a3b8')" class="px-2 py-0.5 rounded text-[10px] font-mono border border-gray-200 bg-white hover:bg-gray-100 cursor-pointer">#94a3b8 (Light)</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-between pt-4 border-t border-gray-100">
@@ -354,7 +484,7 @@
                         <svg class="w-4 h-4 mr-1.5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Save Brand &amp; Hover Colors
+                        Save Brand, Hover &amp; Text Colors
                     </x-button>
 
                     <button
@@ -362,7 +492,7 @@
                         onclick="resetToDefaults()"
                         class="text-xs font-medium text-gray-500 hover:text-gray-700 underline"
                     >
-                        Reset to Defaults (Amber #f59e0b &amp; Hover #fff200)
+                        Reset to Defaults
                     </button>
                 </div>
             </form>
@@ -682,9 +812,99 @@
             }
         }
 
+        function syncSiteTextFromWheel(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const input = document.getElementById('site_text_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-body');
+            if (preview) preview.style.color = hex;
+        }
+
+        function syncSiteTextFromInput(raw) {
+            let clean = raw.trim().replace('#', '');
+            if (clean.length === 6) {
+                const hex = '#' + clean;
+                const wheel = document.getElementById('site-text-color-wheel');
+                if (wheel) wheel.value = hex.toLowerCase();
+                const preview = document.getElementById('preview-text-body');
+                if (preview) preview.style.color = hex;
+            }
+        }
+
+        function setSiteTextColor(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const wheel = document.getElementById('site-text-color-wheel');
+            if (wheel) wheel.value = hex.toLowerCase();
+            const input = document.getElementById('site_text_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-body');
+            if (preview) preview.style.color = hex;
+        }
+
+        function syncSiteHeadingFromWheel(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const input = document.getElementById('site_heading_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-heading');
+            if (preview) preview.style.color = hex;
+        }
+
+        function syncSiteHeadingFromInput(raw) {
+            let clean = raw.trim().replace('#', '');
+            if (clean.length === 6) {
+                const hex = '#' + clean;
+                const wheel = document.getElementById('site-heading-color-wheel');
+                if (wheel) wheel.value = hex.toLowerCase();
+                const preview = document.getElementById('preview-text-heading');
+                if (preview) preview.style.color = hex;
+            }
+        }
+
+        function setSiteHeadingColor(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const wheel = document.getElementById('site-heading-color-wheel');
+            if (wheel) wheel.value = hex.toLowerCase();
+            const input = document.getElementById('site_heading_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-heading');
+            if (preview) preview.style.color = hex;
+        }
+
+        function syncSiteMutedFromWheel(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const input = document.getElementById('site_muted_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-muted');
+            if (preview) preview.style.color = hex;
+        }
+
+        function syncSiteMutedFromInput(raw) {
+            let clean = raw.trim().replace('#', '');
+            if (clean.length === 6) {
+                const hex = '#' + clean;
+                const wheel = document.getElementById('site-muted-color-wheel');
+                if (wheel) wheel.value = hex.toLowerCase();
+                const preview = document.getElementById('preview-text-muted');
+                if (preview) preview.style.color = hex;
+            }
+        }
+
+        function setSiteMutedColor(hex) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            const wheel = document.getElementById('site-muted-color-wheel');
+            if (wheel) wheel.value = hex.toLowerCase();
+            const input = document.getElementById('site_muted_color');
+            if (input) input.value = hex.replace('#', '');
+            const preview = document.getElementById('preview-text-muted');
+            if (preview) preview.style.color = hex;
+        }
+
         function resetToDefaults() {
             setBaseColor('#f59e0b');
             setHoverColor('#fff200', '#000000');
+            setSiteTextColor('#1f2937');
+            setSiteHeadingColor('#0f172a');
+            setSiteMutedColor('#64748b');
         }
 
         function setupButtonHoverListeners() {
