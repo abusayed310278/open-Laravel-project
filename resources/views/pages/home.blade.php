@@ -490,69 +490,53 @@
 
     @if (feature_enabled('home_why_buy'))
         {{-- WHY BUY ON OPENBOX --}}
-        <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="flex items-center gap-4 mb-7">
-                <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-brand-300 to-brand-600 shadow-[0_0_14px] shadow-brand-400/50"></span>
+        <section class="py-8 max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center gap-2.5 mb-4">
+                <span class="w-1 h-4 rounded-full bg-brand-500"></span>
                 <h2
                     class="text-gray-950 dark:text-white tracking-tight"
                     style="font-size: {{ $whyBuyContent['heading_size'] ?? 18 }}px; font-weight: {{ $whyBuyContent['heading_weight'] ?? '700' }}; color: {{ $whyBuyContent['heading_color'] ?? '#030712' }};"
                 >
                     {{ $whyBuyContent['heading'] }}
                 </h2>
-                <span class="hidden sm:block h-px flex-1 bg-gradient-to-r from-gray-200 via-gray-100 to-transparent dark:from-slate-700 dark:via-slate-800"></span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach ($whyBuyContent['items'] as $item)
                     <div
-                        class="group relative overflow-hidden rounded-2xl border border-gray-100 dark:border-slate-700 p-6 shadow-sm ring-1 ring-transparent transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-brand-500/10 hover:ring-brand-200 dark:hover:ring-brand-500/40"
+                        class="flex items-center gap-4 rounded-xl border border-gray-100 dark:border-slate-700 px-5 py-4 shadow-2xs transition-shadow duration-200 hover:shadow-md"
                         style="background-color: {{ $item['card_bg'] ?? '#ffffff' }};"
                     >
-                        <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-300 via-brand-500 to-brand-300 scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100"></span>
-                        <span
-                            class="pointer-events-none absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-40 blur-2xl transition-all duration-500 group-hover:opacity-80 group-hover:scale-125"
-                            style="background-color: {{ $item['icon_bg'] }};"
-                        ></span>
-                        <span class="pointer-events-none absolute right-4 bottom-1 text-7xl font-black leading-none text-gray-900/[0.04] dark:text-white/[0.05] select-none">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-
-                        <div class="relative">
-                            <div class="relative w-16 h-16 mb-5">
-                                <span
-                                    class="absolute inset-0 rounded-2xl rotate-6 opacity-60 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
-                                    style="background-color: {{ $item['icon_bg'] }};"
-                                ></span>
-                                <div
-                                    class="relative w-full h-full rounded-2xl flex items-center justify-center shadow-md ring-4 ring-white/70 dark:ring-slate-900/40 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105"
-                                    style="background-color: {{ $item['icon_bg'] }}; color: {{ $item['icon_color'] }};"
+                        <div class="shrink-0 flex items-center justify-center" style="color: {{ $item['icon_color'] }};">
+                            @if (!empty($item['custom_icon']))
+                                <img
+                                    src="{{ $item['custom_icon'] }}"
+                                    alt="{{ $item['title'] }}"
+                                    class="object-contain"
+                                    style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
                                 >
-                                    @if (!empty($item['custom_icon']))
-                                        <img
-                                            src="{{ $item['custom_icon'] }}"
-                                            alt="{{ $item['title'] }}"
-                                            class="object-contain"
-                                            style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
-                                        >
-                                    @else
-                                        <svg
-                                            style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $item['icon_svg_d'] }}" />
-                                        </svg>
-                                    @endif
-                                </div>
-                            </div>
+                            @else
+                                <svg
+                                    style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="{{ $item['icon_svg_d'] }}" />
+                                </svg>
+                            @endif
+                        </div>
 
+                        <div class="min-w-0">
                             <h3
-                                class="leading-snug tracking-tight"
+                                class="leading-snug"
                                 style="font-size: {{ $item['title_size'] ?? 14 }}px; font-weight: {{ $item['title_weight'] ?? '700' }}; color: {{ $item['title_color'] ?? '#0f172a' }};"
                             >
                                 {{ $item['title'] }}
                             </h3>
                             <p
-                                class="mt-1.5 leading-relaxed"
+                                class="mt-0.5 leading-snug"
                                 style="font-size: {{ $item['text_size'] ?? 12 }}px; font-weight: {{ $item['text_weight'] ?? '400' }}; color: {{ $item['text_color'] ?? '#64748b' }};"
                             >
                                 {{ $item['text'] }}
