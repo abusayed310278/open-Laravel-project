@@ -96,40 +96,8 @@ class CheckoutController extends Controller
         }
 
         if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
-            $secretKey = app(SettingsService::class)->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
-
-            if (filled($secretKey)) {
-                try {
-                    $response = Http::withBasicAuth($secretKey, '')
-                        ->asForm()
-                        ->post('https://api.stripe.com/v1/checkout/sessions', [
-                            'payment_method_types' => ['card'],
-                            'line_items' => [
-                                [
-                                    'price_data' => [
-                                        'currency' => 'usd',
-                                        'product_data' => [
-                                            'name' => 'Order #' . $order->order_number,
-                                        ],
-                                        'unit_amount' => (int) round($order->total * 100),
-                                    ],
-                                    'quantity' => 1,
-                                ],
-                            ],
-                            'mode' => 'payment',
-                            'success_url' => route('checkout.stripe-success', $order) . '?session_id={CHECKOUT_SESSION_ID}',
-                            'cancel_url' => route('checkout'),
-                        ]);
-
-                    if ($response->successful() && isset($response->json()['url'])) {
-                        return redirect()->away($response->json()['url']);
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning('Stripe API session creation failed: ' . $e->getMessage());
-                }
-            }
-
-            return redirect()->route('checkout.stripe-portal', $order);
+            $token = sha1($order->id . $order->order_number . config('app.key'));
+            return redirect()->route('checkout.stripe-portal', ['order' => $order, 'token' => $token]);
         }
 
         return redirect()->route('orders.confirmation', $order)->with('status', 'Order placed!');
