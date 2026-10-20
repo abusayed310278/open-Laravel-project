@@ -815,9 +815,9 @@
                     @endif
 
                     @if ($hasApp)
-                        <div @class(['flex flex-col items-center lg:items-start', 'lg:border-l lg:border-gray-200 dark:lg:border-slate-700 lg:pl-8' => ! $hasPhone])>
-                            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-950 dark:text-white mb-1">{{ $sell['app_heading'] }}</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ $sell['app_text'] }}</p>
+                        <div @class(['flex flex-col items-center text-center', 'lg:border-l lg:border-gray-200 dark:lg:border-slate-700 lg:pl-8' => ! $hasPhone])>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-950 dark:text-white mb-1 text-center">{{ $sell['app_heading'] }}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">{{ $sell['app_text'] }}</p>
                             @if (filled($sell['qr_image']))
                                 <div class="w-full flex flex-col items-center justify-center text-center my-1">
                                     <div class="bg-white rounded-xl p-2 border border-gray-100 shadow-2xs mb-1 inline-block">

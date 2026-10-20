@@ -100,27 +100,27 @@
 
             {{-- Seller Hub Quick Panel --}}
             @if (user_can('products.manage') || user_can('orders.manage') || user_can('payments.manage'))
-            <div class="bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-white rounded-2xl p-5 shadow-sm border border-gray-800">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/10">
+            <div class="bg-white rounded-2xl p-5 shadow-xs border border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
                     <div>
-                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-brand-400/10 text-brand-400 text-[10px] font-extrabold uppercase tracking-wider">
-                            <span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span>
+                        <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/70 text-amber-700 text-[10px] font-extrabold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                             Seller Hub
                         </div>
-                        <p role="heading" aria-level="2" class="text-base font-bold text-white mt-1">Your Selling Performance</p>
+                        <p role="heading" aria-level="2" class="text-base font-bold text-gray-900 mt-1">Your Selling Performance</p>
                     </div>
                     <div class="flex items-center gap-2">
                         @if (user_can('products.manage'))
-                        <a href="{{ route('saler.products.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-400 text-gray-950 text-xs font-bold transition shadow-xs">
+                        <a href="{{ route('saler.products.create') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-gray-950 text-xs font-bold transition shadow-xs">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                             Add Listing
                         </a>
-                        <a href="{{ route('saler.products.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition">
+                        <a href="{{ route('saler.products.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 text-xs font-semibold transition">
                             My Listings
                         </a>
                         @endif
                         @if (user_can('payments.manage'))
-                        <a href="{{ route('saler.payouts.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition">
+                        <a href="{{ route('saler.payouts.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 text-xs font-semibold transition">
                             Wallet
                         </a>
                         @endif
@@ -128,37 +128,37 @@
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
                     @if (user_can('products.manage'))
-                    <a href="{{ route('saler.products.index') }}" class="p-3.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 hover:border-white/10 transition block">
-                        <span class="w-7 h-7 rounded-lg bg-white/10 text-brand-400 flex items-center justify-center mb-2.5">
+                    <a href="{{ route('saler.products.index') }}" class="p-3.5 bg-gray-50/70 hover:bg-brand-50/30 rounded-xl border border-gray-100 hover:border-brand-200 transition block group">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['box'] }}" /></svg>
                         </span>
-                        <p class="text-xs text-white/50 font-medium">Active Listings</p>
-                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($activeListingsCount) }}</p>
+                        <p class="text-xs text-gray-500 font-medium">Active Listings</p>
+                        <p class="text-xl font-black text-gray-900 mt-0.5">{{ number_format($activeListingsCount) }}</p>
                     </a>
-                    <a href="{{ route('saler.products.index') }}" class="p-3.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 hover:border-white/10 transition block">
-                        <span class="w-7 h-7 rounded-lg bg-white/10 text-brand-400 flex items-center justify-center mb-2.5">
+                    <a href="{{ route('saler.products.index') }}" class="p-3.5 bg-gray-50/70 hover:bg-brand-50/30 rounded-xl border border-gray-100 hover:border-brand-200 transition block group">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['tag'] }}" /></svg>
                         </span>
-                        <p class="text-xs text-white/50 font-medium">Total Products</p>
-                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($totalProductsCount) }}</p>
+                        <p class="text-xs text-gray-500 font-medium">Total Products</p>
+                        <p class="text-xl font-black text-gray-900 mt-0.5">{{ number_format($totalProductsCount) }}</p>
                     </a>
                     @endif
                     @if (user_can('orders.manage'))
-                    <a href="{{ route('saler.orders.index') }}" class="p-3.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 hover:border-white/10 transition block">
-                        <span class="w-7 h-7 rounded-lg bg-white/10 text-brand-400 flex items-center justify-center mb-2.5">
+                    <a href="{{ route('saler.orders.index') }}" class="p-3.5 bg-gray-50/70 hover:bg-brand-50/30 rounded-xl border border-gray-100 hover:border-brand-200 transition block group">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['shopping-bag'] }}" /></svg>
                         </span>
-                        <p class="text-xs text-white/50 font-medium">Sales Orders</p>
-                        <p class="text-xl font-black text-white mt-0.5">{{ number_format($salesOrdersCount) }}</p>
+                        <p class="text-xs text-gray-500 font-medium">Sales Orders</p>
+                        <p class="text-xl font-black text-gray-900 mt-0.5">{{ number_format($salesOrdersCount) }}</p>
                     </a>
                     @endif
                     @if (user_can('payments.manage'))
-                    <a href="{{ route('saler.payouts.index') }}" class="p-3.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 hover:border-white/10 transition block">
-                        <span class="w-7 h-7 rounded-lg bg-emerald-400/10 text-emerald-400 flex items-center justify-center mb-2.5">
+                    <a href="{{ route('saler.payouts.index') }}" class="p-3.5 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl border border-emerald-100 hover:border-emerald-200 transition block group">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['wallet'] }}" /></svg>
                         </span>
-                        <p class="text-xs text-white/50 font-medium">Available Payout</p>
-                        <p class="text-xl font-black text-emerald-400 mt-0.5">${{ number_format((float) ($wallet->available_balance ?? 0), 2) }}</p>
+                        <p class="text-xs text-emerald-700 font-medium">Available Payout</p>
+                        <p class="text-xl font-black text-emerald-600 mt-0.5">${{ number_format((float) ($wallet->available_balance ?? 0), 2) }}</p>
                     </a>
                     @endif
                 </div>

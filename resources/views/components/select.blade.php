@@ -22,7 +22,7 @@
         name="{{ $name }}"
         {{ $attributes->merge([
             'id' => $id,
-            'class' => 'w-full border rounded-md px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent '
+            'class' => 'w-full border rounded-md px-4 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#E5E7EB] '
                 . ($error ? 'border-red-300' : 'border-gray-200'),
         ]) }}
     >

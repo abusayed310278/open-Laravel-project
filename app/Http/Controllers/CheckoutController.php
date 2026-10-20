@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\PaymentMethod;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\User;
+use App\Services\Auth\RegistrationService;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\PaymentService;
@@ -72,14 +74,51 @@ class CheckoutController extends Controller
         ]);
 
         if (! $user) {
-            // Keep what they typed so it is restored once they have signed in or registered.
-            session([
-                'checkout.draft' => $request->except(['_token', 'guest_email']),
-                'url.intended' => route('checkout'),
+            $validatedAccount = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+                'phone' => ['nullable', 'string', 'max:30', 'unique:'.User::class],
+                'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+                'terms' => ['accepted'],
+            ], [
+                'terms.accepted' => 'Please accept the Terms of Service to create your account and complete your order.',
             ]);
 
-            return redirect()->route('login')->with('status', 'Please sign in or create an account to place your order. Your details are saved.');
+            $registrationService = app(RegistrationService::class);
+            $user = $registrationService->register([
+                'account_type' => 'customer',
+                'name' => $validatedAccount['name'],
+                'email' => $validatedAccount['email'],
+                'phone' => $validatedAccount['phone'] ?? null,
+                'password' => $validatedAccount['password'],
+            ]);
+
+            Auth::login($user);
+
+            $sessionId = $request->session()->get('cart_session_id');
+            if ($sessionId) {
+                $this->carts->mergeGuestCartIntoUser($sessionId, $user);
+            }
+
+            try {
+                event(new \Illuminate\Auth\Events\Registered($user));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+
+            $cart = $this->carts->forUser($user);
+            $cart->load('items.product');
         }
+
+        // Auto-fill shipping name/phone from account info if left blank
+        $shippingInput = $request->input('shipping', []);
+        if (empty($shippingInput['name']) && $user?->name) {
+            $shippingInput['name'] = $user->name;
+        }
+        if (empty($shippingInput['phone']) && $user?->phone) {
+            $shippingInput['phone'] = $user->phone;
+        }
+        $request->merge(['shipping' => $shippingInput]);
 
         try {
             $shipping = $this->resolveAddress($request, 'shipping');
@@ -100,7 +139,7 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.stripe-portal', ['order' => $order, 'token' => $token]);
         }
 
-        return redirect()->route('orders.confirmation', $order)->with('status', 'Order placed!');
+        return redirect()->route('orders.confirmation', $order)->with('status', 'Order placed successfully! Welcome to Openbox.');
     }
 
     public function stripePortal(Order $order): View

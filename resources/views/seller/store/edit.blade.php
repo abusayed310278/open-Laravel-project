@@ -695,6 +695,12 @@
 
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
+        .ts-wrapper {
+            border: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
         .ts-control {
             border-radius: 0.5rem !important;
             border-color: #e2e8f0 !important;
