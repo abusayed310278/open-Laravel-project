@@ -218,7 +218,14 @@
     .border-brand-400 { border-color: var(--color-brand-400) !important; }
 
     .ring-brand-500 { --tw-ring-color: var(--color-brand-primary) !important; }
-    .focus\:ring-brand-400:focus { --tw-ring-color: var(--color-brand-primary) !important; }
+    .focus\:ring-brand-400:focus { --tw-ring-color: #E5E7EB !important; border-color: #E5E7EB !important; }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):focus,
+    select:focus,
+    textarea:focus {
+        --tw-ring-color: #E5E7EB !important;
+        border-color: #E5E7EB !important;
+    }
 
     /* Product Card Custom Elements */
     .pc-category {
