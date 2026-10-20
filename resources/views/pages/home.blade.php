@@ -818,16 +818,17 @@
                         <div @class(['flex flex-col items-center lg:items-start', 'lg:border-l lg:border-gray-200 dark:lg:border-slate-700 lg:pl-8' => ! $hasPhone])>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-gray-950 dark:text-white mb-1">{{ $sell['app_heading'] }}</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ $sell['app_text'] }}</p>
-
                             @if (filled($sell['qr_image']))
-                                <div class="bg-white rounded-xl p-2 border border-gray-100 shadow-2xs mb-1">
-                                    <img src="{{ $sell['qr_image'] }}" alt="QR code to download the app" loading="lazy" class="w-28 h-28 sm:w-32 sm:h-32 object-contain">
+                                <div class="w-full flex flex-col items-center justify-center text-center my-1">
+                                    <div class="bg-white rounded-xl p-2 border border-gray-100 shadow-2xs mb-1 inline-block">
+                                        <img src="{{ $sell['qr_image'] }}" alt="QR code to download the app" loading="lazy" class="w-28 h-28 sm:w-32 sm:h-32 object-contain mx-auto">
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 mb-4 text-center block">{{ $sell['qr_caption'] }}</span>
                                 </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $sell['qr_caption'] }}</span>
                             @endif
 
                             @if ($hasStores)
-                                <div class="flex flex-wrap justify-center lg:justify-start gap-3">
+                                <div class="w-full flex flex-wrap justify-center lg:justify-center gap-3">
                                     @if (filled($sell['ios_url']))
                                         <a href="{{ $sell['ios_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2.5 hover:bg-gray-800 transition-colors">
                                             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.62c-.02-2.1 1.72-3.11 1.8-3.16-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.54.77-3.2.77-.66 0-1.67-.75-2.75-.73-1.41.02-2.72.82-3.45 2.08-1.47 2.55-.38 6.32 1.06 8.39.7 1.01 1.54 2.15 2.64 2.11 1.06-.04 1.46-.69 2.74-.69 1.28 0 1.64.69 2.76.67 1.14-.02 1.86-1.03 2.55-2.05.8-1.18 1.13-2.32 1.15-2.38-.03-.01-2.2-.84-2.25-3.36zM14.28 6.43c.58-.71.98-1.69.87-2.67-.84.03-1.86.56-2.46 1.26-.54.62-1.01 1.62-.88 2.58.94.07 1.89-.47 2.47-1.17z"/></svg>
