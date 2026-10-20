@@ -219,13 +219,8 @@
         left: -40%;
         width: 40%;
         background: linear-gradient(90deg, transparent, var(--color-brand-400) 30%, var(--color-brand-600) 70%, transparent);
-        opacity: 0;
-        transition: opacity 0.25s ease;
-    }
-
-    /* Active Scanning on Focus */
-    .search-box:focus-within .scanning-line::after {
         opacity: 0.9;
+        transition: opacity 0.25s ease;
         animation: laserScan 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
@@ -774,11 +769,11 @@
             // Success micro-feedback and scan before submitting
             setTimeout(function() {
                 searchBox.classList.add('is-success');
-            }, 260);
+            }, 120);
 
             setTimeout(function() {
                 form.submit();
-            }, 420);
+            }, 200);
         });
     })();
 </script>
