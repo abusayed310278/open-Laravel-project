@@ -6,6 +6,49 @@
     $hasFilters = request()->hasAny(['category', 'condition', 'brand', 'min_rating', 'min_price', 'max_price', 'q']);
     $fieldClass = 'w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500';
     $labelClass = 'block text-xs font-semibold text-gray-500 mb-1.5';
+
+    $categoryLabel = null;
+    foreach ($categories as $cat) {
+        if ($cat->slug === request('category')) {
+            $categoryLabel = $cat->name;
+            break;
+        }
+        foreach ($cat->children ?? [] as $child) {
+            if ($child->slug === request('category')) {
+                $categoryLabel = $child->name;
+                break 2;
+            }
+        }
+    }
+    $brandLabel = request('brand') ? optional($brands->firstWhere('slug', request('brand')))->name : null;
+    $conditionLabel = request('condition') ? \App\Enums\ProductCondition::tryFrom(request('condition'))?->label() : null;
+
+    $activeFilters = [];
+    if (request('q')) {
+        $activeFilters[] = ['label' => '"' . request('q') . '"', 'except' => ['q']];
+    }
+    if ($categoryLabel) {
+        $activeFilters[] = ['label' => $categoryLabel, 'except' => ['category']];
+    }
+    if ($brandLabel) {
+        $activeFilters[] = ['label' => $brandLabel, 'except' => ['brand']];
+    }
+    if ($conditionLabel) {
+        $activeFilters[] = ['label' => $conditionLabel, 'except' => ['condition']];
+    }
+    if (request('min_rating')) {
+        $activeFilters[] = ['label' => request('min_rating') . '+ ★', 'except' => ['min_rating']];
+    }
+    if (request('min_price') || request('max_price')) {
+        if (request('min_price') && request('max_price')) {
+            $priceLabel = '$' . request('min_price') . ' – $' . request('max_price');
+        } elseif (request('min_price')) {
+            $priceLabel = 'Min $' . request('min_price');
+        } else {
+            $priceLabel = 'Max $' . request('max_price');
+        }
+        $activeFilters[] = ['label' => $priceLabel, 'except' => ['min_price', 'max_price']];
+    }
 @endphp
 
 @section('content')
@@ -89,7 +132,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors">
+                        <button type="submit" class="w-full py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer">
                             Apply filters
                         </button>
                     </form>
@@ -109,9 +152,9 @@
                     <h1 class="text-xl font-bold text-gray-900 mb-1">Shop</h1>
                 @endif
 
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                     <p class="text-sm text-gray-500">
-                        {{ $products->total() }} {{ \Illuminate\Support\Str::plural('product', $products->total()) }}
+                        Found <span class="font-bold text-gray-900">{{ $products->total() }}</span> {{ \Illuminate\Support\Str::plural('product', $products->total()) }}
                         @if ($products->total() > 0)
                             · showing {{ $products->firstItem() }}–{{ $products->lastItem() }}
                         @endif
@@ -132,6 +175,20 @@
                         </select>
                     </form>
                 </div>
+
+                @if ($hasFilters)
+                    <div class="flex flex-wrap items-center gap-2 mb-6">
+                        @foreach ($activeFilters as $filter)
+                            <a href="{{ route('shop', request()->except(array_merge($filter['except'], ['page']))) }}" class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1 bg-brand-50 text-brand-700 text-xs font-semibold rounded-full border border-brand-100 hover:bg-brand-100">
+                                {{ $filter['label'] }}
+                                <span aria-hidden="true" class="text-brand-400">&times;</span>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('shop', array_filter(['sort' => request('sort')])) }}" class="text-xs font-semibold text-gray-400 hover:text-gray-600">
+                            Clear all
+                        </a>
+                    </div>
+                @endif
 
                 @if ($products->isEmpty())
                     <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">

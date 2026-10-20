@@ -22,22 +22,56 @@
                         : collect([$product->primaryImageUrl()]);
                 @endphp
 
-                {{-- Main Product Image (Click to Open Lightbox Popup) --}}
-                <div id="main-img-wrapper" class="relative group bg-gray-50 rounded-xl aspect-square flex items-center justify-center overflow-hidden cursor-zoom-in" title="Click to view full image">
-                    <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]">
-                    <div class="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md pointer-events-none">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-                        <span>Click to zoom</span>
+                <div class="flex gap-3">
+                    {{-- Vertical thumbnail rail --}}
+                    @if ($galleryImages->count() > 1)
+                        <div class="flex flex-col items-center shrink-0 w-14 sm:w-20">
+                            <button type="button" id="thumb-scroll-up" class="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 mb-2 cursor-pointer transition-colors" aria-label="Scroll thumbnails up">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                            </button>
+
+                            <div id="thumb-rail" class="flex flex-col gap-2.5 overflow-y-auto no-scrollbar scroll-smooth flex-1 min-h-0 w-full">
+                                @foreach ($galleryImages as $index => $imageUrl)
+                                    <img src="{{ $imageUrl }}" data-index="{{ $index }}" class="thumb-img aspect-square w-full object-cover rounded-lg cursor-pointer border-2 transition-all duration-150 hover:opacity-100 shrink-0 {{ $index === 0 ? 'border-brand-500 shadow-xs opacity-100' : 'border-transparent opacity-80 hover:border-gray-300' }}">
+                                @endforeach
+                            </div>
+
+                            <button type="button" id="thumb-scroll-down" class="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 mt-2 cursor-pointer transition-colors" aria-label="Scroll thumbnails down">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                        </div>
+                    @endif
+
+                    {{-- Main Product Image (Hover Zoom & Click to Open Lightbox) --}}
+                    <div id="main-img-wrapper" class="relative group bg-gray-50 rounded-xl aspect-square flex-1 min-w-0 flex items-center justify-center overflow-hidden cursor-crosshair select-none" title="Hover to zoom, click for full screen">
+                        <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover will-change-transform pointer-events-none origin-center">
+
+                        {{-- Wishlist / Zoom quick actions --}}
+                        <div class="absolute top-3 right-3 flex flex-col gap-2 z-20">
+                            @auth
+                                <button type="submit" form="gallery-wishlist-form" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors cursor-pointer" title="Add to Wishlist" aria-label="Add to wishlist" onclick="event.stopPropagation()">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
+                                </button>
+                            @else
+                                <a href="{{ route('login') }}" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors" title="Log in to add to wishlist" aria-label="Log in to add to wishlist" onclick="event.stopPropagation()">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
+                                </a>
+                            @endauth
+                            <button type="button" id="gallery-zoom-btn" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" title="View full screen" aria-label="View full screen" onclick="event.stopPropagation()">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                            </button>
+                        </div>
+
+                        @if ($galleryImages->count() > 1)
+                            <button type="button" id="gallery-prev-btn" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-700 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Previous image" aria-label="Previous image" onclick="event.stopPropagation()">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M15 19l-7-7 7-7"/></svg>
+                            </button>
+                            <button type="button" id="gallery-next-btn" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-700 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Next image" aria-label="Next image" onclick="event.stopPropagation()">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M9 5l7 7-7 7"/></svg>
+                            </button>
+                        @endif
                     </div>
                 </div>
-
-                @if ($galleryImages->count() > 1)
-                    <div class="grid grid-cols-4 gap-3 mt-3">
-                        @foreach ($galleryImages as $index => $imageUrl)
-                            <img src="{{ $imageUrl }}" data-index="{{ $index }}" class="thumb-img aspect-square w-full object-cover rounded-lg cursor-pointer border-2 transition-all duration-150 hover:opacity-100 hover:scale-[1.03] {{ $index === 0 ? 'border-brand-500 shadow-xs opacity-100' : 'border-transparent opacity-80 hover:border-gray-300' }}">
-                        @endforeach
-                    </div>
-                @endif
             </div>
 
             {{-- Info --}}
@@ -192,9 +226,8 @@
                 @endif
 
                 @auth
-                    <form method="POST" action="{{ route('wishlist.toggle', $product) }}" class="mb-6">
+                    <form id="gallery-wishlist-form" method="POST" action="{{ route('wishlist.toggle', $product) }}" class="sr-only" aria-hidden="true">
                         @csrf
-                        <x-button type="submit" variant="secondary" class="w-full justify-center">♡ Add to Wishlist</x-button>
                     </form>
                 @endauth
 
@@ -651,6 +684,8 @@
             // Update main image on product page
             if (mainImg) {
                 mainImg.src = targetUrl;
+                mainImg.style.transform = 'scale(1)';
+                mainImg.style.transformOrigin = 'center center';
             }
 
             // Update thumbnails on product page
@@ -658,6 +693,7 @@
                 if (i === currentImageIndex) {
                     t.classList.remove('border-transparent', 'opacity-80');
                     t.classList.add('border-brand-500', 'shadow-xs', 'opacity-100');
+                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 } else {
                     t.classList.remove('border-brand-500', 'shadow-xs', 'opacity-100');
                     t.classList.add('border-transparent', 'opacity-80');
@@ -721,8 +757,40 @@
             document.body.style.overflow = '';
         }
 
-        // Main Image click -> opens lightbox
-        if (mainImgWrapper) {
+        // Main Image Hover Zoom (tracks cursor position smoothly)
+        if (mainImgWrapper && mainImg) {
+            let isHovering = false;
+
+            mainImgWrapper.addEventListener('mouseenter', (e) => {
+                isHovering = true;
+                const rect = mainImgWrapper.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                mainImg.style.transformOrigin = `${x.toFixed(2)}% ${y.toFixed(2)}%`;
+                mainImg.style.transition = 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)';
+                mainImg.style.transform = 'scale(2.2)';
+            });
+
+            mainImgWrapper.addEventListener('mousemove', (e) => {
+                if (!isHovering) return;
+                const rect = mainImgWrapper.getBoundingClientRect();
+                const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+                const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+                mainImg.style.transformOrigin = `${x.toFixed(2)}% ${y.toFixed(2)}%`;
+            });
+
+            mainImgWrapper.addEventListener('mouseleave', () => {
+                isHovering = false;
+                mainImg.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+                mainImg.style.transform = 'scale(1)';
+                setTimeout(() => {
+                    if (!isHovering) {
+                        mainImg.style.transformOrigin = 'center center';
+                    }
+                }, 250);
+            });
+
+            // Click opens fullscreen lightbox
             mainImgWrapper.addEventListener('click', () => openLightbox(currentImageIndex));
         }
 
@@ -731,6 +799,23 @@
             thumb.addEventListener('mouseenter', () => updateGalleryView(index));
             thumb.addEventListener('click', () => openLightbox(index));
         });
+
+        // Vertical thumbnail rail scroll buttons
+        const thumbRail = document.getElementById('thumb-rail');
+        const thumbScrollUpBtn = document.getElementById('thumb-scroll-up');
+        const thumbScrollDownBtn = document.getElementById('thumb-scroll-down');
+        if (thumbRail && thumbScrollUpBtn && thumbScrollDownBtn) {
+            thumbScrollUpBtn.addEventListener('click', () => thumbRail.scrollBy({ top: -100, behavior: 'smooth' }));
+            thumbScrollDownBtn.addEventListener('click', () => thumbRail.scrollBy({ top: 100, behavior: 'smooth' }));
+        }
+
+        // Main image overlay prev/next arrows and zoom button
+        const galleryPrevBtn = document.getElementById('gallery-prev-btn');
+        const galleryNextBtn = document.getElementById('gallery-next-btn');
+        const galleryZoomBtn = document.getElementById('gallery-zoom-btn');
+        if (galleryPrevBtn) galleryPrevBtn.addEventListener('click', () => updateGalleryView(currentImageIndex - 1, 'prev'));
+        if (galleryNextBtn) galleryNextBtn.addEventListener('click', () => updateGalleryView(currentImageIndex + 1, 'next'));
+        if (galleryZoomBtn) galleryZoomBtn.addEventListener('click', () => openLightbox(currentImageIndex));
 
         // Lightbox buttons
         if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
