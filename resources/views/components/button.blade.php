@@ -19,7 +19,7 @@
         'md' => 'px-6 py-2.5 text-sm',
     ];
 
-    $classes = 'inline-flex items-center justify-center gap-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed '
+    $classes = 'inline-flex items-center justify-center gap-2 rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed '
         . ($variants[$variant] ?? $variants['primary']) . ' '
         . ($sizes[$size] ?? $sizes['md']);
 @endphp

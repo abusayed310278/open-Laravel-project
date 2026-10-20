@@ -444,10 +444,16 @@
                             </div>
 
                             <x-button type="submit" id="place-order-btn" class="w-full justify-center gap-2" :disabled="empty($paymentMethods)">
-                                <svg id="stripe-btn-icon" class="w-4 h-4 {{ $selectedMethod === 'stripe' ? '' : 'hidden' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                                <span id="place-order-btn-text">{{ $selectedMethod === 'stripe' ? 'Proceed to Stripe Payment' : 'Place Order' }}</span>
+                                <span class="btn-text inline-flex items-center justify-center gap-2">
+                                    <span id="place-order-btn-text">{{ $selectedMethod === 'stripe' ? 'Proceed to Stripe Payment' : 'Place Order' }}</span>
+                                </span>
+                                <span class="btn-loader hidden items-center justify-center gap-2">
+                                    <svg class="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                    <span>Processing...</span>
+                                </span>
                             </x-button>
 
                             <div id="checkout-login-notice" class="hidden text-center py-2.5 px-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 font-semibold">
@@ -740,7 +746,6 @@
 
             const paymentRadios = document.querySelectorAll('.payment-method-radio');
             const stripeInfoBox = document.getElementById('stripe-info-box');
-            const stripeBtnIcon = document.getElementById('stripe-btn-icon');
             const placeOrderBtnText = document.getElementById('place-order-btn-text');
 
             function updatePaymentMethod() {
@@ -768,12 +773,10 @@
                     }
                 }
 
-                if (stripeBtnIcon && placeOrderBtnText) {
+                if (placeOrderBtnText) {
                     if (selectedValue === 'stripe') {
-                        stripeBtnIcon.classList.remove('hidden');
                         placeOrderBtnText.textContent = 'Proceed to Stripe Payment';
                     } else {
-                        stripeBtnIcon.classList.add('hidden');
                         placeOrderBtnText.textContent = 'Place Order';
                     }
                 }
@@ -785,6 +788,22 @@
 
             updateAddressVisibility();
             updatePaymentMethod();
+
+            const checkoutForm = document.getElementById('checkout-form');
+            const placeOrderSubmitBtn = document.getElementById('place-order-btn');
+            if (checkoutForm && placeOrderSubmitBtn) {
+                checkoutForm.addEventListener('submit', function() {
+                    if (placeOrderSubmitBtn.disabled) return;
+                    const textSpan = placeOrderSubmitBtn.querySelector('.btn-text');
+                    const loaderSpan = placeOrderSubmitBtn.querySelector('.btn-loader');
+                    placeOrderSubmitBtn.disabled = true;
+                    if (textSpan) textSpan.classList.add('hidden');
+                    if (loaderSpan) {
+                        loaderSpan.classList.remove('hidden');
+                        loaderSpan.classList.add('inline-flex');
+                    }
+                });
+            }
         });
     </script>
 
