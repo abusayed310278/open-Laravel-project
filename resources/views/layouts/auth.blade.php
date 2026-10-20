@@ -4,8 +4,7 @@
     @include('layouts.partials.head')
     <style>
         #auth-card {
-            transition: opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: opacity, transform;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -24,26 +23,27 @@
     <script>
         (function() {
             const cache = new Map();
+            const DURATION = 220;
+            const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+            const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            let animating = false;
 
             // Prefetch target page in background
             function prefetchUrl(url) {
                 if (!url || cache.has(url)) return;
                 fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                     .then(res => res.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newCard = doc.getElementById('auth-card');
-                        const title = doc.querySelector('title')?.innerText || '';
-                        if (newCard) {
-                            cache.set(url, {
-                                html: newCard.innerHTML,
-                                className: newCard.className,
-                                title: title
-                            });
-                        }
-                    })
+                    .then(html => cache.set(url, parseAuthPage(html)))
                     .catch(() => {});
+            }
+
+            function parseAuthPage(html) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newCard = doc.getElementById('auth-card');
+                const title = doc.querySelector('title')?.innerText || '';
+                if (!newCard) throw new Error('Card element not found');
+                return { html: newCard.innerHTML, className: newCard.className, title };
             }
 
             // Preload opposite route on idle so clicking is instantaneous
@@ -68,32 +68,30 @@
             }
 
             async function swapAuthPage(url, push = true) {
+                if (animating) return;
                 const card = document.getElementById('auth-card');
                 if (!card) {
                     window.location.href = url;
                     return;
                 }
 
-                card.style.opacity = '0.4';
-                card.style.transform = 'scale(0.995)';
+                animating = true;
+                card.style.transition = `opacity ${DURATION}ms ${EASE}`;
+                card.style.opacity = '0';
 
                 try {
-                    let data = cache.get(url);
-                    if (!data) {
-                        const res = await fetch(url);
-                        const html = await res.text();
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newCard = doc.getElementById('auth-card');
-                        const title = doc.querySelector('title')?.innerText || '';
-                        if (!newCard) throw new Error('Card element not found');
-                        data = {
-                            html: newCard.innerHTML,
-                            className: newCard.className,
-                            title: title
-                        };
-                        cache.set(url, data);
-                    }
+                    const fetchData = (async () => {
+                        let data = cache.get(url);
+                        if (!data) {
+                            const res = await fetch(url);
+                            data = parseAuthPage(await res.text());
+                            cache.set(url, data);
+                        }
+                        return data;
+                    })();
+
+                    // Always let the fade-out finish before swapping, even on a cache hit
+                    const [data] = await Promise.all([fetchData, wait(DURATION)]);
 
                     if (push) {
                         window.history.pushState({ url: url }, '', url);
@@ -102,19 +100,33 @@
                         document.title = data.title;
                     }
 
+                    const startHeight = card.offsetHeight;
+                    card.style.height = startHeight + 'px';
+
                     card.className = data.className;
                     card.innerHTML = data.html;
                     runScripts(card);
                     attachAuthLinks();
 
+                    card.style.height = 'auto';
+                    const endHeight = card.offsetHeight;
+                    card.style.height = startHeight + 'px';
+
                     requestAnimationFrame(() => {
+                        card.style.transition = `opacity ${DURATION}ms ${EASE}, height ${DURATION}ms ${EASE}`;
+                        card.style.height = endHeight + 'px';
                         card.style.opacity = '1';
-                        card.style.transform = 'scale(1)';
                     });
+
+                    await wait(DURATION + 30);
+                    card.style.transition = '';
+                    card.style.height = '';
 
                     preloadCounterpart();
                 } catch (err) {
                     window.location.href = url;
+                } finally {
+                    animating = false;
                 }
             }
 
