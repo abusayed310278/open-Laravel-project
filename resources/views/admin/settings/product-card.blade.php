@@ -72,8 +72,8 @@
                                 <span
                                     id="preview-category"
                                     data-group="category"
-                                    class="pc-target font-bold uppercase tracking-wide transition-all cursor-pointer"
-                                    style="color: {{ $categoryColor }}; font-size: {{ $categorySize }}px;"
+                                    class="pc-target uppercase tracking-wide transition-all cursor-pointer"
+                                    style="color: {{ $categoryColor }}; font-size: {{ $categorySize }}px; font-weight: {{ in_array($categoryFormat, ['bold', 'bold_italic']) ? '700' : '400' }}; font-style: {{ in_array($categoryFormat, ['italic', 'bold_italic']) ? 'italic' : 'normal' }};"
                                 >PHONES</span>
                                 <span class="text-emerald-600 bg-white border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full leading-none">New</span>
                             </div>
@@ -266,6 +266,72 @@
                                     <span>{{ $sizeMax }}px</span>
                                 </div>
                             </div>
+
+                            @if ($groupKey === 'category')
+                                <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/60">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div>
+                                            <span class="block text-xs font-semibold text-gray-700">Text Style / Typography</span>
+                                            <span class="text-[11px] text-gray-500">Choose whether category text is bold, italic, or normal.</span>
+                                        </div>
+                                        <span id="current_format_badge" class="text-[10px] font-bold text-brand-700 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-md uppercase">
+                                            {{ str_replace('_', ' ', $categoryFormat) }}
+                                        </span>
+                                    </div>
+
+                                    <input type="hidden" name="product_card_category_format" id="input_category_format" value="{{ $categoryFormat }}">
+
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3">
+                                        {{-- Normal --}}
+                                        <button
+                                            type="button"
+                                            data-format="normal"
+                                            onclick="setCategoryFormat('normal')"
+                                            class="category-format-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer {{ $categoryFormat === 'normal' ? 'border-brand-500 bg-white ring-2 ring-brand-500/20 shadow-xs' : 'border-gray-200 bg-white hover:border-gray-300' }}"
+                                        >
+                                            <span class="text-base font-normal text-gray-800">Abc</span>
+                                            <span class="text-xs font-medium text-gray-700 mt-1">Normal</span>
+                                            <span class="text-[10px] text-gray-400">Regular 400</span>
+                                        </button>
+
+                                        {{-- Bold --}}
+                                        <button
+                                            type="button"
+                                            data-format="bold"
+                                            onclick="setCategoryFormat('bold')"
+                                            class="category-format-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer {{ $categoryFormat === 'bold' ? 'border-brand-500 bg-white ring-2 ring-brand-500/20 shadow-xs' : 'border-gray-200 bg-white hover:border-gray-300' }}"
+                                        >
+                                            <span class="text-base font-bold text-gray-900">Abc</span>
+                                            <span class="text-xs font-bold text-gray-900 mt-1">Bold</span>
+                                            <span class="text-[10px] text-gray-400">Weight 700</span>
+                                        </button>
+
+                                        {{-- Italic --}}
+                                        <button
+                                            type="button"
+                                            data-format="italic"
+                                            onclick="setCategoryFormat('italic')"
+                                            class="category-format-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer {{ $categoryFormat === 'italic' ? 'border-brand-500 bg-white ring-2 ring-brand-500/20 shadow-xs' : 'border-gray-200 bg-white hover:border-gray-300' }}"
+                                        >
+                                            <span class="text-base italic font-normal text-gray-800">Abc</span>
+                                            <span class="text-xs italic font-medium text-gray-700 mt-1">Italic</span>
+                                            <span class="text-[10px] text-gray-400">Slanted Style</span>
+                                        </button>
+
+                                        {{-- Bold Italic --}}
+                                        <button
+                                            type="button"
+                                            data-format="bold_italic"
+                                            onclick="setCategoryFormat('bold_italic')"
+                                            class="category-format-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer {{ $categoryFormat === 'bold_italic' ? 'border-brand-500 bg-white ring-2 ring-brand-500/20 shadow-xs' : 'border-gray-200 bg-white hover:border-gray-300' }}"
+                                        >
+                                            <span class="text-base italic font-bold text-gray-900">Abc</span>
+                                            <span class="text-xs italic font-bold text-gray-900 mt-1">Bold Italic</span>
+                                            <span class="text-[10px] text-gray-400">700 & Slanted</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -348,15 +414,41 @@
             updateLivePreview();
         }
 
+        function setCategoryFormat(format) {
+            const hiddenInput = document.getElementById('input_category_format');
+            if (hiddenInput) {
+                hiddenInput.value = format;
+            }
+
+            const badge = document.getElementById('current_format_badge');
+            if (badge) {
+                badge.textContent = format.replace('_', ' ');
+            }
+
+            document.querySelectorAll('.category-format-btn').forEach(btn => {
+                const isActive = btn.dataset.format === format;
+                btn.classList.toggle('border-brand-500', isActive);
+                btn.classList.toggle('ring-2', isActive);
+                btn.classList.toggle('ring-brand-500/20', isActive);
+                btn.classList.toggle('shadow-xs', isActive);
+                btn.classList.toggle('border-gray-200', !isActive);
+            });
+
+            updateLivePreview();
+        }
+
         // Live preview updates
         function updateLivePreview() {
             // Category
             const catColor = document.getElementById('input_category_color')?.value || '#ea580c';
             const catSize = document.getElementById('range_category_size')?.value || '11';
+            const catFormat = document.getElementById('input_category_format')?.value || 'bold';
             const prevCat = document.getElementById('preview-category');
             if (prevCat) {
                 prevCat.style.color = catColor;
                 prevCat.style.fontSize = catSize + 'px';
+                prevCat.style.fontWeight = (catFormat === 'bold' || catFormat === 'bold_italic') ? '700' : '400';
+                prevCat.style.fontStyle = (catFormat === 'italic' || catFormat === 'bold_italic') ? 'italic' : 'normal';
             }
 
             // Title
@@ -449,7 +541,7 @@
         // Preset data
         const presets = {
             'default': {
-                category_color: '#ea580c', category_size: 11,
+                category_color: '#ea580c', category_size: 11, category_format: 'bold',
                 title_color: '#090d16', title_hover_color: '#ea580c', title_size: 14,
                 price_color: '#090d16', price_size: 16,
                 old_price_color: '#94a3b8', old_price_size: 12,
@@ -458,7 +550,7 @@
                 btn_bg: '#656c19', btn_text: '#ffffff', btn_hover_bg: '#fff200', btn_hover_text: '#000000', btn_size: 12
             },
             'olive-gold': {
-                category_color: '#ca8a04', category_size: 11,
+                category_color: '#ca8a04', category_size: 11, category_format: 'bold',
                 title_color: '#1c1917', title_hover_color: '#ca8a04', title_size: 15,
                 price_color: '#15803d', price_size: 17,
                 old_price_color: '#a8a29e', old_price_size: 12,
@@ -467,7 +559,7 @@
                 btn_bg: '#656c19', btn_text: '#ffffff', btn_hover_bg: '#ca8a04', btn_hover_text: '#ffffff', btn_size: 13
             },
             'emerald-modern': {
-                category_color: '#059669', category_size: 11,
+                category_color: '#059669', category_size: 11, category_format: 'bold',
                 title_color: '#0f172a', title_hover_color: '#059669', title_size: 14,
                 price_color: '#059669', price_size: 17,
                 old_price_color: '#94a3b8', old_price_size: 12,
@@ -476,7 +568,7 @@
                 btn_bg: '#059669', btn_text: '#ffffff', btn_hover_bg: '#047857', btn_hover_text: '#ffffff', btn_size: 12
             },
             'dark-indigo': {
-                category_color: '#6366f1', category_size: 11,
+                category_color: '#6366f1', category_size: 11, category_format: 'bold',
                 title_color: '#1e1b4b', title_hover_color: '#4f46e5', title_size: 14,
                 price_color: '#4338ca', price_size: 16,
                 old_price_color: '#94a3b8', old_price_size: 12,
@@ -489,6 +581,10 @@
         function applyPreset(name) {
             const p = presets[name];
             if (!p) return;
+
+            if (p.category_format) {
+                setCategoryFormat(p.category_format);
+            }
 
             Object.keys(p).forEach(k => {
                 if (k.endsWith('_color')) {

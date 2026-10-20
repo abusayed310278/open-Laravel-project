@@ -44,8 +44,15 @@
         --font-weight-hover-text: {{ $hoverTextWeight }};
 
         /* Product Card Typography & Colors */
+        @php
+            $catFormatSetting = setting('product_card_category_format', 'bold');
+            $catWeightVal = in_array($catFormatSetting, ['bold', 'bold_italic'], true) ? '700' : '400';
+            $catStyleVal = in_array($catFormatSetting, ['italic', 'bold_italic'], true) ? 'italic' : 'normal';
+        @endphp
         --pc-cat-color: {{ setting('product_card_category_color', '#ea580c') }};
         --pc-cat-size: {{ setting('product_card_category_size', '11') }}px;
+        --pc-cat-weight: {{ $catWeightVal }};
+        --pc-cat-style: {{ $catStyleVal }};
 
         --pc-title-color: {{ setting('product_card_title_color', '#090d16') }};
         --pc-title-hover: {{ setting('product_card_title_hover_color', '#ea580c') }};
@@ -231,6 +238,8 @@
     .pc-category {
         color: var(--pc-cat-color) !important;
         font-size: var(--pc-cat-size) !important;
+        font-weight: var(--pc-cat-weight, 700) !important;
+        font-style: var(--pc-cat-style, normal) !important;
     }
     .pc-title {
         color: var(--pc-title-color) !important;

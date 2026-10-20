@@ -716,6 +716,7 @@ class SettingsController extends Controller
         return view('admin.settings.product-card', [
             'categoryColor' => $this->settings->get('product_card_category_color', '#ea580c'),
             'categorySize' => (int) $this->settings->get('product_card_category_size', 11),
+            'categoryFormat' => $this->settings->get('product_card_category_format', 'bold'),
 
             'titleColor' => $this->settings->get('product_card_title_color', '#090d16'),
             'titleHoverColor' => $this->settings->get('product_card_title_hover_color', '#ea580c'),
@@ -747,6 +748,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'product_card_category_color' => ['nullable', 'string', 'max:30'],
             'product_card_category_size' => ['nullable', 'integer', 'min:8', 'max:32'],
+            'product_card_category_format' => ['nullable', 'string', 'in:bold,italic,normal,bold_italic'],
 
             'product_card_title_color' => ['nullable', 'string', 'max:30'],
             'product_card_title_hover_color' => ['nullable', 'string', 'max:30'],
@@ -788,6 +790,7 @@ class SettingsController extends Controller
         $keys = [
             'product_card_category_color',
             'product_card_category_size',
+            'product_card_category_format',
             'product_card_title_color',
             'product_card_title_hover_color',
             'product_card_title_size',
