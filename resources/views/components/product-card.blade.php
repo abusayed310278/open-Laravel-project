@@ -16,11 +16,14 @@
     'href' => '#',
     'isVerified' => null,
     'isAdminApproved' => null,
+    'quantity' => null,
     'product' => null,
 ])
 
 @php
     $id = $id ?? ($product instanceof \App\Models\Product ? $product->id : ($product['id'] ?? null));
+    $quantity = $quantity ?? ($product instanceof \App\Models\Product ? $product->quantity : null);
+    $inStock = $quantity === null ? null : $quantity > 0;
     $categoryHeading = $category ?: ($brand ?: 'Electronics');
     if ($image && str_contains($image, '/image/upload/') && ! str_contains($image, '/e_make_transparent')) {
         $image = str_replace('/image/upload/', '/image/upload/e_make_transparent:12/', $image);
@@ -178,6 +181,16 @@
         @endif
     </div>
 
+    {{-- Stock Status --}}
+    @if (! is_null($inStock))
+        <div class="mb-1.5">
+            <span class="pc-stock inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border {{ $inStock ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-900/30 dark:border-emerald-800' : 'text-red-700 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-900/30 dark:border-red-800' }}">
+                <span class="w-1.5 h-1.5 rounded-full {{ $inStock ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                {{ $inStock ? 'In Stock' : 'Out of Stock' }}
+            </span>
+        </div>
+    @endif
+
     {{-- Rating & Physical Verifier Badge --}}
     @if ($rating || $showVerifierBadge)
         <div class="flex items-center gap-1.5 mb-1">
@@ -210,11 +223,11 @@
     {{-- Seller & Add to Cart --}}
     <div class="mt-auto pt-1.5 flex items-center justify-between gap-2">
         <span class="pc-vendor text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sellerName ?: $seller }}</span>
-        <button type="button" data-product-id="{{ $id }}" class="pc-add-btn js-add-to-cart shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs">
+        <button type="button" data-product-id="{{ $id }}" @disabled($inStock === false) class="pc-add-btn js-add-to-cart shrink-0 inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span class="js-btn-text">Add</span>
+            <span class="js-btn-text">{{ $inStock === false ? 'Out of Stock' : 'Add' }}</span>
         </button>
     </div>
 

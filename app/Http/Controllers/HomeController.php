@@ -306,6 +306,7 @@ class HomeController extends Controller
             'brand' => $product->brand?->name ?? 'Electronics',
             'price' => (float) $product->price,
             'comparePrice' => $product->compare_price ? (float) $product->compare_price : (float) ($product->price * 1.2),
+            'quantity' => $product->quantity,
             'rating' => 4.9,
             'ratingCount' => rand(15, 60),
             'location' => 'Dhaka',

@@ -217,10 +217,10 @@
                                 <input type="number" id="product-buy-qty" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
                                 <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Increase quantity">+</button>
                             </div>
-                            <x-button type="submit" id="btn-add-to-cart" class="btn-add-to-cart flex-1 justify-center cursor-pointer font-bold">
+                            <x-button type="submit" id="btn-add-to-cart" :disabled="$product->quantity <= 0" class="btn-add-to-cart flex-1 justify-center cursor-pointer font-bold">
                                 <span class="js-btn-label">Add to Cart</span>
                             </x-button>
-                            <x-button type="submit" name="checkout" value="1" variant="dark" class="flex-1 justify-center cursor-pointer">Buy Now</x-button>
+                            <x-button type="submit" name="checkout" value="1" variant="dark" :disabled="$product->quantity <= 0" class="flex-1 justify-center cursor-pointer">Buy Now</x-button>
                         </div>
                     </form>
                 @endif
