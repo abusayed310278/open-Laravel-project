@@ -3,24 +3,103 @@
 @section('title', 'Admin Dashboard')
 
 @section('content')
+    <style>
+        @keyframes dash-fade-up {
+            0% { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(8px); }
+            60% { filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes dash-row-in {
+            from { opacity: 0; transform: translateX(-16px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes dash-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes dash-sheen {
+            from { transform: translateX(-120%) skewX(-18deg); }
+            to { transform: translateX(260%) skewX(-18deg); }
+        }
+        @keyframes dash-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .dash-reveal {
+            animation: dash-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            animation-delay: calc(var(--i, 0) * 90ms);
+            animation-play-state: paused;
+            will-change: transform, opacity;
+        }
+        .dash-reveal.is-in { animation-play-state: running; }
+        .dash-card {
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+        }
+        .dash-card::after {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 40%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            transform: translateX(-120%) skewX(-18deg);
+            pointer-events: none;
+        }
+        .dash-card:hover {
+            box-shadow: 0 18px 36px -16px rgba(17, 24, 39, 0.35);
+            border-color: #9ca3af;
+        }
+        .dash-card:hover::after { animation: dash-sheen 0.9s ease; }
+        .dash-live {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 6px;
+            border-radius: 9999px;
+            background: #10b981;
+            animation: dash-pulse 2s infinite;
+        }
+        .dash-row {
+            animation: dash-row-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+            animation-delay: calc(var(--r, 0) * 60ms + 400ms);
+            transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .dash-row:hover { box-shadow: inset 3px 0 0 #111827; }
+        .dash-btn {
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .dash-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -8px rgba(17, 24, 39, 0.4); }
+        .dash-btn:active { transform: translateY(0) scale(0.96); }
+        .dash-title { animation: dash-float 4s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+            .dash-reveal, .dash-row { animation: none; }
+            .dash-card, .dash-row, .dash-btn { transition: none; }
+            .dash-card:hover::after, .dash-live, .dash-title { animation: none; }
+            .dash-card, .dash-btn:hover { transform: none !important; }
+        }
+    </style>
+
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="dash-reveal flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="--i: 0">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
-            <p class="text-sm text-gray-500 mt-0.5">Marketplace overview</p>
+            <p class="text-sm text-gray-500 mt-0.5"><span class="dash-live"></span>Marketplace overview</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('admin.verifications.index') }}" class="px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition">
+            <a href="{{ route('admin.verifications.index') }}" class="dash-btn px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700">
                 KYC Queue ({{ $metrics['pendingKycUsers'] }})
             </a>
-            <a href="{{ route('admin.verifiers.index') }}" class="px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition">
+            <a href="{{ route('admin.verifiers.index') }}" class="dash-btn px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700">
                 Verifiers
             </a>
-            <a href="{{ route('admin.verification-requirements.index') }}" class="px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition">
+            <a href="{{ route('admin.verification-requirements.index') }}" class="dash-btn px-3 py-2 rounded-lg text-xs font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700">
                 KYC Rules
             </a>
-            <a href="{{ route('admin.reports.index') }}" class="px-3 py-2 rounded-lg text-xs font-medium bg-gray-900 hover:bg-black text-white transition">
+            <a href="{{ route('admin.reports.index') }}" class="dash-btn px-3 py-2 rounded-lg text-xs font-medium bg-gray-900 hover:bg-black text-white">
                 Reports
             </a>
         </div>
@@ -41,16 +120,16 @@
     @endphp
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach ($cards as [$label, $value, $hint])
-            <div class="bg-white border border-gray-200 rounded-xl p-4">
+            <div class="dash-reveal dash-card bg-white border border-gray-200 rounded-xl p-4" style="--i: {{ $loop->iteration }}">
                 <p class="text-xs text-gray-500">{{ $label }}</p>
-                <p class="text-xl font-bold text-gray-900 mt-1">{{ $value }}</p>
+                <p class="text-xl font-bold text-gray-900 mt-1" data-countup>{{ $value }}</p>
                 <p class="text-[11px] text-gray-400 mt-0.5">{{ $hint }}</p>
             </div>
         @endforeach
     </div>
 
     {{-- KYC summary --}}
-    <div class="bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="dash-reveal dash-card bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4" style="--i: 7">
         <div>
             <h3 class="text-sm font-semibold text-gray-900">Seller KYC</h3>
             <p class="text-xs text-gray-500 mt-0.5">Identity and document verification for sellers.</p>
@@ -66,7 +145,7 @@
 
     {{-- Charts --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5">
+        <div class="dash-reveal lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5" style="--i: 8">
             <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                 <h2 class="text-sm font-semibold text-gray-900">Last 30 days</h2>
                 <div class="flex items-center gap-4 text-xs text-gray-600">
@@ -97,7 +176,7 @@
             </div>
         </div>
 
-        <div class="bg-white border border-gray-200 rounded-xl p-5">
+        <div class="dash-reveal bg-white border border-gray-200 rounded-xl p-5" style="--i: 9">
             <div class="pb-3 border-b border-gray-100">
                 <h2 class="text-sm font-semibold text-gray-900">Top categories</h2>
             </div>
@@ -118,7 +197,7 @@
     </div>
 
     {{-- Tables --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="dash-reveal grid grid-cols-1 lg:grid-cols-2 gap-6" style="--i: 10">
         <x-card title="Recent Orders">
             <x-slot:headerAction>
                 <a href="{{ route('admin.orders.index') }}" class="text-xs text-gray-600 hover:text-gray-900 hover:underline">View all</a>
@@ -200,6 +279,7 @@
         </x-card>
     </div>
 
+    <div class="dash-reveal" style="--i: 11">
     <x-card title="Top Selling Products">
         <x-slot:headerAction>
             <a href="{{ route('admin.products.index') }}" class="text-xs text-gray-600 hover:text-gray-900 hover:underline">View all</a>
@@ -230,12 +310,90 @@
             </table>
         </div>
     </x-card>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const dark = '#111827';
             const mid = '#9ca3af';
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            document.querySelectorAll('tbody').forEach((body) => {
+                body.querySelectorAll('tr').forEach((row, index) => {
+                    row.classList.add('dash-row');
+                    row.style.setProperty('--r', index);
+                });
+            });
+
+            const revealEls = document.querySelectorAll('.dash-reveal');
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-in');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.08 });
+                revealEls.forEach((el) => observer.observe(el));
+            } else {
+                revealEls.forEach((el) => el.classList.add('is-in'));
+            }
+
+            if (!reduceMotion && window.matchMedia('(hover: hover)').matches) {
+                document.querySelectorAll('.dash-card').forEach((card) => {
+                    card.addEventListener('mousemove', (event) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = (event.clientX - rect.left) / rect.width - 0.5;
+                        const y = (event.clientY - rect.top) / rect.height - 0.5;
+                        card.style.transform = `perspective(700px) rotateX(${(-y * 6).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg) translateY(-4px)`;
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = '';
+                    });
+                });
+            }
+
+            if (!reduceMotion) {
+                document.querySelectorAll('[data-countup]').forEach((el) => {
+                    const original = el.textContent;
+                    const match = original.match(/[\d,]+(\.\d+)?/);
+                    if (!match) {
+                        return;
+                    }
+                    const target = parseFloat(match[0].replace(/,/g, ''));
+                    const decimals = match[1] ? match[1].length - 1 : 0;
+                    const duration = 2000;
+                    const start = performance.now();
+
+                    const tick = (now) => {
+                        const progress = Math.min((now - start) / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        const formatted = (target * eased).toLocaleString('en-US', {
+                            minimumFractionDigits: decimals,
+                            maximumFractionDigits: decimals,
+                        });
+                        el.textContent = original.replace(match[0], formatted);
+                        if (progress < 1) {
+                            requestAnimationFrame(tick);
+                        } else {
+                            el.textContent = original;
+                        }
+                    };
+                    requestAnimationFrame(tick);
+                });
+            }
+
+            const pointCount = @json(count($chartLabels));
+            const drawDelay = 2200 / Math.max(pointCount, 1);
+            const lineDelay = (ctx) => ctx.type === 'data' && ctx.mode === 'default'
+                ? ctx.dataIndex * drawDelay + 500
+                : 0;
+            const chartAnimation = reduceMotion ? false : {
+                x: { type: 'number', easing: 'linear', duration: drawDelay, from: NaN, delay: lineDelay },
+                y: { type: 'number', easing: 'easeOutCubic', duration: drawDelay * 2, from: (ctx) => ctx.chart.scales.y.getPixelForValue(0), delay: lineDelay },
+            };
 
             const revCanvas = document.getElementById('adminRevenueChart');
             if (revCanvas) {
@@ -270,6 +428,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: chartAnimation,
                         interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
@@ -319,6 +478,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         cutout: '65%',
+                        animation: reduceMotion ? false : { duration: 1800, easing: 'easeOutElastic', delay: 500, animateRotate: true, animateScale: true },
                         plugins: {
                             legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 }, color: '#4b5563', padding: 10 } }
                         }

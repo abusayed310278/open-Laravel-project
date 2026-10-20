@@ -7,7 +7,6 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\CartService;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,8 +99,8 @@ class SocialAuthController extends Controller
                 $updates['avatar'] = $socialUser->getAvatar();
             }
 
-            if (! $user->email_verified_at) {
-                $updates['email_verified_at'] = now();
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
             }
 
             if (! empty($updates)) {
@@ -118,13 +117,11 @@ class SocialAuthController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            $user->profile()->create();
-
-            try {
-                event(new Registered($user));
-            } catch (\Throwable $e) {
-                report($e);
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
             }
+
+            $user->profile()->create();
         }
 
         // Check if user is blocked or suspended

@@ -5,6 +5,9 @@
 </head>
 <body class="bg-gray-50 antialiased">
 
+    @include('layouts.partials.page-transitions')
+    @include('layouts.partials.dashboard-effects')
+
     @php
         $icon = \App\Support\Icons::PATHS;
 
@@ -50,7 +53,7 @@
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'My Account')" />
 
-        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <main id="admin-main" class="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6">
             @if (View::hasSection('account-content'))
                 @yield('account-content')
             @else

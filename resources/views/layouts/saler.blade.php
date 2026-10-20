@@ -5,6 +5,9 @@
 </head>
 <body class="bg-gray-50 antialiased">
 
+    @include('layouts.partials.page-transitions')
+    @include('layouts.partials.dashboard-effects')
+
     @php
         $icon = \App\Support\Icons::PATHS;
 
@@ -70,7 +73,7 @@
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen min-w-0 max-w-full">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
-        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
+        <main id="admin-main" class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
             @yield('content')
         </main>
     </div>

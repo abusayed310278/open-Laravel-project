@@ -236,23 +236,24 @@
             display: none;
         }
 
-        /* Level 2 & Level 3 Flyout Submenus (Fly out to the RIGHT side) */
+        /* Level 2 & Level 3 Flyout Submenus (Fly out cleanly to the right) */
         .nav-sub-dropdown {
-            position: absolute !important;
-            left: 100% !important;
-            top: 0 !important;
-            margin-left: 2px !important;
-            min-width: 220px !important;
-            max-width: 280px !important;
-            background-color: #ffffff !important;
-            border: 1px solid #f3f4f6 !important;
-            border-radius: 0.75rem !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-            z-index: 60 !important;
+            position: fixed;
+            min-width: 220px;
+            max-width: 280px;
+            background-color: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
             display: none;
         }
-        .nav-sub-item-group:hover > .nav-sub-dropdown,
-        .nav-sub-dropdown:hover {
+        .dark .nav-sub-dropdown {
+            background-color: #111827;
+            border-color: #1e293b;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+        }
+        .nav-sub-dropdown.is-open {
             display: block !important;
             opacity: 1 !important;
             visibility: visible !important;
@@ -261,9 +262,9 @@
 
         /* Level 3 Flyout Submenu specifically */
         .nav-sub-dropdown .nav-sub-dropdown {
-            z-index: 70 !important;
-            min-width: 200px !important;
-            border-radius: 0.5rem !important;
+            z-index: 110;
+            min-width: 200px;
+            border-radius: 0.5rem;
         }
     </style>
 
@@ -644,16 +645,16 @@
 
                                     {{-- Level 2 Flyout Submenu for Category --}}
                                     @if ($hasCatChildren)
-                                        <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[220px] max-w-[270px] bg-white border border-gray-100 shadow-2xl rounded-xl py-1.5 hidden z-[60]">
+                                        <div class="nav-sub-dropdown min-w-[220px] max-w-[270px] bg-white dark:bg-[#111827] border border-gray-100 dark:border-slate-800 shadow-2xl rounded-xl py-1.5 hidden z-[100]">
                                             @foreach ($allCatItem['children'] as $child)
                                                 @php
                                                     $hasGrandchildren = !empty($child['children']);
                                                 @endphp
                                                 <div class="relative nav-sub-item-group group/grandsub">
-                                                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12.5px]">
+                                                    <a href="{{ Route::has('shop') ? route('shop', ['category' => $child['slug'] ?? \Illuminate\Support\Str::slug($child['name'])]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60 font-medium transition-colors text-[12.5px]">
                                                         <span>{{ $child['name'] }}</span>
                                                         @if ($hasGrandchildren)
-                                                            <svg class="w-3 h-3 text-gray-400 group-hover/grandsub:text-gray-950 group-hover/grandsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg class="w-3 h-3 text-gray-400 group-hover/grandsub:text-gray-950 dark:group-hover/grandsub:text-white group-hover/grandsub:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                                             </svg>
                                                         @endif
@@ -661,9 +662,9 @@
 
                                                     {{-- Level 3 Flyout Submenu --}}
                                                     @if ($hasGrandchildren)
-                                                        <div class="nav-sub-dropdown absolute left-full top-0 ml-0.5 min-w-[190px] bg-white border border-gray-100 shadow-2xl rounded-lg py-1.5 hidden z-[70]">
+                                                        <div class="nav-sub-dropdown min-w-[190px] bg-white dark:bg-[#111827] border border-gray-100 dark:border-slate-800 shadow-2xl rounded-lg py-1.5 hidden z-[110]">
                                                             @foreach ($child['children'] as $grandchild)
-                                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 hover:text-gray-950 hover:bg-gray-100/70 font-medium transition-colors text-[12px]">
+                                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $grandchild['slug'] ?? \Illuminate\Support\Str::slug($grandchild['name'])]) : '#' }}" class="block px-4 py-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60 font-medium transition-colors text-[12px]">
                                                                     {{ $grandchild['name'] }}
                                                                 </a>
                                                             @endforeach
@@ -672,8 +673,8 @@
                                                 </div>
                                             @endforeach
 
-                                            <div class="border-t border-gray-100 mt-1 pt-1">
-                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-gray-950 hover:text-black hover:bg-gray-100/70 font-semibold transition-colors text-xs">
+                                            <div class="border-t border-gray-100 dark:border-slate-800 mt-1 pt-1">
+                                                <a href="{{ Route::has('shop') ? route('shop', ['category' => $allCatItem['slug']]) : '#' }}" class="flex items-center justify-between px-4 py-1.5 text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/60 font-semibold transition-colors text-xs">
                                                     <span>Show All {{ $allCatItem['name'] }}</span>
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                                 </a>
@@ -824,6 +825,30 @@
 
             if (allCatContainer && allCatBtn) {
                 let hideTimeout;
+                let activeL2Flyout = null;
+                let activeL3Flyout = null;
+                let closeL2Timer = null;
+                let closeL3Timer = null;
+
+                const closeL3 = () => {
+                    clearTimeout(closeL3Timer);
+                    if (activeL3Flyout) {
+                        activeL3Flyout.classList.remove('is-open');
+                        activeL3Flyout.style.setProperty('display', 'none', 'important');
+                        activeL3Flyout = null;
+                    }
+                };
+
+                const closeL2 = () => {
+                    clearTimeout(closeL2Timer);
+                    closeL3();
+                    if (activeL2Flyout) {
+                        activeL2Flyout.classList.remove('is-open');
+                        activeL2Flyout.style.setProperty('display', 'none', 'important');
+                        activeL2Flyout = null;
+                    }
+                };
+
                 const showMenu = () => {
                     clearTimeout(hideTimeout);
                     allCatContainer.classList.add('is-open');
@@ -831,7 +856,8 @@
                 const hideMenu = () => {
                     hideTimeout = setTimeout(() => {
                         allCatContainer.classList.remove('is-open');
-                    }, 150);
+                        closeL2();
+                    }, 180);
                 };
 
                 allCatContainer.addEventListener('mouseenter', showMenu);
@@ -840,50 +866,134 @@
                 allCatBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    const willOpen = !allCatContainer.classList.contains('is-open');
                     allCatContainer.classList.toggle('is-open');
+                    if (!willOpen) {
+                        closeL2();
+                    }
                 });
 
                 document.addEventListener('click', (e) => {
                     if (!allCatContainer.contains(e.target)) {
                         allCatContainer.classList.remove('is-open');
+                        closeL2();
                     }
                 });
 
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         allCatContainer.classList.remove('is-open');
+                        closeL2();
                     }
                 });
+
+                const positionFlyout = (flyout, anchorRect, isL3 = false) => {
+                    flyout.style.setProperty('position', 'fixed', 'important');
+                    flyout.style.setProperty('display', 'block', 'important');
+                    flyout.classList.add('is-open');
+
+                    const flyoutRect = flyout.getBoundingClientRect();
+                    const flyoutWidth = flyoutRect.width || 240;
+                    const flyoutHeight = flyoutRect.height || 220;
+
+                    // Align to right edge with 1px overlap to ensure unbroken hover continuity
+                    let left = anchorRect.right - 1;
+                    if (left + flyoutWidth > window.innerWidth - 8) {
+                        left = Math.max(8, anchorRect.left - flyoutWidth + 1);
+                    }
+
+                    const maxTop = window.innerHeight - flyoutHeight - 16;
+                    const top = Math.max(16, Math.min(anchorRect.top, maxTop));
+
+                    flyout.style.setProperty('left', left + 'px', 'important');
+                    flyout.style.setProperty('top', top + 'px', 'important');
+                };
 
                 // Position flyout submenus cleanly outside scrollable container
                 const allCatDropdown = document.getElementById('all-categories-dropdown');
                 if (allCatDropdown) {
-                    const subItemGroups = allCatDropdown.querySelectorAll('.group\\/allsub');
-                    subItemGroups.forEach(group => {
-                        const flyout = group.querySelector('.nav-sub-dropdown');
-                        if (!flyout) return;
+                    // Level 2 Submenus (children of main categories)
+                    const l2Groups = allCatDropdown.querySelectorAll('.group\\/allsub');
+                    l2Groups.forEach(group => {
+                        const flyout = group.querySelector(':scope > .nav-sub-dropdown');
+                        if (!flyout) {
+                            group.addEventListener('mouseenter', () => {
+                                clearTimeout(closeL2Timer);
+                                closeL2();
+                            });
+                            return;
+                        }
 
-                        group.addEventListener('mouseenter', () => {
-                            const rect = group.getBoundingClientRect();
-                            flyout.style.position = 'fixed';
-                            flyout.style.left = (rect.right + 2) + 'px';
-                            const flyoutHeight = flyout.offsetHeight || 220;
-                            const maxTop = window.innerHeight - flyoutHeight - 16;
-                            flyout.style.top = Math.max(16, Math.min(rect.top, maxTop)) + 'px';
-                            flyout.style.display = 'block';
-                        });
+                        const openThisL2 = () => {
+                            clearTimeout(closeL2Timer);
+                            showMenu();
+                            if (activeL2Flyout && activeL2Flyout !== flyout) {
+                                closeL2();
+                            }
+                            activeL2Flyout = flyout;
+                            positionFlyout(flyout, group.getBoundingClientRect(), false);
+                        };
 
-                        group.addEventListener('mouseleave', () => {
-                            flyout.style.display = 'none';
+                        const queueCloseL2 = () => {
+                            clearTimeout(closeL2Timer);
+                            closeL2Timer = setTimeout(() => {
+                                closeL2();
+                            }, 180);
+                        };
+
+                        group.addEventListener('mouseenter', openThisL2);
+                        group.addEventListener('mouseleave', queueCloseL2);
+                        flyout.addEventListener('mouseenter', () => {
+                            clearTimeout(closeL2Timer);
+                            showMenu();
                         });
+                        flyout.addEventListener('mouseleave', queueCloseL2);
+                    });
+
+                    // Level 3 Submenus (grandchildren)
+                    const l3Groups = allCatDropdown.querySelectorAll('.group\\/grandsub');
+                    l3Groups.forEach(grandGroup => {
+                        const l3Flyout = grandGroup.querySelector(':scope > .nav-sub-dropdown');
+                        if (!l3Flyout) {
+                            grandGroup.addEventListener('mouseenter', () => {
+                                clearTimeout(closeL3Timer);
+                                closeL3();
+                            });
+                            return;
+                        }
+
+                        const openThisL3 = () => {
+                            clearTimeout(closeL3Timer);
+                            clearTimeout(closeL2Timer);
+                            showMenu();
+                            if (activeL3Flyout && activeL3Flyout !== l3Flyout) {
+                                closeL3();
+                            }
+                            activeL3Flyout = l3Flyout;
+                            positionFlyout(l3Flyout, grandGroup.getBoundingClientRect(), true);
+                        };
+
+                        const queueCloseL3 = () => {
+                            clearTimeout(closeL3Timer);
+                            closeL3Timer = setTimeout(() => {
+                                closeL3();
+                            }, 180);
+                        };
+
+                        grandGroup.addEventListener('mouseenter', openThisL3);
+                        grandGroup.addEventListener('mouseleave', queueCloseL3);
+                        l3Flyout.addEventListener('mouseenter', () => {
+                            clearTimeout(closeL2Timer);
+                            clearTimeout(closeL3Timer);
+                            showMenu();
+                        });
+                        l3Flyout.addEventListener('mouseleave', queueCloseL3);
                     });
 
                     const scrollWrap = allCatDropdown.querySelector('.all-cat-scroll');
                     if (scrollWrap) {
                         scrollWrap.addEventListener('scroll', () => {
-                            allCatDropdown.querySelectorAll('.nav-sub-dropdown').forEach(flyout => {
-                                flyout.style.display = 'none';
-                            });
+                            closeL2();
                         }, { passive: true });
                     }
                 }

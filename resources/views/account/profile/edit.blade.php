@@ -38,24 +38,75 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div class="max-w-4xl space-y-6">
+<style>
+    @keyframes profile-rise {
+        from { opacity: 0; transform: translate3d(0, 18px, 0); }
+        to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    @keyframes profile-panel-in {
+        from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.99); }
+        to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    }
+    @keyframes profile-field-in {
+        from { opacity: 0; transform: translate3d(0, 12px, 0); }
+        to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    .profile-page > .profile-rise {
+        animation: profile-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation-delay: calc(var(--k, 0) * 90ms);
+    }
+    .profile-panel:not(.hidden) {
+        animation: profile-panel-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    .profile-panel:not(.hidden) form > * {
+        animation: profile-field-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation-delay: calc(var(--f, 0) * 60ms + 120ms);
+    }
+    .profile-tabs { position: relative; }
+    .profile-tab-indicator {
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        height: 2px;
+        width: 0;
+        border-radius: 2px;
+        background: var(--color-brand-500, #111827);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+    .profile-tabs button { border-bottom-color: transparent !important; transition: color 0.25s ease, transform 0.2s ease; }
+    .profile-tabs button:active { transform: scale(0.95); }
+    .profile-page input, .profile-page select, .profile-page textarea {
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+    }
+    .profile-page button[type="submit"] {
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background-color 0.25s ease;
+    }
+    .profile-page button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -10px rgba(17, 24, 39, 0.45); }
+    .profile-page button[type="submit"]:active { transform: translateY(0) scale(0.97); }
+    @media (prefers-reduced-motion: reduce) {
+        .profile-page > .profile-rise, .profile-panel:not(.hidden), .profile-panel:not(.hidden) form > * { animation: none; }
+        .profile-tab-indicator, .profile-page button[type="submit"] { transition: none; }
+    }
+</style>
+<div class="profile-page max-w-4xl space-y-6">
     {{-- Status Alerts --}}
     @if (session('status') === 'Profile updated.' || session('status') === 'profile-updated')
-        <div class="flex items-center gap-2.5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl shadow-2xs">
+        <div class="profile-rise flex items-center gap-2.5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl shadow-2xs">
             <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span class="font-medium">Profile updated successfully.</span>
         </div>
     @endif
 
     @if (session('status') === 'password-updated')
-        <div class="flex items-center gap-2.5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl shadow-2xs">
+        <div class="profile-rise flex items-center gap-2.5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl shadow-2xs">
             <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <span class="font-medium">Password changed successfully.</span>
         </div>
     @endif
 
     {{-- Tabs matching Branding / Settings Navigation style --}}
-    <div class="border-b border-gray-100 flex items-center gap-6 mb-6">
+    <div class="profile-rise profile-tabs border-b border-gray-100 flex items-center gap-6 mb-6">
         <button
             type="button"
             id="tab-btn-profile"
@@ -72,10 +123,11 @@
         >
             Password
         </button>
+        <span id="profile-tab-indicator" class="profile-tab-indicator"></span>
     </div>
 
     {{-- Profile Information Tab Card --}}
-    <div id="tab-content-profile" class="{{ $activeTab === 'profile' ? '' : 'hidden' }}">
+    <div id="tab-content-profile" class="profile-panel {{ $activeTab === 'profile' ? '' : 'hidden' }}">
         <div class="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-xs">
             <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-6">Profile Information</h2>
 
@@ -218,7 +270,7 @@
     </div>
 
     {{-- Change Password Tab Card --}}
-    <div id="tab-content-password" class="{{ $activeTab === 'password' ? '' : 'hidden' }}">
+    <div id="tab-content-password" class="profile-panel {{ $activeTab === 'password' ? '' : 'hidden' }}">
         <div class="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-xs">
             <h2 class="text-base sm:text-lg font-bold text-gray-900 mb-6">Change Password</h2>
 
@@ -306,6 +358,19 @@
 </div>
 
 <script>
+    function moveTabIndicator() {
+        const indicator = document.getElementById('profile-tab-indicator');
+        const active = document.querySelector('#tab-btn-profile.text-brand-600, #tab-btn-password.text-brand-600');
+        if (!indicator || !active) return;
+        indicator.style.width = active.offsetWidth + 'px';
+        indicator.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+    }
+
+    document.querySelectorAll('.profile-panel form').forEach((form) => {
+        Array.from(form.children).forEach((child, index) => child.style.setProperty('--f', Math.min(index, 10)));
+    });
+    document.querySelectorAll('.profile-page > .profile-rise').forEach((el, index) => el.style.setProperty('--k', index));
+
     function switchProfileTab(tab) {
         const profileTab = document.getElementById('tab-content-profile');
         const passwordTab = document.getElementById('tab-content-password');
@@ -344,7 +409,19 @@
                 window.history.replaceState(null, null, '#password');
             }
         }
+        moveTabIndicator();
     }
+
+    window.addEventListener('resize', moveTabIndicator);
+    window.addEventListener('load', moveTabIndicator);
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash === '#password') {
+            switchProfileTab('password');
+        } else if (window.location.hash === '#profile') {
+            switchProfileTab('profile');
+        }
+    });
+    moveTabIndicator();
 
     // Auto-select tab if URL hash is present
     if (window.location.hash === '#password') {

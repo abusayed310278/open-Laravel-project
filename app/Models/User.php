@@ -20,7 +20,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'phone', 'password', 'role', 'status', 'google_id', 'facebook_id', 'avatar'])]
+#[Fillable(['name', 'email', 'phone', 'password', 'role', 'status', 'google_id', 'facebook_id', 'avatar', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {

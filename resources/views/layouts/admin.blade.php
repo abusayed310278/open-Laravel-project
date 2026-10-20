@@ -5,6 +5,8 @@
 </head>
 <body class="bg-gray-50 antialiased">
 
+    @include('layouts.partials.page-transitions')
+
     @php
         $icon = \App\Support\Icons::PATHS;
 
@@ -37,6 +39,7 @@
                     ['route' => 'admin.verifiers.index', 'label' => 'Verifiers', 'icon' => $icon['users']],
                     ['route' => 'admin.verification-checklists.index', 'label' => 'Checklists', 'icon' => $icon['sliders']],
                     ['route' => 'admin.warehouses.index', 'label' => 'Warehouses', 'icon' => $icon['building']],
+                    ['route' => 'admin.warehouse-products.index', 'label' => 'Warehouse Products', 'icon' => $icon['box']],
                 ],
             ],
             [
@@ -47,6 +50,7 @@
                     ['route' => 'admin.orders.index', 'label' => 'Orders', 'icon' => $icon['shopping-bag']],
                     ['route' => 'admin.payment-verifications.index', 'label' => 'Payment Verifications', 'icon' => $icon['banknotes']],
                     ['route' => 'admin.refunds.index', 'label' => 'Refunds', 'icon' => $icon['banknotes']],
+                    ['route' => 'admin.invoices.index', 'label' => 'Invoices', 'icon' => $icon['document']],
                     ['route' => 'admin.payments.index', 'label' => 'Payments', 'icon' => $icon['banknotes']],
                     ['route' => 'admin.payouts.index', 'label' => 'Payouts', 'icon' => $icon['banknotes']],
                     ['route' => 'admin.commission-rules.index', 'label' => 'Commission Rules', 'icon' => $icon['percent']],
@@ -65,6 +69,7 @@
                 'label' => 'Content',
                 'items' => [
                     ['route' => 'admin.blog.index', 'label' => 'Blog', 'icon' => $icon['newspaper']],
+                    ['route' => 'admin.blog-categories.index', 'label' => 'Blog Categories', 'icon' => $icon['tag']],
                     ['route' => 'admin.blog.comments.index', 'label' => 'Blog Comments', 'icon' => $icon['chat']],
                     ['route' => 'admin.pages.index', 'label' => 'Pages', 'icon' => $icon['document']],
                     ['route' => 'admin.banners.index', 'label' => 'Banners', 'icon' => $icon['image']],
@@ -88,7 +93,7 @@
     <div class="main-content-wrapper lg:ml-56 flex flex-col min-h-screen min-w-0 max-w-full">
         <x-dashboard-topbar :title="$__env->yieldContent('title', 'Dashboard')" />
 
-        <main class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
+        <main id="admin-main" class="flex-1 px-6 lg:px-8 py-6 space-y-6 min-w-0 max-w-full">
             @yield('content')
         </main>
 
@@ -112,6 +117,8 @@
             </div>
         </footer>
     </div>
+
+
 
     {{-- Global Admin Live Search & Real-time Filter Engine --}}
     <script>
