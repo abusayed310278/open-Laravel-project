@@ -131,65 +131,6 @@
         </div>
     </div>
 
-    {{-- Dedicated App & Social Bar (Star Tech Style) --}}
-    @php
-        $footerAppHeading = setting('footer_app_heading') ?: ('Experience ' . config('app.name', 'Openbox') . ' App on your mobile:');
-        $footerAppLinks = \App\Support\FooterAppLinks::getAppLinks();
-        $footerSocialLinks = \App\Support\FooterAppLinks::getSocialLinks();
-        $hasFooterAppOrSocial = !empty($footerAppLinks) || !empty($footerSocialLinks);
-    @endphp
-
-    @if ($hasFooterAppOrSocial)
-    <div style="background-color: {{ $footerBottomBg }}; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex flex-col md:flex-row items-center justify-between gap-4">
-            {{-- Left: Heading / Label + App Badges --}}
-            @if (!empty($footerAppLinks))
-                <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-left">
-                    <span class="text-xs sm:text-sm font-normal whitespace-nowrap" style="color: {{ $footerTextColor }};">
-                        {{ $footerAppHeading }}
-                    </span>
-
-                    <div class="flex items-center gap-2.5 flex-wrap justify-center">
-                        @foreach ($footerAppLinks as $item)
-                            <a
-                                href="{{ $item['url'] }}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-md bg-black/60 hover:bg-black/90 border border-white/20 hover:border-white/40 text-white transition-all shadow-xs group"
-                                title="{{ $item['title'] }}"
-                            >
-                                <span class="text-white shrink-0 group-hover:scale-105 transition-transform">{!! $item['icon_svg'] !!}</span>
-                                <span class="flex flex-col text-left leading-none">
-                                    <span class="text-[9px] text-gray-400 font-normal leading-tight">{{ $item['subtitle'] }}</span>
-                                    <span class="text-xs font-bold tracking-tight text-white mt-0.5 leading-tight">{{ $item['title'] }}</span>
-                                </span>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @else
-                <div></div>
-            @endif
-
-            {{-- Right: Social Media Icons --}}
-            @if (!empty($footerSocialLinks))
-                <div class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
-                    @foreach ($footerSocialLinks as $item)
-                        <a
-                            href="{{ $item['url'] }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="w-9 h-9 rounded-full bg-slate-800/90 hover:bg-slate-700 text-white flex items-center justify-center transition-all shadow-xs hover:scale-105"
-                            title="{{ $item['name'] }}"
-                        >
-                            {!! $item['icon_svg'] !!}
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </div>
-    @endif
 
     {{-- Bottom Copyright Bar --}}
     <div style="background-color: {{ $footerBottomBg }}; color: {{ $footerBottomTextColor }};" class="footer-bottom-bar border-t border-white/5">

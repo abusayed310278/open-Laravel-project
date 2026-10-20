@@ -34,30 +34,232 @@
                 <div class="grid lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-6">
         @if ($isGuest)
-            {{-- Guests can fill in the form, but must sign in or register to place the order. --}}
-            <div class="grid md:grid-cols-2 gap-4">
-                {{-- New customer: always the selected option --}}
-                <div class="rounded-2xl border-2 border-brand-400 bg-white p-5 ring-4 ring-brand-100/70">
-                    <div class="flex items-start gap-4">
-                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+            {{-- Guest checkout: interactive Create Account and Sign In panels --}}
+            <div id="checkout-guest-auth-section" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
+                <div class="mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                            <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            Step 1: Account
                         </span>
-                        <div class="min-w-0">
-                            <h2 class="text-base font-bold text-gray-900">New to {{ config('app.name') }}? <a href="{{ route('register') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Create Account</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Create an account to place your order and track it.</p>
+                        <span class="text-xs text-gray-400">·</span>
+                        <span class="text-xs text-gray-500 font-medium">Cart saved</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-gray-900 mt-2">Sign in or create an account to place your order</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Choose an option below to fill in your account information right here on this page.</p>
+                </div>
+
+                {{-- Two Option Selector Cards --}}
+                <div class="grid md:grid-cols-2 gap-3 mb-5">
+                    {{-- Create Account Tab --}}
+                    <button type="button" id="tab-btn-register" onclick="switchCheckoutAuthTab('register')"
+                        class="text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border-2 border-brand-400 bg-amber-50/20 ring-4 ring-brand-100/70">
+                        <div class="flex items-start gap-3">
+                            <span class="w-10 h-10 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-gray-900">New customer?</span>
+                                    <span class="tab-badge text-[11px] font-bold text-brand-800 bg-brand-100 px-2 py-0.5 rounded-full">Selected</span>
+                                </div>
+                                <span class="text-xs font-extrabold block mt-0.5" style="color: #000080;">Create Account</span>
+                                <p class="text-xs text-gray-500 mt-0.5">Quick setup to complete order and track it.</p>
+                            </div>
+                        </div>
+                    </button>
+
+                    {{-- Sign In Tab --}}
+                    <button type="button" id="tab-btn-login" onclick="switchCheckoutAuthTab('login')"
+                        class="text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border border-gray-200 bg-white hover:border-gray-300">
+                        <div class="flex items-start gap-3">
+                            <span class="w-10 h-10 shrink-0 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 20a8 8 0 0116 0v1H4v-1z" /></svg>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-bold text-gray-900">Returning customer?</span>
+                                    <span class="tab-badge hidden text-[11px] font-bold text-brand-800 bg-brand-100 px-2 py-0.5 rounded-full">Selected</span>
+                                </div>
+                                <span class="text-xs font-extrabold block mt-0.5" style="color: #000080;">Sign in</span>
+                                <p class="text-xs text-gray-500 mt-0.5">Access saved addresses and faster checkout.</p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                {{-- CREATE ACCOUNT PANEL --}}
+                <div id="checkout-register-panel" class="border border-gray-100 rounded-xl p-5 bg-gray-50/70 transition-all duration-200">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Create your account</h3>
+                            <p class="text-xs text-gray-500">Fill in your information to register as an individual buyer</p>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-medium">Customer (Buy & Sell)</span>
+                    </div>
+
+                    <div id="checkout-reg-alert" class="hidden mb-4 p-3 rounded-lg text-xs leading-relaxed"></div>
+
+                    <div class="space-y-3.5">
+                        <input type="hidden" id="checkout-reg-account-type" value="customer">
+
+                        <div>
+                            <label for="checkout-reg-name" class="block text-xs font-semibold text-gray-700 mb-1">Full name <span class="text-red-500">*</span></label>
+                            <input type="text" id="checkout-reg-name" placeholder="John Doe" autocomplete="name" required
+                                class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                            <p id="checkout-reg-err-name" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <div>
+                                <label for="checkout-reg-email" class="block text-xs font-semibold text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                                <input type="email" id="checkout-reg-email" placeholder="you@example.com" autocomplete="email" required
+                                    class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                                <p id="checkout-reg-err-email" class="text-xs text-red-500 mt-1 hidden"></p>
+                            </div>
+                            <div>
+                                <label for="checkout-reg-phone" class="block text-xs font-semibold text-gray-700 mb-1">Phone <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <input type="tel" id="checkout-reg-phone" placeholder="e.g. +1 555-0100" autocomplete="tel"
+                                    class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                                <p id="checkout-reg-err-phone" class="text-xs text-red-500 mt-1 hidden"></p>
+                            </div>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <div>
+                                <label for="checkout-reg-password" class="block text-xs font-semibold text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="password" id="checkout-reg-password" placeholder="At least 8 characters" autocomplete="new-password" required
+                                        class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent pr-10">
+                                    <button type="button" class="checkout-pass-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" data-target="checkout-reg-password" aria-label="Toggle password visibility">
+                                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
+                                <p id="checkout-reg-err-password" class="text-xs text-red-500 mt-1 hidden"></p>
+                            </div>
+                            <div>
+                                <label for="checkout-reg-password-confirmation" class="block text-xs font-semibold text-gray-700 mb-1">Confirm password <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="password" id="checkout-reg-password-confirmation" placeholder="Re-type password" autocomplete="new-password" required
+                                        class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent pr-10">
+                                    <button type="button" class="checkout-pass-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" data-target="checkout-reg-password-confirmation" aria-label="Toggle password confirmation visibility">
+                                        <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="flex items-start gap-2 text-xs text-gray-600 pt-1 cursor-pointer">
+                            <input type="checkbox" id="checkout-reg-terms" checked class="w-4 h-4 rounded accent-brand-500 mt-0.5">
+                            <span>I agree to the Openbox Terms of Service and Privacy Policy.</span>
+                        </label>
+                        <p id="checkout-reg-err-terms" class="text-xs text-red-500 -mt-1 hidden"></p>
+
+                        <div class="pt-2">
+                            <button type="button" id="btn-submit-checkout-register" onclick="submitCheckoutRegister()"
+                                class="w-full inline-flex items-center justify-center gap-2 brand-btn-primary font-bold px-6 py-2.5 rounded-lg text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer">
+                                <span class="btn-text">Create Account & Continue</span>
+                                <span class="btn-loader hidden items-center justify-center gap-2">
+                                    <svg class="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                    <span>Creating account...</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Social Quick Sign-up --}}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            <span>Or register with:</span>
+                            <button type="button" onclick="switchCheckoutAuthTab('login')" style="color: #000080;" class="font-bold hover:underline cursor-pointer">Already have an account? Sign in</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <a href="{{ Route::has('auth.google') ? route('auth.google') : '#' }}"
+                                class="flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-2xs">
+                                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                                <span>Google</span>
+                            </a>
+                            <a href="{{ Route::has('auth.facebook') ? route('auth.facebook') : '#' }}"
+                                class="flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-2xs">
+                                <svg class="w-4 h-4 shrink-0 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                <span>Facebook</span>
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                {{-- Returning customer --}}
-                <div class="rounded-2xl border border-gray-200 bg-white p-5">
-                    <div class="flex items-start gap-4">
-                        <span class="w-12 h-12 shrink-0 rounded-full bg-brand-100 text-gray-900 flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 20a8 8 0 0116 0v1H4v-1z" /></svg>
-                        </span>
-                        <div class="min-w-0">
-                            <h2 class="text-base font-bold text-gray-900">Returning customer? <a href="{{ route('login') }}" class="font-extrabold text-gray-950 underline decoration-2 decoration-brand-500 underline-offset-4 hover:decoration-gray-950 transition-colors">Sign in</a></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">Sign in to place your order with your saved details.</p>
+                {{-- SIGN IN PANEL --}}
+                <div id="checkout-login-panel" class="hidden border border-gray-100 rounded-xl p-5 bg-gray-50/70 transition-all duration-200">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Sign in to your account</h3>
+                            <p class="text-xs text-gray-500">Sign in to use your saved addresses and payment details</p>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-medium">Returning buyer</span>
+                    </div>
+
+                    <div id="checkout-login-alert" class="hidden mb-4 p-3 rounded-lg text-xs leading-relaxed"></div>
+
+                    <div class="space-y-3.5">
+                        <div>
+                            <label for="checkout-login-id" class="block text-xs font-semibold text-gray-700 mb-1">Email or phone <span class="text-red-500">*</span></label>
+                            <input type="text" id="checkout-login-id" placeholder="you@example.com or phone" autocomplete="username" required
+                                class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent">
+                            <p id="checkout-login-err-id" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="checkout-login-password" class="text-xs font-semibold text-gray-700">Password <span class="text-red-500">*</span></label>
+                                <a href="{{ route('password.request') }}" target="_blank" style="color: #000080;" class="text-xs font-semibold hover:underline">Forgot password?</a>
+                            </div>
+                            <div class="relative">
+                                <input type="password" id="checkout-login-password" placeholder="Enter your password" autocomplete="current-password" required
+                                    class="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent pr-10">
+                                <button type="button" class="checkout-pass-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none" data-target="checkout-login-password" aria-label="Toggle password visibility">
+                                    <svg class="w-4 h-4 eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <svg class="w-4 h-4 eye-closed hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                </button>
+                            </div>
+                            <p id="checkout-login-err-password" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer pt-1">
+                            <input type="checkbox" id="checkout-login-remember" checked class="w-4 h-4 rounded accent-brand-500">
+                            <span>Remember me for 30 days</span>
+                        </label>
+
+                        <div class="pt-2">
+                            <button type="button" id="btn-submit-checkout-login" onclick="submitCheckoutLogin()"
+                                class="w-full inline-flex items-center justify-center gap-2 brand-btn-primary font-bold px-6 py-2.5 rounded-lg text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer">
+                                <span class="btn-text">Sign In & Continue</span>
+                                <span class="btn-loader hidden items-center justify-center gap-2">
+                                    <svg class="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                                    <span>Signing in...</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Social Quick Sign-in --}}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            <span>Or sign in with:</span>
+                            <button type="button" onclick="switchCheckoutAuthTab('register')" style="color: #000080;" class="font-bold hover:underline cursor-pointer">New here? Create Account</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <a href="{{ Route::has('auth.google') ? route('auth.google') : '#' }}"
+                                class="flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-2xs">
+                                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                                <span>Google</span>
+                            </a>
+                            <a href="{{ Route::has('auth.facebook') ? route('auth.facebook') : '#' }}"
+                                class="flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all shadow-2xs">
+                                <svg class="w-4 h-4 shrink-0 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                <span>Facebook</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -308,6 +510,250 @@
     </div>
 
     <script>
+        // Switch between Create Account and Sign In tabs
+        window.switchCheckoutAuthTab = function(tab) {
+            const btnReg = document.getElementById('tab-btn-register');
+            const btnLog = document.getElementById('tab-btn-login');
+            const panelReg = document.getElementById('checkout-register-panel');
+            const panelLog = document.getElementById('checkout-login-panel');
+            if (!btnReg || !btnLog || !panelReg || !panelLog) return;
+
+            const badgeReg = btnReg.querySelector('.tab-badge');
+            const badgeLog = btnLog.querySelector('.tab-badge');
+
+            if (tab === 'register') {
+                btnReg.className = 'text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border-2 border-brand-400 bg-amber-50/20 ring-4 ring-brand-100/70';
+                btnLog.className = 'text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border border-gray-200 bg-white hover:border-gray-300';
+                if (badgeReg) badgeReg.classList.remove('hidden');
+                if (badgeLog) badgeLog.classList.add('hidden');
+                panelReg.classList.remove('hidden');
+                panelLog.classList.add('hidden');
+            } else {
+                btnLog.className = 'text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border-2 border-brand-400 bg-amber-50/20 ring-4 ring-brand-100/70';
+                btnReg.className = 'text-left rounded-xl p-4 transition-all duration-200 cursor-pointer border border-gray-200 bg-white hover:border-gray-300';
+                if (badgeLog) badgeLog.classList.remove('hidden');
+                if (badgeReg) badgeReg.classList.add('hidden');
+                panelLog.classList.remove('hidden');
+                panelReg.classList.add('hidden');
+            }
+        };
+
+        // Eye toggle for password inputs in guest checkout
+        document.querySelectorAll('.checkout-pass-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+                const isPass = input.type === 'password';
+                input.type = isPass ? 'text' : 'password';
+                const eyeOpen = btn.querySelector('.eye-open');
+                const eyeClosed = btn.querySelector('.eye-closed');
+                if (eyeOpen && eyeClosed) {
+                    eyeOpen.classList.toggle('hidden', isPass);
+                    eyeClosed.classList.toggle('hidden', !isPass);
+                }
+            });
+        });
+
+        // Submit checkout registration via AJAX
+        window.submitCheckoutRegister = async function() {
+            const btn = document.getElementById('btn-submit-checkout-register');
+            const alertBox = document.getElementById('checkout-reg-alert');
+            const name = document.getElementById('checkout-reg-name');
+            const email = document.getElementById('checkout-reg-email');
+            const phone = document.getElementById('checkout-reg-phone');
+            const password = document.getElementById('checkout-reg-password');
+            const passwordConfirmation = document.getElementById('checkout-reg-password-confirmation');
+            const terms = document.getElementById('checkout-reg-terms');
+
+            // Reset errors
+            ['name', 'email', 'phone', 'password', 'terms'].forEach(f => {
+                const el = document.getElementById(`checkout-reg-err-${f}`);
+                if (el) { el.textContent = ''; el.classList.add('hidden'); }
+                const inp = document.getElementById(`checkout-reg-${f}`);
+                if (inp) inp.classList.remove('border-red-400', 'ring-1', 'ring-red-400');
+            });
+            if (alertBox) {
+                alertBox.className = 'hidden mb-4 p-3 rounded-lg text-xs leading-relaxed';
+                alertBox.innerHTML = '';
+            }
+
+            if (!terms || !terms.checked) {
+                const errTerms = document.getElementById('checkout-reg-err-terms');
+                if (errTerms) {
+                    errTerms.textContent = 'Please accept the Terms of Service to continue.';
+                    errTerms.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const payload = {
+                account_type: 'customer',
+                name: name ? name.value.trim() : '',
+                email: email ? email.value.trim() : '',
+                phone: phone ? phone.value.trim() : '',
+                password: password ? password.value : '',
+                password_confirmation: passwordConfirmation ? passwordConfirmation.value : '',
+                terms: 1
+            };
+
+            const btnText = btn?.querySelector('.btn-text');
+            const btnLoader = btn?.querySelector('.btn-loader');
+            if (btn) btn.disabled = true;
+            if (btnText) btnText.classList.add('hidden');
+            if (btnLoader) { btnLoader.classList.remove('hidden'); btnLoader.classList.add('inline-flex'); }
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const res = await fetch("{{ route('register') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 422 && data.errors) {
+                        let messages = [];
+                        Object.keys(data.errors).forEach(key => {
+                            const errEl = document.getElementById(`checkout-reg-err-${key}`);
+                            if (errEl) {
+                                errEl.textContent = data.errors[key][0];
+                                errEl.classList.remove('hidden');
+                            }
+                            const inp = document.getElementById(`checkout-reg-${key}`);
+                            if (inp) inp.classList.add('border-red-400', 'ring-1', 'ring-red-400');
+                            messages.push(data.errors[key][0]);
+                        });
+                        if (alertBox) {
+                            alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                            alertBox.innerHTML = `<strong>Please fix the errors below:</strong><br>${messages.join('<br>')}`;
+                        }
+                    } else {
+                        if (alertBox) {
+                            alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                            alertBox.textContent = data.message || 'Registration failed. Please check your details and try again.';
+                        }
+                    }
+                    return;
+                }
+
+                if (alertBox) {
+                    alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
+                    alertBox.textContent = 'Account created successfully! Updating checkout...';
+                }
+
+                // If new address form name/phone are empty, prefill them
+                const shipName = document.querySelector('input[name="shipping[name]"]');
+                const shipPhone = document.querySelector('input[name="shipping[phone]"]');
+                if (shipName && !shipName.value) shipName.value = payload.name;
+                if (shipPhone && !shipPhone.value) shipPhone.value = payload.phone;
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 400);
+            } catch (err) {
+                console.error('Registration error:', err);
+                if (alertBox) {
+                    alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                    alertBox.textContent = 'An unexpected error occurred. Please try again.';
+                }
+            } finally {
+                if (btn) btn.disabled = false;
+                if (btnText) btnText.classList.remove('hidden');
+                if (btnLoader) { btnLoader.classList.add('hidden'); btnLoader.classList.remove('inline-flex'); }
+            }
+        };
+
+        // Submit checkout login via AJAX
+        window.submitCheckoutLogin = async function() {
+            const btn = document.getElementById('btn-submit-checkout-login');
+            const alertBox = document.getElementById('checkout-login-alert');
+            const loginInput = document.getElementById('checkout-login-id');
+            const passInput = document.getElementById('checkout-login-password');
+            const rememberInput = document.getElementById('checkout-login-remember');
+
+            // Reset errors
+            ['id', 'password'].forEach(f => {
+                const el = document.getElementById(`checkout-login-err-${f}`);
+                if (el) { el.textContent = ''; el.classList.add('hidden'); }
+            });
+            if (loginInput) loginInput.classList.remove('border-red-400', 'ring-1', 'ring-red-400');
+            if (passInput) passInput.classList.remove('border-red-400', 'ring-1', 'ring-red-400');
+            if (alertBox) {
+                alertBox.className = 'hidden mb-4 p-3 rounded-lg text-xs leading-relaxed';
+                alertBox.innerHTML = '';
+            }
+
+            const payload = {
+                login: loginInput ? loginInput.value.trim() : '',
+                password: passInput ? passInput.value : '',
+                remember: rememberInput && rememberInput.checked ? 1 : 0
+            };
+
+            const btnText = btn?.querySelector('.btn-text');
+            const btnLoader = btn?.querySelector('.btn-loader');
+            if (btn) btn.disabled = true;
+            if (btnText) btnText.classList.add('hidden');
+            if (btnLoader) { btnLoader.classList.remove('hidden'); btnLoader.classList.add('inline-flex'); }
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const res = await fetch("{{ route('login') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 422 && data.errors) {
+                        let msg = data.errors.login ? data.errors.login[0] : (data.errors.password ? data.errors.password[0] : (data.message || 'Invalid credentials.'));
+                        if (alertBox) {
+                            alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                            alertBox.textContent = msg;
+                        }
+                        if (loginInput) loginInput.classList.add('border-red-400', 'ring-1', 'ring-red-400');
+                    } else {
+                        if (alertBox) {
+                            alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                            alertBox.textContent = data.message || 'Sign in failed. Please check your credentials.';
+                        }
+                    }
+                    return;
+                }
+
+                if (alertBox) {
+                    alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium';
+                    alertBox.textContent = 'Signed in successfully! Loading your saved details...';
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 400);
+            } catch (err) {
+                console.error('Login error:', err);
+                if (alertBox) {
+                    alertBox.className = 'mb-4 p-3 rounded-lg text-xs leading-relaxed bg-red-50 text-red-800 border border-red-200';
+                    alertBox.textContent = 'An unexpected error occurred. Please try again.';
+                }
+            } finally {
+                if (btn) btn.disabled = false;
+                if (btnText) btnText.classList.remove('hidden');
+                if (btnLoader) { btnLoader.classList.add('hidden'); btnLoader.classList.remove('inline-flex'); }
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const addressRadios = document.querySelectorAll('.shipping-address-radio');
             const newAddressFields = document.getElementById('new-address-fields');

@@ -21,48 +21,48 @@
             [
                 'label' => 'Shopping',
                 'items' => [
-                    ['route' => 'account.orders.index', 'label' => 'My Purchases', 'icon' => $icon['shopping-bag']],
+                    ['route' => 'account.orders.index', 'label' => 'My Purchases', 'icon' => $icon['shopping-bag'], 'permission' => 'orders.manage'],
                     ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
                 ],
             ],
             [
                 'label' => 'Listings',
                 'items' => [
-                    ['route' => 'saler.products.index', 'label' => 'Products', 'icon' => $icon['box']],
-                    ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
+                    ['route' => 'saler.products.index', 'label' => 'Products', 'icon' => $icon['box'], 'permission' => 'products.manage'],
+                    ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag'], 'permission' => 'inventory.manage'],
                 ],
             ],
             [
                 'label' => 'Verification',
                 'items' => [
-                    ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield']],
-                    ['route' => 'saler.appointments.index', 'label' => 'Appointments', 'icon' => $icon['calendar']],
+                    ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield'], 'permission' => 'verifications.inspect'],
+                    ['route' => 'saler.appointments.index', 'label' => 'Appointments', 'icon' => $icon['calendar'], 'permission' => 'verifications.inspect'],
                 ],
             ],
             [
                 'label' => 'Sales',
                 'items' => [
-                    ['route' => 'saler.orders.index', 'label' => 'Orders', 'icon' => $icon['shopping-bag']],
-                    ['route' => 'saler.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star']],
-                    ['route' => 'saler.payment-verifications.index', 'label' => 'Payment Verifications', 'icon' => $icon['banknotes']],
-                    ['route' => 'saler.refunds.index', 'label' => 'Refunds', 'icon' => $icon['banknotes']],
+                    ['route' => 'saler.orders.index', 'label' => 'Orders', 'icon' => $icon['shopping-bag'], 'permission' => 'orders.manage'],
+                    ['route' => 'saler.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star'], 'permission' => 'reviews.manage'],
+                    ['route' => 'saler.payment-verifications.index', 'label' => 'Payment Verifications', 'icon' => $icon['banknotes'], 'permission' => 'payments.manage'],
+                    ['route' => 'saler.refunds.index', 'label' => 'Refunds', 'icon' => $icon['banknotes'], 'permission' => 'payments.manage'],
                 ],
             ],
             [
                 'label' => 'Store',
                 'items' => [
-                    ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog']],
+                    ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog'], 'permission' => 'products.manage'],
                     ['route' => 'saler.subscriptions.index', 'label' => 'Subscriptions', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],
                     ['route' => 'saler.payment-settings.edit', 'label' => 'Payment Settings', 'icon' => $icon['banknotes'], 'permission' => 'payments.manage'],
-                    ['route' => 'saler.payouts.index', 'label' => 'Payouts', 'icon' => $icon['wallet']],
+                    ['route' => 'saler.payouts.index', 'label' => 'Payouts', 'icon' => $icon['wallet'], 'permission' => 'payments.manage'],
                 ],
             ],
             [
                 'label' => 'Support',
                 'items' => [
-                    ['route' => 'saler.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],
-                    ['route' => 'saler.support.index', 'label' => 'Support', 'icon' => $icon['support']],
-                    ['route' => 'saler.reports.index', 'label' => 'Reports', 'icon' => $icon['chart']],
+                    ['route' => 'saler.messages.index', 'label' => 'Messages', 'icon' => $icon['chat'], 'permission' => 'chat.access'],
+                    ['route' => 'saler.support.index', 'label' => 'Support', 'icon' => $icon['support'], 'permission' => 'support.manage'],
+                    ['route' => 'saler.reports.index', 'label' => 'Reports', 'icon' => $icon['chart'], 'permission' => 'reports.view'],
                 ],
             ],
         ];

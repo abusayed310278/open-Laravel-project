@@ -25,7 +25,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $sessionId = $request->session()->get('cart_session_id');
 
@@ -41,6 +41,13 @@ class AuthenticatedSessionController extends Controller
 
         $intended = $request->session()->get('url.intended');
         $dashboard = route($request->user()->role->dashboardRoute(), absolute: false);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => $intended ?: $dashboard,
+            ]);
+        }
 
         if (! $intended || $intended === url('/') || $intended === url('/login')) {
             return redirect()->to($dashboard);

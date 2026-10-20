@@ -21,28 +21,28 @@
             [
                 'label' => 'Catalog',
                 'items' => [
-                    ['route' => 'saler.products.index', 'label' => 'My Products', 'icon' => $icon['box']],
-                    ['route' => 'saler.orders.index', 'label' => 'Sales Orders', 'icon' => $icon['shopping-bag']],
-                    ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag']],
-                    ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield']],
-                    ['route' => 'saler.payouts.index', 'label' => 'Wallet & Payouts', 'icon' => $icon['wallet']],
-                    ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog']],
+                    ['route' => 'saler.products.index', 'label' => 'My Products', 'icon' => $icon['box'], 'permission' => 'products.manage'],
+                    ['route' => 'saler.orders.index', 'label' => 'Sales Orders', 'icon' => $icon['shopping-bag'], 'permission' => 'orders.manage'],
+                    ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag'], 'permission' => 'inventory.manage'],
+                    ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield'], 'permission' => 'verifications.inspect'],
+                    ['route' => 'saler.payouts.index', 'label' => 'Wallet & Payouts', 'icon' => $icon['wallet'], 'permission' => 'payments.manage'],
+                    ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog'], 'permission' => 'products.manage'],
                 ],
             ],
             [
                 'label' => 'Shopping',
                 'items' => [
-                    ['route' => 'account.orders.index', 'label' => 'My Orders', 'icon' => $icon['shopping-bag']],
+                    ['route' => 'account.orders.index', 'label' => 'My Orders', 'icon' => $icon['shopping-bag'], 'permission' => 'orders.manage'],
                     ['route' => 'account.wishlist.index', 'label' => 'Wishlist', 'icon' => $icon['heart']],
-                    ['route' => 'account.returns.index', 'label' => 'Returns', 'icon' => $icon['undo']],
+                    ['route' => 'account.returns.index', 'label' => 'Returns', 'icon' => $icon['undo'], 'permission' => 'orders.manage'],
                 ],
             ],
             [
                 'label' => 'Engagement',
                 'items' => [
-                    ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat']],
-                    ['route' => 'account.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star']],
-                    ['route' => 'account.support.index', 'label' => 'Support', 'icon' => $icon['support']],
+                    ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat'], 'permission' => 'chat.access'],
+                    ['route' => 'account.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star'], 'permission' => 'reviews.manage'],
+                    ['route' => 'account.support.index', 'label' => 'Support', 'icon' => $icon['support'], 'permission' => 'support.manage'],
                 ],
             ],
         ];

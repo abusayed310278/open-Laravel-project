@@ -229,7 +229,14 @@
             </p>
 
             <x-input label="Publishable Key (pk_live_... / pk_test_...)" name="stripe_publishable_key" type="text" :value="old('stripe_publishable_key', $settings->stripe_publishable_key)" placeholder="pk_test_..." required />
+            @error('stripe_publishable_key')
+                <p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>
+            @enderror
+
             <x-input label="Secret Key (sk_live_... / sk_test_...)" name="stripe_secret_key" type="password" :value="old('stripe_secret_key', $settings->stripe_secret_key)" placeholder="sk_test_..." required />
+            @error('stripe_secret_key')
+                <p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>
+            @enderror
 
             <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
                 <button type="button" data-modal-close class="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition cursor-pointer">

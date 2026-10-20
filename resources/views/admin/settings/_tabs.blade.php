@@ -21,7 +21,6 @@
                 'newsletter' => ['label' => 'Newsletter', 'route' => 'admin.settings.newsletter', 'desc' => 'Email subscriber lead section'],
                 'verified-badge' => ['label' => 'Verified Badge', 'route' => 'admin.settings.verified-badge', 'desc' => 'Inspection badge settings'],
                 'footericon' => ['label' => 'Footer & Icon', 'route' => 'admin.settings.footericon', 'desc' => 'Footer links, icons & background'],
-                'app-links' => ['label' => 'App Links', 'route' => 'admin.settings.app-links', 'desc' => 'Mobile app download buttons'],
                 'seller-banner' => ['label' => 'Seller Banner', 'route' => 'admin.settings.seller-banner', 'desc' => 'Seller recruitment promos'],
             ],
         ],

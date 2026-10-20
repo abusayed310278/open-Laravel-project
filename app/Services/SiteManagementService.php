@@ -40,6 +40,10 @@ class SiteManagementService
      */
     public function getMenuForRole(string $roleSlug): Collection
     {
+        if (in_array($roleSlug, ['saler', 'seller', 'user'], true)) {
+            $roleSlug = 'customer';
+        }
+
         return $this->rememberCollection("dashboard_menu_{$roleSlug}", function () use ($roleSlug) {
             return DashboardMenu::forRole($roleSlug)->enabled()->ordered()->get();
         });
@@ -100,6 +104,19 @@ class SiteManagementService
     {
         $role = Role::findOrFail($roleId);
         $role->permissions()->sync($permissionIds);
+
+        // Keep customer and legacy saler roles fully synchronized
+        if ($role->slug === 'customer') {
+            $salerRole = Role::where('slug', 'saler')->first();
+            if ($salerRole) {
+                $salerRole->permissions()->sync($permissionIds);
+            }
+        } elseif ($role->slug === 'saler') {
+            $custRole = Role::where('slug', 'customer')->first();
+            if ($custRole) {
+                $custRole->permissions()->sync($permissionIds);
+            }
+        }
 
         $this->clearCache();
 
@@ -167,9 +184,10 @@ class SiteManagementService
         Cache::forget('site_feature_group_homepage');
         Cache::forget('site_feature_group_product_page');
 
-        $roles = ['admin', 'business', 'saler', 'verifier', 'customer'];
+        $roles = ['admin', 'business', 'saler', 'verifier', 'customer', 'user', 'seller'];
         foreach ($roles as $r) {
             Cache::forget("dashboard_menu_{$r}");
+            Cache::forget("role_permissions_{$r}");
         }
     }
 }

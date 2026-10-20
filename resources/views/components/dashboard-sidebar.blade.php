@@ -77,6 +77,9 @@
     @php
         $user = auth()->user();
         $userRoleSlug = $roleSlug ?? ($user?->role?->value ?? $user?->roleModel?->slug ?? null);
+        if (in_array($userRoleSlug, ['saler', 'seller', 'user'], true)) {
+            $userRoleSlug = 'customer';
+        }
         $siteMgmt = app(\App\Services\SiteManagementService::class);
         $dynamicMenus = $userRoleSlug ? $siteMgmt->getMenuForRole($userRoleSlug) : collect();
 

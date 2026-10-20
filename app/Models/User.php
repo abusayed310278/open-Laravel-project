@@ -225,14 +225,19 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function hasPermission(string $permissionSlug): bool
     {
-        $roleSlug = $this->role?->value ?? $this->role;
-        $role = Role::where('slug', $roleSlug)->first();
+        $roleSlug = $this->role?->value ?? (string) $this->role;
 
-        if (!$role) {
-            return false;
+        // Unify saler/seller/user to customer so admin customer role permissions apply to all
+        if (in_array($roleSlug, ['saler', 'seller', 'user'], true)) {
+            $roleSlug = 'customer';
         }
 
-        return $role->permissions()->where('slug', $permissionSlug)->exists();
+        $permissions = \Illuminate\Support\Facades\Cache::remember("role_permissions_{$roleSlug}", 86400, function () use ($roleSlug) {
+            $role = Role::where('slug', $roleSlug)->with('permissions')->first();
+            return $role ? $role->permissions->pluck('slug')->toArray() : [];
+        });
+
+        return in_array($permissionSlug, $permissions, true);
     }
 
     /**

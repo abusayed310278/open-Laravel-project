@@ -10,7 +10,7 @@
         <x-alert type="success" class="mb-5">{{ $value }}</x-alert>
     @endsession
 
-    <form method="POST" action="{{ route('login') }}" class="space-y-4">
+    <form method="POST" action="{{ route('login') }}" class="space-y-4" id="login-form">
         @csrf
 
         <x-input label="Email or phone number" name="login" type="text" autofocus autocomplete="username" :value="old('login')" />
@@ -19,7 +19,7 @@
             <div class="flex items-center justify-between mb-1.5">
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                 @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="text-xs text-brand-600 hover:underline">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" style="color: #000080;" class="text-xs font-semibold hover:underline">Forgot password?</a>
                 @endif
             </div>
             <div class="relative">
@@ -45,7 +45,16 @@
             Remember Me For 30 Days.
         </label>
 
-        <x-button type="submit" class="w-full">Log In</x-button>
+        <x-button type="submit" class="w-full transition-all duration-150 active:scale-[0.98] cursor-pointer shadow-xs hover:shadow-sm" id="login-submit-btn">
+            <span class="btn-text">Log In</span>
+            <span class="btn-loader hidden items-center justify-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span>Logging in...</span>
+            </span>
+        </x-button>
     </form>
 
     <div class="mt-6">
@@ -58,7 +67,7 @@
         <div class="grid grid-cols-2 gap-3 mt-4">
             <a
                 href="{{ Route::has('auth.google') ? route('auth.google') : '#' }}"
-                class="flex items-center justify-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50/80 hover:border-gray-300 transition-all shadow-xs cursor-pointer group"
+                class="flex items-center justify-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50/80 hover:border-gray-300 transition-all shadow-xs cursor-pointer group active:scale-[0.98]"
             >
                 <svg class="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -71,7 +80,7 @@
 
             <a
                 href="{{ Route::has('auth.facebook') ? route('auth.facebook') : '#' }}"
-                class="flex items-center justify-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50/80 hover:border-gray-300 transition-all shadow-xs cursor-pointer group"
+                class="flex items-center justify-center gap-2.5 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50/80 hover:border-gray-300 transition-all shadow-xs cursor-pointer group active:scale-[0.98]"
             >
                 <svg class="w-5 h-5 shrink-0 fill-[#1877F2] group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -83,7 +92,7 @@
 
     <p class="text-center text-sm text-gray-500 mt-6">
         Don't have an account?
-        <a href="{{ route('register') }}" class="text-brand-600 font-medium hover:underline">Register</a>
+        <a href="{{ route('register') }}" style="color: #000080;" class="font-bold hover:underline transition-colors">Register</a>
     </p>
 
     <script>
@@ -98,5 +107,21 @@
                 }
             });
         });
+
+        // Submit button loading animation
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-submit-btn');
+        if (loginForm && loginBtn) {
+            loginForm.addEventListener('submit', () => {
+                const btnText = loginBtn.querySelector('.btn-text');
+                const btnLoader = loginBtn.querySelector('.btn-loader');
+                if (btnText && btnLoader) {
+                    btnText.classList.add('hidden');
+                    btnLoader.classList.remove('hidden');
+                    btnLoader.classList.add('inline-flex');
+                }
+                loginBtn.classList.add('opacity-90', 'cursor-wait');
+            });
+        }
     </script>
 @endsection

@@ -26,7 +26,9 @@ class CheckPermission
                 return response()->json(['message' => 'Unauthorized permission.'], 403);
             }
 
-            abort(403, "Unauthorized. Required permission: '{$permission}'");
+            $dashboardRoute = $user->role?->dashboardRoute() ?? 'account.dashboard';
+            return redirect()->route($dashboardRoute)
+                ->with('error', "Access restricted: You do not have permission to access that section.");
         }
 
         return $next($request);

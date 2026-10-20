@@ -17,6 +17,6 @@
     </form>
 
     <p class="text-center text-sm text-gray-500 mt-6">
-        <a href="{{ route('login') }}" class="text-brand-600 font-medium hover:underline">Back to login</a>
+        <a href="{{ route('login') }}" style="color: #000080;" class="font-bold hover:underline">Back to login</a>
     </p>
 @endsection
