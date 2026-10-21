@@ -62,7 +62,7 @@
                 $siteIcon = \App\Support\MediaUrl::resolve(setting('site_icon')) ?: asset('icon.png');
             @endphp
             @if (!empty($customLogo))
-                <img src="{{ $customLogo }}" alt="{{ config('app.name', 'Openbox') }}" class="sidebar-logo-full h-8 w-auto max-w-[140px] object-contain shrink-0" />
+                <img src="{{ $customLogo }}" alt="{{ config('app.name', 'Openbox') }}" class="sidebar-logo-full h-12 w-auto max-w-[160px] object-contain shrink-0" />
             @else
                 <div class="sidebar-logo-full w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
                     <img src="{{ $siteIcon }}" alt="{{ config('app.name', 'Openbox') }}" class="w-8 h-8 object-contain" width="32" height="32" />
