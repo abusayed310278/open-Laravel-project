@@ -16,9 +16,16 @@
         }
         .sidebar-collapsed #sidebar .sidebar-brand-text,
         .sidebar-collapsed #sidebar .sidebar-group-label,
-        .sidebar-collapsed #sidebar .sidebar-text {
+        .sidebar-collapsed #sidebar .sidebar-text,
+        .sidebar-collapsed #sidebar .sidebar-logo-full {
             display: none !important;
             opacity: 0 !important;
+        }
+        .sidebar-logo-icon {
+            display: none;
+        }
+        .sidebar-collapsed #sidebar .sidebar-logo-icon {
+            display: flex !important;
         }
         .sidebar-collapsed #sidebar .sidebar-header-container {
             padding-left: 0.5rem !important;
@@ -55,9 +62,9 @@
                 $siteIcon = \App\Support\MediaUrl::resolve(setting('site_icon')) ?: asset('icon.png');
             @endphp
             @if (!empty($customLogo))
-                <img src="{{ $customLogo }}" alt="{{ config('app.name', 'Openbox') }}" class="h-8 w-auto max-w-[140px] object-contain shrink-0" />
+                <img src="{{ $customLogo }}" alt="{{ config('app.name', 'Openbox') }}" class="sidebar-logo-full h-8 w-auto max-w-[140px] object-contain shrink-0" />
             @else
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="sidebar-logo-full w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
                     <img src="{{ $siteIcon }}" alt="{{ config('app.name', 'Openbox') }}" class="w-8 h-8 object-contain" width="32" height="32" />
                 </div>
                 <div class="sidebar-brand-text flex flex-col min-w-0 transition-opacity duration-200">
@@ -65,6 +72,10 @@
                     <span class="text-[10px] text-gray-400 font-medium truncate">{{ $portalLabel }}</span>
                 </div>
             @endif
+
+            <div class="sidebar-logo-icon w-8 h-8 rounded-lg items-center justify-center flex-shrink-0">
+                <img src="{{ $siteIcon }}" alt="{{ config('app.name', 'Openbox') }}" class="w-8 h-8 object-contain" width="32" height="32" />
+            </div>
         </a>
 
         {{-- Mobile Close Button --}}
