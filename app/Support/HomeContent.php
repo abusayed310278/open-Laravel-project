@@ -144,9 +144,39 @@ final class HomeContent
     }
 
     public const PROMO_DEFAULTS = [
-        1 => ['title' => "Laptops\nfor Work & Study", 'text' => "Premium performance\nat lower prices.", 'button' => 'Shop Laptops'],
-        2 => ['title' => 'Smartphones', 'text' => "Stay Connected\nfor Less.", 'button' => 'Shop Phones'],
-        3 => ['title' => 'Sell Your Device', 'text' => "Turn your unused electronics\ninto cash.", 'button' => 'Start Selling'],
+        1 => [
+            'title' => "Laptops\nfor Work & Study",
+            'text' => "Premium performance\nat lower prices.",
+            'button' => 'Shop Laptops',
+            'bg_color_start' => '#ad7f67',
+            'bg_color_end' => '#e8dedc',
+            'title_color' => '#030712',
+            'text_color' => '#1f2937',
+            'button_bg_color' => '#fef08a',
+            'button_text_color' => '#000000',
+        ],
+        2 => [
+            'title' => 'Smartphones',
+            'text' => "Stay Connected\nfor Less.",
+            'button' => 'Shop Phones',
+            'bg_color_start' => '#ebeef3',
+            'bg_color_end' => '#ccd6e2',
+            'title_color' => '#030712',
+            'text_color' => '#1f2937',
+            'button_bg_color' => '#fef08a',
+            'button_text_color' => '#000000',
+        ],
+        3 => [
+            'title' => 'Sell Your Device',
+            'text' => "Turn your unused electronics\ninto cash.",
+            'button' => 'Start Selling',
+            'bg_color_start' => '#6283c4',
+            'bg_color_end' => '#c1d3f7',
+            'title_color' => '#030712',
+            'text_color' => '#1f2937',
+            'button_bg_color' => '#fef08a',
+            'button_text_color' => '#000000',
+        ],
     ];
 
     public const NEWSLETTER_DEFAULTS = [
@@ -271,18 +301,55 @@ final class HomeContent
     }
 
     /**
-     * @return array<int, array{title: string, text: string, button: string, product_id: ?int}>
+     * @return array<int, array{title: string, text: string, button: string, product_id: ?int, bg_color_start: string, bg_color_end: string, title_color: string, text_color: string, button_bg_color: string, button_text_color: string}>
      */
     public static function promoCards(): array
     {
         $cards = [];
         foreach (self::PROMO_DEFAULTS as $number => $default) {
             $productId = setting("home_promo_{$number}_product");
+
+            $bgStart = setting("home_promo_{$number}_bg_color_start") ?: $default['bg_color_start'];
+            if (filled($bgStart) && ! str_starts_with($bgStart, '#') && (strlen($bgStart) === 6 || strlen($bgStart) === 3)) {
+                $bgStart = '#' . $bgStart;
+            }
+
+            $bgEnd = setting("home_promo_{$number}_bg_color_end") ?: $default['bg_color_end'];
+            if (filled($bgEnd) && ! str_starts_with($bgEnd, '#') && (strlen($bgEnd) === 6 || strlen($bgEnd) === 3)) {
+                $bgEnd = '#' . $bgEnd;
+            }
+
+            $titleColor = setting("home_promo_{$number}_title_color") ?: $default['title_color'];
+            if (filled($titleColor) && ! str_starts_with($titleColor, '#') && (strlen($titleColor) === 6 || strlen($titleColor) === 3)) {
+                $titleColor = '#' . $titleColor;
+            }
+
+            $textColor = setting("home_promo_{$number}_text_color") ?: $default['text_color'];
+            if (filled($textColor) && ! str_starts_with($textColor, '#') && (strlen($textColor) === 6 || strlen($textColor) === 3)) {
+                $textColor = '#' . $textColor;
+            }
+
+            $btnBg = setting("home_promo_{$number}_button_bg_color") ?: $default['button_bg_color'];
+            if (filled($btnBg) && ! str_starts_with($btnBg, '#') && (strlen($btnBg) === 6 || strlen($btnBg) === 3)) {
+                $btnBg = '#' . $btnBg;
+            }
+
+            $btnText = setting("home_promo_{$number}_button_text_color") ?: $default['button_text_color'];
+            if (filled($btnText) && ! str_starts_with($btnText, '#') && (strlen($btnText) === 6 || strlen($btnText) === 3)) {
+                $btnText = '#' . $btnText;
+            }
+
             $cards[$number] = [
                 'title' => setting("home_promo_{$number}_title") ?: $default['title'],
                 'text' => setting("home_promo_{$number}_text") ?: $default['text'],
                 'button' => setting("home_promo_{$number}_button") ?: $default['button'],
                 'product_id' => filled($productId) ? (int) $productId : null,
+                'bg_color_start' => $bgStart,
+                'bg_color_end' => $bgEnd,
+                'title_color' => $titleColor,
+                'text_color' => $textColor,
+                'button_bg_color' => $btnBg,
+                'button_text_color' => $btnText,
             ];
         }
 

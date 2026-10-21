@@ -139,10 +139,10 @@
                 <div class="flex items-center gap-5">
                     <div class="relative w-20 h-20 rounded-full bg-brand-400 text-gray-950 font-bold text-2xl flex items-center justify-center overflow-hidden shadow-xs flex-shrink-0">
                         @if ($avatarUrl)
-                            <img id="avatar-preview-img" src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                            <img id="avatar-preview-img" src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="w-full h-full object-cover object-top">
                             <span id="avatar-preview-initials" class="hidden">{{ $initials }}</span>
                         @else
-                            <img id="avatar-preview-img" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+                            <img id="avatar-preview-img" src="" alt="Avatar" class="w-full h-full object-cover object-top hidden">
                             <span id="avatar-preview-initials">{{ $initials }}</span>
                         @endif
                     </div>

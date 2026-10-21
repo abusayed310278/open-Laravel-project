@@ -50,8 +50,8 @@ class WishlistController extends Controller
     {
         $user = Auth::user();
 
-        if ($user && ! $user->isCustomer()) {
-            $msg = 'Only customer accounts can purchase items on the marketplace.';
+        if ($user && ! $user->canShop()) {
+            $msg = 'Only customer and store owner accounts can purchase items on the marketplace.';
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $msg], 403);
             }

@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\CartService;
+use App\Services\CheckoutService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +14,24 @@ use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    public function __construct(private readonly CartService $carts) {}
+    public function __construct(
+        private readonly CartService $carts,
+        private readonly CheckoutService $checkout,
+    ) {}
 
     public function index(): View
     {
         $cart = $this->currentCart();
+
+        if ($cart->items->isEmpty()) {
+            $user = Auth::user();
+            $recovered = $this->checkout->recoverPendingPaymentCart($user, session('pending_stripe_order_id'));
+            if ($recovered) {
+                session()->forget('pending_stripe_order_id');
+                session()->flash('info', 'Your payment was cancelled and your cart items have been restored.');
+                $cart->load('items.product');
+            }
+        }
 
         return view('cart.index', [
             'groups' => $this->carts->groupedBySeller($cart),
@@ -26,8 +40,8 @@ class CartController extends Controller
 
     public function store(Request $request, Product $product): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        if (Auth::check() && !Auth::user()->isCustomer()) {
-            $msg = 'Only customer accounts can purchase items on the marketplace.';
+        if (Auth::check() && !Auth::user()->canShop()) {
+            $msg = 'Only customer and store owner accounts can purchase items on the marketplace.';
 
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json([

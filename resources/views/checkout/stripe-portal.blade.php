@@ -131,7 +131,7 @@
             <div class="space-y-6">
                 <!-- Top Navigation & Badge -->
                 <div class="flex items-center justify-between">
-                    <a href="{{ route('checkout') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors group">
+                    <a href="{{ route('checkout.stripe-cancel', ['order' => $order, 'token' => request()->query('token')]) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors group">
                         <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
@@ -471,7 +471,7 @@
                 <!-- Footer Links & Info -->
                 <div class="text-center text-xs text-slate-400 space-y-1.5 pt-2 border-t border-slate-100">
                     <p>Powered by <strong class="text-slate-600 font-semibold">Stripe</strong> · <a href="#" class="hover:underline">Terms</a> · <a href="#" class="hover:underline">Privacy</a></p>
-                    <p><a href="{{ route('checkout') }}" class="text-slate-500 hover:text-slate-800 underline transition-colors">Cancel and return to Openbox Marketplace</a></p>
+                    <p><a href="{{ route('checkout.stripe-cancel', ['order' => $order, 'token' => request()->query('token')]) }}" class="text-slate-500 hover:text-slate-800 underline transition-colors">Cancel and return to Openbox Marketplace</a></p>
                 </div>
 
             </div>

@@ -30,8 +30,8 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
 
-        if ($user && ! $user->isCustomer()) {
-            return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
+        if ($user && ! $user->canShop()) {
+            return redirect()->route('shop')->with('error', 'Only customer and store owner accounts can purchase items on the marketplace.');
         }
 
         if (! $user) {
@@ -45,6 +45,15 @@ class CheckoutController extends Controller
 
         $cart = $user ? $this->carts->forUser($user) : $this->carts->forGuest($this->carts->sessionId());
 
+        if ($cart->items->isEmpty()) {
+            $recoveredOrder = $this->checkout->recoverPendingPaymentCart($user, session('pending_stripe_order_id'));
+            if ($recoveredOrder) {
+                session()->forget('pending_stripe_order_id');
+                session()->flash('info', 'Your payment was cancelled and your cart items have been restored.');
+                $cart->load('items.product');
+            }
+        }
+
         return view('checkout.index', [
             'summary' => $this->checkout->summary($cart),
             'addresses' => $user ? $user->addresses()->orderByDesc('is_default')->get() : collect(),
@@ -57,8 +66,8 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
 
-        if ($user && ! $user->isCustomer()) {
-            return redirect()->route('shop')->with('error', 'Only customer accounts can purchase items on the marketplace.');
+        if ($user && ! $user->canShop()) {
+            return redirect()->route('shop')->with('error', 'Only customer and store owner accounts can purchase items on the marketplace.');
         }
 
         $cart = $user ? $this->carts->forUser($user) : $this->carts->forGuest($this->carts->sessionId());
@@ -135,6 +144,7 @@ class CheckoutController extends Controller
         }
 
         if ($request->string('payment_method')->value() === PaymentMethod::Stripe->value) {
+            session(['pending_stripe_order_id' => $order->id]);
             $token = sha1($order->id . $order->order_number . config('app.key'));
             return redirect()->route('checkout.stripe-portal', ['order' => $order, 'token' => $token]);
         }
@@ -151,6 +161,18 @@ class CheckoutController extends Controller
         ]);
     }
 
+    public function stripeCancel(Request $request, Order $order): RedirectResponse
+    {
+        $this->authorizeOrderAccess($order);
+
+        $user = Auth::user() ?? $order->customer;
+        $this->checkout->restoreCartFromOrder($order);
+        $this->checkout->cancelUnconfirmedOrder($order, $user, 'Stripe payment was cancelled by customer.');
+        session()->forget('pending_stripe_order_id');
+
+        return redirect()->route('checkout')->with('info', 'Your payment was cancelled and your cart items have been restored. You can choose another payment method below.');
+    }
+
     public function stripeConfirm(Order $order): RedirectResponse
     {
         $this->authorizeOrderAccess($order);
@@ -158,6 +180,11 @@ class CheckoutController extends Controller
         foreach ($order->vendorOrders as $vendorOrder) {
             app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
         }
+
+        if ($order->customer) {
+            $this->carts->forUser($order->customer)->items()->delete();
+        }
+        session()->forget('pending_stripe_order_id');
 
         return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');
     }
@@ -169,6 +196,11 @@ class CheckoutController extends Controller
         foreach ($order->vendorOrders as $vendorOrder) {
             app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
         }
+
+        if ($order->customer) {
+            $this->carts->forUser($order->customer)->items()->delete();
+        }
+        session()->forget('pending_stripe_order_id');
 
         return redirect()->route('orders.confirmation', $order)->with('status', 'Payment completed via Stripe!');
     }

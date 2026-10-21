@@ -113,10 +113,10 @@
                             <span>Total</span>
                             <span class="text-gray-900 font-bold">$<span id="cart-grand-total">{{ number_format($grandTotal, 2) }}</span></span>
                         </div>
-                        @if (auth()->check() && !auth()->user()->isCustomer())
+                        @if (auth()->check() && !auth()->user()->canShop())
                             <div class="p-4 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium flex items-center gap-2 mb-3">
                                 <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>Purchasing is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
+                                <span>Purchasing is restricted to Customer and Store Owner accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                             </div>
                         @else
                             <x-button as="a" id="btn-proceed-checkout" :href="route('checkout')" class="w-full justify-center cursor-pointer">Proceed to Checkout</x-button>

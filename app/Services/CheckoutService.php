@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Enums\InventoryMovementType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\TransactionStatus;
 use App\Models\ActivityLog;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\VendorOrder;
 use App\Notifications\OrderPlaced;
@@ -242,6 +244,123 @@ class CheckoutService
 
             return $order->fresh(['vendorOrders.items', 'items']);
         });
+    }
+
+    /**
+     * Restore items from an order back into the customer's cart.
+     */
+    public function restoreCartFromOrder(Order $order, ?Cart $cart = null): Cart
+    {
+        $user = $order->customer;
+        $cart = $cart ?: ($user ? $this->cartService->forUser($user) : $this->cartService->forGuest($this->cartService->sessionId()));
+
+        $order->loadMissing('items.product');
+
+        foreach ($order->items as $orderItem) {
+            $cartItem = $cart->items()->firstOrNew([
+                'product_id' => $orderItem->product_id,
+                'variant_id' => $orderItem->variant_id,
+            ]);
+
+            $cartItem->quantity = ($cartItem->exists ? $cartItem->quantity : 0) + $orderItem->quantity;
+            $cartItem->price = $orderItem->unit_price;
+            $cartItem->payment_route = $orderItem->payment_route ?? 'cod';
+            $cartItem->save();
+        }
+
+        return $cart;
+    }
+
+    /**
+     * Cancel an order whose online payment was never completed and restore deducted inventory.
+     */
+    public function cancelUnconfirmedOrder(Order $order, ?User $actor = null, string $reason = 'Payment was cancelled by customer'): void
+    {
+        if ($order->status === OrderStatus::Cancelled) {
+            return;
+        }
+
+        DB::transaction(function () use ($order, $actor, $reason) {
+            $order->loadMissing('vendorOrders.items.product');
+
+            foreach ($order->vendorOrders as $vendorOrder) {
+                if ($vendorOrder->status !== OrderStatus::Cancelled) {
+                    foreach ($vendorOrder->items as $item) {
+                        if ($item->product) {
+                            $this->inventoryService->restore(
+                                $item->product,
+                                $item->quantity,
+                                InventoryMovementType::Return,
+                                $item,
+                                $actor,
+                                $reason
+                            );
+                        }
+                    }
+
+                    $vendorOrder->update(['status' => OrderStatus::Cancelled]);
+                    $vendorOrder->statusHistories()->create([
+                        'order_id' => $order->id,
+                        'status' => OrderStatus::Cancelled->value,
+                        'created_by' => $actor?->id,
+                        'notes' => $reason,
+                    ]);
+                }
+            }
+
+            $order->update(['status' => OrderStatus::Cancelled]);
+            $order->statusHistories()->create([
+                'status' => OrderStatus::Cancelled->value,
+                'created_by' => $actor?->id,
+                'notes' => $reason,
+            ]);
+
+            Transaction::where('order_id', $order->id)
+                ->whereIn('status', [TransactionStatus::Pending, TransactionStatus::Completed])
+                ->whereNull('provider_transaction_id')
+                ->update(['status' => TransactionStatus::Failed]);
+        });
+    }
+
+    /**
+     * Automatically detect and recover cart if the customer returns from an unconfirmed payment portal.
+     */
+    public function recoverPendingPaymentCart(?User $user, ?int $pendingOrderId = null): ?Order
+    {
+        $cart = $user ? $this->cartService->forUser($user) : $this->cartService->forGuest($this->cartService->sessionId());
+
+        // Only recover if the cart is currently empty
+        if ($cart->items()->exists()) {
+            return null;
+        }
+
+        $pendingOrder = null;
+
+        if ($pendingOrderId) {
+            $pendingOrder = Order::with('items.product', 'vendorOrders.items')->find($pendingOrderId);
+        } elseif ($user) {
+            $pendingOrder = Order::with('items.product', 'vendorOrders.items')
+                ->where('customer_id', $user->id)
+                ->where('created_at', '>=', now()->subHours(2))
+                ->whereHas('vendorOrders', fn ($q) => $q->whereIn('payment_method', ['stripe', 'paypal']))
+                ->whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Shipped, OrderStatus::Cancelled])
+                ->whereDoesntHave('transactions', fn ($q) => $q->where('status', TransactionStatus::Completed)->whereNotNull('provider_transaction_id'))
+                ->latest()
+                ->first();
+        }
+
+        if (! $pendingOrder || $pendingOrder->status === OrderStatus::Cancelled) {
+            return null;
+        }
+
+        if ($user && $pendingOrder->customer_id !== $user->id) {
+            return null;
+        }
+
+        $this->restoreCartFromOrder($pendingOrder, $cart);
+        $this->cancelUnconfirmedOrder($pendingOrder, $user ?? $pendingOrder->customer, 'Customer returned to checkout without completing payment.');
+
+        return $pendingOrder;
     }
 
     private function nextOrderNumber(): string

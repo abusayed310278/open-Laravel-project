@@ -616,15 +616,24 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                 @foreach ($promoCards as $n => $card)
                     @continue(! $card['product'])
-                    @php $style = $promoStyles[$n]; @endphp
-                    <a href="{{ route('products.show', $card['product']) }}" title="{{ $card['product']->title }}" style="{{ $style['gradient'] }}" class="group relative flex items-center justify-between gap-3 h-44 rounded-xl overflow-hidden px-6 py-5 shadow-2xs hover:shadow-lg transition-shadow">
+                    @php
+                        $style = $promoStyles[$n] ?? [];
+                        $bgStart = $card['bg_color_start'] ?? ($n === 1 ? '#ad7f67' : ($n === 2 ? '#ebeef3' : '#6283c4'));
+                        $bgEnd = $card['bg_color_end'] ?? ($n === 1 ? '#e8dedc' : ($n === 2 ? '#ccd6e2' : '#c1d3f7'));
+                        $gradientStyle = "background: linear-gradient(135deg, {$bgStart} 0%, {$bgEnd} 100%);";
+                        $titleColor = $card['title_color'] ?? '#030712';
+                        $textColor = $card['text_color'] ?? '#1f2937';
+                        $btnBg = $card['button_bg_color'] ?? null;
+                        $btnText = $card['button_text_color'] ?? null;
+                    @endphp
+                    <a href="{{ route('products.show', $card['product']) }}" title="{{ $card['product']->title }}" style="{{ $gradientStyle }}" class="group relative flex items-center justify-between gap-3 h-44 rounded-xl overflow-hidden px-6 py-5 shadow-2xs hover:shadow-lg transition-shadow">
                         <div class="relative z-10 max-w-[58%] h-full flex flex-col justify-between py-1">
                             <div>
-                                <h3 class="text-xl font-extrabold leading-tight {{ $style['title'] }}">{!! nl2br(e($card['title'])) !!}</h3>
-                                <p class="{{ $style['body'] }} {{ $style['text'] }}">{!! nl2br(e($card['text'])) !!}</p>
+                                <h3 class="text-xl font-extrabold leading-tight promo-card-title" style="color: {{ $titleColor }};">{!! nl2br(e($card['title'])) !!}</h3>
+                                <p class="{{ $style['body'] ?? 'text-xs mt-1.5 leading-snug' }}" style="color: {{ $textColor }};">{!! nl2br(e($card['text'])) !!}</p>
                             </div>
                             <div class="pt-2">
-                                <span class="inline-flex items-center gap-2 promo-card-btn text-xs font-bold px-4 py-2 rounded-md transition-colors w-fit">{{ $card['button'] }} <span>→</span></span>
+                                <span class="inline-flex items-center gap-2 promo-card-btn text-xs font-bold px-4 py-2 rounded-md transition-colors w-fit" @if($btnBg || $btnText) style="{{ $btnBg ? "background-color: {$btnBg} !important;" : '' }} {{ $btnText ? "color: {$btnText} !important;" : '' }}" @endif>{{ $card['button'] }} <span>→</span></span>
                             </div>
                         </div>
                         @php

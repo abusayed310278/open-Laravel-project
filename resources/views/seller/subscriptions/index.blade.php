@@ -18,19 +18,18 @@
     @enderror
 
     @if ($current)
-        <div class="relative overflow-hidden bg-gray-900 rounded-2xl p-6 sm:p-7 mb-8">
-            <div class="absolute -top-16 -right-16 w-56 h-56 bg-brand-500/20 rounded-full blur-3xl"></div>
+        <div class="relative overflow-hidden bg-white border border-gray-100 rounded-2xl p-6 sm:p-7 mb-8 shadow-xs">
             <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 shrink-0 bg-brand-500/15 rounded-xl flex items-center justify-center text-brand-400">
+                    <div class="w-12 h-12 shrink-0 bg-brand-50 border border-brand-200/60 rounded-xl flex items-center justify-center text-brand-600">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.75a1.125 1.125 0 01-1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-3.75a1.125 1.125 0 00-1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125h-.75c-.621 0-1.125.504-1.125 1.125V18.75m9 0h-9M9 6.75V4.5a2.25 2.25 0 014.5 0v2.25m-4.5 0h4.5m-4.5 0a2.25 2.25 0 00-2.25 2.25v.75h9v-.75A2.25 2.25 0 0013.5 6.75" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-[11px] font-semibold text-brand-400 uppercase tracking-wide">Current Plan</p>
-                        <p class="text-xl font-bold text-white mt-0.5">{{ $current->plan->name }}</p>
-                        <p class="text-sm text-gray-400 mt-1">
+                        <p class="text-[11px] font-semibold text-brand-600 uppercase tracking-wide">Current Plan</p>
+                        <p class="text-xl font-bold text-gray-900 mt-0.5">{{ $current->plan->name }}</p>
+                        <p class="text-sm text-gray-500 mt-1">
                             @if ($current->plan->type->value === 'saler')
                                 {{ $current->credits?->remaining_credits ?? 0 }} of {{ $current->credits?->total_credits ?? 0 }} listing credits remaining
                             @else
@@ -42,7 +41,7 @@
                 @if ($current->auto_renew)
                     <form method="POST" action="{{ route($routePrefix.'.cancel') }}" data-confirm="Cancel your subscription?">
                         @csrf
-                        <x-button type="submit" variant="secondary" class="!border-white/15 !text-gray-200 hover:!bg-white/5">Cancel Plan</x-button>
+                        <x-button type="submit" variant="secondary">Cancel Plan</x-button>
                     </form>
                 @endif
             </div>

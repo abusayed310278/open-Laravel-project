@@ -29,9 +29,7 @@ class PaymentService
 
     public function recordPendingTransaction(VendorOrder $vendorOrder, string $provider): Transaction
     {
-        $status = in_array($provider, ['stripe', 'paypal'], true)
-            ? TransactionStatus::Completed
-            : TransactionStatus::Pending;
+        $status = TransactionStatus::Pending;
 
         $txn = Transaction::create([
             'transaction_number' => 'TXN-'.now()->format('Y').'-'.Str::upper(Str::random(8)),
@@ -44,11 +42,6 @@ class PaymentService
             'amount' => $vendorOrder->total,
             'status' => $status,
         ]);
-
-        if ($status === TransactionStatus::Completed) {
-            $this->invoiceService->markPaid($vendorOrder);
-            $this->commissionService->recordSaleForVendorOrder($vendorOrder);
-        }
 
         return $txn;
     }

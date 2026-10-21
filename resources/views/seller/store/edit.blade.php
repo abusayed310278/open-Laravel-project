@@ -359,12 +359,12 @@
                     <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-5 bg-gray-50/70 border border-gray-200/80 rounded-2xl">
                         <div class="relative w-24 h-24 rounded-full bg-white p-1 shadow-sm border border-gray-200 shrink-0 overflow-hidden">
                             @if ($currentAvatar)
-                                <img src="{{ \App\Support\MediaUrl::resolve($currentAvatar) }}" id="avatar_preview" alt="Owner Avatar" class="w-full h-full object-cover rounded-full">
+                                <img src="{{ \App\Support\MediaUrl::resolve($currentAvatar) }}" id="avatar_preview" alt="Owner Avatar" class="w-full h-full object-cover object-top rounded-full">
                             @else
                                 <div id="avatar_placeholder" class="w-full h-full bg-amber-100/80 rounded-full flex items-center justify-center text-amber-700 font-extrabold text-2xl uppercase">
                                     {{ substr($user->name, 0, 2) }}
                                 </div>
-                                <img src="" id="avatar_preview" alt="Owner Avatar" class="w-full h-full object-cover rounded-full hidden">
+                                <img src="" id="avatar_preview" alt="Owner Avatar" class="w-full h-full object-cover object-top rounded-full hidden">
                             @endif
                         </div>
 
@@ -857,24 +857,16 @@
                 if (!countrySelect || !citySelect) return;
 
                 try {
-                    const response = await fetch('https://countriesnow.space/api/v0.1/countries');
-                    const json = await response.json();
-
-                    if (json && json.data) {
-                        countriesData = json.data;
-                        initTomSelectInstances();
-                        populateCountries(initialCountry);
-                        if (initialCountry) {
-                            populateCities(initialCountry, initialCity);
-                        }
-                    }
+                    const response = await fetch('{{ asset('data/countries-cities.json') }}');
+                    countriesData = await response.json();
                 } catch (err) {
-                    console.warn('Unable to load online countries database, using fallback:', err);
-                    initTomSelectInstances();
-                    populateCountries(initialCountry);
-                    if (initialCity) {
-                        populateCities(initialCountry, initialCity);
-                    }
+                    console.warn('Unable to load countries/cities dataset:', err);
+                }
+
+                initTomSelectInstances();
+                populateCountries(initialCountry);
+                if (initialCountry) {
+                    populateCities(initialCountry, initialCity);
                 }
             }
 

@@ -203,10 +203,10 @@
                 @endif
 
                 {{-- Purchase actions --}}
-                @if (auth()->check() && !auth()->user()->isCustomer())
+                @if (auth()->check() && !auth()->user()->canShop())
                     <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium mb-4 flex items-center gap-2.5">
                         <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>Purchasing items is restricted to Customer accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
+                        <span>Purchasing items is restricted to Customer and Store Owner accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
                     </div>
                 @elseif (feature_enabled('product_buy_box'))
                     <form id="product-buy-box-form" method="POST" action="{{ route('cart.add', $product) }}">

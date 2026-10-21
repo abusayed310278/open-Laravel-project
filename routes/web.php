@@ -139,6 +139,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/wishlist/{product}/move-to-cart', [WishlistController::class, 'moveToCart'])->name('wishlist.move-to-cart');
 
     Route::get('/checkout/stripe-portal/{order}', [CheckoutController::class, 'stripePortal'])->name('checkout.stripe-portal');
+    Route::get('/checkout/stripe-cancel/{order}', [CheckoutController::class, 'stripeCancel'])->name('checkout.stripe-cancel');
     Route::post('/checkout/stripe-confirm/{order}', [CheckoutController::class, 'stripeConfirm'])->name('checkout.stripe-confirm');
     Route::get('/checkout/stripe-success/{order}', [CheckoutController::class, 'stripeSuccess'])->name('checkout.stripe-success');
     Route::get('/orders/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('orders.confirmation');
@@ -636,7 +637,7 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
 
 Route::middleware(['auth', 'verified', 'role:'.UserRole::Business->value, 'profile.complete'])
     ->prefix('business')->name('business.')->group(function () use ($sellerProductRoutes, $sellerCategoryRoutes, $sellerPaymentRoutes, $sellerOrderRoutes, $sellerCustomerRoutes, $sellerInventoryRoutes, $sellerReportRoutes, $messagingRoutes) {
-        Route::view('/', 'business.dashboard')->name('dashboard');
+        Route::get('/', [SellerDashboardController::class, 'businessDashboard'])->name('dashboard');
 
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
         Route::post('/verification', [VerificationController::class, 'store'])->name('verification.store');

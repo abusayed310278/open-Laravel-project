@@ -284,6 +284,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->isCustomer();
     }
 
+    public function canShop(): bool
+    {
+        return $this->isCustomer() || $this->isBusiness();
+    }
+
     public function isActive(): bool
     {
         return $this->status === UserStatus::Active;

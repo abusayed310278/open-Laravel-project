@@ -401,7 +401,7 @@
                     <div class="flex items-center gap-3 min-w-0">
                         @php $avatar = $user->profile?->avatarUrl(); @endphp
                         @if ($avatar)
-                            <img src="{{ $avatar }}" alt="{{ $user->name }}" class="w-14 h-14 rounded-xl object-cover shrink-0">
+                            <img src="{{ $avatar }}" alt="{{ $user->name }}" class="w-14 h-14 rounded-xl object-cover object-top shrink-0">
                         @else
                             <div class="w-14 h-14 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center text-xl font-extrabold shrink-0">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 1)) }}</div>
                         @endif

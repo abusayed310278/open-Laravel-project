@@ -125,15 +125,29 @@ class HomeContentController extends Controller
             'cards.*.text' => ['required', 'string', 'max:200'],
             'cards.*.button' => ['required', 'string', 'max:40'],
             'cards.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'cards.*.bg_color_start' => ['nullable', 'string', 'max:25'],
+            'cards.*.bg_color_end' => ['nullable', 'string', 'max:25'],
+            'cards.*.title_color' => ['nullable', 'string', 'max:25'],
+            'cards.*.text_color' => ['nullable', 'string', 'max:25'],
+            'cards.*.button_bg_color' => ['nullable', 'string', 'max:25'],
+            'cards.*.button_text_color' => ['nullable', 'string', 'max:25'],
         ]);
 
         $values = [];
+        $colorFields = ['bg_color_start', 'bg_color_end', 'title_color', 'text_color', 'button_bg_color', 'button_text_color'];
+
         foreach (array_values($data['cards']) as $index => $card) {
             $number = $index + 1;
             $values["home_promo_{$number}_title"] = $card['title'];
             $values["home_promo_{$number}_text"] = $card['text'];
             $values["home_promo_{$number}_button"] = $card['button'];
             $values["home_promo_{$number}_product"] = isset($card['product_id']) ? (string) $card['product_id'] : '';
+
+            foreach ($colorFields as $field) {
+                if (isset($card[$field]) && filled($card[$field])) {
+                    $values["home_promo_{$number}_{$field}"] = '#' . ltrim(trim((string) $card[$field]), '#');
+                }
+            }
         }
 
         $this->settings->setMany($values, 'home');
