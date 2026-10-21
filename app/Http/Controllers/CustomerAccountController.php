@@ -48,6 +48,7 @@ class CustomerAccountController extends Controller
             'totalProductsCount' => $user->products()->count(),
             'salesOrdersCount' => \App\Models\VendorOrder::where('vendor_id', $user->id)->count(),
             'wallet' => app(\App\Services\WalletService::class)->walletFor($user),
+            'activeSubscription' => $user->activeSubscription()->with('plan', 'credits')->first(),
         ]);
     }
 

@@ -109,7 +109,7 @@
                     @endif
                 </div>
                 <div class="hidden sm:flex flex-col text-left">
-                    <span class="text-xs font-bold text-gray-900 leading-tight" style="font-size: 12px;">{{ $user?->name ?? 'User' }}</span>
+                    <span class="text-xs font-bold text-gray-900 leading-tight" style="font-size: 12px;">{{ $user ? \Illuminate\Support\Str::title($user->name) : 'User' }}</span>
                     <span class="text-gray-400 font-medium leading-tight mt-0.5" style="font-size: 10px; letter-spacing: 0.02em;">{{ $roleLabel }}</span>
                 </div>
                 <svg id="user-chevron" class="w-4 h-4 text-gray-400 transition-transform duration-200 group-hover:text-gray-700 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>

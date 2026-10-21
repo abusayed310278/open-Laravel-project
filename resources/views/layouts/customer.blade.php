@@ -26,6 +26,7 @@
                     ['route' => 'saler.inventory.index', 'label' => 'Inventory', 'icon' => $icon['tag'], 'permission' => 'inventory.manage'],
                     ['route' => 'saler.verification.index', 'label' => 'Verification', 'icon' => $icon['shield'], 'permission' => 'verifications.inspect'],
                     ['route' => 'saler.payouts.index', 'label' => 'Wallet & Payouts', 'icon' => $icon['wallet'], 'permission' => 'payments.manage'],
+                    ['route' => 'saler.subscriptions.index', 'label' => 'Subscriptions', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],
                     ['route' => 'saler.store.edit', 'label' => 'Store & Settings', 'icon' => $icon['cog'], 'permission' => 'products.manage'],
                 ],
             ],

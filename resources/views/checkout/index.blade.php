@@ -36,17 +36,15 @@
         @if ($isGuest)
             {{-- Guest checkout: interactive Create Account and Sign In panels --}}
             <div id="checkout-guest-auth-section" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs">
-                <div class="mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200">
-                            <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            Step 1: Account
-                        </span>
-                        <span class="text-xs text-gray-400">·</span>
-                        <span class="text-xs text-gray-500 font-medium">Cart saved</span>
+                <div class="mb-4 flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3">
+                        <span class="shrink-0 w-7 h-7 rounded-full border-2 border-brand-500 text-brand-700 flex items-center justify-center text-sm font-bold">1</span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Account</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Create an account or sign in to place your order</p>
+                        </div>
                     </div>
-                    <h2 class="text-lg font-bold text-gray-900 mt-2">Sign in or create an account to place your order</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Choose an option below to fill in your account information right here on this page.</p>
+                    <span class="text-xs text-gray-500 font-medium shrink-0">Cart saved</span>
                 </div>
 
                 {{-- Two Option Selector Cards --}}
@@ -282,7 +280,7 @@
                             $selectedMethod = old('payment_method', $paymentMethods[0]->value ?? 'cod');
                         @endphp
 
-                        <x-card id="checkout-shipping-card" title="Shipping Address">
+                        <x-card id="checkout-shipping-card" title="Shipping Address" :step="$isGuest ? 2 : 1" description="Enter your shipping address details">
                             @if ($hasAddresses)
                                 <div class="space-y-3 mb-4" id="shipping-addresses-container">
                                      @foreach ($addresses as $address)
@@ -352,7 +350,7 @@
                             </div>
                         </x-card>
 
-                        <x-card id="checkout-payment-card" title="Payment">
+                        <x-card id="checkout-payment-card" title="Payment" :step="$isGuest ? 3 : 2" description="Choose your preferred payment method">
                             @error('payment_method')
                                 <x-alert type="error" class="mb-4">{{ $message }}</x-alert>
                             @enderror

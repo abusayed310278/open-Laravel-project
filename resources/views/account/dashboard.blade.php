@@ -6,7 +6,7 @@
     @php
         $user = auth()->user();
         $icon = \App\Support\Icons::PATHS;
-        $firstName = \Illuminate\Support\Str::of($user->name)->before(' ')->toString();
+        $firstName = \Illuminate\Support\Str::title(\Illuminate\Support\Str::of($user->name)->before(' ')->toString());
         $greeting = match (true) {
             now()->hour < 12 => 'Good morning',
             now()->hour < 18 => 'Good afternoon',
@@ -63,6 +63,7 @@
             ['label' => 'Sell a Product', 'route' => 'saler.products.create', 'icon' => $icon['box'], 'permission' => 'products.manage'],
             ['label' => 'My Orders', 'route' => 'account.orders.index', 'icon' => $icon['clipboard'] ?? $icon['shopping-bag'], 'permission' => 'orders.manage'],
             ['label' => 'Wallet & Payouts', 'route' => 'saler.payouts.index', 'icon' => $icon['wallet'], 'permission' => 'payments.manage'],
+            ['label' => 'Subscriptions', 'route' => 'saler.subscriptions.index', 'icon' => $icon['credit-card'], 'permission' => 'subscriptions.manage'],
             ['label' => 'Track Returns', 'route' => 'account.returns.index', 'icon' => $icon['undo'], 'permission' => 'orders.manage'],
             ['label' => 'Get Support', 'route' => 'account.support.index', 'icon' => $icon['support'], 'permission' => 'support.manage'],
         ];
@@ -99,7 +100,7 @@
             </div>
 
             {{-- Seller Hub Quick Panel --}}
-            @if (user_can('products.manage') || user_can('orders.manage') || user_can('payments.manage'))
+            @if (user_can('products.manage') || user_can('orders.manage') || user_can('payments.manage') || user_can('subscriptions.manage'))
             <div class="bg-white rounded-2xl p-5 shadow-xs border border-gray-100">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
                     <div>
@@ -124,9 +125,15 @@
                             Wallet
                         </a>
                         @endif
+                        @if (user_can('subscriptions.manage'))
+                        <a href="{{ route('saler.subscriptions.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 text-xs font-semibold transition">
+                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['credit-card'] }}" /></svg>
+                            Subscriptions
+                        </a>
+                        @endif
                     </div>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-4">
                     @if (user_can('products.manage'))
                     <a href="{{ route('saler.products.index') }}" class="p-3.5 bg-gray-50/70 hover:bg-brand-50/30 rounded-xl border border-gray-100 hover:border-brand-200 transition block group">
                         <span class="w-7 h-7 rounded-lg bg-amber-100/80 text-amber-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
@@ -161,6 +168,66 @@
                         <p class="text-xl font-black text-emerald-600 mt-0.5">${{ number_format((float) ($wallet->available_balance ?? 0), 2) }}</p>
                     </a>
                     @endif
+                    @if (user_can('subscriptions.manage'))
+                    <a href="{{ route('saler.subscriptions.index') }}" class="p-3.5 bg-brand-50/40 hover:bg-brand-50/70 rounded-xl border border-brand-100 hover:border-brand-200 transition block group">
+                        <div class="flex items-center justify-between mb-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['credit-card'] }}" /></svg>
+                            </span>
+                            @if (!empty($activeSubscription) && $activeSubscription->isActive())
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Active</span>
+                            @else
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">No Plan</span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-gray-500 font-medium">Subscription</p>
+                        <p class="text-base font-black text-gray-900 mt-0.5 truncate">{{ $activeSubscription?->plan?->name ?? 'Choose Plan' }}</p>
+                    </a>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            {{-- Dedicated Subscription Status Section --}}
+            @if (user_can('subscriptions.manage'))
+            <div class="bg-white rounded-2xl p-5 shadow-xs border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5 min-w-0">
+                    <span class="w-11 h-11 rounded-xl bg-brand-50 border border-brand-200/60 text-brand-700 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon['credit-card'] }}" /></svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 class="text-sm font-bold text-gray-900">Subscription & Seller Tier</h2>
+                            @if (!empty($activeSubscription) && $activeSubscription->isActive())
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Inactive / Free Tier
+                                </span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            @if (!empty($activeSubscription) && $activeSubscription->isActive())
+                                Current plan: <span class="font-semibold text-gray-800">{{ $activeSubscription->plan?->name }}</span>
+                                @if ($activeSubscription->ends_at)
+                                    · Valid until {{ $activeSubscription->ends_at->format('M j, Y') }}
+                                @endif
+                                @if ($activeSubscription->credits)
+                                    · {{ $activeSubscription->credits->remaining_listings ?? 0 }} listing credits remaining
+                                @endif
+                            @else
+                                Subscribe to a seller plan to increase your listing limit, verification priority, and marketplace benefits.
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a href="{{ route('saler.subscriptions.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-gray-950 text-xs font-bold transition shadow-xs">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon['credit-card'] }}" /></svg>
+                        {{ (!empty($activeSubscription) && $activeSubscription->isActive()) ? 'Manage Subscription' : 'Upgrade Plan' }}
+                    </a>
                 </div>
             </div>
             @endif
@@ -340,7 +407,7 @@
                         @endif
                         <div class="min-w-0">
                             <p class="text-xs text-gray-500">Your Account</p>
-                            <p class="text-base font-bold text-gray-900 truncate">{{ $user->name }}</p>
+                            <p class="text-base font-bold text-gray-900 truncate">{{ \Illuminate\Support\Str::title($user->name) }}</p>
                             <p class="text-xs text-gray-400 truncate">{{ $user->email }}</p>
                         </div>
                     </div>
@@ -383,7 +450,7 @@
                     Shop Now
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6l6 6-6 6" /></svg>
                 </a>
-                <svg class="absolute -right-3 -bottom-4 h-28 w-28 text-brand-300/60" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4h10l3 4v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8l3-4zm0 5a5 5 0 0010 0h-2a3 3 0 01-6 0H7z" /></svg>
+                <svg class="absolute -right-3 -bottom-4 h-28 w-28 text-brand-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4h10l3 4v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8l3-4zm0 5a5 5 0 0010 0h-2a3 3 0 01-6 0H7z" /></svg>
             </div>
         </aside>
     </div>
