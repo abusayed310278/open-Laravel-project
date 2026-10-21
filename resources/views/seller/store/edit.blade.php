@@ -704,10 +704,17 @@
         .ts-control {
             border-radius: 0.5rem !important;
             border-color: #e2e8f0 !important;
-            padding: 0.625rem 0.875rem !important;
+            padding: 0.625rem 0.875rem 0.625rem 2.25rem !important;
             font-size: 0.875rem !important;
             background-color: #ffffff !important;
             box-shadow: none !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: 0.75rem center !important;
+            background-size: 1rem 1rem !important;
+        }
+        .ts-control > input {
+            margin-left: 0 !important;
         }
         .ts-control.focus {
             border-color: #fbbf24 !important;
@@ -890,6 +897,7 @@
                         countryTomSelect.addOption({ value: selectedCountryName, text: selectedCountryName });
                     }
 
+                    countryTomSelect.refreshOptions(false);
                     countryTomSelect.setValue(selectedCountryName || '', true);
                     return;
                 }
@@ -939,6 +947,7 @@
                         cityTomSelect.addOption({ value: selectedCityName, text: selectedCityName });
                     }
 
+                    cityTomSelect.refreshOptions(false);
                     cityTomSelect.setValue(selectedCityName || '', true);
                     return;
                 }
