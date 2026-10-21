@@ -67,9 +67,9 @@
                 <div class="flex items-end gap-4">
                     <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white p-1 shadow-md border-2 border-white shrink-0 overflow-hidden">
                         @if ($currentLogo)
-                            <img src="{{ \App\Support\MediaUrl::resolve($currentLogo) }}" alt="Store Logo" class="w-full h-full object-cover rounded-xl">
+                            <img src="{{ \App\Support\MediaUrl::resolve($currentLogo) }}" alt="Store Logo" class="w-full h-full object-contain rounded-xl">
                         @elseif ($currentAvatar)
-                            <img src="{{ \App\Support\MediaUrl::resolve($currentAvatar) }}" alt="Avatar" class="w-full h-full object-cover rounded-xl">
+                            <img src="{{ \App\Support\MediaUrl::resolve($currentAvatar) }}" alt="Avatar" class="w-full h-full object-cover object-top rounded-xl">
                         @else
                             <div class="w-full h-full bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 font-black text-2xl uppercase">
                                 {{ substr($isBusiness ? ($profile->business_name ?? $user->name) : ($profile->display_name ?? $user->name), 0, 2) }}
