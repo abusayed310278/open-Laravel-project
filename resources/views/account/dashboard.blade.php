@@ -82,7 +82,7 @@
                 <div class="absolute right-28 -bottom-14 w-36 h-36 rounded-full bg-brand-300/30 blur-3xl" aria-hidden="true"></div>
 
                 <div class="relative z-10 max-w-xl">
-                    <p class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-1.5">{{ $greeting }}</p>
+                    <p class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5">{{ $greeting }}</p>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{{ $firstName }} <span aria-hidden="true">👋</span></h1>
                     <p class="text-sm text-gray-600 mt-2 max-w-md">Manage your purchases, orders, and seller listings all in one place.</p>
                 </div>
@@ -443,7 +443,7 @@
             </div>
 
             <div class="relative overflow-hidden rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-5">
-                <p class="text-xs font-semibold text-brand-700">Discover More</p>
+                <p class="text-xs font-semibold text-blue-900">Discover More</p>
                 <h3 class="mt-1 text-lg font-extrabold text-gray-900 leading-snug">Find great deals on verified electronics</h3>
                 <p class="mt-2 text-xs text-gray-600 max-w-[200px]">Every item is inspected and covered by our guarantee.</p>
                 <a href="{{ route('shop') }}" class="mt-4 inline-flex items-center gap-1.5 brand-btn-primary text-xs font-bold px-4 py-2.5 rounded-lg">
