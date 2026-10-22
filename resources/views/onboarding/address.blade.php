@@ -1,49 +1,132 @@
 @php($maxWidth = 'max-w-xl')
+@php($cardPadding = 'px-8 py-14 sm:px-10 sm:py-16')
 @extends('layouts.auth')
 
 @section('title', 'Shipping Address & Verification')
 
 @section('content')
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-xs font-bold text-brand-600 uppercase tracking-wider mb-1">
-            <span>Step 1 of 2</span>
-            <span>•</span>
-            <span>Shipping Address</span>
+    <div class="flex items-center gap-2 mb-6">
+        <button
+            type="button"
+            onclick="window.history.length > 1 ? history.back() : (window.location = '{{ route('home') }}')"
+            class="inline-flex items-center justify-center w-7 h-7 -ml-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
+            aria-label="Go back"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+
+        <div class="flex items-center gap-1.5 flex-1">
+            <div class="h-1.5 flex-1 rounded-full bg-brand-500"></div>
+            <div class="h-1.5 flex-1 rounded-full bg-gray-100"></div>
         </div>
-        <h1 class="text-xl font-bold text-gray-900 mb-1">Add Your Primary Address</h1>
-        <p class="text-sm text-gray-500">
-            Please enter your primary shipping address below. Once saved, we will send a verification link to your email.
-        </p>
+    </div>
+
+    <div class="flex items-start gap-4 mb-11">
+        <div class="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </div>
+        <div>
+            <div class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-1.5">Step 1 of 2 · Shipping Address</div>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1.5">Add Your Primary Address</h1>
+            <p class="text-sm text-gray-500 leading-relaxed">
+                Enter your primary shipping address below. Once saved, we'll send a verification link to your email.
+            </p>
+        </div>
     </div>
 
     @if (session('status'))
-        <x-alert type="success" class="mb-5">{{ session('status') }}</x-alert>
+        <x-alert type="success" class="mb-7">{{ session('status') }}</x-alert>
     @endif
 
-    <form method="POST" action="{{ route('onboarding.address.store') }}" class="space-y-4">
+    <form id="onboarding-address-form" method="POST" action="{{ route('onboarding.address.store') }}" class="space-y-11">
         @csrf
 
-        <div class="grid sm:grid-cols-2 gap-4">
-            <x-input label="Full name" name="name" type="text" placeholder="Enter your full name" :value="old('name', $user->name)" />
-            <x-input label="Phone" name="phone" type="tel" placeholder="e.g. +880 1700-000000" :value="old('phone', $user->phone)" />
-            <x-input label="Address line 1" name="line1" type="text" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" :value="old('line1')" />
-            <x-input label="Address line 2 (optional)" name="line2" type="text" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" :value="old('line2')" />
-            
-            <x-select label="Country" name="country" id="user_country_select" placeholder="Select Country" :selected="old('country', 'United States')" />
-            <x-select label="State/Area (optional)" name="state" id="user_state_select" placeholder="Select State/Area" :selected="old('state')" />
-            <x-select label="City" name="city" id="user_city_select" placeholder="Select City" :selected="old('city')" />
-            <x-input label="Postal code (optional)" name="postal_code" type="text" placeholder="e.g. 1207" :value="old('postal_code')" />
+        <div class="space-y-7">
+            <h2 class="flex items-center gap-2.5 text-sm font-bold text-gray-900">
+                <span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </span>
+                Contact Details
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <x-input label="Full name" name="name" type="text" autocomplete="name" placeholder="Enter your full name" :value="old('name', $user->name)" required />
+                <x-input label="Phone" name="phone" type="tel" autocomplete="tel" placeholder="e.g. +880 1700-000000" :value="old('phone', $user->phone)" required />
+            </div>
         </div>
 
-        <div class="pt-2">
-            <x-button type="submit" class="w-full justify-center">
+        <div class="space-y-7">
+            <h2 class="flex items-center gap-2.5 text-sm font-bold text-gray-900">
+                <span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </span>
+                Delivery Address
+            </h2>
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <x-input label="Address line 1" name="line1" type="text" autocomplete="address-line1" placeholder="House / Building #, Street name, Area" :value="old('line1')" required />
+                    <x-input label="Address line 2 (optional)" name="line2" type="text" autocomplete="address-line2" placeholder="Apartment, Suite, Unit, Floor (optional)" :value="old('line2')" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <x-select label="Country" name="country" id="user_country_select" autocomplete="off" placeholder="Select Country" :selected="old('country', 'United States')" required />
+                    <x-select label="State/Area (optional)" name="state" id="user_state_select" autocomplete="off" placeholder="Select State/Area" :selected="old('state')" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <x-select label="City" name="city" id="user_city_select" autocomplete="off" placeholder="Select City" :selected="old('city')" required />
+                    <x-input label="Postal code (optional)" name="postal_code" type="text" autocomplete="off" placeholder="e.g. 1207" :value="old('postal_code')" />
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-3">
+            <x-button type="submit" class="w-full justify-center gap-2 py-3.5 text-sm font-semibold">
                 Save Address & Send Verification Code
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5-5 5M6 12h12" />
+                </svg>
             </x-button>
         </div>
     </form>
 
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
+        #onboarding-address-form input::placeholder,
+        #onboarding-address-form textarea::placeholder,
+        #onboarding-address-form .ts-control input::placeholder,
+        #onboarding-address-form .ts-control .item {
+            color: #9ca3af !important;
+            opacity: 1 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Prevent the browser's autofill color/background animation from
+           visibly shifting these fields when autofill is applied. */
+        #onboarding-address-form input:-webkit-autofill,
+        #onboarding-address-form input:-webkit-autofill:hover,
+        #onboarding-address-form input:-webkit-autofill:focus,
+        #onboarding-address-form input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+            -webkit-text-fill-color: #1f2937 !important;
+            transition: background-color 600000s 0s, color 600000s 0s !important;
+        }
+
+        /* Fixed control height so the country/state/city widgets can't
+           resize (and shove the rest of the form down) once JS/autofill
+           populates them with a value. */
+        #onboarding-address-form .ts-wrapper,
+        #onboarding-address-form .ts-control {
+            min-height: 2.875rem !important;
+        }
+
         .ts-wrapper {
             border: 0 !important;
             padding: 0 !important;
@@ -59,8 +142,8 @@
             box-shadow: none !important;
         }
         .ts-control.focus {
-            border-color: #fbbf24 !important;
-            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4) !important;
+            border-color: #E5E7EB !important;
+            box-shadow: 0 0 0 2px #E5E7EB !important;
         }
         .ts-dropdown {
             border-radius: 0.5rem !important;
@@ -70,8 +153,8 @@
             z-index: 50 !important;
         }
         .ts-dropdown .option.active, .ts-dropdown .option:hover {
-            background-color: #fffbeb !important;
-            color: #d97706 !important;
+            background-color: var(--color-brand-50, #fffbeb) !important;
+            color: var(--color-brand-600, #d97706) !important;
         }
     </style>
 

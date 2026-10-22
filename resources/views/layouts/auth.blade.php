@@ -15,7 +15,7 @@
             <x-brand-logo size="lg" />
         </a>
 
-        <div id="auth-card" class="w-full {{ $maxWidth ?? 'max-w-md' }} bg-white border border-gray-100 rounded-md p-8 shadow-xs">
+        <div id="auth-card" class="w-full {{ $maxWidth ?? 'max-w-md' }} bg-white border border-gray-100 rounded-md {{ $cardPadding ?? 'p-8' }} shadow-xs">
             @yield('content')
         </div>
     </div>
