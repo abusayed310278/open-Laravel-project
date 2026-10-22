@@ -200,6 +200,7 @@ final class HomeContent
         'ios_title' => 'App Store',
         'android_subtitle' => 'Get it on',
         'android_title' => 'Google Play',
+        'store_button_bg' => '#102c54',
     ];
 
     /**

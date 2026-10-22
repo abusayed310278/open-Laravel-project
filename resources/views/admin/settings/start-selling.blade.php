@@ -99,6 +99,83 @@
                 <input type="text" name="app_text" value="{{ old('app_text', $content['app_text']) }}" maxlength="160" required class="{{ $field }}">
             </div>
 
+            {{-- Button Background Color Configuration --}}
+            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50/70 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                            Store Download Buttons Background Color
+                        </span>
+                        <p class="text-[11px] text-gray-500 mt-0.5">Customize the background color for App Store &amp; Google Play download buttons shown on the homepage.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input
+                            type="color"
+                            id="store_button_bg_picker"
+                            value="{{ old('store_button_bg', $content['store_button_bg'] ?? '#102c54') }}"
+                            class="w-8 h-8 rounded-lg border border-gray-300 cursor-pointer p-0.5 bg-white"
+                            oninput="updateButtonBgColor(this.value)"
+                        >
+                        <input
+                            type="text"
+                            name="store_button_bg"
+                            id="store_button_bg_input"
+                            value="{{ old('store_button_bg', $content['store_button_bg'] ?? '#102c54') }}"
+                            maxlength="20"
+                            placeholder="#102c54"
+                            class="w-28 text-xs font-mono font-semibold border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white uppercase text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                            oninput="updateButtonBgColor(this.value)"
+                        >
+                    </div>
+                </div>
+
+                {{-- Color Presets --}}
+                <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-200/50">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Presets:</span>
+                    <button
+                        type="button"
+                        onclick="updateButtonBgColor('#102c54')"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:border-brand-500 text-[11px] font-semibold text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                        <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: #102c54;"></span>
+                        <span>Navy Blue (Default)</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="updateButtonBgColor('#0a192f')"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:border-brand-500 text-[11px] font-semibold text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                        <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: #0a192f;"></span>
+                        <span>Midnight Navy</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="updateButtonBgColor('#1e3a8a')"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:border-brand-500 text-[11px] font-semibold text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                        <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: #1e3a8a;"></span>
+                        <span>Royal Navy</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="updateButtonBgColor('#0f172a')"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:border-brand-500 text-[11px] font-semibold text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                        <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: #0f172a;"></span>
+                        <span>Dark Slate</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="updateButtonBgColor('#000000')"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:border-brand-500 text-[11px] font-semibold text-gray-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                    >
+                        <span class="w-3 h-3 rounded-full border border-black/10 shrink-0" style="background-color: #000000;"></span>
+                        <span>Classic Black</span>
+                    </button>
+                </div>
+            </div>
+
             {{-- App Store & Google Play Buttons Settings --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 {{-- App Store Config --}}
@@ -130,7 +207,7 @@
                     {{-- Live Preview --}}
                     <div class="pt-2 border-t border-gray-200/60">
                         <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Live Button Preview</span>
-                        <div class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2 pointer-events-none shadow-xs">
+                        <div id="preview-ios-btn" class="inline-flex items-center gap-2.5 text-white rounded-xl px-4 py-2 pointer-events-none shadow-xs transition-colors" style="background-color: {{ old('store_button_bg', $content['store_button_bg'] ?? '#102c54') }};">
                             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M16.37 12.62c-.02-2.1 1.72-3.11 1.8-3.16-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.54.77-3.2.77-.66 0-1.67-.75-2.75-.73-1.41.02-2.72.82-3.45 2.08-1.47 2.55-.38 6.32 1.06 8.39.7 1.01 1.54 2.15 2.64 2.11 1.06-.04 1.46-.69 2.74-.69 1.28 0 1.64.69 2.76.67 1.14-.02 1.86-1.03 2.55-2.05.8-1.18 1.13-2.32 1.15-2.38-.03-.01-2.2-.84-2.25-3.36zM14.28 6.43c.58-.71.98-1.69.87-2.67-.84.03-1.86.56-2.46 1.26-.54.62-1.01 1.62-.88 2.58.94.07 1.89-.47 2.47-1.17z"/></svg>
                             <span class="text-left leading-tight">
                                 <span id="preview-ios-subtitle" class="block text-[9px] text-gray-300 leading-tight">{{ old('ios_subtitle', $content['ios_subtitle'] ?? 'Download on the') }}</span>
@@ -169,7 +246,7 @@
                     {{-- Live Preview --}}
                     <div class="pt-2 border-t border-gray-200/60">
                         <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Live Button Preview</span>
-                        <div class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2 pointer-events-none shadow-xs">
+                        <div id="preview-android-btn" class="inline-flex items-center gap-2.5 text-white rounded-xl px-4 py-2 pointer-events-none shadow-xs transition-colors" style="background-color: {{ old('store_button_bg', $content['store_button_bg'] ?? '#102c54') }};">
                             <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24"><path fill="#00d7fe" d="M3.6 2.2c-.2.2-.3.6-.3 1v17.6c0 .4.1.8.3 1l.1.1 9.9-9.9v-.2L3.7 2.1z"/><path fill="#ffce00" d="M16.9 15.4l-3.3-3.3v-.2l3.3-3.3.1.1 3.9 2.2c1.1.6 1.1 1.7 0 2.4l-3.9 2.2z"/><path fill="#ff3a44" d="M17 15.3l-3.4-3.4-10 10c.4.4 1 .4 1.7.1z"/><path fill="#00f076" d="M17 8.5L5.3 1.9c-.7-.4-1.3-.3-1.7.1l10 10z"/></svg>
                             <span class="text-left leading-tight">
                                 <span id="preview-android-subtitle" class="block text-[9px] uppercase text-gray-300 leading-tight">{{ old('android_subtitle', $content['android_subtitle'] ?? 'Get it on') }}</span>
@@ -293,5 +370,21 @@
                 refresh();
             });
         })();
+
+        function updateButtonBgColor(color) {
+            if (!color) return;
+            const formatted = color.startsWith('#') ? color : '#' + color;
+            const picker = document.getElementById('store_button_bg_picker');
+            const input = document.getElementById('store_button_bg_input');
+            const iosBtn = document.getElementById('preview-ios-btn');
+            const androidBtn = document.getElementById('preview-android-btn');
+
+            if (input && input.value !== formatted) input.value = formatted;
+            if (picker && picker.value !== formatted && /^#[0-9A-Fa-f]{6}$/.test(formatted)) {
+                picker.value = formatted;
+            }
+            if (iosBtn) iosBtn.style.backgroundColor = formatted;
+            if (androidBtn) androidBtn.style.backgroundColor = formatted;
+        }
     </script>
 @endsection

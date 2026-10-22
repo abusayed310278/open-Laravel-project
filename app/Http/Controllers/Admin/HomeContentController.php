@@ -226,6 +226,7 @@ class HomeContentController extends Controller
             'android_url' => ['nullable', 'url', 'max:500'],
             'android_subtitle' => ['nullable', 'string', 'max:60'],
             'android_title' => ['nullable', 'string', 'max:60'],
+            'store_button_bg' => ['nullable', 'string', 'max:30'],
             'phone_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:3072'],
             'qr_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'qr_generated' => ['nullable', 'string', 'max:200000', 'starts_with:data:image/png;base64,'],
@@ -237,6 +238,12 @@ class HomeContentController extends Controller
         foreach (['title', 'text', 'primary_label', 'primary_url', 'secondary_label', 'secondary_url', 'app_heading', 'app_text', 'qr_caption', 'qr_url', 'ios_url', 'ios_subtitle', 'ios_title', 'android_url', 'android_subtitle', 'android_title', 'title_size', 'text_size'] as $key) {
             $values["home_sell_{$key}"] = $data[$key] ?? '';
         }
+
+        $buttonBg = trim($data['store_button_bg'] ?? '');
+        if (filled($buttonBg) && ! str_starts_with($buttonBg, '#') && preg_match('/^[a-fA-F0-9]{3,8}$/', $buttonBg)) {
+            $buttonBg = '#' . $buttonBg;
+        }
+        $values['home_sell_store_button_bg'] = $buttonBg ?: '#102c54';
 
         $values['home_sell_phone_image'] = $this->resolveImage(
             $request->file('phone_image'),

@@ -841,15 +841,21 @@
                             @endif
 
                             @if ($hasStores)
+                                @php
+                                    $storeButtonBg = $sell['store_button_bg'] ?? '#102c54';
+                                    if (empty($storeButtonBg)) {
+                                        $storeButtonBg = '#102c54';
+                                    }
+                                @endphp
                                 <div class="w-full flex flex-wrap justify-center lg:justify-center gap-3">
                                     @if (filled($sell['ios_url']))
-                                        <a href="{{ $sell['ios_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2.5 hover:bg-gray-800 transition-colors">
+                                        <a href="{{ $sell['ios_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 text-white rounded-xl px-4 py-2.5 hover:opacity-90 shadow-xs transition-all" style="background-color: {{ $storeButtonBg }};">
                                             <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.62c-.02-2.1 1.72-3.11 1.8-3.16-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.54.77-3.2.77-.66 0-1.67-.75-2.75-.73-1.41.02-2.72.82-3.45 2.08-1.47 2.55-.38 6.32 1.06 8.39.7 1.01 1.54 2.15 2.64 2.11 1.06-.04 1.46-.69 2.74-.69 1.28 0 1.64.69 2.76.67 1.14-.02 1.86-1.03 2.55-2.05.8-1.18 1.13-2.32 1.15-2.38-.03-.01-2.2-.84-2.25-3.36zM14.28 6.43c.58-.71.98-1.69.87-2.67-.84.03-1.86.56-2.46 1.26-.54.62-1.01 1.62-.88 2.58.94.07 1.89-.47 2.47-1.17z"/></svg>
                                             <span class="text-left leading-tight"><span class="block text-[10px]">{{ $sell['ios_subtitle'] ?: 'Download on the' }}</span><span class="block text-base font-semibold">{{ $sell['ios_title'] ?: 'App Store' }}</span></span>
                                         </a>
                                     @endif
                                     @if (filled($sell['android_url']))
-                                        <a href="{{ $sell['android_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 bg-black text-white rounded-xl px-4 py-2.5 hover:bg-gray-800 transition-colors">
+                                        <a href="{{ $sell['android_url'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2.5 text-white rounded-xl px-4 py-2.5 hover:opacity-90 shadow-xs transition-all" style="background-color: {{ $storeButtonBg }};">
                                             <svg class="w-6 h-6" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00d7fe" d="M3.6 2.2c-.2.2-.3.6-.3 1v17.6c0 .4.1.8.3 1l.1.1 9.9-9.9v-.2L3.7 2.1z"/><path fill="#ffce00" d="M16.9 15.4l-3.3-3.3v-.2l3.3-3.3.1.1 3.9 2.2c1.1.6 1.1 1.7 0 2.4l-3.9 2.2z"/><path fill="#ff3a44" d="M17 15.3l-3.4-3.4-10 10c.4.4 1 .4 1.7.1z"/><path fill="#00f076" d="M17 8.5L5.3 1.9c-.7-.4-1.3-.3-1.7.1l10 10z"/></svg>
                                             <span class="text-left leading-tight"><span class="block text-[10px] uppercase">{{ $sell['android_subtitle'] ?: 'Get it on' }}</span><span class="block text-base font-semibold">{{ $sell['android_title'] ?: 'Google Play' }}</span></span>
                                         </a>
