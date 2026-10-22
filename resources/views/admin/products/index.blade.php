@@ -189,8 +189,8 @@
 
                                     <div>
                                         <h4 class="text-base font-semibold text-gray-900 mb-1">Are you sure?</h4>
-                                        <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
-                                            Do you really want to delete <strong class="text-gray-900 font-semibold">{{ $product->title }}</strong>? This action cannot be undone.
+                                        <p class="text-xs sm:text-sm text-gray-500 leading-relaxed break-words">
+                                            Do you really want to delete <strong class="text-gray-900 font-semibold break-words">{{ $product->title }}</strong>? This action cannot be undone.
                                         </p>
                                     </div>
 
