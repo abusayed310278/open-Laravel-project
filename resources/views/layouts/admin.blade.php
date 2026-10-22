@@ -72,7 +72,6 @@
                     ['route' => 'admin.blog-categories.index', 'label' => 'Blog Categories', 'icon' => $icon['tag']],
                     ['route' => 'admin.blog.comments.index', 'label' => 'Blog Comments', 'icon' => $icon['chat']],
                     ['route' => 'admin.pages.index', 'label' => 'Pages', 'icon' => $icon['document']],
-                    ['route' => 'admin.banners.index', 'label' => 'Banners', 'icon' => $icon['image']],
                     ['route' => 'admin.social-types.index', 'label' => 'Social Types', 'icon' => $icon['share']],
                 ],
             ],
@@ -82,7 +81,6 @@
                     ['route' => 'admin.site-management.index', 'label' => 'Manage Whole Site', 'icon' => $icon['sliders']],
                     ['route' => 'admin.reports.index', 'label' => 'Reports', 'icon' => $icon['chart']],
                     ['route' => 'admin.visitor-reports.index', 'label' => 'Visitor Reports', 'icon' => $icon['visitor']],
-                    ['route' => 'admin.settings.branding', 'label' => 'Settings', 'icon' => $icon['cog']],
                 ],
             ],
         ];

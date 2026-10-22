@@ -1,8 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', 'Banners')
+@section('title', 'Settings — Promotional Banners')
 
 @section('content')
+    @include('admin.settings._tabs')
+
     @session('status')
         <x-alert type="success" class="mb-5">{{ $value }}</x-alert>
     @endsession

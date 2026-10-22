@@ -3,6 +3,8 @@
 @section('title', 'Edit Banner: ' . $banner->title)
 
 @section('content')
+    @include('admin.settings._tabs')
+
     <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <a href="{{ route('admin.banners.index') }}" class="p-2 rounded-xl bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:bg-gray-50 shadow-2xs transition">

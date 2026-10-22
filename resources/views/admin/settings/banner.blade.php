@@ -20,6 +20,23 @@
     @endif
 
     <div class="space-y-6">
+        {{-- Quick Link to Promotional Banners --}}
+        <div class="bg-brand-50/60 border border-brand-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900">Promotional Banners & Carousel Slides</h3>
+                    <p class="text-xs text-gray-600">Looking to manage campaign banners, multi-slide carousels, or video ad banners?</p>
+                </div>
+            </div>
+            <a href="{{ route('admin.banners.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-700 shadow-2xs transition-colors shrink-0">
+                <span>Manage Promotional Banners</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+        </div>
+
         {{-- Preview Banner --}}
         <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-xs">
             <div class="flex items-center justify-between mb-4">

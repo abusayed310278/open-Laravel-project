@@ -13,7 +13,8 @@
         'Homepage & Content' => [
             'icon' => '<svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>',
             'items' => [
-                'banner' => ['label' => 'Banner', 'route' => 'admin.settings.banner', 'desc' => 'Homepage carousel slides & video'],
+                'banner' => ['label' => 'Banner', 'route' => 'admin.settings.banner', 'desc' => 'Storefront header & cover image'],
+                'promotional-banners' => ['label' => 'Promotional Banners', 'route' => 'admin.banners.index', 'desc' => 'Campaign & promotional banner ads'],
                 'hero' => ['label' => 'Hero', 'route' => 'admin.settings.hero', 'desc' => 'Top hero headlines & search'],
                 'why-buy' => ['label' => 'Why Buy', 'route' => 'admin.settings.why-buy', 'desc' => 'Trust badges & value propositions'],
                 'promo' => ['label' => 'Promo Cards', 'route' => 'admin.settings.promo', 'desc' => 'Promotional cards & deals'],
@@ -44,7 +45,9 @@
 
     foreach ($categories as $catName => $catData) {
         foreach ($catData['items'] as $key => $tab) {
-            $isActive = request()->routeIs($tab['route']) || (request()->routeIs('admin.settings.branding') && $key === 'logo');
+            $isActive = request()->routeIs($tab['route'])
+                || (request()->routeIs('admin.banners.*') && $key === 'promotional-banners')
+                || (request()->routeIs('admin.settings.branding') && $key === 'logo');
             $flatTabs[] = array_merge($tab, ['key' => $key, 'category' => $catName]);
             if ($isActive && ! $currentTab) {
                 $currentKey = $key;
