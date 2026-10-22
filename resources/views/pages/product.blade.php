@@ -220,7 +220,7 @@
                             <x-button type="submit" id="btn-add-to-cart" :disabled="$product->quantity <= 0" class="btn-add-to-cart flex-1 justify-center cursor-pointer font-bold">
                                 <span class="js-btn-label">Add to Cart</span>
                             </x-button>
-                            <x-button type="submit" name="checkout" value="1" variant="dark" :disabled="$product->quantity <= 0" class="flex-1 justify-center cursor-pointer">Buy Now</x-button>
+                            <x-button type="submit" name="checkout" value="1" variant="dark" :disabled="$product->quantity <= 0" class="flex-1 justify-center cursor-pointer !bg-[#0a1a4a] hover:!bg-[#0f2766]">Buy Now</x-button>
                         </div>
                     </form>
                 @endif
