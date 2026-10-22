@@ -77,7 +77,7 @@
                     <x-input label="Address line 2 (optional)" name="line2" type="text" autocomplete="address-line2" placeholder="Apartment, Suite, Unit, Floor (optional)" :value="old('line2')" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <x-select label="Country" name="country" id="user_country_select" autocomplete="off" placeholder="Select Country" :selected="old('country', 'United States')" required />
+                    <x-select label="Country" name="country" id="user_country_select" autocomplete="off" placeholder="Select Country" :selected="old('country')" required />
                     <x-select label="State/Area (optional)" name="state" id="user_state_select" autocomplete="off" placeholder="Select State/Area" :selected="old('state')" />
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -180,7 +180,7 @@
             let countriesData = fallbackCountries;
             let statesData = fallbackCountries.map(item => ({ name: item.country, states: item.states }));
 
-            const initialCountry = @json(old('country', 'United States'));
+            const initialCountry = @json(old('country', ''));
             const initialCity = @json(old('city', ''));
             const initialState = @json(old('state', ''));
 
@@ -198,7 +198,7 @@
                 if (countrySelect && !countryTomSelect) {
                     countryTomSelect = new TomSelect(countrySelect, {
                         create: true,
-                        placeholder: 'Search & select country...',
+                        placeholder: 'Select Country',
                         allowEmptyOption: true,
                         onChange: function(val) {
                             populateCitiesAndStates(val, '', '');
@@ -209,7 +209,7 @@
                 if (citySelect && !cityTomSelect) {
                     cityTomSelect = new TomSelect(citySelect, {
                         create: true,
-                        placeholder: 'Search & select city...',
+                        placeholder: 'Select City',
                         allowEmptyOption: true,
                     });
                 }
@@ -217,7 +217,7 @@
                 if (stateSelect && !stateTomSelect) {
                     stateTomSelect = new TomSelect(stateSelect, {
                         create: true,
-                        placeholder: 'Search & select state/area...',
+                        placeholder: 'Select State/Area',
                         allowEmptyOption: true,
                     });
                 }
@@ -230,7 +230,7 @@
                 countrySelect.innerHTML = '';
                 const defaultCountryOpt = document.createElement('option');
                 defaultCountryOpt.value = '';
-                defaultCountryOpt.textContent = 'Search & select country...';
+                defaultCountryOpt.textContent = 'Select Country';
                 countrySelect.appendChild(defaultCountryOpt);
 
                 countriesData.forEach(item => {
@@ -245,7 +245,7 @@
 
                 if (countryTomSelect) {
                     countryTomSelect.clearOptions();
-                    countryTomSelect.addOption({ value: '', text: 'Search & select country...' });
+                    countryTomSelect.addOption({ value: '', text: 'Select Country' });
 
                     let matchFound = false;
                     countriesData.forEach(item => {
@@ -274,7 +274,7 @@
                     citySelect.innerHTML = '';
                     const defaultCityOpt = document.createElement('option');
                     defaultCityOpt.value = '';
-                    defaultCityOpt.textContent = countryName ? 'Search & select city...' : 'Select a country first...';
+                    defaultCityOpt.textContent = 'Select City';
                     citySelect.appendChild(defaultCityOpt);
 
                     cities.forEach(cityName => {
@@ -289,7 +289,7 @@
 
                     if (cityTomSelect) {
                         cityTomSelect.clearOptions();
-                        cityTomSelect.addOption({ value: '', text: countryName ? 'Search & select city...' : 'Select a country first...' });
+                        cityTomSelect.addOption({ value: '', text: 'Select City' });
 
                         let matchFound = false;
                         cities.forEach(cityName => {
@@ -317,7 +317,7 @@
                     stateSelect.innerHTML = '';
                     const defaultStateOpt = document.createElement('option');
                     defaultStateOpt.value = '';
-                    defaultStateOpt.textContent = countryName ? 'Search & select state/area...' : 'Select a country first...';
+                    defaultStateOpt.textContent = 'Select State/Area';
                     stateSelect.appendChild(defaultStateOpt);
 
                     states.forEach(st => {
@@ -333,7 +333,7 @@
 
                     if (stateTomSelect) {
                         stateTomSelect.clearOptions();
-                        stateTomSelect.addOption({ value: '', text: countryName ? 'Search & select state/area...' : 'Select a country first...' });
+                        stateTomSelect.addOption({ value: '', text: 'Select State/Area' });
 
                         let matchFound = false;
                         states.forEach(st => {

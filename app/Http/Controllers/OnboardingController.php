@@ -23,6 +23,10 @@ class OnboardingController extends Controller
             ? ($user->businessProfile ?? $user->businessProfile()->create(['business_name' => $user->name, 'slug' => Str::slug($user->name)]))
             : ($user->salerProfile ?? $user->salerProfile()->create(['display_name' => $user->name, 'slug' => Str::slug($user->name)]));
 
+        if ($profile && $profile->profile_completed) {
+            return redirect()->route(! $user->hasVerifiedEmail() ? 'verification.notice' : $user->role->dashboardRoute());
+        }
+
         $requirements = app(\App\Services\KycService::class)->requirementsFor($user);
 
         return view('onboarding.profile', [
@@ -98,15 +102,28 @@ class OnboardingController extends Controller
             app(\App\Services\KycService::class)->submit($user, array_filter($kycFiles));
         }
 
-        $status = 'Your store profile is all set up and verification submitted.';
+        // Send verification email to store owner upon finishing registration
+        if (! $user->hasVerifiedEmail()) {
+            try {
+                event(new \Illuminate\Auth\Events\Registered($user));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        $status = 'Your store profile is all set up and verification submitted. A verification link has been sent to your email.';
+
+        $targetRoute = ! $user->hasVerifiedEmail()
+            ? route('verification.notice')
+            : route($user->role->dashboardRoute());
 
         if ($request->expectsJson()) {
             session()->flash('status', $status);
 
-            return response()->json(['redirect' => route($user->role->dashboardRoute())]);
+            return response()->json(['redirect' => $targetRoute]);
         }
 
-        return redirect()->route($user->role->dashboardRoute())->with('status', $status);
+        return redirect()->to($targetRoute)->with('status', $status);
     }
 
     /**
@@ -154,13 +171,15 @@ class OnboardingController extends Controller
             'is_default' => true,
         ]);
 
-        try {
-            event(new \Illuminate\Auth\Events\Registered($user));
-        } catch (\Throwable $e) {
-            report($e);
+        if (! $user->hasVerifiedEmail()) {
+            try {
+                event(new \Illuminate\Auth\Events\Registered($user));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
-        return redirect()->route('verification.notice')
+        return redirect()->route(! $user->hasVerifiedEmail() ? 'verification.notice' : $user->role->dashboardRoute())
             ->with('status', 'Address saved successfully! A verification link has been sent to your email.');
     }
 }

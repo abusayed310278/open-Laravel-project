@@ -43,18 +43,28 @@ class RegisteredUserController extends Controller
             $this->carts->mergeGuestCartIntoUser($sessionId, $user);
         }
 
-        try {
-            event(new Registered($user));
-        } catch (\Throwable $e) {
-            report($e);
+        // Only dispatch Registered immediately for roles that do NOT have a post-registration onboarding flow.
+        // Customer and Store Owner (Business/Saler) finish registration during their onboarding step.
+        if (! in_array($user->role, [UserRole::Customer, UserRole::Business, UserRole::Saler], strict: true)) {
+            try {
+                event(new Registered($user));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         $intended = $request->session()->get('url.intended');
 
+        $nextRoute = match (true) {
+            in_array($user->role, [UserRole::Business, UserRole::Saler], strict: true) => route('onboarding.profile'),
+            $user->role === UserRole::Customer => route('onboarding.address'),
+            default => route($user->role->dashboardRoute()),
+        };
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'redirect' => $intended ?: ($user->role === UserRole::Customer ? route('onboarding.address') : route($user->role->dashboardRoute())),
+                'redirect' => $intended ?: $nextRoute,
             ]);
         }
 
@@ -62,14 +72,6 @@ class RegisteredUserController extends Controller
             return redirect()->intended();
         }
 
-        if (in_array($user->role, [UserRole::Business, UserRole::Saler], strict: true)) {
-            return redirect()->route('onboarding.profile');
-        }
-
-        if ($user->role === UserRole::Customer) {
-            return redirect()->route('onboarding.address');
-        }
-
-        return redirect()->route($user->role->dashboardRoute());
+        return redirect()->to($nextRoute);
     }
 }

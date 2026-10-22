@@ -11,6 +11,8 @@
 
     @if (session('status') === 'verification-link-sent')
         <x-alert type="success" class="mb-5">A new verification link has been sent to your email address.</x-alert>
+    @elseif (session('status'))
+        <x-alert type="success" class="mb-5">{{ session('status') }}</x-alert>
     @endif
 
     <div class="flex items-center gap-3">

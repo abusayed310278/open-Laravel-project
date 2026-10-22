@@ -200,7 +200,7 @@
                         <x-input label="Address line 1" name="line1" placeholder="House / Building #, Street name, Area" class="sm:col-span-2" :value="old('line1')" />
                         <x-input label="Address line 2 (optional)" name="line2" placeholder="Apartment, Suite, Unit, Floor (optional)" class="sm:col-span-2" :value="old('line2')" />
                         
-                        <x-select label="Country" name="country" id="add_country_select" placeholder="Select Country" :selected="old('country', 'United States')" />
+                        <x-select label="Country" name="country" id="add_country_select" placeholder="Select Country" :selected="old('country')" />
                         <x-select label="State/Area (optional)" name="state" id="add_state_select" placeholder="Select State/Area" :selected="old('state')" />
                         <x-select label="City" name="city" id="add_city_select" placeholder="Select City" :selected="old('city')" />
                         <x-input label="Postal code (optional)" name="postal_code" placeholder="e.g. 1207" :value="old('postal_code')" />
@@ -476,7 +476,7 @@
                 'add_country_select', 
                 'add_state_select', 
                 'add_city_select', 
-                @json(old('country', 'United States')), 
+                @json(old('country', '')), 
                 @json(old('state', '')), 
                 @json(old('city', ''))
             );

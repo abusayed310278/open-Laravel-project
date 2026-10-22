@@ -30,7 +30,7 @@
         <div class="bg-gray-50/50 p-4 border border-gray-100 rounded-xl space-y-4">
             <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Store Location</h2>
             <div class="grid sm:grid-cols-3 gap-4">
-                <x-select label="Country" name="country" id="seller_country_select" placeholder="Select Country" :selected="old('country', 'Bangladesh')" />
+                <x-select label="Country" name="country" id="seller_country_select" placeholder="Select Country" :selected="old('country', $profile->country ?? '')" />
                 <x-select label="State / Region (optional)" name="state" id="seller_state_select" placeholder="Select State" :selected="old('state')" />
                 <x-select label="City" name="city" id="seller_city_select" placeholder="Select City" :selected="old('city')" />
             </div>
@@ -149,7 +149,7 @@
 
             let countriesData = fallbackCountries;
 
-            const initialCountry = @json(old('country', $profile->country ?? 'Bangladesh'));
+            const initialCountry = @json(old('country', $profile->country ?? ''));
             const initialCity = @json(old('city', $profile->city ?? ''));
             const initialState = @json(old('state', $profile->state ?? ''));
 
