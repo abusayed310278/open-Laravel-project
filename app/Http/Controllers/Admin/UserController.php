@@ -140,9 +140,16 @@ class UserController extends Controller
         }
 
         $userName = $user->name;
-        $this->users->deleteUser($user);
 
-        return back()->with('status', "User {$userName} was deleted successfully.");
+        try {
+            $this->users->deleteUser($user);
+
+            return back()->with('status', "User {$userName} was deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to delete user {$user->id}: " . $e->getMessage(), ['exception' => $e]);
+
+            return back()->with('error', "Could not delete user {$userName}: " . $e->getMessage());
+        }
     }
 
     public function bulkDestroy(Request $request): RedirectResponse
@@ -158,9 +165,15 @@ class UserController extends Controller
             return back()->with('error', 'You cannot delete your own active administrator account.');
         }
 
-        $count = $this->users->bulkDeleteUsers($ids);
+        try {
+            $count = $this->users->bulkDeleteUsers($ids);
 
-        return back()->with('status', "{$count} user(s) deleted successfully.");
+            return back()->with('status', "{$count} user(s) deleted successfully.");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Bulk delete failed: ' . $e->getMessage(), ['exception' => $e]);
+
+            return back()->with('error', 'Could not complete bulk deletion: ' . $e->getMessage());
+        }
     }
 
     public function updateStatus(UpdateUserStatusRequest $request, User $user): RedirectResponse
