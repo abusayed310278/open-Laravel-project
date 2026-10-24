@@ -12,6 +12,11 @@
         <x-alert type="danger" class="mb-5">{{ $value }}</x-alert>
     @endsession
 
+    <form id="bulk-delete-form" method="POST" action="{{ route('admin.users.bulk-destroy') }}">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <x-card>
         {{-- Filter & Search Controls Form --}}
         <form method="GET" action="{{ route('admin.users.index') }}" id="usersFilterForm" class="mb-5 space-y-3.5">
@@ -126,9 +131,16 @@
         </form>
 
         {{-- Users Table --}}
-        <x-table :headers="['User', 'Role', 'Status', 'Joined', 'Actions']" id="users-table">
+        <x-table :headers="['<input type=\'checkbox\' id=\'select-all-users\' class=\'rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer\'>', 'User', 'Role', 'Status', 'Joined', 'Actions']" id="users-table">
             @forelse ($users as $user)
-                <tr class="border-b border-gray-100 hover:bg-gray-50/70 transition-colors user-row" data-search="{{ strtolower($user->name . ' ' . $user->email . ' ' . ($user->phone ?? '') . ' ' . $user->role->label() . ' ' . $user->role->value . ' ' . $user->status->label() . ' ' . $user->status->value) }}">
+                <tr class="border-b border-gray-100 hover:bg-gray-50/70 has-[:checked]:bg-brand-50/60 transition-colors user-row" data-search="{{ strtolower($user->name . ' ' . $user->email . ' ' . ($user->phone ?? '') . ' ' . $user->role->label() . ' ' . $user->role->value . ' ' . $user->status->label() . ' ' . $user->status->value) }}">
+                    {{-- Bulk Select Checkbox --}}
+                    <td class="px-4 py-3.5 w-10">
+                        @if ($user->id !== auth()->id())
+                            <input type="checkbox" name="ids[]" value="{{ $user->id }}" form="bulk-delete-form" class="user-checkbox rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer">
+                        @endif
+                    </td>
+
                     {{-- User Details --}}
                     <td class="px-4 py-3.5">
                         @php
@@ -255,31 +267,51 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </button>
 
-                            {{-- Delete Icon --}}
+                            {{-- Delete Icon (Opens Centered Confirmation Modal) --}}
                             @if($user->id !== auth()->id())
-                                <form
-                                    method="POST"
-                                    action="{{ route('admin.users.destroy', $user) }}"
-                                    onsubmit="return confirm('Are you sure you want to permanently delete user &quot;{{ $user->name }}&quot;? This action cannot be undone.')"
-                                    class="inline-block m-0"
+                                <button
+                                    type="button"
+                                    data-modal-open="delete-user-modal-{{ $user->id }}"
+                                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 cursor-pointer"
+                                    title="Delete User"
                                 >
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        type="submit"
-                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 cursor-pointer"
-                                        title="Delete User"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </form>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+
+                                {{-- Centered Delete User Confirmation Modal --}}
+                                <x-modal :id="'delete-user-modal-'.$user->id" title="Delete User" maxWidth="max-w-md">
+                                    <div class="text-center py-2 space-y-4">
+                                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/70 flex items-center justify-center mx-auto text-red-600 shadow-xs">
+                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        </div>
+
+                                        <div>
+                                            <h4 class="text-base font-bold text-gray-900 mb-1">Delete this user?</h4>
+                                            <p class="text-xs sm:text-sm text-gray-500 leading-relaxed break-words">
+                                                You're about to permanently delete <strong class="text-gray-900 font-semibold break-words">{{ $user->name }}</strong>. This action cannot be undone.
+                                            </p>
+                                        </div>
+
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button type="button" data-modal-close class="px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors cursor-pointer">
+                                                Yes, Delete User
+                                            </button>
+                                        </form>
+                                    </div>
+                                </x-modal>
                             @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="px-4 py-12 text-center text-gray-400 text-sm">
+                    <td colspan="6" class="px-4 py-12 text-center text-gray-400 text-sm">
                         <div class="max-w-xs mx-auto text-center">
                             <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                             <p class="font-medium text-gray-600">No users found</p>
@@ -298,7 +330,7 @@
 
             {{-- Live Instant Search No Results Row --}}
             <tr id="no-client-results" style="display: none;">
-                <td colspan="5" class="px-4 py-12 text-center text-gray-400 text-sm">
+                <td colspan="6" class="px-4 py-12 text-center text-gray-400 text-sm">
                     <div class="max-w-xs mx-auto text-center">
                         <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         <p class="font-medium text-gray-600">No matching users found on this page</p>
@@ -312,6 +344,63 @@
             <x-pagination :paginator="$users" />
         </div>
     </x-card>
+
+    {{-- Floating Bulk Selection Bar (kept outside x-card so its `position: fixed` is relative to the viewport, not a transformed/animated ancestor) --}}
+    <div
+        id="bulk-selection-bar"
+        class="dash-reveal fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 opacity-0 translate-y-4 pointer-events-none transition-all duration-300 ease-out"
+    >
+        <div class="flex items-center gap-4 bg-gray-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl ring-1 ring-white/10 pl-5 pr-2.5 py-2.5">
+            <div class="flex items-center gap-2.5">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-brand-500 text-gray-900 text-[11px] font-bold shrink-0" id="selected-count-badge">0</span>
+                <span class="text-sm font-medium text-gray-200 whitespace-nowrap">user(s) selected</span>
+            </div>
+            <div class="w-px h-5 bg-white/15"></div>
+            <div class="flex items-center gap-1.5">
+                <button
+                    type="button"
+                    id="bulk-clear-btn"
+                    class="px-3 py-1.5 text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+                >
+                    Clear
+                </button>
+                <button
+                    type="button"
+                    id="bulk-delete-btn"
+                    data-modal-open="bulk-delete-users-modal"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span>Delete Selected</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Centered Bulk Delete Confirmation Modal --}}
+    <x-modal id="bulk-delete-users-modal" title="Delete Selected Users" maxWidth="max-w-md">
+        <div class="text-center py-2 space-y-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/70 flex items-center justify-center mx-auto text-red-600 shadow-xs">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+
+            <div>
+                <h4 class="text-base font-bold text-gray-900 mb-1">Delete these users?</h4>
+                <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    You're about to permanently delete <strong id="bulk-delete-count-label" class="text-gray-900 font-semibold">0 user(s)</strong>. This action cannot be undone.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <button type="button" data-modal-close class="px-4 py-2 text-xs sm:text-sm font-semibold text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="submit" form="bulk-delete-form" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition-colors cursor-pointer">
+                    Yes, Delete Users
+                </button>
+            </div>
+        </div>
+    </x-modal>
 
     {{-- Edit User Modal --}}
     <div id="edit-user-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
@@ -678,6 +767,55 @@
 
         document.getElementById('edit-user-modal')?.addEventListener('click', (e) => {
             if (e.target === e.currentTarget) closeEditModal();
+        });
+
+        // Bulk select & delete
+        document.addEventListener('DOMContentLoaded', function () {
+            const selectAll = document.getElementById('select-all-users');
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            const selectionBar = document.getElementById('bulk-selection-bar');
+            const selectedCountBadge = document.getElementById('selected-count-badge');
+            const bulkDeleteCountLabel = document.getElementById('bulk-delete-count-label');
+            const bulkClearBtn = document.getElementById('bulk-clear-btn');
+
+            function updateState() {
+                const checked = document.querySelectorAll('.user-checkbox:checked');
+                const count = checked.length;
+
+                if (selectedCountBadge) selectedCountBadge.textContent = count;
+                if (bulkDeleteCountLabel) bulkDeleteCountLabel.textContent = count + ' user(s)';
+
+                if (selectionBar) {
+                    selectionBar.classList.toggle('opacity-0', count === 0);
+                    selectionBar.classList.toggle('translate-y-4', count === 0);
+                    selectionBar.classList.toggle('pointer-events-none', count === 0);
+                }
+
+                if (selectAll) {
+                    selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                    selectAll.indeterminate = count > 0 && count < checkboxes.length;
+                }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                    updateState();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateState);
+            });
+
+            if (bulkClearBtn) {
+                bulkClearBtn.addEventListener('click', function () {
+                    checkboxes.forEach(cb => cb.checked = false);
+                    updateState();
+                });
+            }
+
+            updateState();
         });
     </script>
 @endsection

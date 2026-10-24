@@ -33,4 +33,12 @@ class UserManagementService
     {
         return (bool) $user->delete();
     }
+
+    /**
+     * @param  array<int>  $ids
+     */
+    public function bulkDeleteUsers(array $ids): int
+    {
+        return User::whereIn('id', $ids)->delete();
+    }
 }

@@ -145,6 +145,24 @@ class UserController extends Controller
         return back()->with('status', "User {$userName} was deleted successfully.");
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $ids = array_diff($validated['ids'], [$request->user()->id]);
+
+        if (empty($ids)) {
+            return back()->with('error', 'You cannot delete your own active administrator account.');
+        }
+
+        $count = $this->users->bulkDeleteUsers($ids);
+
+        return back()->with('status', "{$count} user(s) deleted successfully.");
+    }
+
     public function updateStatus(UpdateUserStatusRequest $request, User $user): RedirectResponse
     {
         $this->users->updateStatus($user, $request->enum('status', UserStatus::class));
