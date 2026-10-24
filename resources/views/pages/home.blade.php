@@ -453,7 +453,7 @@
         </script>
     @endif
 
-    @if (feature_enabled('home_featured_products'))
+    @if (feature_enabled('home_featured_products') && !empty($featuredProducts))
         {{-- FEATURED PRODUCTS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
@@ -549,7 +549,7 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_latest_drops'))
+    @if (feature_enabled('home_latest_drops') && !empty($latestProducts))
         {{-- LATEST DROPS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
@@ -649,7 +649,7 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_refurbished_deals'))
+    @if (feature_enabled('home_refurbished_deals') && !empty($refurbishedDeals))
         {{-- REFURBISHED DEALS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
@@ -747,7 +747,7 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_mobile_tech'))
+    @if (feature_enabled('home_mobile_tech') && !empty($usedProducts))
         {{-- USED PRODUCTS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between mb-6">
@@ -869,7 +869,7 @@
         </section>
     @endif
 
-    @if (feature_enabled('home_top_vendors'))
+    @if (feature_enabled('home_top_vendors') && collect($vendors)->isNotEmpty())
         {{-- TOP RATED VENDORS (Scrollable Carousel) --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 overflow-hidden">
             <div class="flex items-center justify-between mb-6">

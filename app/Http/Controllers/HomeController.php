@@ -163,17 +163,6 @@ class HomeController extends Controller
                 ];
             });
 
-        // Fallback default vendors if none in DB
-        if ($vendors->isEmpty()) {
-            $vendors = collect([
-                ['name' => 'Gadget Hub BD', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 1420, 'storeUrl' => route('stores.index')],
-                ['name' => 'Apple Zone', 'avatar' => null, 'rating' => 5.0, 'salesCount' => 980, 'storeUrl' => route('stores.index')],
-                ['name' => 'Tech Point', 'avatar' => null, 'rating' => 4.8, 'salesCount' => 840, 'storeUrl' => route('stores.index')],
-                ['name' => 'Pixel Lab', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 650, 'storeUrl' => route('stores.index')],
-                ['name' => 'iCenter BD', 'avatar' => null, 'rating' => 4.9, 'salesCount' => 1100, 'storeUrl' => route('stores.index')],
-                ['name' => 'Smart Store', 'avatar' => null, 'rating' => 4.7, 'salesCount' => 430, 'storeUrl' => route('stores.index')],
-            ]);
-        }
 
         $reviews = Review::query()
             ->approved()
