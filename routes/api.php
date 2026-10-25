@@ -83,6 +83,7 @@ use App\Http\Controllers\Api\Seller\SellerWalletController;
 
 Route::prefix('seller')->group(function () {
     Route::post('/auth/login', [SellerAuthController::class, 'login']);
+    Route::post('/auth/register', [SellerAuthController::class, 'register']);
 
     // Help, Guidelines & Legal
     Route::get('/help-guidelines', [SellerContentController::class, 'helpGuidelines']);

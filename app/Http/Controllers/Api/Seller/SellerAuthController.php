@@ -7,6 +7,7 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SellerUserResource;
 use App\Models\User;
+use App\Services\Auth\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,41 @@ use Illuminate\Validation\ValidationException;
 
 class SellerAuthController extends Controller
 {
+    public function __construct(
+        private readonly RegistrationService $registrationService,
+    ) {}
+
+    /**
+     * Register a new Store Owner account and return Sanctum access token.
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone'],
+            'business_name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = $this->registrationService->register([
+            'account_type' => UserRole::Business->value,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => $validated['password'],
+            'business_name' => $validated['business_name'],
+        ]);
+
+        $token = $user->createToken('flutter-mobile-seller-app')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Registration successful',
+            'token' => $token,
+            'user' => new SellerUserResource($user),
+        ], 201);
+    }
+
     /**
      * Authenticate seller account and return Sanctum access token.
      */

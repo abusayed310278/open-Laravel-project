@@ -103,6 +103,56 @@ class SellerAuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Register a new Store Owner account and sign in on success
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+    required String storeName,
+    String? phone,
+  }) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.post(
+        '/auth/register',
+        body: {
+          'name': name.trim(),
+          'email': email.trim(),
+          'phone': phone?.trim().isEmpty ?? true ? null : phone!.trim(),
+          'business_name': storeName.trim(),
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+
+      if (response is Map<String, dynamic> && response.containsKey('token')) {
+        final token = response['token'].toString();
+        final userData = response['user'] as Map<String, dynamic>;
+
+        final storage = await StorageService.getInstance();
+        await storage.saveToken(token);
+
+        _user = SellerUser.fromJson(userData);
+        await storage.saveSellerData(jsonEncode(_user!.toJson()));
+
+        _state = AuthState.authenticated;
+        notifyListeners();
+        return true;
+      } else {
+        throw ApiException('Invalid response received from server.');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Logout seller and clear session
   Future<void> logout() async {
     try {
