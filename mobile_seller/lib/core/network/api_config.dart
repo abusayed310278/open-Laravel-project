@@ -21,21 +21,21 @@ class ApiConfig {
   /// When [isProduction] is false:
   /// - `true`: Directly uses [devDomain] (http://open.test) for Windows Desktop, Web, iOS, or DNS-configured Emulators.
   /// - `false`: Falls back to direct IP loopback (`10.0.2.2/open/public`) on Android emulators if `.test` DNS is not resolved.
-  static const bool useDevDomain = true;
+  static const bool useDevDomain = false;
 
   /// Root host/domain URL without trailing slash
   static String get backendHost {
     if (isProduction) {
       return liveDomain.replaceAll(RegExp(r'/+$'), '');
     }
-    if (useDevDomain) {
-      return devDomain.replaceAll(RegExp(r'/+$'), '');
-    }
     if (kIsWeb) {
       return devDomain.replaceAll(RegExp(r'/+$'), '');
     }
     if (Platform.isAndroid) {
       return 'http://10.0.2.2/open/public';
+    }
+    if (useDevDomain) {
+      return devDomain.replaceAll(RegExp(r'/+$'), '');
     }
     return devDomain.replaceAll(RegExp(r'/+$'), '');
   }

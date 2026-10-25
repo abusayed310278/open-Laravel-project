@@ -3,16 +3,21 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/network/social_auth_service.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
+import '../../core/widgets/social_login_button.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
+import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? prefilledEmail;
+
+  const LoginScreen({super.key, this.prefilledEmail});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -20,9 +25,15 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  late final TextEditingController _emailController;
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.prefilledEmail ?? '');
+  }
 
   @override
   void dispose() {
@@ -52,11 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showForgotPasswordNotice() {
-    AppSnackBar.info(
-      context,
-      'Please contact Openbox support to reset your seller account password.',
-      title: 'Forgot password',
+  void _navigateToForgotPassword() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ForgotPasswordScreen(
+          initialEmail: _emailController.text,
+        ),
+      ),
     );
   }
 
@@ -66,10 +79,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xl),
-          child: Form(
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xl),
+            child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -165,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: _showForgotPasswordNotice,
+                          onPressed: _navigateToForgotPassword,
                           child: const Text('Forgot password?', style: TextStyle(fontWeight: FontWeight.w600)),
                         ),
                       ),
@@ -174,6 +192,44 @@ class _LoginScreenState extends State<LoginScreen> {
                         text: 'Sign in',
                         isLoading: authProvider.state == AuthState.loading,
                         onPressed: _handleLogin,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                            child: Text(
+                              'OR CONTINUE WITH',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.slate400,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SocialLoginButton(
+                            provider: SocialProvider.google,
+                            isIconOnly: true,
+                            isLoading: authProvider.state == AuthState.loading,
+                            onPressed: () => SocialAuthService.signInWithGoogle(context),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          SocialLoginButton(
+                            provider: SocialProvider.facebook,
+                            isIconOnly: true,
+                            isLoading: authProvider.state == AuthState.loading,
+                            onPressed: () => SocialAuthService.signInWithFacebook(context),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -216,6 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

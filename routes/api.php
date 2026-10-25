@@ -19,9 +19,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/verify-email', [AuthController::class, 'verifyEmailOtp']);
+    Route::post('/resend-email-otp', [AuthController::class, 'resendEmailOtp']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/social-login', [AuthController::class, 'socialLogin']);
+    Route::post('/google', [AuthController::class, 'socialLogin']);
+    Route::post('/facebook', [AuthController::class, 'socialLogin']);
 });
 
 Route::get('/products', [ProductController::class, 'index']);
@@ -35,6 +39,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/password', [AuthController::class, 'changePassword']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+        Route::post('/email/verification-notification', [AuthController::class, 'resendEmailOtp']);
+        Route::post('/verify-phone/send', [AuthController::class, 'sendPhoneOtp']);
+        Route::post('/verify-phone/confirm', [AuthController::class, 'confirmPhoneOtp']);
     });
 
     Route::prefix('cart')->group(function () {
@@ -45,6 +54,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/', [CartController::class, 'clear']);
         Route::post('/clear', [CartController::class, 'clear']);
     });
+
+    Route::post('/onboarding/address', [AddressController::class, 'store']);
+
+        // Cart
+        Route::get('/cart', [\App\Http\Controllers\Api\CartController::class, 'index']);
+        Route::post('/cart/add', [\App\Http\Controllers\Api\CartController::class, 'add']);
+        Route::put('/cart/update/{product}', [\App\Http\Controllers\Api\CartController::class, 'update']);
+        Route::delete('/cart/remove/{product}', [\App\Http\Controllers\Api\CartController::class, 'remove']);
+        Route::post('/cart/clear', [\App\Http\Controllers\Api\CartController::class, 'clear']);
 
     Route::prefix('addresses')->group(function () {
         Route::get('/', [AddressController::class, 'index']);
@@ -84,15 +102,44 @@ use App\Http\Controllers\Api\Seller\SellerWalletController;
 Route::prefix('seller')->group(function () {
     Route::post('/auth/login', [SellerAuthController::class, 'login']);
     Route::post('/auth/register', [SellerAuthController::class, 'register']);
+    Route::post('/auth/forgot-password', [SellerAuthController::class, 'forgotPassword']);
+    Route::post('/auth/verify-reset-otp', [SellerAuthController::class, 'verifyResetOtp']);
+    Route::post('/auth/reset-password', [SellerAuthController::class, 'resetPassword']);
+    Route::post('/auth/social-login', [SellerAuthController::class, 'socialLogin']);
+    Route::post('/auth/google', [SellerAuthController::class, 'socialLogin']);
+    Route::post('/auth/facebook', [SellerAuthController::class, 'socialLogin']);
+    Route::post('/auth/verify-email', [SellerAuthController::class, 'verifyEmailOtp']);
+    Route::post('/auth/resend-email-otp', [SellerAuthController::class, 'resendEmailOtp']);
 
     // Help, Guidelines & Legal
     Route::get('/help-guidelines', [SellerContentController::class, 'helpGuidelines']);
     Route::get('/terms-of-service', [SellerContentController::class, 'termsOfService']);
+    Route::get('/categories', [\App\Http\Controllers\Api\ProductController::class, 'categories']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [SellerAuthController::class, 'me']);
         Route::post('/auth/logout', [SellerAuthController::class, 'logout']);
+        Route::put('/auth/password', [SellerAuthController::class, 'changePassword']);
         Route::post('/auth/change-password', [SellerAuthController::class, 'changePassword']);
+        Route::post('/auth/email/verification-notification', [SellerAuthController::class, 'resendEmailOtp']);
+        Route::post('/auth/verify-phone/send', [SellerAuthController::class, 'sendPhoneOtp']);
+        Route::post('/auth/verify-phone/confirm', [SellerAuthController::class, 'confirmPhoneOtp']);
+        Route::post('/onboarding/address', [AddressController::class, 'store']);
+
+        // Cart
+        Route::get('/cart', [\App\Http\Controllers\Api\CartController::class, 'index']);
+        Route::post('/cart/add', [\App\Http\Controllers\Api\CartController::class, 'add']);
+        Route::put('/cart/update/{product}', [\App\Http\Controllers\Api\CartController::class, 'update']);
+        Route::delete('/cart/remove/{product}', [\App\Http\Controllers\Api\CartController::class, 'remove']);
+        Route::post('/cart/clear', [\App\Http\Controllers\Api\CartController::class, 'clear']);
+
+        Route::prefix('addresses')->group(function () {
+            Route::get('/', [AddressController::class, 'index']);
+            Route::post('/', [AddressController::class, 'store']);
+            Route::put('/{id}', [AddressController::class, 'update']);
+            Route::post('/{id}/default', [AddressController::class, 'setDefault']);
+            Route::delete('/{id}', [AddressController::class, 'destroy']);
+        });
 
         // Dashboard Analytics
         Route::get('/dashboard', [SellerDashboardController::class, 'index']);

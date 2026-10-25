@@ -14,6 +14,7 @@ class CustomTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final int maxLines;
   final bool readOnly;
+  final FocusNode? focusNode;
   final VoidCallback? onTap;
 
   const CustomTextField({
@@ -30,6 +31,7 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.maxLines = 1,
     this.readOnly = false,
+    this.focusNode,
     this.onTap,
   });
 
@@ -51,12 +53,14 @@ class CustomTextField extends StatelessWidget {
         ],
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
           initialValue: initialValue,
           keyboardType: keyboardType,
           obscureText: obscureText,
           maxLines: maxLines,
           readOnly: readOnly,
           onTap: onTap,
+          onTapOutside: (event) => FocusScope.of(context).unfocus(),
           validator: validator,
           onChanged: onChanged,
           style: const TextStyle(

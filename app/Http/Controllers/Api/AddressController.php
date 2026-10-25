@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AddressController extends Controller
 {
@@ -16,10 +19,12 @@ class AddressController extends Controller
         return response()->json([
             'addresses' => $addresses->map(fn (Address $a) => [
                 'id' => (string) $a->id,
-                'label' => $a->label ?? 'Home',
+                'label' => $a->label ?? 'Primary',
+                'name' => $a->name,
                 'recipient' => $a->name,
                 'phone' => $a->phone,
                 'line1' => $a->line1,
+                'line2' => $a->line2,
                 'city' => $a->city,
                 'state' => $a->state ?? '',
                 'country' => $a->country ?? '',
@@ -33,9 +38,11 @@ class AddressController extends Controller
     {
         $validated = $request->validate([
             'label' => ['nullable', 'string', 'max:50'],
-            'recipient' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'recipient' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'line1' => ['required', 'string', 'max:255'],
+            'line2' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:120'],
             'state' => ['nullable', 'string', 'max:120'],
             'country' => ['nullable', 'string', 'max:120'],
@@ -44,6 +51,7 @@ class AddressController extends Controller
         ]);
 
         $user = $request->user();
+        $name = $validated['name'] ?? ($validated['recipient'] ?? ($user->name ?? 'Primary Contact'));
         $isDefault = $request->boolean('is_default') || $user->addresses()->count() === 0;
 
         if ($isDefault) {
@@ -51,25 +59,50 @@ class AddressController extends Controller
         }
 
         $address = $user->addresses()->create([
-            'label' => $validated['label'] ?? 'Home',
-            'name' => $validated['recipient'],
+            'label' => $validated['label'] ?? 'Primary',
+            'name' => $name,
             'phone' => $validated['phone'],
             'line1' => $validated['line1'],
+            'line2' => $validated['line2'] ?? null,
             'city' => $validated['city'],
-            'state' => $validated['state'] ?? 'Doha',
+            'state' => $validated['state'] ?? null,
             'country' => $validated['country'] ?? 'Qatar',
-            'postal_code' => $validated['postal_code'] ?? '00000',
+            'postal_code' => $validated['postal_code'] ?? null,
             'is_default' => $isDefault,
         ]);
 
+        // Generate and send 6-digit email verification OTP
+        $otp = sprintf("%06d", mt_rand(100000, 999999));
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => Hash::make($otp),
+                'created_at' => now(),
+            ]
+        );
+
+        try {
+            Mail::raw(
+                "Hello {$user->name},\n\nYour OpenBox email verification code is: {$otp}\n\nPlease enter this OTP in your mobile app to verify your account.\n\nThank you,\nOpenBox Team",
+                function ($message) use ($user) {
+                    $message->to($user->email)->subject("OpenBox - Email Verification Code");
+                }
+            );
+        } catch (\Throwable $e) {
+            \Log::error("Failed to send onboarding email verification OTP to {$user->email}: " . $e->getMessage());
+        }
+
         return response()->json([
-            'message' => 'Address added successfully',
+            'message' => 'Address saved successfully. A verification code has been sent to your email.',
+            'email' => $user->email,
             'address' => [
                 'id' => (string) $address->id,
                 'label' => $address->label,
+                'name' => $address->name,
                 'recipient' => $address->name,
                 'phone' => $address->phone,
                 'line1' => $address->line1,
+                'line2' => $address->line2,
                 'city' => $address->city,
                 'state' => $address->state,
                 'country' => $address->country,
@@ -83,9 +116,11 @@ class AddressController extends Controller
     {
         $validated = $request->validate([
             'label' => ['nullable', 'string', 'max:50'],
-            'recipient' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'recipient' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'line1' => ['required', 'string', 'max:255'],
+            'line2' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:120'],
             'state' => ['nullable', 'string', 'max:120'],
             'country' => ['nullable', 'string', 'max:120'],
@@ -101,15 +136,18 @@ class AddressController extends Controller
             $user->addresses()->where('id', '!=', $id)->update(['is_default' => false]);
         }
 
+        $name = $validated['name'] ?? ($validated['recipient'] ?? $address->name);
+
         $address->update([
-            'label' => $validated['label'] ?? $address->label ?? 'Home',
-            'name' => $validated['recipient'],
+            'label' => $validated['label'] ?? $address->label ?? 'Primary',
+            'name' => $name,
             'phone' => $validated['phone'],
             'line1' => $validated['line1'],
+            'line2' => $validated['line2'] ?? $address->line2,
             'city' => $validated['city'],
-            'state' => $validated['state'] ?? $address->state ?? 'Doha',
-            'country' => $validated['country'] ?? $address->country ?? 'Qatar',
-            'postal_code' => $validated['postal_code'] ?? $address->postal_code ?? '00000',
+            'state' => $validated['state'] ?? $address->state,
+            'country' => $validated['country'] ?? $address->country,
+            'postal_code' => $validated['postal_code'] ?? $address->postal_code,
             'is_default' => $isDefault ? true : $address->is_default,
         ]);
 
@@ -118,9 +156,11 @@ class AddressController extends Controller
             'address' => [
                 'id' => (string) $address->id,
                 'label' => $address->label,
+                'name' => $address->name,
                 'recipient' => $address->name,
                 'phone' => $address->phone,
                 'line1' => $address->line1,
+                'line2' => $address->line2,
                 'city' => $address->city,
                 'state' => $address->state,
                 'country' => $address->country,

@@ -12,6 +12,7 @@ import '../messages/messages_screen.dart';
 import '../orders/orders_screen.dart';
 import '../store/seller_help_screen.dart';
 import '../store/vendor_terms_screen.dart';
+import '../wallet/wallet_screen.dart';
 import 'subscreens/about_screen.dart';
 import 'subscreens/account_health_screen.dart';
 import 'subscreens/help_center_screen.dart';
@@ -489,9 +490,133 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: AppSpacing.md),
+
+            // 3. Quick Access Commerce Bar: Wallet, Credits, Catalog
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickActionTile(
+                        icon: Icons.account_balance_wallet_outlined,
+                        iconColor: const Color(0xFF000080),
+                        label: 'Wallet',
+                        caption: 'Earnings & Payouts',
+                        onTap: () {
+                          if (widget.onNavigateTab != null) {
+                            widget.onNavigateTab!(3);
+                          } else {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const WalletScreen()),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                    Container(height: 36, width: 1, color: AppColors.slate200),
+                    Expanded(
+                      child: _buildQuickActionTile(
+                        icon: Icons.stars_rounded,
+                        iconColor: const Color(0xFFF59E0B),
+                        label: 'Credits',
+                        caption: '${user?.listingCredits ?? 0} Available',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SubscriptionPlanScreen()),
+                        ),
+                      ),
+                    ),
+                    Container(height: 36, width: 1, color: AppColors.slate200),
+                    Expanded(
+                      child: _buildQuickActionTile(
+                        icon: Icons.inventory_2_outlined,
+                        iconColor: const Color(0xFF10B981),
+                        label: 'Catalog',
+                        caption: 'Items & Stock',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CatalogScreen(initialTab: 0)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
 
-            // 3. STORE & PROFILE MANAGEMENT
+            // 4. FINANCES, WALLET & CREDITS
+            _buildSectionHeader('Finances & Credits'),
+            _buildMenuCard(context, [
+              _MenuItem(
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Wallet & Payouts',
+                subtitle: 'Available earnings balance, withdrawal requests & statement',
+                onTap: () {
+                  if (widget.onNavigateTab != null) {
+                    widget.onNavigateTab!(3);
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const WalletScreen()),
+                    );
+                  }
+                },
+              ),
+              _MenuItem(
+                icon: Icons.stars_rounded,
+                title: 'Listing Credits',
+                subtitle: 'Available listing credits, packages & balance',
+                badgeText: '${user?.listingCredits ?? 0} Credits',
+                badgeColor: AppColors.brand500,
+                destination: const SubscriptionPlanScreen(),
+              ),
+              _MenuItem(
+                icon: Icons.card_membership_outlined,
+                title: 'Subscription Plan',
+                subtitle: 'Plan tiers, merchant benefits & credit quotas',
+                destination: const SubscriptionPlanScreen(),
+              ),
+              _MenuItem(
+                icon: Icons.account_balance_outlined,
+                title: 'Payment Settings',
+                subtitle: 'Bank accounts, IBAN & payout gateways',
+                destination: const PaymentSettingsScreen(),
+              ),
+            ]),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 5. CATALOG & PRODUCTS
+            _buildSectionHeader('Catalog & Products'),
+            _buildMenuCard(context, [
+              _MenuItem(
+                icon: Icons.inventory_2_outlined,
+                title: 'Product Catalog',
+                subtitle: 'Browse all products, active listings, categories & drafts',
+                destination: const CatalogScreen(initialTab: 0),
+              ),
+              _MenuItem(
+                icon: Icons.tune_rounded,
+                title: 'Manage Inventory',
+                subtitle: 'Stock counts, low stock alerts & quick pricing',
+                destination: const CatalogScreen(initialTab: 1),
+              ),
+            ]),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 6. STORE & PROFILE MANAGEMENT
             _buildSectionHeader('Store & Profile Management'),
             _buildMenuCard(context, [
               _MenuItem(
@@ -520,16 +645,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 badgeColor: user?.isKycApproved == true ? AppColors.success : AppColors.warning,
                 destination: const VerificationStatusScreen(),
               ),
-              _MenuItem(
-                icon: Icons.card_membership_outlined,
-                title: 'Subscription Plan',
-                subtitle: 'Plan tiers & available listing credits',
-                destination: const SubscriptionPlanScreen(),
-              ),
             ]),
             const SizedBox(height: AppSpacing.lg),
 
-            // 4. PERFORMANCE & ACCOUNT HEALTH
+            // 7. PERFORMANCE & ACCOUNT HEALTH
             _buildSectionHeader('Performance & Analytics'),
             _buildMenuCard(context, [
               _MenuItem(
@@ -543,7 +662,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ]),
             const SizedBox(height: AppSpacing.lg),
 
-            // 5. OPERATIONS & LOGISTICS
+            // 8. OPERATIONS & LOGISTICS
             _buildSectionHeader('Operations & Logistics'),
             _buildMenuCard(context, [
               _MenuItem(
@@ -551,12 +670,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Orders',
                 subtitle: 'Manage client orders, fulfillment & tracking',
                 destination: const OrdersScreen(),
-              ),
-              _MenuItem(
-                icon: Icons.account_balance_outlined,
-                title: 'Payment Settings',
-                subtitle: 'Bank account, IBAN & payout gateways',
-                destination: const PaymentSettingsScreen(),
               ),
               _MenuItem(
                 icon: Icons.fact_check_outlined,
@@ -575,24 +688,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Seller Centers & Hubs',
                 subtitle: 'Drop-off stations, warehouses & map pins',
                 destination: const SellerCenterScreen(),
-              ),
-            ]),
-            const SizedBox(height: AppSpacing.lg),
-
-            // 6. CATALOG SHORTCUTS
-            _buildSectionHeader('Catalog & Inventory Management'),
-            _buildMenuCard(context, [
-              _MenuItem(
-                icon: Icons.inventory_2_outlined,
-                title: 'Product Catalog',
-                subtitle: 'Active listings, publish status & drafts',
-                destination: const CatalogScreen(initialTab: 0),
-              ),
-              _MenuItem(
-                icon: Icons.tune_rounded,
-                title: 'Manage Inventory',
-                subtitle: 'Stock counts, low stock alerts & quick pricing',
-                destination: const CatalogScreen(initialTab: 1),
               ),
             ]),
             const SizedBox(height: AppSpacing.lg),
@@ -690,6 +785,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ]),
             const SizedBox(height: AppSpacing.xxxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String caption,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+        child: Column(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 20, color: iconColor),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.ink,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.slate500,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

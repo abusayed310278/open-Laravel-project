@@ -103,27 +103,34 @@ class SellerAuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Register a new Store Owner account and sign in on success
+  /// Register a new account (Seller, Store Owner, or Customer) and sign in on success
   Future<bool> register({
     required String name,
     required String email,
     required String password,
     required String passwordConfirmation,
-    required String storeName,
+    String? storeName,
     String? phone,
+    String? role,
   }) async {
     _state = AuthState.loading;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      final businessName = (storeName != null && storeName.trim().isNotEmpty)
+          ? storeName.trim()
+          : name.trim();
+
       final response = await _apiClient.post(
         '/auth/register',
         body: {
           'name': name.trim(),
           'email': email.trim(),
           'phone': phone?.trim().isEmpty ?? true ? null : phone!.trim(),
-          'business_name': storeName.trim(),
+          'business_name': businessName,
+          'store_name': businessName,
+          'role': role ?? 'business',
           'password': password,
           'password_confirmation': passwordConfirmation,
         },
@@ -151,6 +158,176 @@ class SellerAuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Request password reset OTP email
+  Future<Map<String, dynamic>?> forgotPassword(String email) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.post(
+        '/auth/forgot-password',
+        body: {
+          'email': email.trim(),
+        },
+      );
+
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+
+      if (response is Map<String, dynamic>) {
+        return response;
+      }
+      return {'message': 'OTP sent successfully.'};
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Verify password reset OTP code
+  Future<bool> verifyResetOtp({
+    required String email,
+    required String otp,
+  }) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.post(
+        '/auth/verify-reset-otp',
+        body: {
+          'email': email.trim(),
+          'otp': otp.trim(),
+        },
+      );
+
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+
+      return response is Map<String, dynamic>;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Reset password using verified OTP code
+  Future<bool> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.post(
+        '/auth/reset-password',
+        body: {
+          'email': email.trim(),
+          'token': otp.trim(),
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+
+      return response is Map<String, dynamic>;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Authenticate or register using Google or Facebook
+  Future<bool> socialLogin({
+    required String provider,
+    String? accessToken,
+    String? email,
+    String? name,
+    String? providerId,
+    String? avatar,
+    String? role,
+    String? storeName,
+  }) async {
+    _state = AuthState.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final body = <String, dynamic>{
+        'provider': provider,
+      };
+      if (accessToken != null && accessToken.isNotEmpty) {
+        body['access_token'] = accessToken;
+      }
+      if (email != null && email.isNotEmpty) {
+        body['email'] = email;
+      }
+      if (name != null && name.isNotEmpty) {
+        body['name'] = name;
+      }
+      if (providerId != null && providerId.isNotEmpty) {
+        body['provider_id'] = providerId;
+      }
+      if (avatar != null && avatar.isNotEmpty) {
+        body['avatar'] = avatar;
+      }
+      if (role != null && role.isNotEmpty) {
+        body['role'] = role;
+      }
+      if (storeName != null && storeName.isNotEmpty) {
+        body['store_name'] = storeName;
+        body['business_name'] = storeName;
+      }
+
+      final response = await _apiClient.post(
+        '/auth/social-login',
+        body: body,
+      );
+
+      if (response is Map<String, dynamic> && response.containsKey('token')) {
+        final token = response['token'].toString();
+        final userData = response['user'] as Map<String, dynamic>;
+
+        final storage = await StorageService.getInstance();
+        await storage.saveToken(token);
+
+        _user = SellerUser.fromJson(userData);
+        await storage.saveSellerData(jsonEncode(_user!.toJson()));
+
+        _state = AuthState.authenticated;
+        notifyListeners();
+        return true;
+      } else {
+        throw ApiException('Invalid response received from server.');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Clear any active error message
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
   }
 
   /// Logout seller and clear session

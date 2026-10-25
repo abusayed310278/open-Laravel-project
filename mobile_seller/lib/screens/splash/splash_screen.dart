@@ -27,9 +27,11 @@ class _SplashScreenState extends State<SplashScreen> {
     final startTime = DateTime.now();
     final authProvider = context.read<SellerAuthProvider>();
 
-    if (authProvider.state == AuthState.loading || authProvider.state == AuthState.uninitialized) {
-      await authProvider.checkAuthStatus();
-    }
+    try {
+      if (authProvider.state == AuthState.loading || authProvider.state == AuthState.uninitialized) {
+        await authProvider.checkAuthStatus().timeout(const Duration(seconds: 4));
+      }
+    } catch (_) {}
 
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
     if (elapsed < 1200) {

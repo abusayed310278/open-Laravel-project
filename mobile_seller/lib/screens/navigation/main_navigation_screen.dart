@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../catalog/catalog_screen.dart';
+import '../cart/cart_screen.dart';
+import '../categories/categories_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../orders/orders_screen.dart';
 import '../settings/settings_screen.dart';
-import '../wallet/wallet_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -24,9 +24,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     _screens = [
       DashboardScreen(onNavigateTab: (index) => setState(() => _currentIndex = index)),
+      const CategoriesScreen(),
+      CartScreen(onNavigateTab: (index) => setState(() => _currentIndex = index)),
       const OrdersScreen(),
-      const CatalogScreen(),
-      const WalletScreen(),
       SettingsScreen(onNavigateTab: (index) => setState(() => _currentIndex = index)),
     ];
   }
@@ -65,19 +65,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view_outlined),
+              activeIcon: Icon(Icons.grid_view_rounded),
+              label: 'Categories',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag_outlined),
+              activeIcon: Icon(Icons.shopping_bag_rounded),
+              label: 'Cart',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long_rounded),
               label: 'Orders',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.category_outlined),
-              activeIcon: Icon(Icons.category_rounded),
-              label: 'Catalog',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet_rounded),
-              label: 'Wallet',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),

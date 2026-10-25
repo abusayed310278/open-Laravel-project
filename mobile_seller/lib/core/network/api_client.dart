@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 import 'storage_service.dart';
@@ -16,6 +18,7 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
+  static const Duration defaultTimeout = Duration(seconds: 10);
   final http.Client _client;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
@@ -56,6 +59,7 @@ class ApiClient {
 
     final headers = <String, String>{
       'Accept': 'application/json',
+      'Connection': 'close',
     };
 
     if (!isMultipart) {
@@ -71,68 +75,73 @@ class ApiClient {
 
   Future<dynamic> get(String url, {Map<String, dynamic>? queryParams}) async {
     final uri = _resolveUri(url, queryParams);
+    if (kDebugMode) debugPrint('[ApiClient] GET $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.get(uri, headers: headers);
+      final response = await _client.get(uri, headers: headers).timeout(defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
   Future<dynamic> post(String url, {dynamic body}) async {
     final uri = _resolveUri(url);
+    if (kDebugMode) debugPrint('[ApiClient] POST $uri');
     try {
       final headers = await _getHeaders();
       final response = await _client.post(
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      );
+      ).timeout(defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
   Future<dynamic> put(String url, {dynamic body}) async {
     final uri = _resolveUri(url);
+    if (kDebugMode) debugPrint('[ApiClient] PUT $uri');
     try {
       final headers = await _getHeaders();
       final response = await _client.put(
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      );
+      ).timeout(defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
   Future<dynamic> patch(String url, {dynamic body}) async {
     final uri = _resolveUri(url);
+    if (kDebugMode) debugPrint('[ApiClient] PATCH $uri');
     try {
       final headers = await _getHeaders();
       final response = await _client.patch(
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      );
+      ).timeout(defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
   Future<dynamic> delete(String url) async {
     final uri = _resolveUri(url);
+    if (kDebugMode) debugPrint('[ApiClient] DELETE $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(uri, headers: headers);
+      final response = await _client.delete(uri, headers: headers).timeout(defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
@@ -143,6 +152,7 @@ class ApiClient {
     List<http.MultipartFile>? files,
   }) async {
     final uri = _resolveUri(url);
+    if (kDebugMode) debugPrint('[ApiClient] MULTIPART $method $uri');
     try {
       final request = http.MultipartRequest(method, uri);
       final headers = await _getHeaders(isMultipart: true);
@@ -155,11 +165,11 @@ class ApiClient {
         request.files.addAll(files);
       }
 
-      final streamedResponse = await _client.send(request);
+      final streamedResponse = await _client.send(request).timeout(defaultTimeout);
       final response = await http.Response.fromStream(streamedResponse);
       return _handleResponse(response);
     } catch (e) {
-      _handleNetworkError(e);
+      _handleNetworkError(e, uri);
     }
   }
 
@@ -199,15 +209,22 @@ class ApiClient {
     throw ApiException(message, statusCode: response.statusCode, errors: errors);
   }
 
-  Never _handleNetworkError(dynamic error) {
+  Never _handleNetworkError(dynamic error, [Uri? uri]) {
+    if (kDebugMode) {
+      debugPrint('[ApiClient ERROR] ${uri != null ? "[$uri] " : ""}$error');
+    }
     if (error is ApiException) {
       throw error;
     }
+    if (error is TimeoutException) {
+      throw ApiException('Connection timed out. Please check your backend status and connection.');
+    }
     if (error is SocketException) {
-      throw ApiException('Unable to connect to server. Please check your internet connection.');
+      final host = uri?.host ?? ApiConfig.backendHost;
+      throw ApiException('Unable to connect to server at $host. Please check backend status and connection.');
     }
     if (error is http.ClientException) {
-      throw ApiException('Network connection failed. Please retry.');
+      throw ApiException('Network connection failed: ${error.message}');
     }
     throw ApiException('Something went wrong: ${error.toString()}');
   }

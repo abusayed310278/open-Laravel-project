@@ -19,6 +19,8 @@ import '../notifications/notifications_screen.dart';
 import '../settings/subscreens/update_profile_screen.dart';
 import '../settings/subscreens/verification_status_screen.dart';
 import '../settings/subscreens/seller_center_screen.dart';
+import '../catalog/catalog_screen.dart';
+import '../wallet/wallet_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final void Function(int tabIndex)? onNavigateTab;
@@ -306,7 +308,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildOrderStatusCard(OrderCounts counts) {
     return InkWell(
-      onTap: () => widget.onNavigateTab?.call(1),
+      onTap: () => widget.onNavigateTab?.call(3),
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1000,7 +1002,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.payments_outlined,
             iconColor: AppColors.brand600,
             iconBgColor: AppColors.brand50,
-            onTap: () => widget.onNavigateTab?.call(3),
+            onTap: () => _open(const WalletScreen()),
           ),
           verticalDivider(),
           statItem(
@@ -1011,7 +1013,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.shopping_bag_outlined,
             iconColor: AppColors.info,
             iconBgColor: AppColors.infoBg,
-            onTap: () => widget.onNavigateTab?.call(1),
+            onTap: () => widget.onNavigateTab?.call(3),
           ),
           verticalDivider(),
           statItem(
@@ -1020,7 +1022,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.inventory_2_outlined,
             iconColor: AppColors.warning,
             iconBgColor: AppColors.warningBg,
-            onTap: () => widget.onNavigateTab?.call(2),
+            onTap: () => _open(const CatalogScreen(initialTab: 0)),
           ),
           verticalDivider(),
           statItem(
@@ -1029,7 +1031,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.visibility_outlined,
             iconColor: AppColors.purple,
             iconBgColor: AppColors.purpleBg,
-            onTap: () => widget.onNavigateTab?.call(2),
+            onTap: () => _open(const CatalogScreen(initialTab: 0)),
           ),
         ],
       ),
@@ -1198,7 +1200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.receipt_long_outlined,
             label: 'All Orders',
             color: AppColors.info,
-            onTap: () => widget.onNavigateTab?.call(1),
+            onTap: () => widget.onNavigateTab?.call(3),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -1207,7 +1209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icons.account_balance_wallet_outlined,
             label: 'Payouts',
             color: AppColors.success,
-            onTap: () => widget.onNavigateTab?.call(3),
+            onTap: () => _open(const WalletScreen()),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -1376,7 +1378,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () => widget.onNavigateTab?.call(1),
+                onPressed: () => widget.onNavigateTab?.call(3),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
