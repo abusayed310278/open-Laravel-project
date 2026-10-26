@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'core/network/app_http_overrides.dart';
 import 'core/theme/app_theme.dart';
+import 'providers/location_provider.dart';
+import 'providers/product_provider.dart';
 import 'providers/seller_auth_provider.dart';
 import 'providers/seller_dashboard_provider.dart';
 import 'providers/seller_order_provider.dart';
@@ -31,6 +33,8 @@ class OpenboxSellerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SellerOrderProvider()),
         ChangeNotifierProvider(create: (_) => SellerProductProvider()),
         ChangeNotifierProvider(create: (_) => SellerWalletProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

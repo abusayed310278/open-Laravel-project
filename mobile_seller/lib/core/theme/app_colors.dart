@@ -45,4 +45,6 @@ abstract final class AppColors {
   static const Color gradeA = Color(0xFF16A34A);
   static const Color gradeB = Color(0xFF2563EB);
   static const Color gradeC = Color(0xFFD97706);
+
+  static const Color verified = Color(0xFF2563EB);
 }

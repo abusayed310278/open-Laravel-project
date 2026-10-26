@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../core/network/api_config.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../auth/login_screen.dart';
+import '../../navigation/app_shell.dart';
 
 class _OnboardPage {
   const _OnboardPage({
@@ -30,7 +32,7 @@ final _pages = [
     imageUrl: '${ApiConfig.backendHost}/storage/branding/GMHl4m8eVhHCvszz6mc7yFHpsg7iwaqzbY0X5UjS.png',
     fallbackIcon: Icons.grade_rounded,
     title: 'Transparent condition grading',
-    body: 'Grade A, B, or C — know exactly what you\'re buying, with battery health and cosmetic condition disclosed upfront.',
+    body: 'Grade A, B, or C - know exactly what you\'re buying, with battery health and cosmetic condition disclosed upfront.',
   ),
   _OnboardPage(
     imageUrl: '${ApiConfig.backendHost}/buy-and-sale.png',
@@ -51,9 +53,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  void _finish() {
+  Future<void> _finish() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_seen_onboarding', true);
+    } catch (_) {}
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const AppShell()),
     );
   }
 
@@ -105,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             child: Image.network(
                               page.imageUrl,
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Center(
+                              errorBuilder: (context, error, stackTrace) => Center(
                                 child: Icon(page.fallbackIcon, size: 60, color: AppColors.brand600),
                               ),
                             ),

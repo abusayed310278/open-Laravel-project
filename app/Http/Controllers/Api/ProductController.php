@@ -23,6 +23,7 @@ class ProductController extends Controller
             ->when($request->filled('brand_id'), fn ($q) => $q->where('brand_id', $request->integer('brand_id')))
             ->when($request->filled('seller_id'), fn ($q) => $q->where('user_id', $request->integer('seller_id')))
             ->when($request->filled('user_id'), fn ($q) => $q->where('user_id', $request->integer('user_id')))
+            ->when($request->filled('condition'), fn ($q) => $q->where('condition', $request->string('condition')))
             ->latest()
             ->paginate($request->integer('per_page', 15));
 

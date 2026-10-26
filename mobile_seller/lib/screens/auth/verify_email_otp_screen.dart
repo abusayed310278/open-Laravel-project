@@ -7,11 +7,12 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
+import '../navigation/main_navigation_screen.dart';
 import 'login_screen.dart';
 
 /// Screen representing Step 2 of Onboarding: "Verify Your Email".
 /// Matches the high-polish design with 6-digit OTP entry, resend cooldown,
-/// and direct transition to login upon verification.
+/// and direct transition to the home screen upon verification.
 class VerifyEmailOtpScreen extends StatefulWidget {
   final String email;
 
@@ -80,13 +81,11 @@ class _VerifyEmailOtpScreenState extends State<VerifyEmailOtpScreen> {
 
       if (!mounted) return;
 
-      AppSnackBar.success(context, 'Email verified successfully! Please sign in.');
+      AppSnackBar.success(context, 'Email verified successfully! Welcome aboard.');
 
-      // Navigate to LoginScreen with prefilled email
+      // Onboarding complete, go straight to the home screen
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => LoginScreen(prefilledEmail: widget.email),
-        ),
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
         (route) => false,
       );
     } catch (e) {

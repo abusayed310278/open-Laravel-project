@@ -71,6 +71,8 @@ class Product {
     this.shortDescription = '',
     this.compareAtPrice,
     this.grade,
+    this.condition = 'openbox',
+    this.conditionLabel = '',
     this.isNew = false,
     this.isVerified = false,
     this.isWarehoused = false,
@@ -96,6 +98,8 @@ class Product {
   final String sku;
   final String shortDescription;
   final ProductGrade? grade;
+  final String condition;
+  final String conditionLabel;
   final bool isNew;
   final bool isVerified;
   final bool isWarehoused;
@@ -106,6 +110,21 @@ class Product {
   final List<ReviewItem> reviews;
   final String description;
   final Map<String, String> specs;
+
+  String get effectiveConditionLabel {
+    if (conditionLabel.isNotEmpty) return conditionLabel;
+    final cond = condition.toLowerCase().trim();
+    if (cond == 'new' || isNew) return 'New';
+    if (cond == 'used') return 'Used';
+    if (cond == 'refurbished') return 'Refurbished';
+    if (cond == 'openbox') return 'Openbox';
+    return 'Openbox';
+  }
+
+  bool get isNewCondition => condition.toLowerCase().trim() == 'new' || isNew;
+  bool get isUsedCondition => condition.toLowerCase().trim() == 'used';
+  bool get isRefurbishedCondition => condition.toLowerCase().trim() == 'refurbished';
+  bool get isOpenboxCondition => condition.toLowerCase().trim() == 'openbox';
 
   int? get discountPercent {
     if (compareAtPrice == null || compareAtPrice! <= price) return null;
@@ -395,6 +414,23 @@ class Product {
         ? parsedSeller!.id
         : (seller != null && seller['id'] != null ? seller['id'].toString() : '');
 
+    final rawCondition = json['condition']?.toString().toLowerCase().trim() ?? '';
+    final isNewBool = json['is_new'] == true || rawCondition == 'new';
+    final conditionStr = rawCondition.isNotEmpty
+        ? rawCondition
+        : (isNewBool ? 'new' : 'openbox');
+    final conditionLabelStr = json['condition_label']?.toString() ?? '';
+
+    ProductGrade? parsedGrade;
+    final gradeRaw = json['grade']?.toString().toUpperCase().trim();
+    if (gradeRaw == 'A') {
+      parsedGrade = ProductGrade.a;
+    } else if (gradeRaw == 'B') {
+      parsedGrade = ProductGrade.b;
+    } else if (gradeRaw == 'C') {
+      parsedGrade = ProductGrade.c;
+    }
+
     return Product(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
@@ -408,6 +444,10 @@ class Product {
       categoryId: cat != null && cat['id'] != null ? cat['id'].toString() : '',
       sellerId: sellerIdStr,
       seller: parsedSeller,
+      grade: parsedGrade,
+      condition: conditionStr,
+      conditionLabel: conditionLabelStr,
+      isNew: isNewBool,
       rating: (json['rating'] is num) ? (json['rating'] as num).toDouble() : 0.0,
       reviewCount: (json['reviews_count'] is num) ? (json['reviews_count'] as num).toInt() : reviewsList.length,
       stock: (json['stock'] is num) ? (json['stock'] as num).toInt() : 0,

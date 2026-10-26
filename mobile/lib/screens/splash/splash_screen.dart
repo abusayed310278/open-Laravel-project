@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
@@ -38,7 +39,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (!mounted) return;
 
-    if (authProvider.isAuthenticated) {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+
+    if (authProvider.isAuthenticated || hasSeenOnboarding) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AppShell()),
       );

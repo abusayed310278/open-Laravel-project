@@ -252,21 +252,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.shield_outlined, size: 16, color: AppColors.slate400),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'Authorized Seller & Store Owner Access Only',
+                const SizedBox(height: AppSpacing.md),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      'Continue as Guest',
                       style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.slate400,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.brand600,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

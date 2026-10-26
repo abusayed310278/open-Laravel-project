@@ -7,7 +7,9 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../auth/register_screen.dart';
 import '../catalog/catalog_screen.dart';
+import '../dashboard/dashboard_screen.dart';
 import '../messages/messages_screen.dart';
 import '../orders/orders_screen.dart';
 import '../store/seller_help_screen.dart';
@@ -45,7 +47,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadLanguagePreference();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<SellerAuthProvider>().refreshProfile();
+        final auth = context.read<SellerAuthProvider>();
+        if (auth.isAuthenticated) {
+          auth.refreshProfile();
+        }
       }
     });
   }
@@ -411,45 +416,339 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<SellerAuthProvider>();
+    final isAuthenticated = authProvider.isAuthenticated;
     final user = authProvider.user;
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
       appBar: AppBar(
-        title: const Text('Settings & Merchant Portal'),
+        title: Text(isAuthenticated ? 'Settings & Merchant Portal' : 'Settings'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // 1. Cover Banner & Logo Header
+      body: RefreshIndicator(
+        color: AppColors.brand500,
+        onRefresh: () async {
+          if (isAuthenticated) {
+            await authProvider.refreshProfile();
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: isAuthenticated
+              ? _buildAuthenticatedContent(context, authProvider, user)
+              : _buildGuestContent(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGuestContent(BuildContext context) {
+    return Column(
+      children: [
+        // 1. Guest Account Card
+        Container(
+          margin: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.brand500.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.brand500, width: 2),
+                    ),
+                    child: const Icon(Icons.person_outline_rounded, color: AppColors.brand400, size: 28),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Guest User',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Sign in to manage orders, wishlist & merchant store',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.slate400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brand500,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      ),
+                      icon: const Icon(Icons.login_rounded, size: 18),
+                      label: const Text('Sign In', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: AppColors.slate600),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                      ),
+                      icon: const Icon(Icons.person_add_outlined, size: 18),
+                      label: const Text('Register', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // 2. Become a Seller Promo
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.brand50,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: AppColors.brand200),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: AppColors.brand500,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Become a Seller',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.brand800),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Sell verified refurbished & new devices',
+                        style: TextStyle(fontSize: 11, color: AppColors.slate600),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  ),
+                  child: const Text('Join', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // 3. Basic Preferences Section
+        _buildSectionHeader('Preferences'),
+        _buildMenuCard(context, [
+          _MenuItem(
+            icon: Icons.language_rounded,
+            title: 'Language',
+            subtitle: 'Change app language',
+            badgeText: _currentLanguage,
+            badgeColor: AppColors.brand500,
+            onTap: _showLanguageBottomSheet,
+          ),
+          _MenuItem(
+            icon: Icons.notifications_none_rounded,
+            title: 'Notifications',
+            subtitle: 'App announcements & alert settings',
+            iconColor: AppColors.info,
+            destination: const NotificationSettingsScreen(),
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.lg),
+
+        // 4. Help & Support Section
+        _buildSectionHeader('Help & Support'),
+        _buildMenuCard(context, [
+          _MenuItem(
+            icon: Icons.help_center_outlined,
+            title: 'Help Center',
+            subtitle: 'Guides, FAQs & resolution center',
+            iconColor: AppColors.info,
+            destination: const HelpCenterScreen(),
+          ),
+          _MenuItem(
+            icon: Icons.feedback_outlined,
+            title: 'Feedback',
+            subtitle: 'Send suggestions or report an issue',
+            iconColor: AppColors.warning,
+            onTap: () => _showFeedbackBottomSheet(context),
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.lg),
+
+        // 5. About & Legal Section
+        _buildSectionHeader('About & Legal'),
+        _buildMenuCard(context, [
+          _MenuItem(
+            icon: Icons.info_outline_rounded,
+            title: 'About Openbox',
+            subtitle: 'App version, mission & release information',
+            iconColor: AppColors.slate600,
+            destination: const AboutScreen(),
+          ),
+          _MenuItem(
+            icon: Icons.help_outline_rounded,
+            title: 'Seller Guidelines',
+            subtitle: 'Refurbished grading standards & FAQs',
+            iconColor: AppColors.slate600,
+            destination: const SellerHelpScreen(),
+          ),
+          _MenuItem(
+            icon: Icons.description_outlined,
+            title: 'Terms of Service',
+            subtitle: 'Platform user terms & policy',
+            iconColor: AppColors.slate600,
+            destination: const VendorTermsScreen(),
+          ),
+        ]),
+        const SizedBox(height: AppSpacing.xxl),
+        _buildFooter(),
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+
+  Widget _buildAuthenticatedContent(BuildContext context, SellerAuthProvider authProvider, dynamic user) {
+    return Column(
+      children: [
+        // 1. Cover Banner & Logo Header
             Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.bottomLeft,
               children: [
                 Container(
-                  height: 110,
+                  height: 124,
                   width: double.infinity,
-                  decoration: const BoxDecoration(color: AppColors.slate800),
-                  child: user?.coverUrl != null
-                      ? Image.network(user!.coverUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: AppColors.slate800))
-                      : Container(color: AppColors.slate800),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.slate900, AppColors.slate700],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (user?.coverUrl != null)
+                        Image.network(
+                          user!.coverUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.05),
+                              Colors.black.withValues(alpha: 0.35),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 Positioned(
                   bottom: -28,
                   left: 20,
-                  child: Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      border: Border.all(color: AppColors.surface, width: 3),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 8, offset: const Offset(0, 2))],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: user?.logoUrl != null
-                        ? Image.network(user!.logoUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.storefront, size: 32, color: AppColors.brand500))
-                        : const Icon(Icons.storefront, size: 32, color: AppColors.brand500),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          border: Border.all(color: AppColors.surface, width: 3),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 3))],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: user?.logoUrl != null
+                            ? Image.network(user!.logoUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.storefront, size: 32, color: AppColors.brand500))
+                            : const Icon(Icons.storefront, size: 32, color: AppColors.brand500),
+                      ),
+                      Positioned(
+                        bottom: -4,
+                        right: -4,
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const UpdateProfileScreen()),
+                          ),
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: AppColors.brand500,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.surface, width: 2),
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 4, offset: const Offset(0, 1))],
+                            ),
+                            child: const Icon(Icons.edit_rounded, size: 12, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -466,13 +765,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user?.storeName ?? 'My Store', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                        Text(
+                          user?.storeName ?? 'My Store',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
+                        ),
+                        const SizedBox(height: 2),
                         Text(user?.email ?? '', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
                       ],
                     ),
                   ),
+                  const SizedBox(width: AppSpacing.sm),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: user?.isKycApproved == true ? AppColors.successBg : AppColors.brand50,
                       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -558,13 +864,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // 4. FINANCES, WALLET & CREDITS
+            // 4. SELLER HUB & METRICS
+            _buildSectionHeader('Merchant Hub & Analytics'),
+            _buildMenuCard(context, [
+              _MenuItem(
+                icon: Icons.dashboard_outlined,
+                title: 'Seller Dashboard',
+                subtitle: 'Store performance, sales metrics, and listing stats',
+                iconColor: AppColors.purple,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                ),
+              ),
+            ]),
+            const SizedBox(height: AppSpacing.sm),
+
+            // 5. FINANCES, WALLET & CREDITS
             _buildSectionHeader('Finances & Credits'),
             _buildMenuCard(context, [
               _MenuItem(
                 icon: Icons.account_balance_wallet_outlined,
                 title: 'Wallet & Payouts',
                 subtitle: 'Available earnings balance, withdrawal requests & statement',
+                iconColor: AppColors.success,
                 onTap: () {
                   if (widget.onNavigateTab != null) {
                     widget.onNavigateTab!(3);
@@ -587,12 +909,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.card_membership_outlined,
                 title: 'Subscription Plan',
                 subtitle: 'Plan tiers, merchant benefits & credit quotas',
+                iconColor: AppColors.purple,
                 destination: const SubscriptionPlanScreen(),
               ),
               _MenuItem(
                 icon: Icons.account_balance_outlined,
                 title: 'Payment Settings',
                 subtitle: 'Bank accounts, IBAN & payout gateways',
+                iconColor: AppColors.info,
                 destination: const PaymentSettingsScreen(),
               ),
             ]),
@@ -605,12 +929,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.inventory_2_outlined,
                 title: 'Product Catalog',
                 subtitle: 'Browse all products, active listings, categories & drafts',
+                iconColor: AppColors.info,
                 destination: const CatalogScreen(initialTab: 0),
               ),
               _MenuItem(
                 icon: Icons.tune_rounded,
                 title: 'Manage Inventory',
                 subtitle: 'Stock counts, low stock alerts & quick pricing',
+                iconColor: AppColors.info,
                 destination: const CatalogScreen(initialTab: 1),
               ),
             ]),
@@ -629,12 +955,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.person_outline_rounded,
                 title: 'Update Profile',
                 subtitle: 'Merchant owner details, phone & email',
+                iconColor: AppColors.slate700,
                 destination: const UpdateProfileScreen(),
               ),
               _MenuItem(
                 icon: Icons.lock_outline_rounded,
                 title: 'Change Password',
                 subtitle: 'Update account password & security credentials',
+                iconColor: AppColors.slate700,
                 destination: const ChangePasswordScreen(),
               ),
               _MenuItem(
@@ -655,6 +983,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.health_and_safety_outlined,
                 title: 'Account Health',
                 subtitle: 'Order defect rate, SLA scores & policy standing',
+                iconColor: AppColors.success,
                 badgeText: 'Good',
                 badgeColor: AppColors.success,
                 destination: const AccountHealthScreen(),
@@ -669,24 +998,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.receipt_long_outlined,
                 title: 'Orders',
                 subtitle: 'Manage client orders, fulfillment & tracking',
+                iconColor: AppColors.info,
                 destination: const OrdersScreen(),
               ),
               _MenuItem(
                 icon: Icons.fact_check_outlined,
                 title: 'Inspection Queue',
                 subtitle: 'Product verification appointments & station visits',
+                iconColor: AppColors.warning,
                 destination: const InspectionQueueScreen(),
               ),
               _MenuItem(
                 icon: Icons.warehouse_outlined,
                 title: 'Warehouse Deposit',
                 subtitle: 'Consignment deposits to fulfillment hubs',
+                iconColor: AppColors.slate700,
                 destination: const WarehouseDepositScreen(),
               ),
               _MenuItem(
                 icon: Icons.map_outlined,
                 title: 'Seller Centers & Hubs',
                 subtitle: 'Drop-off stations, warehouses & map pins',
+                iconColor: AppColors.purple,
                 destination: const SellerCenterScreen(),
               ),
             ]),
@@ -699,6 +1032,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.notifications_none_rounded,
                 title: 'Notifications',
                 subtitle: 'Order alerts, chat notifications & sound preferences',
+                iconColor: AppColors.info,
                 destination: const NotificationSettingsScreen(),
               ),
               _MenuItem(
@@ -713,6 +1047,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.switch_account_outlined,
                 title: 'Other Account',
                 subtitle: 'Switch or link another merchant account',
+                iconColor: AppColors.slate700,
                 onTap: () => _showOtherAccountBottomSheet(context, authProvider),
               ),
             ]),
@@ -725,24 +1060,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.storefront_outlined,
                 title: 'Seller Center',
                 subtitle: 'Drop-off hubs, inspection points & Google Map locations',
+                iconColor: AppColors.purple,
                 destination: const SellerCenterScreen(),
               ),
               _MenuItem(
                 icon: Icons.help_center_outlined,
                 title: 'Help Center',
                 subtitle: 'Guides, FAQs, seller rules & resolution center',
+                iconColor: AppColors.info,
                 destination: const HelpCenterScreen(),
               ),
               _MenuItem(
                 icon: Icons.chat_bubble_outline_rounded,
                 title: 'Messages',
                 subtitle: 'Direct customer messages & chat with support',
+                iconColor: AppColors.success,
                 destination: const MessagesScreen(),
               ),
               _MenuItem(
                 icon: Icons.support_agent_rounded,
                 title: 'Support Tickets',
                 subtitle: 'Customer care tickets & inquiry thread',
+                iconColor: AppColors.warning,
                 destination: const SupportTicketsScreen(),
               ),
               _MenuItem(
@@ -761,18 +1100,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.info_outline_rounded,
                 title: 'About',
                 subtitle: 'App version, openbox mission & release info',
+                iconColor: AppColors.slate600,
                 destination: const AboutScreen(),
               ),
               _MenuItem(
                 icon: Icons.help_outline_rounded,
                 title: 'Seller Help & Guidelines',
                 subtitle: 'Standards, fulfillment SLAs & FAQ answers',
+                iconColor: AppColors.slate600,
                 destination: const SellerHelpScreen(),
               ),
               _MenuItem(
                 icon: Icons.description_outlined,
                 title: 'Vendor Terms of Service',
                 subtitle: 'Platform contractual merchant terms',
+                iconColor: AppColors.slate600,
                 destination: const VendorTermsScreen(),
               ),
               _MenuItem(
@@ -784,10 +1126,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => _confirmLogout(context, authProvider),
               ),
             ]),
+            const SizedBox(height: AppSpacing.xxl),
+            _buildFooter(),
             const SizedBox(height: AppSpacing.xxxl),
           ],
+        );
+  }
+
+  Widget _buildFooter() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: AppColors.brand500,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.storefront_rounded, size: 13, color: Colors.white),
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              'Openbox Seller for Merchants',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.slate400),
+            ),
+          ],
         ),
-      ),
+      ],
     );
   }
 

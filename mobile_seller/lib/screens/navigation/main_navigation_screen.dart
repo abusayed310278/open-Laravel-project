@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../cart/cart_screen.dart';
 import '../categories/categories_screen.dart';
-import '../dashboard/dashboard_screen.dart';
+import '../home/home_screen.dart';
 import '../orders/orders_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -23,7 +23,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void initState() {
     super.initState();
     _screens = [
-      DashboardScreen(onNavigateTab: (index) => setState(() => _currentIndex = index)),
+      const HomeScreen(),
       const CategoriesScreen(),
       CartScreen(onNavigateTab: (index) => setState(() => _currentIndex = index)),
       const OrdersScreen(),

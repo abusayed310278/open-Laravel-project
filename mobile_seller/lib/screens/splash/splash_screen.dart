@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../providers/seller_auth_provider.dart';
-import '../auth/login_screen.dart';
 import '../navigation/main_navigation_screen.dart';
+import '../onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -45,9 +47,21 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
       );
     } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+
+      if (!mounted) return;
+
+      if (!hasSeenOnboarding) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        );
+      } else {
+        // Go straight to MainNavigationScreen (guest mode)
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        );
+      }
     }
   }
 

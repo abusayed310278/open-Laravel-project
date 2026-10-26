@@ -90,5 +90,22 @@ class ApiConfig {
 
     return sanitized;
   }
+
+  /// App Icon & Banner
+  static String get appIconUrl => '$backendHost/icon.png';
+  static String get appBannerUrl => '$backendHost/banner%20image.png';
+
+  /// Products, Categories, Brands & Sellers public endpoints
+  static String get products => '$rootApiUrl/products';
+  static String productDetail(String slug) => '$rootApiUrl/products/$slug';
+  static String sellerDetail(dynamic sellerId) => '$rootApiUrl/sellers/$sellerId';
+  static String get categories => '$rootApiUrl/categories';
+  static String get brands => '$rootApiUrl/brands';
+
+  /// Location endpoints (Google Maps Geocoding backend)
+  static String get locationCurrent => '$rootApiUrl/location/current';
+  static String get locationReverseGeocode => '$rootApiUrl/location/reverse-geocode';
+  static String get locationSearch => '$rootApiUrl/location/search';
+  static String get locationPopularZones => '$rootApiUrl/location/popular-zones';
 }
 

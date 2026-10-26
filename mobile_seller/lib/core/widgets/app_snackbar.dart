@@ -89,6 +89,13 @@ class AppSnackBar {
     show(context, message, title: title, type: SnackBarType.info, duration: duration);
   }
 
+  static void showSuccess(BuildContext? context, String message, {String? title, Duration duration = const Duration(milliseconds: 3200)}) =>
+      success(context, message, title: title, duration: duration);
+
+  static void showError(BuildContext? context, String message, {String? title, Duration duration = const Duration(milliseconds: 3800)}) =>
+      error(context, message, title: title, duration: duration);
+
+
   static void _dismissCurrent() {
     if (_activeWidgetState != null) {
       _activeWidgetState?.dismiss();
@@ -394,3 +401,5 @@ class _TopSnackBarWidgetState extends State<_TopSnackBarWidget> with TickerProvi
     );
   }
 }
+
+typedef AppSnackbar = AppSnackBar;

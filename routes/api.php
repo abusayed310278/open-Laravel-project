@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\CustomerOrderController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RefundRequestController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/social-login', [AuthController::class, 'socialLogin']);
     Route::post('/google', [AuthController::class, 'socialLogin']);
     Route::post('/facebook', [AuthController::class, 'socialLogin']);
+});
+
+Route::prefix('location')->group(function () {
+    Route::get('/current', [LocationController::class, 'current']);
+    Route::post('/reverse-geocode', [LocationController::class, 'reverseGeocode']);
+    Route::get('/search', [LocationController::class, 'search']);
+    Route::get('/popular-zones', [LocationController::class, 'popularZones']);
 });
 
 Route::get('/products', [ProductController::class, 'index']);
