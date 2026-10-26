@@ -13,249 +13,312 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <x-breadcrumb :items="[$product->category->name => route('categories.show', $product->category), $product->title => null]" class="mb-6" />
 
-        <div class="grid lg:grid-cols-5 gap-10">
-            {{-- Gallery --}}
-            <div class="lg:col-span-2">
-                @php
-                    $galleryImages = ($product->images && $product->images->isNotEmpty())
-                        ? $product->images->map(fn($img) => $img->url())->values()
-                        : collect([$product->primaryImageUrl()]);
-                @endphp
+        @php
+            $galleryImages = ($product->images && $product->images->isNotEmpty())
+                ? $product->images->map(fn($img) => $img->url())->values()
+                : collect([$product->primaryImageUrl()]);
+        @endphp
 
-                <div class="flex gap-3">
-                    {{-- Vertical thumbnail rail --}}
-                    @if ($galleryImages->count() > 1)
-                        <div class="flex flex-col items-center shrink-0 w-14 sm:w-20">
-                            <button type="button" id="thumb-scroll-up" class="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 mb-2 cursor-pointer transition-colors" aria-label="Scroll thumbnails up">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+        <div class="relative">
+            <div class="grid lg:grid-cols-5 gap-8 items-start">
+                {{-- Gallery Card --}}
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-2xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+                        {{-- Gallery Header --}}
+                        <div class="flex items-start justify-between gap-3 mb-3.5 px-0.5">
+                            <div class="min-w-0">
+                                <h2 class="text-sm font-semibold text-gray-900">Gallery Images</h2>
+                                <p class="text-xs text-gray-400 mt-0.5 truncate">Explore all available photos of this product.</p>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                @if ($galleryImages->count() > 1)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 whitespace-nowrap">
+                                        <span id="gallery-counter-current">1</span>&nbsp;/&nbsp;{{ $galleryImages->count() }} photos
+                                    </span>
+                                @endif
+
+                                {{-- Compare Button --}}
+                                <button
+                                    type="button"
+                                    class="js-compare-btn w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                    title="Compare product"
+                                    aria-label="Compare product"
+                                    data-compare-id="{{ $product->id }}"
+                                    data-compare-title="{{ $product->title }}"
+                                    data-compare-price="${{ number_format($product->price, 2) }}"
+                                    data-compare-raw-price="{{ $product->price }}"
+                                    data-compare-image="{{ $product->primaryImageUrl() }}"
+                                    data-compare-brand="{{ $product->brand?->name }}"
+                                    data-compare-category="{{ $product->category?->name }}"
+                                    data-compare-condition="{{ $product->condition->label() }}"
+                                    data-compare-rating="{{ number_format($averageRating, 1) }}"
+                                    data-compare-seller="{{ $sellerName }}"
+                                    data-compare-href="{{ route('products.show', $product) }}"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4" />
+                                    </svg>
+                                </button>
+
+                                {{-- Wishlist Button --}}
+                                @auth
+                                    <button
+                                        type="submit"
+                                        form="gallery-wishlist-form"
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                        title="Add to Wishlist"
+                                        aria-label="Add to wishlist"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </button>
+                                @else
+                                    <a
+                                        href="{{ route('login') }}"
+                                        class="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                        title="Log in to add to wishlist"
+                                        aria-label="Log in to add to wishlist"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </a>
+                                @endauth
+                            </div>
+                        </div>
+
+                        {{-- Main Product Image Box --}}
+                        <div id="main-img-wrapper" class="relative group bg-[#0a0a0c] rounded-xl aspect-[4/3] sm:aspect-square flex items-center justify-center overflow-hidden cursor-pointer select-none" title="Click for full screen">
+                            {{-- Fullscreen Button --}}
+                            <button
+                                type="button"
+                                id="gallery-fullscreen-btn"
+                                class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center shadow-md backdrop-blur-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                                title="View fullscreen"
+                                aria-label="View fullscreen"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                </svg>
                             </button>
 
-                            <div id="thumb-rail" class="flex flex-col gap-2.5 overflow-y-auto no-scrollbar scroll-smooth flex-1 min-h-0 w-full">
+                            {{-- Prev/Next Circular Navigation --}}
+                            @if ($galleryImages->count() > 1)
+                                <button type="button" class="js-gallery-prev absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer select-none" aria-label="Previous image">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button type="button" class="js-gallery-next absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 cursor-pointer select-none" aria-label="Next image">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            @endif
+
+                            {{-- Main Product Image (Hover Zoom & Click to Open Lightbox) --}}
+                            <img id="main-img" src="{{ $galleryImages->first() }}" alt="{{ $product->title }}" class="w-full h-full object-contain p-2 will-change-transform pointer-events-none origin-center transition-all duration-300 ease-out">
+                        </div>
+
+                        {{-- Horizontal Thumbnails below Main Image --}}
+                        @if ($galleryImages->count() > 1)
+                            <div id="thumb-rail" class="flex items-center gap-2.5 mt-3.5 overflow-x-auto no-scrollbar py-1">
                                 @foreach ($galleryImages as $index => $imageUrl)
-                                    <img src="{{ $imageUrl }}" data-index="{{ $index }}" class="thumb-img aspect-square w-full object-cover rounded-lg cursor-pointer border-2 transition-all duration-150 hover:opacity-100 shrink-0 {{ $index === 0 ? 'border-brand-500 shadow-xs opacity-100' : 'border-transparent opacity-80 hover:border-gray-300' }}">
+                                    <button
+                                        type="button"
+                                        data-index="{{ $index }}"
+                                        class="thumb-img w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer p-0.5 bg-white {{ $index === 0 ? 'border-emerald-500 ring-2 ring-emerald-500/25 opacity-100 shadow-xs' : 'border-gray-200/90 opacity-70 hover:opacity-100 hover:border-gray-300' }}"
+                                        title="View image {{ $index + 1 }}"
+                                        aria-label="View image {{ $index + 1 }}"
+                                    >
+                                        <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover rounded-lg pointer-events-none">
+                                    </button>
                                 @endforeach
                             </div>
+                        @endif
+                    </div>
+                </div>
 
-                            <button type="button" id="thumb-scroll-down" class="w-7 h-7 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-700 hover:border-gray-300 mt-2 cursor-pointer transition-colors" aria-label="Scroll thumbnails down">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                            </button>
-                        </div>
-                    @endif
-
-                    {{-- Main Product Image (Hover Zoom & Click to Open Lightbox) --}}
-                    <div id="main-img-wrapper" class="relative group bg-gray-50 rounded-xl aspect-square flex-1 min-w-0 flex items-center justify-center overflow-hidden cursor-crosshair select-none" title="Hover to zoom, click for full screen">
-                        <img id="main-img" src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="w-full h-full object-cover will-change-transform pointer-events-none origin-center">
-
-                        {{-- Wishlist / Zoom quick actions --}}
-                        <div class="absolute top-3 right-3 flex flex-col gap-2 z-20">
-                            @auth
-                                <button type="submit" form="gallery-wishlist-form" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors cursor-pointer" title="Add to Wishlist" aria-label="Add to wishlist" onclick="event.stopPropagation()">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
-                                </button>
+                {{-- Info --}}
+                <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-7 shadow-2xs">
+                    <div class="flex items-center gap-2 mb-3">
+                        @if (feature_enabled('product_verification_badge'))
+                            @if ($product->isVerified())
+                                <x-grade-badge :grade="$product->grade->value" />
+                                <x-verified-badge />
                             @else
-                                <a href="{{ route('login') }}" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors" title="Log in to add to wishlist" aria-label="Log in to add to wishlist" onclick="event.stopPropagation()">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
-                                </a>
-                            @endauth
-                            <button type="button" id="gallery-zoom-btn" class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" title="View full screen" aria-label="View full screen" onclick="event.stopPropagation()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-                            </button>
-                        </div>
-
-                        @if ($galleryImages->count() > 1)
-                            <button type="button" id="gallery-prev-btn" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-700 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Previous image" aria-label="Previous image" onclick="event.stopPropagation()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M15 19l-7-7 7-7"/></svg>
-                            </button>
-                            <button type="button" id="gallery-next-btn" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs shadow-md flex items-center justify-center text-gray-700 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Next image" aria-label="Next image" onclick="event.stopPropagation()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M9 5l7 7-7 7"/></svg>
-                            </button>
+                                <x-badge color="blue">{{ $product->condition->label() }}</x-badge>
+                            @endif
+                            @if ($product->isWarehoused())
+                                <x-verified-badge warehouse />
+                            @endif
+                        @endif
+                        @if ($product->is_negotiable)
+                            <x-badge color="gray">Negotiable</x-badge>
                         @endif
                     </div>
-                </div>
-            </div>
 
-            {{-- Info --}}
-            <div class="lg:col-span-3">
-                <div class="flex items-center gap-2 mb-3">
-                    @if (feature_enabled('product_verification_badge'))
-                        @if ($product->isVerified())
-                            <x-grade-badge :grade="$product->grade->value" />
-                            <x-verified-badge />
-                        @else
-                            <x-badge color="blue">{{ $product->condition->label() }}</x-badge>
-                        @endif
-                        @if ($product->isWarehoused())
-                            <x-verified-badge warehouse />
-                        @endif
-                    @endif
-                    @if ($product->is_negotiable)
-                        <x-badge color="gray">Negotiable</x-badge>
-                    @endif
-                </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ $product->title }}</h1>
 
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{{ $product->title }}</h1>
-
-                <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
-                    <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
-                        <span class="text-gray-400">Price:</span>
-                        <span class="font-semibold text-gray-900">${{ number_format($product->price, 2) }}</span>
-                    </div>
-                    @if ($product->compare_price)
+                    <div class="flex flex-wrap items-center gap-2 mb-4 text-sm">
                         <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
-                            <span class="text-gray-400">Regular Price:</span>
-                            <span class="font-semibold text-gray-900">${{ number_format($product->compare_price, 2) }}</span>
+                            <span class="text-gray-400">Price:</span>
+                            <span class="font-semibold text-gray-900">${{ number_format($product->price, 2) }}</span>
                         </div>
-                    @endif
-                    <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
-                        <span class="text-gray-400">Status:</span>
-                        <span class="font-semibold {{ $product->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
-                            {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
-                        </span>
-                    </div>
-                    @if ($product->sku)
-                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
-                            <span class="text-gray-400">Product Code:</span>
-                            <span class="font-semibold text-gray-900">{{ $product->sku }}</span>
-                        </div>
-                    @endif
-                    @if ($product->brand)
-                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
-                            <span class="text-gray-400">Brand:</span>
-                            <span class="font-semibold text-gray-900">{{ $product->brand->name }}</span>
-                        </div>
-                    @endif
-                </div>
-
-                @if ($product->short_description)
-                    <div class="prose prose-sm max-w-none text-gray-600 mb-4 leading-relaxed">
-                        {!! $product->short_description !!}
-                    </div>
-                @endif
-
-                @if ($reviewCount > 0)
-                    <div class="flex items-center gap-2 mb-4">
-                        <x-star-rating :rating="round($averageRating)" />
-                        <span class="text-sm text-gray-500">{{ number_format($averageRating, 1) }} ({{ $reviewCount }} {{ Str::plural('review', $reviewCount) }})</span>
-                    </div>
-                @endif
-
-                <div class="flex items-baseline gap-3 mb-6">
-                    <span class="text-3xl font-bold text-gray-900">${{ number_format($product->price, 2) }}</span>
-                    @if ($product->compare_price)
-                        <span class="text-base text-gray-400 line-through">${{ number_format($product->compare_price, 2) }}</span>
-                        @php
-                            $rawSave = (($product->compare_price - $product->price) / $product->compare_price) * 100;
-                            $saveStr = number_format($rawSave, 4, '.', '');
-                            [$saveWhole, $saveDec] = explode('.', $saveStr);
-                            $saveDigit = substr($saveDec, 0, 1);
-                            $savePercent = $saveDigit === '0' ? $saveWhole : "{$saveWhole}.{$saveDigit}";
-                        @endphp
-                        <x-badge color="red">
-                            Save {{ $savePercent }}%
-                        </x-badge>
-                    @endif
-                </div>
-
-                {{-- Seller card --}}
-                @if (feature_enabled('product_seller_box'))
-                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6 bg-white shadow-2xs">
-                        <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
-                            <div class="w-10 h-10 rounded-full bg-amber-50 border border-gray-200 text-amber-700 font-bold flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                @if (!empty($sellerLogoUrl))
-                                    <img src="{{ $sellerLogoUrl }}" alt="{{ $sellerName }}" class="w-full h-full object-cover">
-                                @else
-                                    <span>{{ Str::upper(Str::substr($sellerName, 0, 1)) }}</span>
-                                @endif
+                        @if ($product->compare_price)
+                            <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
+                                <span class="text-gray-400">Regular Price:</span>
+                                <span class="font-semibold text-gray-900">${{ number_format($product->compare_price, 2) }}</span>
                             </div>
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-sm font-semibold text-gray-900 truncate">{{ $sellerName }}</span>
-                                    @if (($isAdminProduct ?? false) || $product->user->isKycApproved() || $product->user->hasActiveSubscription())
-                                        <x-verified-badge />
+                        @endif
+                        <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
+                            <span class="text-gray-400">Status:</span>
+                            <span class="font-semibold {{ $product->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+                            </span>
+                        </div>
+                        @if ($product->sku)
+                            <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
+                                <span class="text-gray-400">Product Code:</span>
+                                <span class="font-semibold text-gray-900">{{ $product->sku }}</span>
+                            </div>
+                        @endif
+                        @if ($product->brand)
+                            <div class="inline-flex items-baseline gap-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-1.5">
+                                <span class="text-gray-400">Brand:</span>
+                                <span class="font-semibold text-gray-900">{{ $product->brand->name }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    @if ($product->short_description)
+                        <div class="prose prose-sm max-w-none text-gray-600 mb-4 leading-relaxed">
+                            {!! $product->short_description !!}
+                        </div>
+                    @endif
+
+                    @if ($reviewCount > 0)
+                        <div class="flex items-center gap-2 mb-4">
+                            <x-star-rating :rating="round($averageRating)" />
+                            <span class="text-sm text-gray-500">{{ number_format($averageRating, 1) }} ({{ $reviewCount }} {{ Str::plural('review', $reviewCount) }})</span>
+                        </div>
+                    @endif
+
+                    <div class="flex items-baseline gap-3 mb-6">
+                        <span class="text-3xl font-bold text-gray-900">${{ number_format($product->price, 2) }}</span>
+                        @if ($product->compare_price)
+                            <span class="text-base text-gray-400 line-through">${{ number_format($product->compare_price, 2) }}</span>
+                            @php
+                                $rawSave = (($product->compare_price - $product->price) / $product->compare_price) * 100;
+                                $saveStr = number_format($rawSave, 4, '.', '');
+                                [$saveWhole, $saveDec] = explode('.', $saveStr);
+                                $saveDigit = substr($saveDec, 0, 1);
+                                $savePercent = $saveDigit === '0' ? $saveWhole : "{$saveWhole}.{$saveDigit}";
+                            @endphp
+                            <x-badge color="red">
+                                Save {{ $savePercent }}%
+                            </x-badge>
+                        @endif
+                    </div>
+
+                    {{-- Seller card --}}
+                    @if (feature_enabled('product_seller_box'))
+                        <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl p-4 mb-6 bg-white shadow-2xs">
+                            <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-amber-50 border border-gray-200 text-amber-700 font-bold flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                    @if (!empty($sellerLogoUrl))
+                                        <img src="{{ $sellerLogoUrl }}" alt="{{ $sellerName }}" class="w-full h-full object-cover">
+                                    @else
+                                        <span>{{ Str::upper(Str::substr($sellerName, 0, 1)) }}</span>
                                     @endif
                                 </div>
-                                <p class="text-xs text-gray-400">
-                                    @if ($isAdminProduct ?? false)
-                                        Official Platform Store
-                                    @else
-                                        @if ($sellerReviewCount > 0)
-                                            ★ {{ number_format($sellerRating, 1) }}
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-sm font-semibold text-gray-900 truncate">{{ $sellerName }}</span>
+                                        @if (($isAdminProduct ?? false) || $product->user->isKycApproved() || $product->user->hasActiveSubscription())
+                                            <x-verified-badge />
                                         @endif
-                                        @if ($sellerLocation)
-                                            · {{ $sellerLocation }}
+                                    </div>
+                                    <p class="text-xs text-gray-400">
+                                        @if ($isAdminProduct ?? false)
+                                            Official Platform Store
+                                        @else
+                                            @if ($sellerReviewCount > 0)
+                                                ★ {{ number_format($sellerRating, 1) }}
+                                            @endif
+                                            @if ($sellerLocation)
+                                                · {{ $sellerLocation }}
+                                            @endif
                                         @endif
+                                    </p>
+                                </div>
+                            </a>
+
+                            @if (!($isAdminProduct ?? false) && feature_enabled('product_chat_widget'))
+                                @auth
+                                    @if (auth()->id() !== $product->user_id)
+                                        <form method="POST" action="{{ route('chat.start', $product) }}">
+                                            @csrf
+                                            <x-button type="submit" variant="secondary" size="sm">Contact</x-button>
+                                        </form>
                                     @endif
-                                </p>
-                            </div>
-                        </a>
-
-                        @if (!($isAdminProduct ?? false) && feature_enabled('product_chat_widget'))
-                            @auth
-                                @if (auth()->id() !== $product->user_id)
-                                    <form method="POST" action="{{ route('chat.start', $product) }}">
-                                        @csrf
-                                        <x-button type="submit" variant="secondary" size="sm">Contact</x-button>
-                                    </form>
-                                @endif
-                            @endauth
-                        @endif
-                    </div>
-                @endif
-
-                {{-- Purchase actions --}}
-                @if (auth()->check() && !auth()->user()->canShop())
-                    <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium mb-4 flex items-center gap-2.5">
-                        <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>Purchasing items is restricted to Customer and Store Owner accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
-                    </div>
-                @elseif (feature_enabled('product_buy_box'))
-                    <form id="product-buy-box-form" method="POST" action="{{ route('cart.add', $product) }}">
-                        @csrf
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="flex items-center border border-gray-200 rounded-md">
-                                <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Decrease quantity">&minus;</button>
-                                <input type="number" id="product-buy-qty" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
-                                <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Increase quantity">+</button>
-                            </div>
-                            <x-button type="submit" id="btn-add-to-cart" :disabled="$product->quantity <= 0" class="btn-add-to-cart flex-1 justify-center cursor-pointer font-bold">
-                                <span class="js-btn-label">Add to Cart</span>
-                            </x-button>
-                            <x-button type="submit" name="checkout" value="1" variant="dark" :disabled="$product->quantity <= 0" class="flex-1 justify-center cursor-pointer !bg-[#0a1a4a] hover:!bg-[#0f2766]">Buy Now</x-button>
+                                @endauth
+                            @endif
                         </div>
-                    </form>
-                @endif
+                    @endif
 
-                @auth
-                    <form id="gallery-wishlist-form" method="POST" action="{{ route('wishlist.toggle', $product) }}" class="sr-only" aria-hidden="true">
-                        @csrf
-                    </form>
-                @endauth
+                    {{-- Purchase actions --}}
+                    @if (auth()->check() && !auth()->user()->canShop())
+                        <div class="p-3.5 bg-amber-50 border border-amber-200/80 rounded-lg text-xs text-amber-800 font-medium mb-4 flex items-center gap-2.5">
+                            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Purchasing items is restricted to Customer and Store Owner accounts. (Logged in as {{ auth()->user()->role->label() }})</span>
+                        </div>
+                    @elseif (feature_enabled('product_buy_box'))
+                        <form id="product-buy-box-form" method="POST" action="{{ route('cart.add', $product) }}">
+                            @csrf
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="flex items-center border border-gray-200 rounded-md">
+                                    <button type="button" data-qty="decrement" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Decrease quantity">&minus;</button>
+                                    <input type="number" id="product-buy-qty" name="quantity" value="1" min="1" class="w-12 text-center border-0 focus:ring-0 text-sm">
+                                    <button type="button" data-qty="increment" class="px-3 py-2.5 text-gray-500 hover:text-gray-800 cursor-pointer select-none" title="Increase quantity">+</button>
+                                </div>
+                                <x-button type="submit" id="btn-add-to-cart" :disabled="$product->quantity <= 0" class="btn-add-to-cart flex-1 justify-center cursor-pointer font-bold">
+                                    <span class="js-btn-label">Add to Cart</span>
+                                </x-button>
+                                <x-button type="submit" name="checkout" value="1" variant="dark" :disabled="$product->quantity <= 0" class="flex-1 justify-center cursor-pointer !bg-[#0a1a4a] hover:!bg-[#0f2766]">Buy Now</x-button>
+                            </div>
+                        </form>
+                    @endif
 
-                <div class="grid grid-cols-2 gap-3 text-sm mb-6">
-                    <div class="flex items-center gap-2 text-gray-500">
-                        <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 8h-3V4H3a1 1 0 00-1 1v11a1 1 0 001 1h1m0 0a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0m2-8h4l3 3v5h-2m-9-8v8m0-8H9" /></svg>
-                        {{ $product->shipping_type->label() }}{{ $product->shipping_type->value === 'flat_rate' && $product->shipping_flat_rate ? ' ($'.number_format($product->shipping_flat_rate, 2).')' : '' }}
+                    @auth
+                        <form id="gallery-wishlist-form" method="POST" action="{{ route('wishlist.toggle', $product) }}" class="sr-only" aria-hidden="true">
+                            @csrf
+                        </form>
+                    @endauth
+
+                    <div class="grid grid-cols-2 gap-3 text-sm mb-6">
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 8h-3V4H3a1 1 0 00-1 1v11a1 1 0 001 1h1m0 0a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0m2-8h4l3 3v5h-2m-9-8v8m0-8H9" /></svg>
+                            {{ $product->shipping_type->label() }}{{ $product->shipping_type->value === 'flat_rate' && $product->shipping_flat_rate ? ' ($'.number_format($product->shipping_flat_rate, 2).')' : '' }}
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Buyer Protection
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            Secure Payment
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            Ships from {{ $sellerLocation ?? 'Openbox' }}
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 text-gray-500">
-                        <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        Buyer Protection
-                    </div>
-                    <div class="flex items-center gap-2 text-gray-500">
-                        <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                        Secure Payment
-                    </div>
-                    <div class="flex items-center gap-2 text-gray-500">
-                        <svg class="w-4 h-4 text-brand-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Ships from {{ $sellerLocation ?? 'Openbox' }}
-                    </div>
+
+                    <dl class="grid grid-cols-2 gap-y-2 text-sm border-t border-gray-100 pt-4">
+                        <dt class="text-gray-400">SKU</dt>
+                        <dd class="text-gray-800 font-medium">{{ $product->sku ?? '—' }}</dd>
+                        <dt class="text-gray-400">Condition</dt>
+                        <dd class="text-gray-800 font-medium">{{ $product->condition->label() }}</dd>
+                    </dl>
                 </div>
-
-                <dl class="grid grid-cols-2 gap-y-2 text-sm border-t border-gray-100 pt-4">
-                    <dt class="text-gray-400">SKU</dt>
-                    <dd class="text-gray-800 font-medium">{{ $product->sku ?? '—' }}</dd>
-                    <dt class="text-gray-400">Condition</dt>
-                    <dd class="text-gray-800 font-medium">{{ $product->condition->label() }}</dd>
-                </dl>
             </div>
         </div>
 
@@ -663,6 +726,7 @@
 
         const mainImgWrapper = document.getElementById('main-img-wrapper');
         const mainImg = document.getElementById('main-img');
+        const galleryCounterCurrent = document.getElementById('gallery-counter-current');
         const thumbs = document.querySelectorAll('.thumb-img');
 
         const lightboxModal = document.getElementById('imageLightboxModal');
@@ -683,20 +747,45 @@
 
             // Update main image on product page
             if (mainImg) {
-                mainImg.src = targetUrl;
-                mainImg.style.transform = 'scale(1)';
-                mainImg.style.transformOrigin = 'center center';
+                if (animateDirection) {
+                    const outX = animateDirection === 'next' ? '-18px' : '18px';
+                    const inX = animateDirection === 'next' ? '18px' : '-18px';
+                    mainImg.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease';
+                    mainImg.style.opacity = '0';
+                    mainImg.style.transform = `translateX(${outX}) scale(0.97)`;
+
+                    setTimeout(() => {
+                        mainImg.src = targetUrl;
+                        mainImg.style.transformOrigin = 'center center';
+                        mainImg.style.transform = `translateX(${inX}) scale(0.97)`;
+                        requestAnimationFrame(() => {
+                            mainImg.style.opacity = '1';
+                            mainImg.style.transform = 'translateX(0) scale(1)';
+                        });
+                    }, 130);
+                } else {
+                    mainImg.src = targetUrl;
+                    mainImg.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease';
+                    mainImg.style.opacity = '1';
+                    mainImg.style.transform = 'scale(1)';
+                    mainImg.style.transformOrigin = 'center center';
+                }
+            }
+
+            // Update gallery counter chip
+            if (galleryCounterCurrent) {
+                galleryCounterCurrent.textContent = currentImageIndex + 1;
             }
 
             // Update thumbnails on product page
             thumbs.forEach((t, i) => {
                 if (i === currentImageIndex) {
-                    t.classList.remove('border-transparent', 'opacity-80');
-                    t.classList.add('border-brand-500', 'shadow-xs', 'opacity-100');
-                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    t.classList.remove('border-gray-200/90', 'opacity-70', 'border-transparent', 'opacity-80');
+                    t.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500/25', 'opacity-100', 'shadow-xs');
+                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 } else {
-                    t.classList.remove('border-brand-500', 'shadow-xs', 'opacity-100');
-                    t.classList.add('border-transparent', 'opacity-80');
+                    t.classList.remove('border-emerald-500', 'ring-2', 'ring-emerald-500/25', 'opacity-100', 'shadow-xs', 'border-brand-500');
+                    t.classList.add('border-gray-200/90', 'opacity-70');
                 }
             });
 
@@ -757,65 +846,45 @@
             document.body.style.overflow = '';
         }
 
-        // Main Image Hover Zoom (tracks cursor position smoothly)
-        if (mainImgWrapper && mainImg) {
-            let isHovering = false;
-
-            mainImgWrapper.addEventListener('mouseenter', (e) => {
-                isHovering = true;
-                const rect = mainImgWrapper.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                mainImg.style.transformOrigin = `${x.toFixed(2)}% ${y.toFixed(2)}%`;
-                mainImg.style.transition = 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)';
-                mainImg.style.transform = 'scale(2.2)';
-            });
-
-            mainImgWrapper.addEventListener('mousemove', (e) => {
-                if (!isHovering) return;
-                const rect = mainImgWrapper.getBoundingClientRect();
-                const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-                const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
-                mainImg.style.transformOrigin = `${x.toFixed(2)}% ${y.toFixed(2)}%`;
-            });
-
-            mainImgWrapper.addEventListener('mouseleave', () => {
-                isHovering = false;
-                mainImg.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
-                mainImg.style.transform = 'scale(1)';
-                setTimeout(() => {
-                    if (!isHovering) {
-                        mainImg.style.transformOrigin = 'center center';
-                    }
-                }, 250);
-            });
-
-            // Click opens fullscreen lightbox
+        // Click opens fullscreen lightbox
+        if (mainImgWrapper) {
             mainImgWrapper.addEventListener('click', () => openLightbox(currentImageIndex));
         }
 
-        // Thumbnail hover -> switches main image; click -> opens lightbox
+        // Thumbnail hover or click switches main image
         thumbs.forEach((thumb, index) => {
             thumb.addEventListener('mouseenter', () => updateGalleryView(index));
-            thumb.addEventListener('click', () => openLightbox(index));
+            thumb.addEventListener('click', (e) => {
+                e.preventDefault();
+                updateGalleryView(index);
+            });
         });
 
-        // Vertical thumbnail rail scroll buttons
-        const thumbRail = document.getElementById('thumb-rail');
-        const thumbScrollUpBtn = document.getElementById('thumb-scroll-up');
-        const thumbScrollDownBtn = document.getElementById('thumb-scroll-down');
-        if (thumbRail && thumbScrollUpBtn && thumbScrollDownBtn) {
-            thumbScrollUpBtn.addEventListener('click', () => thumbRail.scrollBy({ top: -100, behavior: 'smooth' }));
-            thumbScrollDownBtn.addEventListener('click', () => thumbRail.scrollBy({ top: 100, behavior: 'smooth' }));
+        // Fullscreen button opens lightbox
+        const galleryFullscreenBtn = document.getElementById('gallery-fullscreen-btn');
+        if (galleryFullscreenBtn) {
+            galleryFullscreenBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openLightbox(currentImageIndex);
+            });
         }
 
-        // Main image overlay prev/next arrows and zoom button
-        const galleryPrevBtn = document.getElementById('gallery-prev-btn');
-        const galleryNextBtn = document.getElementById('gallery-next-btn');
-        const galleryZoomBtn = document.getElementById('gallery-zoom-btn');
-        if (galleryPrevBtn) galleryPrevBtn.addEventListener('click', () => updateGalleryView(currentImageIndex - 1, 'prev'));
-        if (galleryNextBtn) galleryNextBtn.addEventListener('click', () => updateGalleryView(currentImageIndex + 1, 'next'));
-        if (galleryZoomBtn) galleryZoomBtn.addEventListener('click', () => openLightbox(currentImageIndex));
+        // Main gallery prev/next circular arrows (overlaid on image, all breakpoints)
+        document.querySelectorAll('.js-gallery-prev').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateGalleryView(currentImageIndex - 1, 'prev');
+            });
+        });
+        document.querySelectorAll('.js-gallery-next').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateGalleryView(currentImageIndex + 1, 'next');
+            });
+        });
 
         // Lightbox buttons
         if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
