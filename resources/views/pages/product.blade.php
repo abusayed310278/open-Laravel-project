@@ -124,7 +124,7 @@
                                     <button
                                         type="button"
                                         data-index="{{ $index }}"
-                                        class="thumb-img w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer p-0.5 bg-white {{ $index === 0 ? 'border-emerald-500 ring-2 ring-emerald-500/25 opacity-100 shadow-xs' : 'border-gray-200/90 opacity-70 hover:opacity-100 hover:border-gray-300' }}"
+                                        class="thumb-img w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border transition-all shrink-0 cursor-pointer p-0.5 bg-white {{ $index === 0 ? 'border-emerald-500 ring-1 ring-emerald-500/20 opacity-100 shadow-xs' : 'border-gray-200/90 opacity-70 hover:opacity-100 hover:border-gray-300' }}"
                                         title="View image {{ $index + 1 }}"
                                         aria-label="View image {{ $index + 1 }}"
                                     >
@@ -781,10 +781,10 @@
             thumbs.forEach((t, i) => {
                 if (i === currentImageIndex) {
                     t.classList.remove('border-gray-200/90', 'opacity-70', 'border-transparent', 'opacity-80');
-                    t.classList.add('border-emerald-500', 'ring-2', 'ring-emerald-500/25', 'opacity-100', 'shadow-xs');
+                    t.classList.add('border-emerald-500', 'ring-1', 'ring-emerald-500/20', 'opacity-100', 'shadow-xs');
                     t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 } else {
-                    t.classList.remove('border-emerald-500', 'ring-2', 'ring-emerald-500/25', 'opacity-100', 'shadow-xs', 'border-brand-500');
+                    t.classList.remove('border-emerald-500', 'ring-1', 'ring-emerald-500/20', 'opacity-100', 'shadow-xs', 'border-brand-500');
                     t.classList.add('border-gray-200/90', 'opacity-70');
                 }
             });
