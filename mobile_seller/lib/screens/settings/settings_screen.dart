@@ -1131,7 +1131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildMenuCard(context, [
               _MenuItem(
                 icon: Icons.notifications_none_rounded,
-                title: 'Notifications',
+                title: 'Setting',
                 subtitle: 'Order alerts, chat notifications & sound preferences',
                 iconColor: AppColors.brand500,
                 destination: const NotificationSettingsScreen(),

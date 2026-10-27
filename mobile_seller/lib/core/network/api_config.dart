@@ -84,8 +84,15 @@ class ApiConfig {
     }
 
     if (!sanitized.startsWith('http://') && !sanitized.startsWith('https://')) {
-      final cleanPath = sanitized.startsWith('/') ? sanitized : '/$sanitized';
-      sanitized = '$backendHost$cleanPath';
+      String clean = sanitized.replaceAll(RegExp(r'^/+'), '');
+      if (!clean.startsWith('storage/') &&
+          !clean.startsWith('images/') &&
+          !clean.startsWith('assets/') &&
+          !clean.startsWith('icon.') &&
+          !clean.startsWith('banner.')) {
+        clean = 'storage/$clean';
+      }
+      sanitized = '$backendHost/$clean';
     }
 
     return sanitized;
@@ -102,7 +109,13 @@ class ApiConfig {
   static String get categories => '$rootApiUrl/categories';
   static String get brands => '$rootApiUrl/brands';
 
+  /// Google Maps API Key (synced with backend services.google.maps_api_key)
+  static const String defaultGoogleMapsApiKey = 'AIzaSyCsdLSxCzJS1DypOOyGan4BWTZvZIhiS9M';
+  static String googleMapsApiKey = defaultGoogleMapsApiKey;
+
   /// Location endpoints (Google Maps Geocoding backend)
+  static String get locationConfig => '$rootApiUrl/location/config';
+  static String get sellerMapConfig => '$baseUrl/map-config';
   static String get locationCurrent => '$rootApiUrl/location/current';
   static String get locationReverseGeocode => '$rootApiUrl/location/reverse-geocode';
   static String get locationSearch => '$rootApiUrl/location/search';

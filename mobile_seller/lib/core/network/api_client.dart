@@ -165,7 +165,7 @@ class ApiClient {
         request.files.addAll(files);
       }
 
-      final streamedResponse = await _client.send(request).timeout(defaultTimeout);
+      final streamedResponse = await _client.send(request).timeout(const Duration(seconds: 60));
       final response = await http.Response.fromStream(streamedResponse);
       return _handleResponse(response);
     } catch (e) {

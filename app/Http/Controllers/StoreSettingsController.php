@@ -102,7 +102,7 @@ class StoreSettingsController extends Controller
 
         $avatarFile = $request->file('avatar') ?? $request->file('photo');
         if ($avatarFile && $avatarFile->isValid()) {
-            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars', 'public');
+            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars');
             $user->update(['avatar' => $avatarPath]);
             $user->profile()->updateOrCreate(['user_id' => $user->id], ['avatar' => $avatarPath]);
         }
@@ -132,13 +132,13 @@ class StoreSettingsController extends Controller
         $data['social_links'] = SocialLinkNormalizer::forStorage($request->input('social_links', []));
 
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
-            $data['logo'] = FileUploadHelper::store($request->file('logo'), 'business-logos', 'public');
+            $data['logo'] = FileUploadHelper::store($request->file('logo'), 'business-logos');
         } elseif ($request->boolean('remove_logo')) {
             $data['logo'] = null;
         }
 
         if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
-            $data['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'business-covers', 'public');
+            $data['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'business-covers');
         } elseif ($request->boolean('remove_cover_image')) {
             $data['cover_image'] = null;
         }
@@ -171,7 +171,7 @@ class StoreSettingsController extends Controller
 
         $avatarFile = $request->file('avatar') ?? $request->file('photo');
         if ($avatarFile && $avatarFile->isValid()) {
-            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars', 'public');
+            $avatarPath = FileUploadHelper::store($avatarFile, 'avatars');
             $user->update(['avatar' => $avatarPath]);
             $user->profile()->updateOrCreate(['user_id' => $user->id], ['avatar' => $avatarPath]);
         }
@@ -201,13 +201,13 @@ class StoreSettingsController extends Controller
         $data['social_links'] = SocialLinkNormalizer::forStorage($request->input('social_links', []));
 
         if ($request->hasFile('profile_photo') && $request->file('profile_photo')->isValid()) {
-            $data['profile_photo'] = FileUploadHelper::store($request->file('profile_photo'), 'saler-photos', 'public');
+            $data['profile_photo'] = FileUploadHelper::store($request->file('profile_photo'), 'saler-photos');
         } elseif ($request->boolean('remove_profile_photo')) {
             $data['profile_photo'] = null;
         }
 
         if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
-            $data['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'saler-covers', 'public');
+            $data['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'saler-covers');
         } elseif ($request->boolean('remove_cover_image')) {
             $data['cover_image'] = null;
         }

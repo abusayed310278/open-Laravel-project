@@ -3,14 +3,17 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/network/api_client.dart';
+import '../../core/network/api_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
+import '../../data/models/product.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../product/product_detail_screen.dart';
 import '../products/products_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -139,6 +142,45 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
+  String? _resolveProductImage(Map<String, dynamic> product, Map<String, dynamic> item) {
+    final imageCandidates = [
+      product['image'],
+      product['thumbnail'],
+      product['thumbnail_url'],
+      product['image_url'],
+      product['primary_image_url'],
+      product['primary_image'],
+      product['featured_image'],
+      product['cover_image'],
+      product['main_image'],
+      product['photo'],
+      item['image'],
+      item['thumbnail'],
+    ];
+
+    for (final cand in imageCandidates) {
+      if (cand != null) {
+        final str = cand.toString().trim();
+        if (str.isNotEmpty && str != 'null') {
+          return ApiConfig.sanitizeUrl(str);
+        }
+      }
+    }
+
+    if (product['gallery'] is List && (product['gallery'] as List).isNotEmpty) {
+      for (final cand in (product['gallery'] as List)) {
+        if (cand != null) {
+          final str = cand.toString().trim();
+          if (str.isNotEmpty && str != 'null') {
+            return ApiConfig.sanitizeUrl(str);
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
   void _proceedToCheckout() {
     AppSnackBar.info(
       context,
@@ -256,7 +298,7 @@ class _CartScreenState extends State<CartScreen> {
           final quantity = (item['quantity'] as num?)?.toInt() ?? 1;
           final title = product['name']?.toString() ?? product['title']?.toString() ?? 'Product';
           final price = (product['price'] as num?)?.toDouble() ?? 0.0;
-          final imageUrl = product['thumbnail_url']?.toString() ?? product['image_url']?.toString();
+          final imageUrl = _resolveProductImage(product, item);
 
           return Container(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -276,21 +318,52 @@ class _CartScreenState extends State<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Product Thumbnail
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.slate100,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
+                GestureDetector(
+                  onTap: () {
+                    if (product.isNotEmpty) {
+                      try {
+                        final prod = Product.fromJson(product);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProductDetailScreen(product: prod),
+                          ),
+                        );
+                      } catch (_) {}
+                    }
+                  },
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppColors.slate100,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: (imageUrl != null && imageUrl.isNotEmpty)
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const Center(
+                              child: Icon(Icons.inventory_2_outlined, color: AppColors.slate400, size: 28),
+                            ),
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.brand500,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Icon(Icons.inventory_2_outlined, color: AppColors.slate400, size: 28),
+                          ),
                   ),
-                  clipBehavior: Clip.antiAlias,
-                  child: (imageUrl != null && imageUrl.isNotEmpty)
-                      ? Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported_outlined, color: AppColors.slate400),
-                        )
-                      : const Icon(Icons.inventory_2_outlined, color: AppColors.slate400),
                 ),
                 const SizedBox(width: AppSpacing.md),
 
@@ -303,14 +376,28 @@ class _CartScreenState extends State<CartScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(
-                              title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.ink,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (product.isNotEmpty) {
+                                  try {
+                                    final prod = Product.fromJson(product);
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ProductDetailScreen(product: prod),
+                                      ),
+                                    );
+                                  } catch (_) {}
+                                }
+                              },
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.ink,
+                                ),
                               ),
                             ),
                           ),

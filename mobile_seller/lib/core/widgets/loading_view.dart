@@ -183,16 +183,21 @@ class _LoadingViewState extends State<LoadingView> with TickerProviderStateMixin
 
             // ─── Animated Typography & Progress Indicator ───
             Row(
-              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  displayMessage,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                    color: AppColors.ink,
+                Flexible(
+                  child: Text(
+                    displayMessage,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      color: AppColors.ink,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 4),

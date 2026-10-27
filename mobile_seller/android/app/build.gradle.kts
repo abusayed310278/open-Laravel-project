@@ -13,6 +13,12 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 android {
     namespace = "com.openbox.seller"
     compileSdk = flutter.compileSdkVersion
@@ -36,6 +42,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["mapsApiKey"] = localProperties.getProperty("mapsApiKey", "AIzaSyCsdLSxCzJS1DypOOyGan4BWTZvZIhiS9M")
     }
 
     signingConfigs {

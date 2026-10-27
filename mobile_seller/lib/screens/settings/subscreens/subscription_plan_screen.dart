@@ -85,23 +85,13 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Active Plan Hero Card
+                    // Active Plan Card
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.xl),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.slate900, AppColors.slate800],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(AppRadius.lg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        border: Border.all(color: AppColors.slate200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,17 +101,17 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
                             children: [
                               Text(
                                 _currentPlan?['name']?.toString() ?? 'Active Plan',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white),
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.brand500,
+                                  color: AppColors.successBg,
                                   borderRadius: BorderRadius.circular(AppRadius.pill),
                                 ),
                                 child: Text(
                                   (_currentPlan?['status'] ?? 'Active').toString().toUpperCase(),
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.success),
                                 ),
                               ),
                             ],
@@ -142,10 +132,10 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
                               ),
                             ],
                           ),
-                          const Divider(height: 28, color: AppColors.slate700),
+                          const Divider(height: 28, color: AppColors.slate100),
                           Text(
                             'Renews on: ${_currentPlan?['renews_at'] ?? 'Continuous'}',
-                            style: const TextStyle(fontSize: 12, color: AppColors.slate400),
+                            style: const TextStyle(fontSize: 12, color: AppColors.slate500),
                           ),
                         ],
                       ),
@@ -232,13 +222,13 @@ class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
   Widget _buildMetric(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.brand400),
+        Icon(icon, size: 20, color: AppColors.brand600),
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white)),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.slate400)),
+            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink)),
+            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.slate500)),
           ],
         ),
       ],

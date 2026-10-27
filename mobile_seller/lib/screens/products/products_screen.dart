@@ -286,48 +286,53 @@ class _ProductsScreenState extends State<ProductsScreen> {
           ),
           const Divider(height: 20, color: AppColors.slate100),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  StatusBadge(status: product.publicationStatus ?? product.status, isSmall: true),
-                  if (product.condition != null) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.slate100,
-                        borderRadius: BorderRadius.circular(4),
+              Expanded(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    StatusBadge(status: product.publicationStatus ?? product.status, isSmall: true),
+                    if (product.condition != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.slate100,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          product.conditionLabel ?? product.condition,
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.slate600),
+                        ),
                       ),
-                      child: Text(
-                        product.conditionLabel ?? product.condition,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.slate600),
-                      ),
-                    ),
                   ],
-                ],
+                ),
               ),
-              Row(
-                children: [
-                  const Text('Live', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.slate600)),
-                  Switch.adaptive(
-                    value: product.isPublished,
-                    activeTrackColor: AppColors.brand500,
-                    onChanged: (_) async {
-                      final success = await provider.togglePublish(product.id);
-                      if (!success && context.mounted) {
-                        AppSnackBar.error(
-                          context,
-                          provider.errorMessage ?? 'Unable to publish listing.',
-                        );
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.slate400),
-                    onPressed: () => _confirmDelete(context, product.id, product.title, provider),
-                  ),
-                ],
+              const SizedBox(width: AppSpacing.sm),
+              const Text('Live', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.slate600)),
+              Transform.scale(
+                scale: 0.85,
+                child: Switch.adaptive(
+                  value: product.isPublished,
+                  activeTrackColor: AppColors.brand500,
+                  onChanged: (_) async {
+                    final success = await provider.togglePublish(product.id);
+                    if (!success && context.mounted) {
+                      AppSnackBar.error(
+                        context,
+                        provider.errorMessage ?? 'Unable to publish listing.',
+                      );
+                    }
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.slate400),
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
+                onPressed: () => _confirmDelete(context, product.id, product.title, provider),
               ),
             ],
           ),

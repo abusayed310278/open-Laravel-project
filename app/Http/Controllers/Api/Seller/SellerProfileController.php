@@ -8,7 +8,6 @@ use App\Http\Resources\SellerUserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class SellerProfileController extends Controller
@@ -21,8 +20,11 @@ class SellerProfileController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        $resource = new SellerUserResource($user);
+
         return response()->json([
-            'profile' => new SellerUserResource($user),
+            'profile' => $resource,
+            'user' => $resource,
         ]);
     }
 
@@ -55,10 +57,21 @@ class SellerProfileController extends Controller
             'is_store_active' => ['nullable'],
             'business_hours' => ['nullable'],
             'social_links' => ['nullable'],
-            'photo' => ['nullable', 'file', 'image', 'max:5120'],
-            'avatar' => ['nullable', 'file', 'image', 'max:5120'],
-            'logo' => ['nullable', 'file', 'image', 'max:5120'],
-            'cover_image' => ['nullable', 'file', 'image', 'max:6144'],
+            'photo' => ['nullable', 'file', 'image', 'max:15360'],
+            'avatar' => ['nullable', 'file', 'image', 'max:15360'],
+            'logo' => ['nullable', 'file', 'image', 'max:15360'],
+            'profile_photo' => ['nullable', 'file', 'image', 'max:15360'],
+            'image' => ['nullable', 'file', 'image', 'max:15360'],
+            'cover_image' => ['nullable', 'file', 'image', 'max:15360'],
+            'cover' => ['nullable', 'file', 'image', 'max:15360'],
+            'banner' => ['nullable', 'file', 'image', 'max:15360'],
+            'banner_image' => ['nullable', 'file', 'image', 'max:15360'],
+            'store_banner' => ['nullable', 'file', 'image', 'max:15360'],
+            'remove_logo' => ['nullable', 'boolean'],
+            'remove_photo' => ['nullable', 'boolean'],
+            'remove_cover' => ['nullable', 'boolean'],
+            'remove_cover_image' => ['nullable', 'boolean'],
+            'remove_banner' => ['nullable', 'boolean'],
         ]);
 
         if (! empty($validated['email'])) {
@@ -72,13 +85,38 @@ class SellerProfileController extends Controller
             $user->update(['phone' => $validated['phone']]);
         }
 
-        $photoFile = $request->file('photo') ?? $request->file('avatar') ?? $request->file('logo');
+        $photoFile = $request->file('logo')
+            ?? $request->file('photo')
+            ?? $request->file('avatar')
+            ?? $request->file('profile_photo')
+            ?? $request->file('image');
+
+        $coverFile = $request->file('cover_image')
+            ?? $request->file('cover')
+            ?? $request->file('banner')
+            ?? $request->file('banner_image')
+            ?? $request->file('store_banner');
+
         $photoPath = null;
-        if ($photoFile) {
-            $photoPath = FileUploadHelper::store($photoFile, 'avatars', 'public');
+        if ($photoFile && $photoFile->isValid()) {
+            $photoPath = FileUploadHelper::store($photoFile, 'avatars');
         }
 
-        // Update UserProfile (user_profiles table)
+        $coverPath = null;
+        if ($coverFile && $coverFile->isValid()) {
+            $coverPath = FileUploadHelper::store($coverFile, 'sellers/covers');
+        }
+
+        $removeLogo = $request->boolean('remove_logo') || $request->boolean('remove_photo');
+        $removeCover = $request->boolean('remove_cover') || $request->boolean('remove_cover_image') || $request->boolean('remove_banner');
+
+        // Update User & UserProfile
+        if ($photoPath) {
+            $user->update(['avatar' => $photoPath]);
+        } elseif ($removeLogo) {
+            $user->update(['avatar' => null]);
+        }
+
         $userProfileData = [];
         if (isset($validated['company'])) {
             $userProfileData['company'] = $validated['company'];
@@ -88,6 +126,8 @@ class SellerProfileController extends Controller
         }
         if ($photoPath) {
             $userProfileData['avatar'] = $photoPath;
+        } elseif ($removeLogo) {
+            $userProfileData['avatar'] = null;
         }
         if (! empty($userProfileData)) {
             $user->profile()->updateOrCreate(['user_id' => $user->id], $userProfileData);
@@ -170,9 +210,13 @@ class SellerProfileController extends Controller
             }
             if ($photoPath) {
                 $attributes['logo'] = $photoPath;
+            } elseif ($removeLogo) {
+                $attributes['logo'] = null;
             }
-            if ($request->hasFile('cover_image')) {
-                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'stores/covers', 'public');
+            if ($coverPath) {
+                $attributes['cover_image'] = $coverPath;
+            } elseif ($removeCover) {
+                $attributes['cover_image'] = null;
             }
 
             if (! empty($attributes)) {
@@ -232,9 +276,13 @@ class SellerProfileController extends Controller
             }
             if ($photoPath) {
                 $attributes['profile_photo'] = $photoPath;
+            } elseif ($removeLogo) {
+                $attributes['profile_photo'] = null;
             }
-            if ($request->hasFile('cover_image')) {
-                $attributes['cover_image'] = FileUploadHelper::store($request->file('cover_image'), 'sellers/covers', 'public');
+            if ($coverPath) {
+                $attributes['cover_image'] = $coverPath;
+            } elseif ($removeCover) {
+                $attributes['cover_image'] = null;
             }
 
             if (! empty($attributes)) {
@@ -242,9 +290,15 @@ class SellerProfileController extends Controller
             }
         }
 
+        $user->refresh();
+        $user->loadMissing(['businessProfile', 'salerProfile', 'profile', 'activeSubscription', 'wallet']);
+
+        $resource = new SellerUserResource($user);
+
         return response()->json([
             'message' => 'Profile updated successfully.',
-            'profile' => new SellerUserResource($user->fresh()),
+            'profile' => $resource,
+            'user' => $resource,
         ]);
     }
 }

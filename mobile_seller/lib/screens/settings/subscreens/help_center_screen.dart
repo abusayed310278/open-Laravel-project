@@ -130,40 +130,28 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 1.35,
+                childAspectRatio: 2.6,
               ),
               itemBuilder: (context, index) {
                 final cat = _categories[index];
                 return Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                     border: Border.all(color: AppColors.slate200),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.brand50,
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                      Icon(cat['icon'] as IconData, size: 20, color: AppColors.brand600),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          cat['title'] as String,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        child: Icon(cat['icon'] as IconData, size: 20, color: AppColors.brand600),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        cat['title'] as String,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        cat['subtitle'] as String,
-                        style: const TextStyle(fontSize: 10, color: AppColors.slate500),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -231,55 +219,55 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: AppColors.slate900,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: AppColors.slate200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Still need assistance?',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink),
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Our merchant partner support team is available 24/7 to help resolve questions.',
-                    style: TextStyle(fontSize: 12, color: AppColors.slate300),
+                    'Our merchant partner support team is available 24/7.',
+                    style: TextStyle(fontSize: 12, color: AppColors.slate500),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.brand500,
-                            foregroundColor: Colors.white,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.ink,
+                            side: const BorderSide(color: AppColors.slate200),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          icon: const Icon(Icons.confirmation_number_outlined, size: 18),
-                          label: const Text('Open Ticket', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const SupportTicketsScreen()),
                             );
                           },
+                          child: const Text('Open Ticket', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.brand500,
                             foregroundColor: Colors.white,
-                            side: const BorderSide(color: AppColors.slate700),
+                            elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-                          label: const Text('Live Chat', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const MessagesScreen()),
                             );
                           },
+                          child: const Text('Live Chat', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                         ),
                       ),
                     ],

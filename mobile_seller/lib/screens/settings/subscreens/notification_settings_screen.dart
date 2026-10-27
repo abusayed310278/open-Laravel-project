@@ -78,9 +78,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(color: AppColors.slate200),
               ),
-              child: SwitchListTile.adaptive(
+              child: ListTile(
                 contentPadding: EdgeInsets.zero,
-                activeTrackColor: AppColors.brand500,
                 title: const Text(
                   'Allow Push Notifications',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
@@ -89,11 +88,19 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   'Receive instant alerts on this device',
                   style: TextStyle(fontSize: 12, color: AppColors.slate500),
                 ),
-                value: _masterPush,
-                onChanged: (val) {
-                  setState(() => _masterPush = val);
-                  _savePreference('notif_master', val);
-                },
+                trailing: Transform.scale(
+                  scale: 0.85,
+                  child: Switch.adaptive(
+                    value: _masterPush,
+                    activeTrackColor: AppColors.brand500,
+                    inactiveTrackColor: AppColors.slate200,
+                    inactiveThumbColor: AppColors.surface,
+                    onChanged: (val) {
+                      setState(() => _masterPush = val);
+                      _savePreference('notif_master', val);
+                    },
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -239,10 +246,10 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       leading: Container(
         padding: const EdgeInsets.all(7),
         decoration: BoxDecoration(
-          color: AppColors.brand50,
+          color: enabled ? AppColors.brand50 : AppColors.slate100,
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
-        child: Icon(icon, size: 20, color: AppColors.brand600),
+        child: Icon(icon, size: 20, color: enabled ? AppColors.brand600 : AppColors.slate400),
       ),
       title: Text(
         title,
@@ -254,12 +261,29 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(fontSize: 11, color: AppColors.slate500),
+        style: TextStyle(fontSize: 11, color: enabled ? AppColors.slate500 : AppColors.slate400),
       ),
-      trailing: Switch.adaptive(
-        value: value,
-        activeTrackColor: AppColors.brand500,
-        onChanged: enabled ? onChanged : null,
+      trailing: Transform.scale(
+        scale: 0.85,
+        child: Switch.adaptive(
+          value: value,
+          onChanged: enabled ? onChanged : null,
+          activeTrackColor: AppColors.brand500,
+          inactiveTrackColor: AppColors.slate200,
+          inactiveThumbColor: AppColors.surface,
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.slate100;
+            }
+            return null;
+          }),
+          thumbColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.slate300;
+            }
+            return null;
+          }),
+        ),
       ),
     );
   }

@@ -28,15 +28,12 @@ class AccountHealthScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: AppColors.slate200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -64,13 +61,13 @@ class AccountHealthScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                color: AppColors.ink,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               isVerified ? 'Fully verified merchant in high standing' : 'Pending verification review',
-                              style: const TextStyle(fontSize: 12, color: AppColors.slate300),
+                              style: const TextStyle(fontSize: 12, color: AppColors.slate500),
                             ),
                           ],
                         ),
@@ -88,7 +85,7 @@ class AccountHealthScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Divider(height: 24, color: AppColors.slate700),
+                  const Divider(height: 24, color: AppColors.slate200),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: const [
@@ -330,13 +327,13 @@ class _HealthMiniStat extends StatelessWidget {
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: isPositive ? AppColors.success : Colors.white,
+            color: isPositive ? AppColors.success : AppColors.ink,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: AppColors.slate400),
+          style: const TextStyle(fontSize: 11, color: AppColors.slate500),
         ),
       ],
     );

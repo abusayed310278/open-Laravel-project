@@ -62,6 +62,16 @@ class SellerUserResource extends JsonResource
         $businessHours = isset($profile) ? ($profile->business_hours ?? null) : null;
         $socialLinks = isset($profile) ? ($profile->social_links ?? null) : null;
 
+        if (! $logoUrl) {
+            $userAvatar = $this->profile?->avatarUrl() ?? ($this->avatar ? MediaUrl::resolve($this->avatar) : null);
+            $logoUrl = $userAvatar;
+        }
+        if (! $coverUrl) {
+            $adminSellerBanner = function_exists('setting') ? setting('seller_banner') : null;
+            $coverUrl = (trim((string) $adminSellerBanner) !== '' ? MediaUrl::resolve($adminSellerBanner) : null)
+                ?: asset('images/default-cover.svg');
+        }
+
         $subscription = $this->activeSubscription;
         $wallet = $this->wallet;
 

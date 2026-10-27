@@ -14,6 +14,17 @@ class LocationController extends Controller
     /**
      * Get Google Maps API key from config.
      */
+        /**
+     * Return public Google Maps configuration and API key.
+     */
+    public function config(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'google_maps_api_key' => $this->getApiKey(),
+        ]);
+    }
+
     protected function getApiKey(): string
     {
         return (string) config('services.google.maps_api_key', 'AIzaSyCsdLSxCzJS1DypOOyGan4BWTZvZIhiS9M');

@@ -262,8 +262,8 @@ class SellerOperationsController extends Controller
 
         if (method_exists($ticket, 'messages')) {
             $ticket->messages()->create([
-                'user_id' => $user->id,
-                'message' => $validated['body'],
+                'sender_id' => $user->id,
+                'body' => $validated['body'],
             ]);
         }
 
@@ -296,12 +296,18 @@ class SellerOperationsController extends Controller
                     'product_id' => $item->product_id,
                     'product_title' => $item->product?->title ?? 'Product #' . $item->product_id,
                     'product_sku' => $item->product?->sku ?? 'N/A',
+                    'product_image' => $item->product ? \App\Support\MediaUrl::resolve($item->product->primaryImageUrl()) : null,
+                    'product_price' => (float) ($item->product?->price ?? 0),
+                    'product_condition' => $item->product?->condition instanceof \App\Enums\ProductCondition ? $item->product->condition->value : ($item->product?->condition ?? 'used'),
                     'status' => $item->status?->value ?? ($item->status ?? 'pending'),
                     'location_name' => $item->location?->name ?? 'Main Hub Verification Station',
+                    'location_address' => $item->location?->address ?? null,
+                    'location_city' => $item->location?->city ?? null,
                     'verifier_name' => $item->verifier?->name ?? 'Assigned Verifier',
                     'scheduled_at' => $item->scheduled_at?->format('M d, Y h:i A'),
                     'inspected_at' => $item->inspected_at?->format('M d, Y h:i A'),
                     'notes' => $item->notes ?? $item->rejection_reason,
+                    'rejection_reason' => $item->rejection_reason,
                     'created_at' => $item->created_at?->format('M d, Y'),
                 ];
             });
@@ -313,6 +319,83 @@ class SellerOperationsController extends Controller
                 'pending' => $items->where('status', 'pending')->count(),
                 'scheduled' => $items->where('status', 'scheduled')->count(),
                 'verified' => $items->where('status', 'verified')->count(),
+                'rejected' => $items->where('status', 'rejected')->count(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get inspection metadata for booking: locations, 30-min slots, eligible products
+     */
+    public function inspectionMeta(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $locations = \App\Models\VerificationLocation::query()
+            ->select(['id', 'name', 'address', 'city'])
+            ->get();
+
+        $slots = \App\Services\ProductVerificationService::get30MinTimeSlots();
+
+        $products = Product::query()
+            ->where('user_id', $user->id)
+            ->where(function ($q) {
+                $q->whereNull('verification_status')
+                  ->orWhere('verification_status', '!=', 'verified');
+            })
+            ->latest()
+            ->get()
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'title' => $p->title,
+                'sku' => $p->sku,
+                'price' => (float) $p->price,
+                'condition' => $p->condition instanceof \App\Enums\ProductCondition ? $p->condition->value : ($p->condition ?? 'used'),
+                'image' => \App\Support\MediaUrl::resolve($p->primaryImageUrl()),
+            ]);
+
+        return response()->json([
+            'locations' => $locations,
+            'slots' => $slots,
+            'products' => $products,
+        ]);
+    }
+
+    /**
+     * Book a new product physical inspection appointment
+     */
+    public function storeInspection(Request $request, \App\Services\ProductVerificationService $service): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'location_id' => ['required', 'integer', 'exists:verification_locations,id'],
+            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
+            'appointment_time' => ['required', 'string'],
+        ]);
+
+        $product = Product::query()
+            ->where('id', $validated['product_id'])
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $verification = $service->request(
+            $product,
+            $user,
+            (int) $validated['location_id'],
+            $validated['appointment_date'],
+            $validated['appointment_time']
+        );
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Inspection appointment booked successfully',
+            'verification' => [
+                'id' => $verification->id,
+                'product_id' => $verification->product_id,
+                'status' => $verification->status->value,
+                'scheduled_at' => $verification->scheduled_at?->format('M d, Y h:i A'),
             ],
         ]);
     }

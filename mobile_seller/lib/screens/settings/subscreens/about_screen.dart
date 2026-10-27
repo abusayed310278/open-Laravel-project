@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/app_logo.dart';
 import '../../store/vendor_terms_screen.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -22,10 +23,7 @@ class AboutScreen extends StatelessWidget {
 
             // Logo & Title
             Container(
-              width: 80,
-              height: 80,
               decoration: BoxDecoration(
-                color: AppColors.brand500,
                 borderRadius: BorderRadius.circular(AppRadius.xl),
                 boxShadow: [
                   BoxShadow(
@@ -35,7 +33,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(Icons.storefront_rounded, size: 44, color: Colors.white),
+              child: const AppLogo(size: 80, borderRadius: AppRadius.xl),
             ),
             const SizedBox(height: AppSpacing.md),
 

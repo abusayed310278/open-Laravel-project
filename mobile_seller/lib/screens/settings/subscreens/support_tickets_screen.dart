@@ -117,7 +117,7 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
 
                     Navigator.of(ctx).pop();
                     try {
-                      await _apiClient.post(
+                      final response = await _apiClient.post(
                         '/support-tickets',
                         body: {
                           'subject': subjectController.text.trim(),
@@ -125,7 +125,23 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                           'body': bodyController.text.trim(),
                         },
                       );
-                      _fetchTickets();
+
+                      if (mounted && response is Map<String, dynamic>) {
+                        final ticket = response['ticket'] as Map<String, dynamic>?;
+                        if (ticket != null) {
+                          setState(() {
+                            _tickets = [
+                              {
+                                ...ticket,
+                                'category': ticket['category'] ?? selectedCategory,
+                                'created_at': ticket['created_at'] ?? 'Just now',
+                              },
+                              ..._tickets,
+                            ];
+                          });
+                        }
+                      }
+
                       if (context.mounted) {
                         AppSnackBar.success(context, 'Support ticket created successfully!');
                       }
@@ -180,12 +196,10 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                   onRefresh: _fetchTickets,
                   color: AppColors.brand500,
               child: _tickets.isEmpty
-                  ? EmptyView(
+                  ? const EmptyView(
                       icon: Icons.chat_bubble_outline_rounded,
                       title: 'No Support Tickets',
                       subtitle: 'Need assistance? Create a ticket and our support team will help you.',
-                      actionLabel: '+ New Support Ticket',
-                      onAction: _showNewTicketModal,
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -247,12 +261,6 @@ class _SupportTicketsScreenState extends State<SupportTicketsScreen> {
                       },
                     ),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.brand500,
-        foregroundColor: Colors.white,
-        onPressed: _showNewTicketModal,
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

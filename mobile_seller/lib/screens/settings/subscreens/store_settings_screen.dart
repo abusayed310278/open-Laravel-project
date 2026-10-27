@@ -193,7 +193,12 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
 
   Future<void> _pickLogo() async {
     try {
-      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      final picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
       if (picked != null) {
         setState(() => _selectedLogo = picked);
       }
@@ -202,7 +207,12 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
 
   Future<void> _pickCover() async {
     try {
-      final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      final picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
       if (picked != null) {
         setState(() => _selectedCover = picked);
       }
@@ -294,21 +304,40 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
         files.add(await http.MultipartFile.fromPath('cover_image', _selectedCover!.path));
       }
 
+      final dynamic response;
       if (files.isNotEmpty) {
-        await _apiClient.multipart(
+        response = await _apiClient.multipart(
           '/profile',
           fields: fields,
           files: files,
         );
       } else {
-        await _apiClient.post(
+        response = await _apiClient.post(
           '/profile',
           body: fields,
         );
       }
 
       if (!mounted) return;
-      await context.read<SellerAuthProvider>().refreshProfile();
+
+      final dynamic profileMap = (response is Map<String, dynamic>)
+          ? (response['profile'] ?? response['user'])
+          : null;
+      if (profileMap is Map<String, dynamic> && mounted) {
+        final freshUser = SellerUser.fromJson(profileMap);
+        await context.read<SellerAuthProvider>().setUser(freshUser);
+        if (mounted) {
+          setState(() {
+            _currentLogoUrl = freshUser.logoUrl;
+            _currentCoverUrl = freshUser.coverUrl;
+            _selectedLogo = null;
+            _selectedCover = null;
+          });
+        }
+      }
+      if (mounted) {
+        await context.read<SellerAuthProvider>().refreshProfile();
+      }
 
       if (mounted) {
         AppSnackBar.success(context, 'Store settings updated successfully!');
@@ -588,13 +617,20 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
               // ─── 3. Store Visibility Switch Card ───
               _buildSectionCard(
                 title: 'Store Public Visibility',
-                child: SwitchListTile(
+                child: ListTile(
                   contentPadding: EdgeInsets.zero,
-                  value: _isStoreActive,
-                  activeThumbColor: AppColors.brand500,
                   title: const Text('Store is Publicly Visible', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                   subtitle: const Text('When disabled, your store and listings are hidden from public view', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
-                  onChanged: (val) => setState(() => _isStoreActive = val),
+                  trailing: Transform.scale(
+                    scale: 0.85,
+                    child: Switch.adaptive(
+                      value: _isStoreActive,
+                      activeTrackColor: AppColors.brand500,
+                      inactiveTrackColor: AppColors.slate200,
+                      inactiveThumbColor: AppColors.surface,
+                      onChanged: (val) => setState(() => _isStoreActive = val),
+                    ),
+                  ),
                 ),
               ),
 

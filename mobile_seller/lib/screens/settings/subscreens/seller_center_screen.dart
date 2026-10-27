@@ -1,9 +1,12 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -57,7 +60,11 @@ class SellerCenterScreen extends StatefulWidget {
 
 class _SellerCenterScreenState extends State<SellerCenterScreen> {
   final ApiClient _apiClient = ApiClient();
-  MapLayerStyle _currentLayer = MapLayerStyle.voyager;
+  final MapLayerStyle _currentLayer = MapLayerStyle.voyager;
+  MapType _currentMapType = MapType.normal;
+  GoogleMapController? _mapController;
+  String _googleMapsApiKey = ApiConfig.googleMapsApiKey;
+  bool _isBackendKeyLoaded = false;
 
   bool _isLoading = true;
   String _selectedCategory = 'all';
@@ -85,6 +92,7 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -233,6 +241,31 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
       }
     } catch (_) {}
 
+    // Fetch dynamic Google Maps API key from backend
+    try {
+      final configRes = await _apiClient.get('/location/config');
+      if (configRes is Map<String, dynamic> && configRes['google_maps_api_key'] != null) {
+        final key = configRes['google_maps_api_key'].toString().trim();
+        if (key.isNotEmpty) {
+          _googleMapsApiKey = key;
+          ApiConfig.googleMapsApiKey = key;
+          _isBackendKeyLoaded = true;
+        }
+      }
+    } catch (_) {
+      try {
+        final mapRes = await _apiClient.get('/map-config');
+        if (mapRes is Map<String, dynamic> && mapRes['google_maps_api_key'] != null) {
+          final key = mapRes['google_maps_api_key'].toString().trim();
+          if (key.isNotEmpty) {
+            _googleMapsApiKey = key;
+            ApiConfig.googleMapsApiKey = key;
+            _isBackendKeyLoaded = true;
+          }
+        }
+      } catch (_) {}
+    }
+
     if (!mounted) return;
 
     // Include the merchant's registered store if available
@@ -288,8 +321,16 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
       _selectedPoint = center;
       _centerLat = center.latitude;
       _centerLng = center.longitude;
-      _zoom = 14.0;
+      _zoom = 14.5;
     });
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(center.latitude, center.longitude),
+          zoom: 14.5,
+        ),
+      ),
+    );
   }
 
   void _fitAllMarkers() {
@@ -316,8 +357,84 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
     setState(() {
       _centerLat = (minLat + maxLat) / 2.0;
       _centerLng = (minLng + maxLng) / 2.0;
-      _zoom = 11.2;
+      _zoom = 11.5;
     });
+
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat - 0.03, minLng - 0.03),
+          northeast: LatLng(maxLat + 0.03, maxLng + 0.03),
+        ),
+        50.0,
+      ),
+    );
+  }
+
+  Set<Marker> _buildGoogleMapMarkers(List<SellerCenterPoint> centers) {
+    return centers.map((center) {
+      final isSelected = _selectedPoint?.id == center.id;
+      final double hue;
+      if (center.isUserStore) {
+        hue = BitmapDescriptor.hueAzure;
+      } else if (center.category == 'inspection') {
+        hue = BitmapDescriptor.hueRed;
+      } else if (center.category == 'drop_off') {
+        hue = BitmapDescriptor.hueOrange;
+      } else if (center.category == 'warehouse') {
+        hue = BitmapDescriptor.hueViolet;
+      } else {
+        hue = BitmapDescriptor.hueGreen;
+      }
+
+      return Marker(
+        markerId: MarkerId(center.id),
+        position: LatLng(center.latitude, center.longitude),
+        icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+        infoWindow: InfoWindow(
+          title: center.name,
+          snippet: '${center.type} • ${center.city}',
+          onTap: () {
+            setState(() => _selectedPoint = center);
+          },
+        ),
+        zIndexInt: isSelected ? 3 : 1,
+        onTap: () {
+          setState(() {
+            _selectedPoint = center;
+            _centerLat = center.latitude;
+            _centerLng = center.longitude;
+          });
+        },
+      );
+    }).toSet();
+  }
+
+  bool get _useNativeGoogleMap =>
+      kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+
+  Widget _buildMapView(List<SellerCenterPoint> centers) {
+    if (_useNativeGoogleMap) {
+      return GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: LatLng(_centerLat, _centerLng),
+          zoom: _zoom,
+        ),
+        mapType: _currentMapType,
+        markers: _buildGoogleMapMarkers(centers),
+        onMapCreated: (controller) {
+          _mapController = controller;
+        },
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: false,
+        compassEnabled: true,
+        mapToolbarEnabled: false,
+      );
+    }
+
+    return _buildInteractiveTileMap(centers);
   }
 
   Future<void> _openGoogleMapsNavigation(SellerCenterPoint point) async {
@@ -420,22 +537,26 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
             icon: const Icon(Icons.crop_free_rounded, color: AppColors.brand600),
             onPressed: _fitAllMarkers,
           ),
-          PopupMenuButton<MapLayerStyle>(
-            tooltip: 'Map Layer',
+          PopupMenuButton<MapType>(
+            tooltip: 'Google Maps Layer',
             icon: const Icon(Icons.layers_outlined, color: AppColors.brand600),
-            onSelected: (style) => setState(() => _currentLayer = style),
+            onSelected: (type) => setState(() => _currentMapType = type),
             itemBuilder: (_) => const [
               PopupMenuItem(
-                value: MapLayerStyle.voyager,
-                child: Text('Openbox / Carto Street'),
+                value: MapType.normal,
+                child: Text('Google Normal Map'),
               ),
               PopupMenuItem(
-                value: MapLayerStyle.satellite,
-                child: Text('Satellite View (ESRI)'),
+                value: MapType.satellite,
+                child: Text('Google Satellite'),
               ),
               PopupMenuItem(
-                value: MapLayerStyle.osm,
-                child: Text('OpenStreetMap'),
+                value: MapType.hybrid,
+                child: Text('Google Hybrid'),
+              ),
+              PopupMenuItem(
+                value: MapType.terrain,
+                child: Text('Google Terrain'),
               ),
             ],
           ),
@@ -449,11 +570,11 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
                 // 1. Search Bar & Category Filter Strip
                 _buildSearchAndFilters(),
 
-                // 2. Interactive Tile Map Canvas
+                // 2. Interactive Google Map Canvas
                 Expanded(
                   child: Stack(
                     children: [
-                      _buildInteractiveTileMap(filtered),
+                      _buildMapView(filtered),
 
                       // Floating Quick Action Buttons on Map
                       Positioned(
@@ -468,6 +589,7 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
                                 setState(() {
                                   _zoom = (_zoom + 0.75).clamp(8.0, 18.0);
                                 });
+                                _mapController?.animateCamera(CameraUpdate.zoomIn());
                               },
                             ),
                             const SizedBox(height: 8),
@@ -478,6 +600,7 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
                                 setState(() {
                                   _zoom = (_zoom - 0.75).clamp(8.0, 18.0);
                                 });
+                                _mapController?.animateCamera(CameraUpdate.zoomOut());
                               },
                             ),
                             const SizedBox(height: 8),
@@ -526,6 +649,34 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
                                   color: AppColors.ink,
                                 ),
                               ),
+                              if (_isBackendKeyLoaded) ...[
+                                const SizedBox(width: 6),
+                                Tooltip(
+                                  message: 'Google Maps API: ${_googleMapsApiKey.isNotEmpty ? "${_googleMapsApiKey.substring(0, min(10, _googleMapsApiKey.length))}..." : "Connected"}',
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.successBg,
+                                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.check_circle_rounded, size: 10, color: AppColors.success),
+                                        SizedBox(width: 2),
+                                        Text(
+                                          'Google Maps',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.success,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -665,7 +816,7 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
             });
           },
           child: Container(
-            color: AppColors.slate200,
+            decoration: const BoxDecoration(color: AppColors.slate200),
             clipBehavior: Clip.hardEdge,
             child: Stack(
               children: [

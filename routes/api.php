@@ -30,6 +30,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('location')->group(function () {
+    Route::get('/config', [LocationController::class, 'config']);
     Route::get('/current', [LocationController::class, 'current']);
     Route::post('/reverse-geocode', [LocationController::class, 'reverseGeocode']);
     Route::get('/search', [LocationController::class, 'search']);
@@ -195,8 +196,11 @@ Route::prefix('seller')->group(function () {
 
         // Inspection Queue
         Route::get('/inspections', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'inspections']);
+        Route::get('/inspections/meta', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'inspectionMeta']);
+        Route::post('/inspections', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'storeInspection']);
 
         // Warehouse Deposits
+        Route::get('/map-config', [\App\Http\Controllers\Api\LocationController::class, 'config']);
         Route::get('/warehouse-deposits', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'warehouseDeposits']);
         Route::post('/warehouse-deposits', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'storeWarehouseDeposit']);
 

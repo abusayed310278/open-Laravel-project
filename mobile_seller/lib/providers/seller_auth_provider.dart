@@ -357,4 +357,16 @@ class SellerAuthProvider extends ChangeNotifier {
       }
     } catch (_) {}
   }
+
+  /// Apply an already-fetched user (e.g. from a save/update response) without
+  /// a round-trip to the server, so callers aren't left showing stale data if
+  /// a follow-up [refreshProfile] call fails.
+  Future<void> setUser(SellerUser user) async {
+    _user = user;
+    try {
+      final storage = await StorageService.getInstance();
+      await storage.saveSellerData(jsonEncode(_user!.toJson()));
+    } catch (_) {}
+    notifyListeners();
+  }
 }
