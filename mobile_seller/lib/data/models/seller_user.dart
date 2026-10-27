@@ -26,6 +26,8 @@ class SellerUser {
   final List<dynamic>? socialLinks;
   final bool isStoreActive;
   final bool isKycApproved;
+  final String? kycStatus;
+  final String? status;
   final int listingCredits;
   final String? subscriptionPlan;
   final double availableBalance;
@@ -58,6 +60,8 @@ class SellerUser {
     this.socialLinks,
     this.isStoreActive = true,
     this.isKycApproved = false,
+    this.kycStatus,
+    this.status,
     this.listingCredits = 0,
     this.subscriptionPlan,
     this.availableBalance = 0.0,
@@ -101,6 +105,8 @@ class SellerUser {
       socialLinks: json['social_links'] is List ? List<dynamic>.from(json['social_links'] as List) : null,
       isStoreActive: json['is_store_active'] == true,
       isKycApproved: json['is_kyc_approved'] == true,
+      kycStatus: json['kyc_status']?.toString(),
+      status: json['status']?.toString(),
       listingCredits: json['listing_credits'] is int
           ? json['listing_credits']
           : int.tryParse(json['listing_credits']?.toString() ?? '0') ?? 0,
@@ -115,6 +121,13 @@ class SellerUser {
           ? (wallet!['total_earned'] as num).toDouble()
           : double.tryParse(wallet?['total_earned']?.toString() ?? '0') ?? 0.0,
     );
+  }
+
+  String get effectiveKycStatus {
+    if (kycStatus != null && kycStatus!.trim().isNotEmpty) {
+      return kycStatus!.trim().toLowerCase();
+    }
+    return isKycApproved ? 'approved' : 'pending';
   }
 
   Map<String, dynamic> toJson() {
@@ -141,6 +154,8 @@ class SellerUser {
       'social_links': socialLinks,
       'is_store_active': isStoreActive,
       'is_kyc_approved': isKycApproved,
+      'kyc_status': kycStatus,
+      'status': status,
       'listing_credits': listingCredits,
       'subscription': subscriptionPlan != null ? {'plan_name': subscriptionPlan} : null,
       'wallet': {

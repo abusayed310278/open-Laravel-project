@@ -221,10 +221,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         padding: const EdgeInsets.all(AppSpacing.lg),
         physics: const AlwaysScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.86,
+          crossAxisCount: 4,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 0.92,
         ),
         itemCount: _filteredCategories.length,
         itemBuilder: (context, index) {
@@ -244,7 +244,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             },
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -261,31 +261,31 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: (imageUrl != null && imageUrl.isNotEmpty)
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(10),
                             child: Image.network(
                               imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Icon(icon, color: color, size: 26),
+                              errorBuilder: (context, error, stackTrace) => Icon(icon, color: color, size: 16),
                             ),
                           )
-                        : Icon(icon, color: color, size: 26),
+                        : Icon(icon, color: color, size: 16),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     name,
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: AppColors.ink,
                       height: 1.2,

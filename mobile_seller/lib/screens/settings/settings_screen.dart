@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../../data/models/seller_user.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
@@ -40,6 +42,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _currentLanguage = 'English';
+  String? _kycStatus;
+  bool? _isKycApproved;
 
   @override
   void initState() {
@@ -50,9 +54,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final auth = context.read<SellerAuthProvider>();
         if (auth.isAuthenticated) {
           auth.refreshProfile();
+          _fetchKycStatus();
         }
       }
     });
+  }
+
+  Future<void> _fetchKycStatus() async {
+    try {
+      final res = await ApiClient().get('/verification');
+      if (res != null && mounted) {
+        setState(() {
+          if (res['kyc_status'] != null) {
+            _kycStatus = res['kyc_status'].toString();
+          }
+          if (res['is_kyc_approved'] != null) {
+            _isKycApproved = res['is_kyc_approved'] == true || res['is_kyc_approved'] == 1;
+          }
+        });
+      }
+    } catch (_) {
+      // Fallback silently to user model
+    }
+  }
+
+  ({String label, Color color, Color bgColor, IconData icon}) _resolveKycDisplay(SellerUser? user) {
+    final raw = (_kycStatus ?? user?.effectiveKycStatus ?? 'pending').toLowerCase().trim();
+    final isApproved = _isKycApproved ?? (user?.isKycApproved == true || raw == 'approved' || raw == 'verified');
+
+    if (isApproved) {
+      return (
+        label: 'Verified',
+        color: AppColors.success,
+        bgColor: AppColors.successBg,
+        icon: Icons.verified_rounded,
+      );
+    }
+
+    if (raw == 'rejected' || raw == 'declined') {
+      return (
+        label: 'Rejected',
+        color: AppColors.danger,
+        bgColor: AppColors.dangerBg,
+        icon: Icons.cancel_rounded,
+      );
+    }
+
+    if (raw == 'under_review' || raw == 'in_review' || raw == 'review') {
+      return (
+        label: 'Under Review',
+        color: AppColors.info,
+        bgColor: AppColors.infoBg,
+        icon: Icons.hourglass_top_rounded,
+      );
+    }
+
+    if (raw == 'submitted') {
+      return (
+        label: 'Submitted',
+        color: AppColors.brand700,
+        bgColor: AppColors.brand50,
+        icon: Icons.mark_email_read_rounded,
+      );
+    }
+
+    if (raw == 'unverified' || raw == 'draft' || raw == 'none') {
+      return (
+        label: 'Unverified',
+        color: AppColors.slate600,
+        bgColor: AppColors.slate100,
+        icon: Icons.shield_outlined,
+      );
+    }
+
+    return (
+      label: 'Pending',
+      color: AppColors.brand700,
+      bgColor: AppColors.brand50,
+      icon: Icons.pending_actions_rounded,
+    );
   }
 
   Future<void> _loadLanguagePreference() async {
@@ -259,10 +339,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.success,
+                        color: (user?.isStoreActive ?? false) ? AppColors.success : AppColors.danger,
                         borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
-                      child: const Text('Active', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                      child: Text(
+                        (user?.isStoreActive ?? false) ? 'Active' : 'Inactive',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -428,7 +511,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         color: AppColors.brand500,
         onRefresh: () async {
           if (isAuthenticated) {
-            await authProvider.refreshProfile();
+            await Future.wait([
+              authProvider.refreshProfile(),
+              _fetchKycStatus(),
+            ]);
           }
         },
         child: SingleChildScrollView(
@@ -449,11 +535,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           margin: const EdgeInsets.all(AppSpacing.lg),
           padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: AppColors.brand500,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: [
               BoxShadow(
@@ -471,11 +553,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: AppColors.brand500.withValues(alpha: 0.18),
+                      color: Colors.white.withValues(alpha: 0.22),
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.brand500, width: 2),
+                      border: Border.all(color: AppColors.ink, width: 1.5),
                     ),
-                    child: const Icon(Icons.person_outline_rounded, color: AppColors.brand400, size: 28),
+                    child: const Icon(Icons.person_outline_rounded, color: AppColors.ink, size: 28),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -487,7 +569,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AppColors.ink,
                           ),
                         ),
                         SizedBox(height: 3),
@@ -495,7 +577,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           'Sign in to manage orders, wishlist & merchant store',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.slate400,
+                            color: AppColors.brand900,
                           ),
                         ),
                       ],
@@ -507,13 +589,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.brand500,
-                        foregroundColor: Colors.white,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.ink,
+                        side: const BorderSide(color: AppColors.ink, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-                        elevation: 0,
                       ),
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -526,8 +607,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: AppColors.slate600),
+                        foregroundColor: AppColors.ink,
+                        side: const BorderSide(color: AppColors.ink, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                       ),
@@ -604,13 +685,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             badgeColor: AppColors.brand500,
             onTap: _showLanguageBottomSheet,
           ),
-          _MenuItem(
-            icon: Icons.notifications_none_rounded,
-            title: 'Notifications',
-            subtitle: 'App announcements & alert settings',
-            iconColor: AppColors.info,
-            destination: const NotificationSettingsScreen(),
-          ),
         ]),
         const SizedBox(height: AppSpacing.lg),
 
@@ -621,14 +695,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.help_center_outlined,
             title: 'Help Center',
             subtitle: 'Guides, FAQs & resolution center',
-            iconColor: AppColors.info,
+            iconColor: AppColors.brand500,
             destination: const HelpCenterScreen(),
           ),
           _MenuItem(
             icon: Icons.feedback_outlined,
             title: 'Feedback',
             subtitle: 'Send suggestions or report an issue',
-            iconColor: AppColors.warning,
+            iconColor: AppColors.brand500,
             onTap: () => _showFeedbackBottomSheet(context),
           ),
         ]),
@@ -641,21 +715,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.info_outline_rounded,
             title: 'About Openbox',
             subtitle: 'App version, mission & release information',
-            iconColor: AppColors.slate600,
+            iconColor: AppColors.brand500,
             destination: const AboutScreen(),
           ),
           _MenuItem(
             icon: Icons.help_outline_rounded,
             title: 'Seller Guidelines',
             subtitle: 'Refurbished grading standards & FAQs',
-            iconColor: AppColors.slate600,
+            iconColor: AppColors.brand500,
             destination: const SellerHelpScreen(),
           ),
           _MenuItem(
             icon: Icons.description_outlined,
             title: 'Terms of Service',
             subtitle: 'Platform user terms & policy',
-            iconColor: AppColors.slate600,
+            iconColor: AppColors.brand500,
             destination: const VendorTermsScreen(),
           ),
         ]),
@@ -666,7 +740,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAuthenticatedContent(BuildContext context, SellerAuthProvider authProvider, dynamic user) {
+  Widget _buildAuthenticatedContent(BuildContext context, SellerAuthProvider authProvider, SellerUser? user) {
+    final kycDisplay = _resolveKycDisplay(user);
+
     return Column(
       children: [
         // 1. Cover Banner & Logo Header
@@ -777,20 +853,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: user?.isKycApproved == true ? AppColors.successBg : AppColors.brand50,
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                      border: Border.all(color: user?.isKycApproved == true ? AppColors.success.withValues(alpha: 0.3) : AppColors.brand200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(user?.isKycApproved == true ? Icons.verified_rounded : Icons.pending_actions_rounded, size: 14, color: user?.isKycApproved == true ? AppColors.success : AppColors.brand700),
-                        const SizedBox(width: 4),
-                        Text(user?.isKycApproved == true ? 'Verified' : 'Pending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: user?.isKycApproved == true ? AppColors.success : AppColors.brand700)),
-                      ],
+                  GestureDetector(
+                    onTap: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const VerificationStatusScreen()),
+                      );
+                      _fetchKycStatus();
+                      if (context.mounted) {
+                        context.read<SellerAuthProvider>().refreshProfile();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: kycDisplay.bgColor,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                        border: Border.all(color: kycDisplay.color.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(kycDisplay.icon, size: 14, color: kycDisplay.color),
+                          const SizedBox(width: 4),
+                          Text(
+                            kycDisplay.label,
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kycDisplay.color),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -820,7 +910,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: _buildQuickActionTile(
                         icon: Icons.account_balance_wallet_outlined,
-                        iconColor: const Color(0xFF000080),
+                        iconColor: AppColors.brand500,
                         label: 'Wallet',
                         caption: 'Earnings & Payouts',
                         onTap: () {
@@ -838,7 +928,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: _buildQuickActionTile(
                         icon: Icons.stars_rounded,
-                        iconColor: const Color(0xFFF59E0B),
+                        iconColor: AppColors.brand500,
                         label: 'Credits',
                         caption: '${user?.listingCredits ?? 0} Available',
                         onTap: () => Navigator.of(context).push(
@@ -850,7 +940,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: _buildQuickActionTile(
                         icon: Icons.inventory_2_outlined,
-                        iconColor: const Color(0xFF10B981),
+                        iconColor: AppColors.brand500,
                         label: 'Catalog',
                         caption: 'Items & Stock',
                         onTap: () => Navigator.of(context).push(
@@ -871,7 +961,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.dashboard_outlined,
                 title: 'Seller Dashboard',
                 subtitle: 'Store performance, sales metrics, and listing stats',
-                iconColor: AppColors.purple,
+                iconColor: AppColors.brand500,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const DashboardScreen()),
                 ),
@@ -886,7 +976,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.account_balance_wallet_outlined,
                 title: 'Wallet & Payouts',
                 subtitle: 'Available earnings balance, withdrawal requests & statement',
-                iconColor: AppColors.success,
+                iconColor: AppColors.brand500,
                 onTap: () {
                   if (widget.onNavigateTab != null) {
                     widget.onNavigateTab!(3);
@@ -901,6 +991,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.stars_rounded,
                 title: 'Listing Credits',
                 subtitle: 'Available listing credits, packages & balance',
+                iconColor: AppColors.brand500,
                 badgeText: '${user?.listingCredits ?? 0} Credits',
                 badgeColor: AppColors.brand500,
                 destination: const SubscriptionPlanScreen(),
@@ -909,14 +1000,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.card_membership_outlined,
                 title: 'Subscription Plan',
                 subtitle: 'Plan tiers, merchant benefits & credit quotas',
-                iconColor: AppColors.purple,
+                iconColor: AppColors.brand500,
                 destination: const SubscriptionPlanScreen(),
               ),
               _MenuItem(
                 icon: Icons.account_balance_outlined,
                 title: 'Payment Settings',
                 subtitle: 'Bank accounts, IBAN & payout gateways',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const PaymentSettingsScreen(),
               ),
             ]),
@@ -929,14 +1020,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.inventory_2_outlined,
                 title: 'Product Catalog',
                 subtitle: 'Browse all products, active listings, categories & drafts',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const CatalogScreen(initialTab: 0),
               ),
               _MenuItem(
                 icon: Icons.tune_rounded,
                 title: 'Manage Inventory',
                 subtitle: 'Stock counts, low stock alerts & quick pricing',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const CatalogScreen(initialTab: 1),
               ),
             ]),
@@ -949,29 +1040,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.store_outlined,
                 title: 'Store Setting',
                 subtitle: 'Store name, handle, description & address',
+                badgeText: (user?.isStoreActive ?? false) ? 'Active' : 'Inactive',
+                badgeColor: (user?.isStoreActive ?? false) ? AppColors.success : AppColors.danger,
                 destination: const StoreSettingsScreen(),
               ),
               _MenuItem(
                 icon: Icons.person_outline_rounded,
                 title: 'Update Profile',
                 subtitle: 'Merchant owner details, phone & email',
-                iconColor: AppColors.slate700,
+                iconColor: AppColors.brand500,
                 destination: const UpdateProfileScreen(),
               ),
               _MenuItem(
                 icon: Icons.lock_outline_rounded,
                 title: 'Change Password',
                 subtitle: 'Update account password & security credentials',
-                iconColor: AppColors.slate700,
+                iconColor: AppColors.brand500,
                 destination: const ChangePasswordScreen(),
               ),
               _MenuItem(
                 icon: Icons.verified_user_outlined,
                 title: 'Verification Status',
                 subtitle: 'KYC identity compliance & status badge',
-                badgeText: user?.isKycApproved == true ? 'Verified' : 'Pending',
-                badgeColor: user?.isKycApproved == true ? AppColors.success : AppColors.warning,
-                destination: const VerificationStatusScreen(),
+                badgeText: kycDisplay.label,
+                badgeColor: kycDisplay.color,
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const VerificationStatusScreen()),
+                  );
+                  _fetchKycStatus();
+                  if (context.mounted) {
+                    context.read<SellerAuthProvider>().refreshProfile();
+                  }
+                },
               ),
             ]),
             const SizedBox(height: AppSpacing.lg),
@@ -983,7 +1084,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.health_and_safety_outlined,
                 title: 'Account Health',
                 subtitle: 'Order defect rate, SLA scores & policy standing',
-                iconColor: AppColors.success,
+                iconColor: AppColors.brand500,
                 badgeText: 'Good',
                 badgeColor: AppColors.success,
                 destination: const AccountHealthScreen(),
@@ -998,28 +1099,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.receipt_long_outlined,
                 title: 'Orders',
                 subtitle: 'Manage client orders, fulfillment & tracking',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const OrdersScreen(),
               ),
               _MenuItem(
                 icon: Icons.fact_check_outlined,
                 title: 'Inspection Queue',
                 subtitle: 'Product verification appointments & station visits',
-                iconColor: AppColors.warning,
+                iconColor: AppColors.brand500,
                 destination: const InspectionQueueScreen(),
               ),
               _MenuItem(
                 icon: Icons.warehouse_outlined,
                 title: 'Warehouse Deposit',
                 subtitle: 'Consignment deposits to fulfillment hubs',
-                iconColor: AppColors.slate700,
+                iconColor: AppColors.brand500,
                 destination: const WarehouseDepositScreen(),
               ),
               _MenuItem(
                 icon: Icons.map_outlined,
                 title: 'Seller Centers & Hubs',
                 subtitle: 'Drop-off stations, warehouses & map pins',
-                iconColor: AppColors.purple,
+                iconColor: AppColors.brand500,
                 destination: const SellerCenterScreen(),
               ),
             ]),
@@ -1032,7 +1133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.notifications_none_rounded,
                 title: 'Notifications',
                 subtitle: 'Order alerts, chat notifications & sound preferences',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const NotificationSettingsScreen(),
               ),
               _MenuItem(
@@ -1047,7 +1148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.switch_account_outlined,
                 title: 'Other Account',
                 subtitle: 'Switch or link another merchant account',
-                iconColor: AppColors.slate700,
+                iconColor: AppColors.brand500,
                 onTap: () => _showOtherAccountBottomSheet(context, authProvider),
               ),
             ]),
@@ -1060,28 +1161,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.storefront_outlined,
                 title: 'Seller Center',
                 subtitle: 'Drop-off hubs, inspection points & Google Map locations',
-                iconColor: AppColors.purple,
+                iconColor: AppColors.brand500,
                 destination: const SellerCenterScreen(),
               ),
               _MenuItem(
                 icon: Icons.help_center_outlined,
                 title: 'Help Center',
                 subtitle: 'Guides, FAQs, seller rules & resolution center',
-                iconColor: AppColors.info,
+                iconColor: AppColors.brand500,
                 destination: const HelpCenterScreen(),
               ),
               _MenuItem(
                 icon: Icons.chat_bubble_outline_rounded,
                 title: 'Messages',
                 subtitle: 'Direct customer messages & chat with support',
-                iconColor: AppColors.success,
+                iconColor: AppColors.brand500,
                 destination: const MessagesScreen(),
               ),
               _MenuItem(
                 icon: Icons.support_agent_rounded,
                 title: 'Support Tickets',
                 subtitle: 'Customer care tickets & inquiry thread',
-                iconColor: AppColors.warning,
+                iconColor: AppColors.brand500,
                 destination: const SupportTicketsScreen(),
               ),
               _MenuItem(
@@ -1100,21 +1201,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.info_outline_rounded,
                 title: 'About',
                 subtitle: 'App version, openbox mission & release info',
-                iconColor: AppColors.slate600,
+                iconColor: AppColors.brand500,
                 destination: const AboutScreen(),
               ),
               _MenuItem(
                 icon: Icons.help_outline_rounded,
                 title: 'Seller Help & Guidelines',
                 subtitle: 'Standards, fulfillment SLAs & FAQ answers',
-                iconColor: AppColors.slate600,
+                iconColor: AppColors.brand500,
                 destination: const SellerHelpScreen(),
               ),
               _MenuItem(
                 icon: Icons.description_outlined,
                 title: 'Vendor Terms of Service',
                 subtitle: 'Platform contractual merchant terms',
-                iconColor: AppColors.slate600,
+                iconColor: AppColors.brand500,
                 destination: const VendorTermsScreen(),
               ),
               _MenuItem(

@@ -5,11 +5,9 @@ import '../../core/network/api_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/product_card.dart';
-import '../../data/models/chat_conversation.dart';
 import '../../data/models/product.dart';
 import '../../data/models/seller.dart';
 import '../../providers/product_provider.dart';
-import '../chat/chat_conversation_screen.dart';
 import 'product_detail_screen.dart';
 
 class SellerStorefrontScreen extends StatefulWidget {
@@ -91,7 +89,14 @@ class _SellerStorefrontScreenState extends State<SellerStorefrontScreen> {
           SliverAppBar(
             pinned: true,
             expandedHeight: 200,
-            backgroundColor: AppColors.brand600,
+            backgroundColor: AppColors.surface,
+            leading: Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: _CircleIconButton(
+                icon: Icons.arrow_back_rounded,
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -200,25 +205,6 @@ class _SellerStorefrontScreenState extends State<SellerStorefrontScreen> {
                 ],
               ),
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ChatConversationScreen(
-                      conversation: ChatConversation(
-                        id: 'c_${_seller.id}',
-                        sellerName: _seller.name,
-                        avatarInitial: _seller.avatarInitial,
-                        lastMessage: '',
-                        time: 'Now',
-                        messages: const [],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -331,6 +317,32 @@ class _StoreStat extends StatelessWidget {
         Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
         Text(label, style: const TextStyle(fontSize: 11, color: AppColors.slate500)),
       ],
+    );
+  }
+}
+
+class _CircleIconButton extends StatelessWidget {
+  const _CircleIconButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.92),
+      shape: const CircleBorder(),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.2),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, size: 18, color: AppColors.ink),
+        ),
+      ),
     );
   }
 }

@@ -61,24 +61,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
-                          color: _selectedTab == 0 ? AppColors.surface : Colors.transparent,
+                          color: _selectedTab == 0 ? AppColors.brand600 : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 0
-                              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))]
+                              ? [BoxShadow(color: AppColors.brand600.withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 2))]
                               : null,
                         ),
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inventory_2_outlined, size: 16, color: _selectedTab == 0 ? AppColors.brand600 : AppColors.slate600),
+                            Icon(Icons.inventory_2_outlined, size: 16, color: _selectedTab == 0 ? Colors.white : AppColors.slate600),
                             const SizedBox(width: 6),
                             Text(
                               'Product Listings',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: _selectedTab == 0 ? FontWeight.w700 : FontWeight.w600,
-                                color: _selectedTab == 0 ? AppColors.ink : AppColors.slate600,
+                                color: _selectedTab == 0 ? Colors.white : AppColors.slate600,
                               ),
                             ),
                           ],
@@ -92,24 +92,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
-                          color: _selectedTab == 1 ? AppColors.surface : Colors.transparent,
+                          color: _selectedTab == 1 ? AppColors.brand600 : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 1
-                              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1))]
+                              ? [BoxShadow(color: AppColors.brand600.withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 2))]
                               : null,
                         ),
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.tune_rounded, size: 16, color: _selectedTab == 1 ? AppColors.brand600 : AppColors.slate600),
+                            Icon(Icons.tune_rounded, size: 16, color: _selectedTab == 1 ? Colors.white : AppColors.slate600),
                             const SizedBox(width: 6),
                             Text(
                               'Manage Inventory',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: _selectedTab == 1 ? FontWeight.w700 : FontWeight.w600,
-                                color: _selectedTab == 1 ? AppColors.ink : AppColors.slate600,
+                                color: _selectedTab == 1 ? Colors.white : AppColors.slate600,
                               ),
                             ),
                           ],

@@ -80,6 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.slate50,
       resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        backgroundColor: AppColors.slate50,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.ink),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),

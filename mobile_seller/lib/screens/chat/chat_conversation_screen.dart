@@ -17,11 +17,18 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
   final _controller = TextEditingController();
   late final List<ChatMessage> _messages = [...widget.conversation.messages];
 
+  String _formatTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.hour < 12 ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
+
   void _send() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     setState(() {
-      _messages.add(ChatMessage(text: text, isMe: true, time: 'Now'));
+      _messages.add(ChatMessage(text: text, isMe: true, time: _formatTime(DateTime.now())));
       _controller.clear();
     });
   }
@@ -74,27 +81,27 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                       final message = _messages[_messages.length - 1 - i];
                       return Align(
                         alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          decoration: BoxDecoration(
-                            color: message.isMe ? AppColors.brand500 : AppColors.slate100,
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(AppRadius.md),
-                              topRight: const Radius.circular(AppRadius.md),
-                              bottomLeft: Radius.circular(message.isMe ? AppRadius.md : 2),
-                              bottomRight: Radius.circular(message.isMe ? 2 : AppRadius.md),
+                        child: Column(
+                          crossAxisAlignment: message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                              decoration: BoxDecoration(
+                                color: message.isMe ? AppColors.brand500 : AppColors.slate100,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(AppRadius.md),
+                                  topRight: const Radius.circular(AppRadius.md),
+                                  bottomLeft: Radius.circular(message.isMe ? AppRadius.md : 2),
+                                  bottomRight: Radius.circular(message.isMe ? 2 : AppRadius.md),
+                                ),
+                              ),
+                              child: Text(message.text, style: TextStyle(fontSize: 13, color: message.isMe ? Colors.white : AppColors.ink, height: 1.4)),
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(message.text, style: TextStyle(fontSize: 13, color: message.isMe ? Colors.white : AppColors.ink, height: 1.4)),
-                              const SizedBox(height: 2),
-                              Text(message.time, style: TextStyle(fontSize: 10, color: message.isMe ? Colors.white70 : AppColors.slate400)),
-                            ],
-                          ),
+                            const SizedBox(height: 2),
+                            Text(message.time, style: const TextStyle(fontSize: 10, color: AppColors.slate400)),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
                         ),
                       );
                     },

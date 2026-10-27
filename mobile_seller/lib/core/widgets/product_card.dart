@@ -49,7 +49,7 @@ class ProductCard extends StatelessWidget {
                       spacing: 4,
                       runSpacing: 4,
                       children: [
-                        ConditionBadge(product: product),
+                        if (product.discountPercent != null) DiscountBadge(percent: product.discountPercent!),
                         if (product.grade != null && !product.isNewCondition) GradeBadge(grade: product.grade!),
                       ],
                     ),
@@ -82,20 +82,31 @@ class ProductCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (product.effectiveBrandName.isNotEmpty) ...[
-                          Text(
-                            product.effectiveBrandName.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.slate400,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                        ],
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            if (product.effectiveBrandName.isNotEmpty)
+                              Expanded(
+                                child: Text(
+                                  product.effectiveBrandName.toUpperCase(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.slate400,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              )
+                            else
+                              const Spacer(),
+                            const SizedBox(width: 6),
+                            ConditionBadge(product: product, compact: true),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
                         Text(
                           product.title,
                           maxLines: 2,
@@ -112,25 +123,51 @@ class ProductCard extends StatelessWidget {
                       ],
                     ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          formatPrice(product.price),
-                          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                formatPrice(product.price),
+                                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.ink),
+                              ),
+                              if (product.compareAtPrice != null) ...[
+                                const SizedBox(width: AppSpacing.xs),
+                                Flexible(
+                                  child: Text(
+                                    formatPrice(product.compareAtPrice!),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      color: AppColors.slate400,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
-                        if (product.compareAtPrice != null) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          Flexible(
-                            child: Text(
-                              formatPrice(product.compareAtPrice!),
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                color: AppColors.slate400,
-                                decoration: TextDecoration.lineThrough,
+                        if (product.sellerFirstWord.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 65),
+                              child: Text(
+                                product.sellerFirstWord,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.slate500,
+                                ),
                               ),
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ],

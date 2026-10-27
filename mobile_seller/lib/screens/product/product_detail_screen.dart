@@ -124,6 +124,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ));
     }
 
+    if (shortDesc.isNotEmpty) {
+      activeTabs.add(_ProductTabItem(
+        title: 'Short Description',
+        content: _ShortDescriptionTab(text: shortDesc),
+      ));
+    }
+
     if (product.reviews.isNotEmpty || product.reviewCount > 0) {
       activeTabs.add(_ProductTabItem(
         title: 'Reviews',
@@ -391,14 +398,22 @@ class _GalleryState extends State<_Gallery> {
                           controller: _pageController,
                           itemCount: images.length,
                           onPageChanged: widget.onChanged,
-                          itemBuilder: (context, i) => Image.network(
-                            images[i],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (_, _, _) => Container(
-                              color: AppColors.slate100,
-                              child: const Icon(Icons.image_outlined, size: 48, color: AppColors.slate400),
+                          itemBuilder: (context, i) => GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => _FullScreenGalleryViewer(images: images, initialIndex: i),
+                                fullscreenDialog: true,
+                              ),
+                            ),
+                            child: Image.network(
+                              images[i],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (_, _, _) => Container(
+                                color: AppColors.slate100,
+                                child: const Icon(Icons.image_outlined, size: 48, color: AppColors.slate400),
+                              ),
                             ),
                           ),
                         ),
@@ -676,24 +691,20 @@ class _MessageSellerButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       shape: const CircleBorder(),
-      child: Ink(
+      child: SizedBox(
         width: 40,
         height: 40,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.brand400, AppColors.brand700],
-          ),
-          boxShadow: [
-            BoxShadow(color: AppColors.brand500.withValues(alpha: 0.35), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
-          child: const Icon(Icons.chat_bubble_rounded, size: 19, color: Colors.white),
+          child: Center(
+            child: Image.asset(
+              'assets/icon/message.png',
+              width: 19,
+              height: 19,
+              color: AppColors.brand600,
+            ),
+          ),
         ),
       ),
     );
@@ -769,6 +780,22 @@ class _DescriptionTab extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Text(
         product.cleanDescription,
+        style: const TextStyle(fontSize: 13, color: AppColors.slate700, height: 1.6),
+      ),
+    );
+  }
+}
+
+class _ShortDescriptionTab extends StatelessWidget {
+  const _ShortDescriptionTab({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Text(
+        text,
         style: const TextStyle(fontSize: 13, color: AppColors.slate700, height: 1.6),
       ),
     );
@@ -920,7 +947,7 @@ class _FullScreenGalleryViewerState extends State<_FullScreenGalleryViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
@@ -955,12 +982,13 @@ class _FullScreenGalleryViewerState extends State<_FullScreenGalleryViewer> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppColors.slate100,
                     borderRadius: BorderRadius.circular(AppRadius.pill),
+                    border: Border.all(color: AppColors.slate200),
                   ),
                   child: Text(
                     '${_index + 1} / ${widget.images.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(color: AppColors.ink, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

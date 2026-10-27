@@ -26,12 +26,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedCondition = 'all';
 
-  final List<({String key, String label, IconData icon, Color color})> _conditions = const [
-    (key: 'all', label: 'All', icon: Icons.auto_awesome_rounded, color: AppColors.brand600),
-    (key: 'new', label: 'New', icon: Icons.fiber_new_rounded, color: Color(0xFF10B981)),
-    (key: 'used', label: 'Pre-owned & Used', icon: Icons.replay_rounded, color: Color(0xFF64748B)),
-    (key: 'refurbished', label: 'Refurbished', icon: Icons.build_circle_outlined, color: Color(0xFF2563EB)),
-    (key: 'openbox', label: 'Openbox product', icon: Icons.inventory_2_outlined, color: Color(0xFFD97706)),
+  final List<({String key, String label})> _conditions = const [
+    (key: 'all', label: 'All'),
+    (key: 'new', label: 'New'),
+    (key: 'used', label: 'Used'),
+    (key: 'refurbished', label: 'Refurbished'),
+    (key: 'openbox', label: 'Openbox'),
   ];
 
   @override
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Condition Filter Pills Strip
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 42,
+                  height: 40,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -88,42 +88,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(AppRadius.md),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? item.color : AppColors.surface,
+                            color: isSelected ? AppColors.brand600 : AppColors.surface,
                             borderRadius: BorderRadius.circular(AppRadius.md),
                             border: Border.all(
-                              color: isSelected ? item.color : AppColors.slate200,
+                              color: isSelected ? AppColors.brand600 : AppColors.slate200,
                               width: 1.2,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: item.color.withValues(alpha: 0.25),
+                                      color: AppColors.brand600.withValues(alpha: 0.25),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
                                   ]
                                 : null,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                item.icon,
-                                size: 16,
-                                color: isSelected ? Colors.white : item.color,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                item.label,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? Colors.white : AppColors.ink,
-                                ),
-                              ),
-                            ],
+                          alignment: Alignment.center,
+                          child: Text(
+                            item.label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected ? Colors.white : AppColors.ink,
+                            ),
                           ),
                         ),
                       );
@@ -154,15 +144,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
                 ],
 
-                // 2. Pre-owned & Used Section
+                // 2. Used Section
                 if (usedProducts.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: SectionHeader(
-                      title: 'Pre-owned & Used',
+                      title: 'Used',
                       actionLabel: 'See all',
                       onAction: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => ProductListScreen(title: 'Pre-owned & Used', products: usedProducts),
+                          builder: (_) => ProductListScreen(title: 'Used Products', products: usedProducts),
                         ),
                       ),
                     ),
@@ -190,11 +180,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
                 ],
 
-                // 4. Openbox Product Section
+                // 4. Openbox Section
                 if (openboxProducts.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: SectionHeader(
-                      title: 'Openbox product',
+                      title: 'Openbox',
                       actionLabel: 'See all',
                       onAction: () => Navigator.of(context).push(
                         MaterialPageRoute(
@@ -226,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           switch (_selectedCondition) {
                             'new' => 'New Products',
-                            'used' => 'Pre-owned & Used Products',
+                            'used' => 'Used Products',
                             'refurbished' => 'Refurbished Products',
                             'openbox' => 'Openbox Products',
                             _ => '${_selectedCondition[0].toUpperCase()}${_selectedCondition.substring(1)} Products',

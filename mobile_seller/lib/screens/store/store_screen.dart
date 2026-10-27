@@ -19,6 +19,10 @@ class StoreScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.slate50,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('Store Profile & Settings'),
       ),
       body: SingleChildScrollView(

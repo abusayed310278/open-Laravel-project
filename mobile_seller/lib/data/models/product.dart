@@ -142,6 +142,31 @@ class Product {
     return '';
   }
 
+  String get sellerFirstWord {
+    String rawName = '';
+    if (seller != null && seller!.name.trim().isNotEmpty) {
+      rawName = seller!.name.trim();
+    } else if (sellerId.trim().isNotEmpty) {
+      final cleanId = sellerId.trim().toLowerCase();
+      if (cleanId == 'openbox' || cleanId.contains('openbox')) {
+        rawName = 'Openbox';
+      } else if (cleanId == 'techhub' || cleanId.contains('tech')) {
+        rawName = 'TechHub';
+      } else if (cleanId == 'ahmed') {
+        rawName = 'Ahmed';
+      } else {
+        rawName = sellerId.trim();
+      }
+    }
+
+    if (rawName.isEmpty || RegExp(r'^\d+$').hasMatch(rawName)) {
+      rawName = 'Openbox';
+    }
+
+    final words = rawName.split(RegExp(r'\s+'));
+    return words.isNotEmpty ? words.first : '';
+  }
+
   int? get discountPercent {
     if (compareAtPrice == null || compareAtPrice! <= price) return null;
     return (((compareAtPrice! - price) / compareAtPrice!) * 100).round();
@@ -424,11 +449,31 @@ class Product {
       parsedSeller = Seller.fromJson(sellerRaw);
     } else if (sellerRaw is Map) {
       parsedSeller = Seller.fromJson(Map<String, dynamic>.from(sellerRaw));
+    } else if (sellerRaw is String && sellerRaw.trim().isNotEmpty) {
+      parsedSeller = Seller(
+        id: json['seller_id']?.toString() ?? '',
+        name: sellerRaw.trim(),
+        type: SellerType.business,
+      );
+    }
+
+    final directStoreName = json['seller_name']?.toString() ??
+        json['store_name']?.toString() ??
+        json['shop_name']?.toString() ??
+        json['vendor_name']?.toString();
+    if (parsedSeller == null && directStoreName != null && directStoreName.trim().isNotEmpty) {
+      parsedSeller = Seller(
+        id: json['seller_id']?.toString() ?? '',
+        name: directStoreName.trim(),
+        type: SellerType.business,
+      );
     }
 
     final sellerIdStr = parsedSeller?.id.isNotEmpty == true
         ? parsedSeller!.id
-        : (seller != null && seller['id'] != null ? seller['id'].toString() : '');
+        : (seller != null && seller['id'] != null
+            ? seller['id'].toString()
+            : (json['seller_id']?.toString() ?? json['user_id']?.toString() ?? ''));
 
     final rawCondition = json['condition']?.toString().toLowerCase().trim() ?? '';
     final isNewBool = json['is_new'] == true || rawCondition == 'new';

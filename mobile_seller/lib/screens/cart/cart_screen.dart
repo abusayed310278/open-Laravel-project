@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_colors.dart';
@@ -8,6 +9,8 @@ import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
+import '../../providers/seller_auth_provider.dart';
+import '../auth/login_screen.dart';
 import '../products/products_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -22,7 +25,8 @@ class _CartScreenState extends State<CartScreen> {
   final ApiClient _apiClient = ApiClient();
   final NumberFormat _currencyFormat = NumberFormat('#,##0.00', 'en_US');
 
-  bool _isLoading = true;
+  bool _isLoading = false;
+  bool _hasFetched = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _items = [];
   double _subtotal = 0.0;
@@ -32,10 +36,15 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCart();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && context.read<SellerAuthProvider>().isAuthenticated) {
+        _fetchCart();
+      }
+    });
   }
 
   Future<void> _fetchCart() async {
+    _hasFetched = true;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -62,6 +71,12 @@ class _CartScreenState extends State<CartScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      if (e is ApiException && e.statusCode == 401) {
+        _hasFetched = false;
+        setState(() => _isLoading = false);
+        context.read<SellerAuthProvider>().logout();
+        return;
+      }
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -134,12 +149,20 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = context.watch<SellerAuthProvider>().isAuthenticated;
+
+    if (isAuthenticated && !_hasFetched && !_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _fetchCart();
+      });
+    }
+
     return Scaffold(
       backgroundColor: AppColors.slate50,
       appBar: AppBar(
         title: const Text('Shopping Cart'),
         actions: [
-          if (_items.isNotEmpty)
+          if (isAuthenticated && _items.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined, color: AppColors.danger),
               tooltip: 'Clear Cart',
@@ -147,8 +170,22 @@ class _CartScreenState extends State<CartScreen> {
             ),
         ],
       ),
-      body: _buildBody(),
-      bottomNavigationBar: (_items.isNotEmpty && !_isLoading) ? _buildCheckoutBar() : null,
+      body: isAuthenticated ? _buildBody() : _buildSignInPrompt(),
+      bottomNavigationBar: (isAuthenticated && _items.isNotEmpty && !_isLoading) ? _buildCheckoutBar() : null,
+    );
+  }
+
+  Widget _buildSignInPrompt() {
+    return EmptyView(
+      icon: Icons.lock_outline_rounded,
+      title: 'Sign in to view your cart',
+      subtitle: 'Log in to your account to see the items you\'ve added to your cart.',
+      actionLabel: 'Sign In',
+      onAction: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      },
     );
   }
 
