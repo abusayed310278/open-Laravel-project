@@ -5,7 +5,7 @@ class ApiConfig {
   ApiConfig._();
 
   /// Live production domain
-  static const String liveDomain = 'https://openboxo.com';
+  static const String liveDomain = 'https://openbox.qa';
 
   /// Primary development domain (Laragon virtual host: http://open.test)
   static const String devDomain = 'http://open.test';
@@ -64,6 +64,8 @@ class ApiConfig {
     'https://open.test',
     'http://openbox.test',
     'https://openbox.test',
+    'http://openbox.qa',
+    'https://openbox.qa',
     'http://openboxo.com',
     'https://openboxo.com',
     'http://10.0.2.2',

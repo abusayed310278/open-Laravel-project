@@ -97,7 +97,7 @@ class _SellerHelpScreenState extends State<SellerHelpScreen> {
   Widget _buildContent() {
     final sections = (_data?['sections'] as List?) ?? [];
     final faqs = (_data?['faqs'] as List?) ?? [];
-    final supportEmail = _data?['support_email']?.toString() ?? 'support@openboxo.com';
+    final supportEmail = _data?['support_email']?.toString() ?? 'support@openbox.qa';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
