@@ -150,6 +150,13 @@ Route::prefix('seller')->group(function () {
             Route::delete('/{id}', [AddressController::class, 'destroy']);
         });
 
+        // Checkout & Payment
+        Route::match(['get', 'post'], '/checkout/payment-methods', [\App\Http\Controllers\Api\CheckoutController::class, 'availablePaymentMethods']);
+        Route::post('/checkout', [\App\Http\Controllers\Api\CheckoutController::class, 'process']);
+        Route::post('/checkout/stripe-confirm/{order}', [\App\Http\Controllers\Api\CheckoutController::class, 'confirmStripe']);
+        Route::get('/customer-orders', [\App\Http\Controllers\Api\CustomerOrderController::class, 'index']);
+        Route::get('/customer-orders/{order}', [\App\Http\Controllers\Api\CustomerOrderController::class, 'show']);
+
         // Dashboard Analytics
         Route::get('/dashboard', [SellerDashboardController::class, 'index']);
 

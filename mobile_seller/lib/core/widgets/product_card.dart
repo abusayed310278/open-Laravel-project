@@ -33,15 +33,60 @@ class ProductCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        color: AppColors.slate100,
-                        child: const Icon(Icons.image_outlined, color: AppColors.slate400, size: 32),
+                    child: ColorFiltered(
+                      colorFilter: product.isOutOfStock
+                          ? const ColorFilter.matrix(<double>[
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0.2126, 0.7152, 0.0722, 0, 0,
+                              0,      0,      0,      1, 0,
+                            ])
+                          : const ColorFilter.matrix(<double>[
+                              1, 0, 0, 0, 0,
+                              0, 1, 0, 0, 0,
+                              0, 0, 1, 0, 0,
+                              0, 0, 0, 1, 0,
+                            ]),
+                      child: Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          color: AppColors.slate100,
+                          child: const Icon(Icons.image_outlined, color: AppColors.slate400, size: 32),
+                        ),
                       ),
                     ),
                   ),
+                  if (product.isOutOfStock)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        alignment: Alignment.center,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDC2626).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            'OUT OF STOCK',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     top: AppSpacing.sm,
                     left: AppSpacing.sm,
@@ -189,7 +234,7 @@ class _StockBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
       decoration: BoxDecoration(
         color: isInStock ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2),
         borderRadius: BorderRadius.circular(4),
@@ -202,20 +247,20 @@ class _StockBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 4.5,
-            height: 4.5,
+            width: 5,
+            height: 5,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isInStock ? const Color(0xFF059669) : AppColors.danger,
+              color: isInStock ? const Color(0xFF059669) : const Color(0xFFDC2626),
             ),
           ),
-          const SizedBox(width: 3),
+          const SizedBox(width: 3.5),
           Text(
             isInStock ? 'In Stock' : 'Out of Stock',
             style: TextStyle(
               fontSize: 8.5,
               fontWeight: FontWeight.w700,
-              color: isInStock ? const Color(0xFF059669) : AppColors.danger,
+              color: isInStock ? const Color(0xFF059669) : const Color(0xFFDC2626),
             ),
           ),
         ],

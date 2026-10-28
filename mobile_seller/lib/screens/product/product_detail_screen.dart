@@ -67,6 +67,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _addToCart({bool checkout = false}) async {
     final productToUse = _detailedProduct ?? widget.product;
+    if (productToUse.isOutOfStock) {
+      AppSnackBar.error(context, 'This product is currently out of stock');
+      return;
+    }
+
     if (checkout) {
       final authProvider = context.read<SellerAuthProvider>();
       if (!authProvider.isAuthenticated) {
@@ -319,7 +324,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
-            _BottomActionBar(onAddToCart: () => _addToCart(), onBuyNow: () => _addToCart(checkout: true)),
+            _BottomActionBar(
+              isOutOfStock: product.isOutOfStock,
+              onAddToCart: () => _addToCart(),
+              onBuyNow: () => _addToCart(checkout: true),
+            ),
           ],
         ),
       ),
@@ -426,6 +435,34 @@ class _GalleryState extends State<_Gallery> {
                     onTap: () => Navigator.of(context).pop(),
                   ),
                 ),
+                if (widget.product.isOutOfStock)
+                  Positioned(
+                    top: AppSpacing.sm + 44,
+                    left: AppSpacing.sm,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDC2626).withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'OUT OF STOCK',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   top: AppSpacing.sm,
                   right: AppSpacing.sm,
@@ -1000,9 +1037,14 @@ class _FullScreenGalleryViewerState extends State<_FullScreenGalleryViewer> {
 }
 
 class _BottomActionBar extends StatelessWidget {
-  const _BottomActionBar({required this.onAddToCart, required this.onBuyNow});
+  const _BottomActionBar({
+    required this.onAddToCart,
+    required this.onBuyNow,
+    this.isOutOfStock = false,
+  });
   final VoidCallback onAddToCart;
   final VoidCallback onBuyNow;
+  final bool isOutOfStock;
 
   @override
   Widget build(BuildContext context) {
@@ -1012,21 +1054,46 @@ class _BottomActionBar extends StatelessWidget {
         color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.slate200)),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onAddToCart,
-              icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
-              label: const Text('Add to Cart'),
+      child: isOutOfStock
+          ? Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              alignment: Alignment.center,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.remove_shopping_cart_rounded, size: 20, color: Color(0xFFDC2626)),
+                  SizedBox(width: 8),
+                  Text(
+                    'Currently Out of Stock',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onAddToCart,
+                    icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                    label: const Text('Add to Cart'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: ElevatedButton(onPressed: onBuyNow, child: const Text('Buy Now')),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: ElevatedButton(onPressed: onBuyNow, child: const Text('Buy Now')),
-          ),
-        ],
-      ),
     );
   }
 }

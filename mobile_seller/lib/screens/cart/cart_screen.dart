@@ -13,6 +13,7 @@ import '../../core/widgets/loading_view.dart';
 import '../../data/models/product.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../auth/login_screen.dart';
+import '../checkout/checkout_screen.dart';
 import '../product/product_detail_screen.dart';
 import '../products/products_screen.dart';
 
@@ -182,10 +183,25 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _proceedToCheckout() {
-    AppSnackBar.info(
-      context,
-      'Proceeding to secure checkout...',
-      title: 'Checkout',
+    if (_items.isEmpty) {
+      AppSnackBar.warning(context, 'Your cart is empty');
+      return;
+    }
+
+    final totalToPay = _total > 0 ? _total : (_subtotal + _shipping);
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CheckoutScreen(
+          items: _items,
+          subtotal: _subtotal,
+          shipping: _shipping,
+          total: totalToPay,
+          onOrderCompleted: () {
+            _fetchCart();
+          },
+        ),
+      ),
     );
   }
 

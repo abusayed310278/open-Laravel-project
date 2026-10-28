@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     (key: 'used', label: 'Used'),
     (key: 'refurbished', label: 'Refurbished'),
     (key: 'openbox', label: 'Openbox'),
+    (key: 'out_of_stock', label: 'Out of Stock'),
   ];
 
   @override
@@ -44,12 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final refurbishedProducts = displayProducts.where((p) => p.isRefurbishedCondition).toList();
     final newProducts = displayProducts.where((p) => p.isNewCondition).toList();
     final usedProducts = displayProducts.where((p) => p.isUsedCondition).toList();
+    final outOfStockProducts = displayProducts.where((p) => p.isOutOfStock).toList();
 
     final List<Product> activeProducts = switch (_selectedCondition) {
       'openbox' => openboxProducts,
       'refurbished' => refurbishedProducts,
       'new' => newProducts,
       'used' => usedProducts,
+      'out_of_stock' => outOfStockProducts,
       _ => displayProducts,
     };
 
@@ -219,6 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'used' => 'Used Products',
                             'refurbished' => 'Refurbished Products',
                             'openbox' => 'Openbox Products',
+                            'out_of_stock' => 'Out of Stock Products',
                             _ => '${_selectedCondition[0].toUpperCase()}${_selectedCondition.substring(1)} Products',
                           },
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink),
@@ -254,7 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Icon(Icons.inventory_2_outlined, size: 48, color: AppColors.slate300),
                           const SizedBox(height: AppSpacing.md),
                           Text(
-                            'No $_selectedCondition products found',
+                            _selectedCondition == 'out_of_stock'
+                                ? 'No out of stock products'
+                                : 'No $_selectedCondition products found',
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
                           ),
                           const SizedBox(height: AppSpacing.sm),

@@ -366,16 +366,46 @@ class CheckoutService
     private function nextOrderNumber(): string
     {
         $year = now()->format('Y');
-        $count = Order::query()->whereYear('created_at', now()->year)->count() + 1;
+        $prefix = "ORD-{$year}-";
 
-        return "ORD-{$year}-".str_pad((string) $count, 6, '0', STR_PAD_LEFT);
+        $latest = Order::query()
+            ->where('order_number', 'like', "{$prefix}%")
+            ->orderByDesc('id')
+            ->value('order_number');
+
+        $seq = 0;
+        if ($latest && preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $latest, $m)) {
+            $seq = (int) $m[1];
+        }
+
+        do {
+            $seq++;
+            $candidate = "{$prefix}" . str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
+        } while (Order::where('order_number', $candidate)->exists());
+
+        return $candidate;
     }
 
     private function nextVendorOrderNumber(): string
     {
         $year = now()->format('Y');
-        $count = VendorOrder::query()->whereYear('created_at', now()->year)->count() + 1;
+        $prefix = "VO-{$year}-";
 
-        return "VO-{$year}-".str_pad((string) $count, 6, '0', STR_PAD_LEFT);
+        $latest = VendorOrder::query()
+            ->where('vendor_order_number', 'like', "{$prefix}%")
+            ->orderByDesc('id')
+            ->value('vendor_order_number');
+
+        $seq = 0;
+        if ($latest && preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $latest, $m)) {
+            $seq = (int) $m[1];
+        }
+
+        do {
+            $seq++;
+            $candidate = "{$prefix}" . str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
+        } while (VendorOrder::where('vendor_order_number', $candidate)->exists());
+
+        return $candidate;
     }
 }

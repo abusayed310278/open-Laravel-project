@@ -101,8 +101,23 @@ class InvoiceService
     private function nextInvoiceNumber(): string
     {
         $year = now()->format('Y');
-        $count = Invoice::query()->whereYear('created_at', now()->year)->count() + 1;
+        $prefix = "INV-{$year}-";
 
-        return "INV-{$year}-".str_pad((string) $count, 6, '0', STR_PAD_LEFT);
+        $latest = Invoice::query()
+            ->where('invoice_number', 'like', "{$prefix}%")
+            ->orderByDesc('id')
+            ->value('invoice_number');
+
+        $seq = 0;
+        if ($latest && preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/', $latest, $m)) {
+            $seq = (int) $m[1];
+        }
+
+        do {
+            $seq++;
+            $candidate = "{$prefix}" . str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
+        } while (Invoice::where('invoice_number', $candidate)->exists());
+
+        return $candidate;
     }
 }

@@ -127,6 +127,7 @@ class Product {
   bool get isOpenboxCondition => condition.toLowerCase().trim() == 'openbox';
 
   bool get isInStock => stock > 0;
+  bool get isOutOfStock => stock <= 0;
 
   String get effectiveBrandName {
     if (brandName.trim().isNotEmpty) return brandName.trim();
@@ -492,6 +493,17 @@ class Product {
       parsedGrade = ProductGrade.c;
     }
 
+    int parsedStock = 0;
+    if (json['stock'] != null) {
+      parsedStock = (json['stock'] is num)
+          ? (json['stock'] as num).toInt()
+          : (int.tryParse(json['stock'].toString()) ?? 0);
+    } else if (json['quantity'] != null) {
+      parsedStock = (json['quantity'] is num)
+          ? (json['quantity'] as num).toInt()
+          : (int.tryParse(json['quantity'].toString()) ?? 0);
+    }
+
     return Product(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
@@ -511,7 +523,7 @@ class Product {
       isNew: isNewBool,
       rating: (json['rating'] is num) ? (json['rating'] as num).toDouble() : 0.0,
       reviewCount: (json['reviews_count'] is num) ? (json['reviews_count'] as num).toInt() : reviewsList.length,
-      stock: (json['stock'] is num) ? (json['stock'] as num).toInt() : 0,
+      stock: parsedStock,
       gallery: galleryList,
       reviews: reviewsList,
       description: descStr,

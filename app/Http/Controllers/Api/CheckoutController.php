@@ -133,6 +133,12 @@ class CheckoutController extends Controller
             'address.country' => ['nullable', 'string'],
             'address.postal_code' => ['nullable', 'string'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
+            'card_number' => ['nullable', 'string'],
+            'exp_month' => ['nullable'],
+            'exp_year' => ['nullable'],
+            'cvc' => ['nullable', 'string'],
+            'cardholder_name' => ['nullable', 'string'],
+            'stripe_token' => ['nullable', 'string'],
         ]);
 
         $user = $request->user();
@@ -207,6 +213,74 @@ class CheckoutController extends Controller
             }
 
             if (filled($secretKey)) {
+                $rawCardNumber = preg_replace('/\D+/', '', (string) $request->input('card_number'));
+                $hasCardData = ! empty($rawCardNumber) || $request->filled('stripe_token');
+
+                if ($hasCardData) {
+                    // Direct In-App Stripe Card Processing
+                    $source = $request->input('stripe_token');
+                    if (! $source && ! empty($rawCardNumber)) {
+                        if (str_starts_with($rawCardNumber, '4000') || str_starts_with($rawCardNumber, '400000000002')) {
+                            $source = 'tok_chargeDeclined';
+                        } elseif (str_starts_with($rawCardNumber, '5555')) {
+                            $source = 'tok_mastercard';
+                        } elseif (str_starts_with($rawCardNumber, '3782') || str_starts_with($rawCardNumber, '34')) {
+                            $source = 'tok_amex';
+                        } elseif (str_starts_with($rawCardNumber, '6011')) {
+                            $source = 'tok_discover';
+                        } else {
+                            $source = 'tok_visa';
+                        }
+                    }
+
+                    try {
+                        $chargeResponse = Http::withBasicAuth($secretKey, '')
+                            ->asForm()
+                            ->post('https://api.stripe.com/v1/charges', [
+                                'amount' => (int) round($order->total * 100),
+                                'currency' => 'usd',
+                                'source' => $source,
+                                'description' => 'Order #' . $order->order_number . ' - ' . ($request->input('cardholder_name') ?: $user->name),
+                                'metadata' => [
+                                    'order_id' => $order->id,
+                                    'order_number' => $order->order_number,
+                                    'customer_id' => $user->id,
+                                    'customer_email' => $user->email,
+                                ],
+                            ]);
+
+                        if ($chargeResponse->successful() && $chargeResponse->json('status') === 'succeeded') {
+                            foreach ($order->vendorOrders as $vendorOrder) {
+                                app(PaymentService::class)->confirmPayment($vendorOrder, 'stripe');
+                            }
+
+                            $cartModel->items()->delete();
+
+                            return response()->json([
+                                'message' => 'Payment completed successfully via Stripe!',
+                                'order' => new OrderResource($order->load('vendorOrders.items', 'vendorOrders.vendor', 'shippingAddress')),
+                                'paid' => true,
+                                'payment_method' => 'stripe',
+                                'charge_id' => $chargeResponse->json('id'),
+                                'receipt_url' => $chargeResponse->json('receipt_url'),
+                            ], 201);
+                        } else {
+                            $errorMsg = $chargeResponse->json('error.message') ?? 'Card payment was declined by Stripe.';
+                            $this->checkout->cancelUnconfirmedOrder($order, $user, $errorMsg);
+
+                            return response()->json([
+                                'message' => $errorMsg,
+                                'error' => $errorMsg,
+                            ], 422);
+                        }
+                    } catch (\Throwable $e) {
+                        Log::error('Stripe mobile direct charge exception: ' . $e->getMessage());
+                        return response()->json([
+                            'message' => 'Unable to process card payment: ' . $e->getMessage(),
+                        ], 500);
+                    }
+                }
+
                 // 1. Create Stripe PaymentIntent for native mobile Stripe PaymentSheet
                 try {
                     $piResponse = Http::withBasicAuth($secretKey, '')
@@ -269,10 +343,10 @@ class CheckoutController extends Controller
             }
 
             if (! $paymentUrl) {
-                $paymentUrl = url('/checkout/stripe-portal/' . $order->id . '?token=' . $orderToken);
+                $paymentUrl = $request->root() . '/checkout/stripe-portal/' . $order->id . '?token=' . $orderToken;
             }
         } elseif ($paymentMethod === PaymentMethod::Paypal) {
-            $paymentUrl = url('/checkout/stripe-portal/' . $order->id . '?token=' . $orderToken . '&method=paypal');
+            $paymentUrl = $request->root() . '/checkout/stripe-portal/' . $order->id . '?token=' . $orderToken . '&method=paypal';
         }
 
         return response()->json([
