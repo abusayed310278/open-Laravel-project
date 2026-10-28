@@ -95,3 +95,29 @@ class TransactionRecord {
     );
   }
 }
+
+class WalletPaymentSettingsSummary {
+  final bool hasBank;
+  final String bankName;
+  final String accountNumber;
+  final bool hasStripe;
+  final bool hasPaypal;
+
+  const WalletPaymentSettingsSummary({
+    this.hasBank = false,
+    this.bankName = '',
+    this.accountNumber = '',
+    this.hasStripe = false,
+    this.hasPaypal = false,
+  });
+
+  factory WalletPaymentSettingsSummary.fromJson(Map<String, dynamic> json) {
+    return WalletPaymentSettingsSummary(
+      hasBank: json['has_bank'] == true,
+      bankName: json['bank_name']?.toString() ?? '',
+      accountNumber: json['account_number']?.toString() ?? '',
+      hasStripe: json['has_stripe'] == true,
+      hasPaypal: json['has_paypal'] == true,
+    );
+  }
+}

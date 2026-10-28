@@ -37,13 +37,16 @@ class SellerWalletController extends Controller
             ->get()
             ->map(fn ($p) => [
                 'id' => $p->id,
+                'payout_number' => $p->payout_number,
                 'amount' => (float) $p->amount,
                 'method' => $p->method?->value ?? $p->method,
                 'status' => $p->status?->value ?? $p->status,
                 'status_label' => ucfirst(str_replace('_', ' ', $p->status?->value ?? (string) $p->status)),
-                'notes' => $p->admin_notes,
+                'notes' => $p->notes ?? $p->admin_notes,
                 'created_at' => $p->created_at?->toIso8601String(),
             ]);
+
+        $settings = $user->paymentSettings;
 
         return response()->json([
             'wallet' => [
@@ -52,6 +55,13 @@ class SellerWalletController extends Controller
                 'total_earned' => (float) $wallet->total_earned,
                 'total_withdrawn' => (float) $wallet->total_withdrawn,
                 'currency' => 'QAR',
+            ],
+            'payment_settings' => [
+                'has_bank' => !empty($settings?->bank_name) && !empty($settings?->account_number),
+                'bank_name' => $settings?->bank_name ?? '',
+                'account_number' => $settings?->account_number ?? '',
+                'has_stripe' => $settings?->hasStripeConnected() ?? false,
+                'has_paypal' => $settings?->hasPaypalConnected() ?? false,
             ],
             'payout_methods' => $methods,
             'payouts' => $payouts,

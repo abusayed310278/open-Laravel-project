@@ -15,12 +15,11 @@ import '../../data/models/dashboard_data.dart';
 import '../../data/models/seller_user.dart';
 import '../orders/order_detail_screen.dart';
 import '../products/add_product_screen.dart';
-import '../notifications/notifications_screen.dart';
-import '../settings/subscreens/update_profile_screen.dart';
 import '../settings/subscreens/verification_status_screen.dart';
 import '../settings/subscreens/seller_center_screen.dart';
 import '../catalog/catalog_screen.dart';
 import '../wallet/wallet_screen.dart';
+import '../settings/subscreens/update_profile_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final void Function(int tabIndex)? onNavigateTab;
@@ -49,6 +48,20 @@ class _OnboardingStep {
   });
 }
 
+class _CustomerSummary {
+  final String name;
+  final String? email;
+  final int orderCount;
+  final double totalSpent;
+
+  const _CustomerSummary({
+    required this.name,
+    this.email,
+    required this.orderCount,
+    required this.totalSpent,
+  });
+}
+
 class _DashboardScreenState extends State<DashboardScreen> {
   final ApiClient _apiClient = ApiClient();
   final _currencyFormat = NumberFormat('#,##0.00', 'en_US');
@@ -72,68 +85,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
-      appBar: AppBar(
-        title: const Text(
-          'Seller Center',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.brand600),
-        ),
-        actions: [
-          if (user != null)
-            Container(
-              margin: const EdgeInsets.only(right: AppSpacing.sm),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.brand50,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-                border: Border.all(color: AppColors.brand200),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.bolt_rounded, size: 14, color: AppColors.brand600),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${user.listingCredits} Credits',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.brand700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          IconButton(
-            tooltip: 'Seller Centers Map',
-            icon: const Icon(Icons.map_outlined, color: AppColors.ink),
-            onPressed: () => _open(const SellerCenterScreen()),
-          ),
-          IconButton(
-            tooltip: 'Notifications',
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.notifications_none_rounded, color: AppColors.ink),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.brand500,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () => _open(const NotificationsScreen()),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-        ],
-      ),
-      body: RefreshIndicator(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            RefreshIndicator(
         onRefresh: () async {
           final dashboardProv = context.read<SellerDashboardProvider>();
           final authProv = context.read<SellerAuthProvider>();
@@ -149,9 +104,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 0. Profile, order status & onboarding checklist
-                    _buildProfileHeader(user),
+                    // Seller profile hero
+                    _buildProfileHeaderCard(user),
                     const SizedBox(height: AppSpacing.lg),
+
+                    // 0. Order status & onboarding checklist
                     _buildOrderStatusCard(dashboardProvider.orderCounts),
                     ..._buildOnboardingSection(user, metrics),
                     const SizedBox(height: AppSpacing.lg),
@@ -174,12 +131,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: AppSpacing.xl),
                     ],
 
+                    // 4b. Customer insights (derived from recent orders)
+                    _buildCustomerInsightsSection(dashboardProvider),
+                    const SizedBox(height: AppSpacing.xl),
+
                     // 5. Recent Orders
                     _buildRecentOrdersSection(context, dashboardProvider),
                     const SizedBox(height: AppSpacing.xxl),
                   ],
                 ),
               ),
+            ),
+            if (Navigator.of(context).canPop())
+              Positioned(
+                top: AppSpacing.sm,
+                left: AppSpacing.sm,
+                child: _buildFloatingBackButton(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingBackButton() {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.92),
+      shape: const CircleBorder(),
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.2),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () => Navigator.of(context).pop(),
+        child: const SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.ink),
+        ),
       ),
     );
   }
@@ -188,122 +176,328 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
-  Widget _buildProfileHeader(SellerUser? user) {
-    final imageUrl = user?.avatarUrl ?? user?.logoUrl;
-    final userName = (user?.name ?? '').trim();
-    final storeName = (user?.storeName ?? '').trim();
-    final hasBoth = userName.isNotEmpty && storeName.isNotEmpty && userName.toLowerCase() != storeName.toLowerCase();
+  Widget _buildProfileHeaderCard(SellerUser? user) {
+    if (user == null) {
+      return Container(
+        height: 112,
+        decoration: BoxDecoration(
+          color: AppColors.brand400,
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+      );
+    }
 
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => _open(const UpdateProfileScreen()),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: const BoxDecoration(color: AppColors.brand100, shape: BoxShape.circle),
-                clipBehavior: Clip.antiAlias,
-                child: imageUrl != null && imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _buildAvatarFallback(user),
-                      )
-                    : _buildAvatarFallback(user),
+    final displayName = user.storeName.isNotEmpty ? user.storeName : user.name;
+    final avatarUrl = user.logoUrl ?? user.avatarUrl;
+    final location = [user.city, user.country]
+        .where((e) => (e ?? '').trim().isNotEmpty)
+        .join(', ');
+
+    return InkWell(
+      onTap: () => _open(const UpdateProfileScreen()),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.brand600, AppColors.brand500, AppColors.brand400],
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.brand500.withValues(alpha: 0.35),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned(
+              right: -30,
+              top: -44,
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
               ),
-              Positioned(
-                right: -2,
-                bottom: -2,
-                child: Container(
-                  width: 20,
-                  height: 20,
+            ),
+            Positioned(
+              right: 36,
+              bottom: -56,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
                   decoration: BoxDecoration(
-                    color: AppColors.brand500,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.surface, width: 1.5),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
                   ),
-                  child: const Icon(Icons.edit, size: 11, color: Colors.white),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarUrl != null
+                      ? Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Center(
+                            child: Text(
+                              _initials(displayName),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            _initials(displayName),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
+                          ),
+                        ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              displayName,
+                              style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: Colors.white),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (user.isKycApproved) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.verified_rounded, size: 16, color: Colors.white),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        user.email,
+                        style: TextStyle(fontSize: 11.5, color: Colors.white.withValues(alpha: 0.85)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (location.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(Icons.place_outlined, size: 12, color: Colors.white.withValues(alpha: 0.85)),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: Text(
+                                location,
+                                style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.85)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.sm),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          _heroPill(
+                            user.isStoreActive ? 'Store Live' : 'Store Inactive',
+                            user.isStoreActive ? Icons.check_circle_outline : Icons.pause_circle_outline,
+                          ),
+                          if ((user.subscriptionPlan ?? '').trim().isNotEmpty)
+                            _heroPill(user.subscriptionPlan!, Icons.workspace_premium_outlined),
+                          _heroPill('${user.listingCredits} credits', Icons.inventory_2_outlined),
+                          _heroPill(
+                            '${_currencyFormat.format(user.availableBalance)} QAR',
+                            Icons.account_balance_wallet_outlined,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _heroPill(String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  String _initials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  List<_CustomerSummary> _buildCustomerSummaries(List<RecentOrderItem> orders) {
+    final Map<String, List<RecentOrderItem>> grouped = {};
+    for (final order in orders) {
+      final key = order.customerName.trim().toLowerCase();
+      grouped.putIfAbsent(key, () => []).add(order);
+    }
+
+    final summaries = grouped.values.map((group) {
+      return _CustomerSummary(
+        name: group.first.customerName,
+        email: group.first.customerEmail,
+        orderCount: group.length,
+        totalSpent: group.fold<double>(0, (sum, o) => sum + o.total),
+      );
+    }).toList();
+
+    summaries.sort((a, b) => b.totalSpent.compareTo(a.totalSpent));
+    return summaries;
+  }
+
+  Widget _buildCustomerInsightsSection(SellerDashboardProvider provider) {
+    final summaries = _buildCustomerSummaries(provider.recentOrders);
+    if (summaries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final repeatCustomers = summaries.where((c) => c.orderCount > 1).length;
+    final topCustomers = summaries.take(3).toList();
+    const avatarColors = [AppColors.brand500, AppColors.info, AppColors.purple, AppColors.success];
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Customers',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.infoBg,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  '${summaries.length} buyer${summaries.length == 1 ? '' : 's'}',
+                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: AppColors.info),
                 ),
               ),
             ],
           ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                hasBoth
-                    ? userName
-                    : (storeName.isNotEmpty ? storeName : (userName.isNotEmpty ? userName : 'Seller Portal')),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Row(
+          const SizedBox(height: 2),
+          Text(
+            repeatCustomers > 0
+                ? '$repeatCustomers repeat buyer${repeatCustomers == 1 ? '' : 's'} among your recent orders'
+                : 'From your most recent orders',
+            style: const TextStyle(fontSize: 11, color: AppColors.slate400),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ...topCustomers.asMap().entries.map((entry) {
+            final i = entry.key;
+            final c = entry.value;
+            final color = avatarColors[i % avatarColors.length];
+            final subtitle = [
+              '${c.orderCount} order${c.orderCount == 1 ? '' : 's'}',
+              if ((c.email ?? '').trim().isNotEmpty) c.email!,
+            ].join(' • ');
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: i == topCustomers.length - 1 ? 0 : AppSpacing.md),
+              child: Row(
                 children: [
-                  if (hasBoth) ...[
-                    Flexible(
-                      child: Text(
-                        storeName,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brand600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.12)),
+                    child: Text(
+                      _initials(c.name),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
                     ),
-                    const Text(' • ', style: TextStyle(fontSize: 12, color: AppColors.slate400)),
-                  ],
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          c.name,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.ink),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(fontSize: 11, color: AppColors.slate400),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
                   Text(
-                    user?.roleLabel ?? 'Seller',
-                    style: const TextStyle(fontSize: 12, color: AppColors.slate500),
+                    '${_currencyFormat.format(c.totalSpent)} QAR',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.ink),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvatarFallback(SellerUser? user) {
-    final initials = _getInitials(user?.name.isNotEmpty == true ? user!.name : user?.storeName);
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.brand500, AppColors.brand700],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
+            );
+          }),
+        ],
       ),
     );
-  }
-
-  String _getInitials(String? text) {
-    if (text == null || text.trim().isEmpty) return 'S';
-    final parts = text.trim().split(RegExp(r'\s+'));
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return text.trim().substring(0, text.trim().length >= 2 ? 2 : 1).toUpperCase();
   }
 
   Widget _buildOrderStatusCard(OrderCounts counts) {
@@ -321,6 +515,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
                   'Order',

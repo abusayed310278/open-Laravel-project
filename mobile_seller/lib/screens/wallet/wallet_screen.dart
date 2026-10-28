@@ -10,6 +10,7 @@ import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/status_badge.dart';
 import '../../providers/seller_wallet_provider.dart';
+import '../settings/subscreens/payment_settings_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -42,110 +43,300 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
 
   void _showPayoutSheet(BuildContext context, double availableBalance) {
     _amountController.clear();
+    final walletProvider = context.read<SellerWalletProvider>();
+    final paymentSettings = walletProvider.paymentSettings;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Request Payout',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(ctx).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: AppColors.brand50,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  border: Border.all(color: AppColors.brand200),
-                ),
-                child: Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.xxl),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.account_balance_wallet_outlined, size: 20, color: AppColors.brand600),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Available for withdrawal: ${_currencyFormat.format(availableBalance)} QAR',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brand800),
+                    const Text(
+                      'Request Payout',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(ctx).pop(),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              CustomTextField(
-                controller: _amountController,
-                label: 'Withdrawal Amount (QAR)',
-                hint: 'e.g. 500.00',
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const Text('Payout Method', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedMethod,
-                items: const [
-                  DropdownMenuItem(value: 'manual_bank', child: Text('Bank Transfer (IBAN)')),
-                  DropdownMenuItem(value: 'stripe', child: Text('Stripe Connect')),
-                  DropdownMenuItem(value: 'paypal', child: Text('PayPal')),
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.brand50,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: AppColors.brand200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.account_balance_wallet_outlined, size: 20, color: AppColors.brand600),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Available for withdrawal: ${_currencyFormat.format(availableBalance)} QAR',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brand800),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                CustomTextField(
+                  controller: _amountController,
+                  label: 'Withdrawal Amount (QAR)',
+                  hint: 'e.g. 500.00',
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                const Text('Payout Destination Method', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.slate700)),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedMethod,
+                  items: const [
+                    DropdownMenuItem(value: 'manual_bank', child: Text('Bank Transfer (IBAN)')),
+                    DropdownMenuItem(value: 'stripe', child: Text('Stripe Connect')),
+                    DropdownMenuItem(value: 'paypal', child: Text('PayPal')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setSheetState(() => _selectedMethod = val);
+                      setState(() => _selectedMethod = val);
+                    }
+                  },
+                  decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Method destination info container
+                if (_selectedMethod == 'manual_bank') ...[
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: paymentSettings?.hasBank == true ? AppColors.slate50 : AppColors.warningBg,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: paymentSettings?.hasBank == true ? AppColors.slate200 : AppColors.warning.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: paymentSettings?.hasBank == true
+                        ? Row(
+                            children: [
+                              const Icon(Icons.account_balance_rounded, size: 18, color: AppColors.brand600),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Payout will be transferred to: ${paymentSettings!.bankName} (${paymentSettings.accountNumber.length > 4 ? "••••${paymentSettings.accountNumber.substring(paymentSettings.accountNumber.length - 4)}" : paymentSettings.accountNumber})',
+                                  style: const TextStyle(fontSize: 11.5, color: AppColors.slate700, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                                  SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'No bank details configured yet.',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(ctx).pop();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const PaymentSettingsScreen()),
+                                  ).then((_) {
+                                    if (context.mounted) {
+                                      context.read<SellerWalletProvider>().fetchWallet();
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'Tap here to add bank info in Payment Settings →',
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brand700, decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ] else if (_selectedMethod == 'stripe') ...[
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: paymentSettings?.hasStripe == true ? const Color(0xFF635BFF).withValues(alpha: 0.08) : AppColors.warningBg,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: paymentSettings?.hasStripe == true ? const Color(0xFF635BFF).withValues(alpha: 0.2) : AppColors.warning.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: paymentSettings?.hasStripe == true
+                        ? const Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF635BFF)),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Direct payout into your connected Stripe merchant account.',
+                                  style: TextStyle(fontSize: 11.5, color: AppColors.slate800, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                                  SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'Stripe merchant keys not connected.',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(ctx).pop();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const PaymentSettingsScreen()),
+                                  ).then((_) {
+                                    if (context.mounted) {
+                                      context.read<SellerWalletProvider>().fetchWallet();
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'Connect your Stripe keys in Payment Settings →',
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brand700, decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ] else if (_selectedMethod == 'paypal') ...[
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: paymentSettings?.hasPaypal == true ? const Color(0xFF0079C1).withValues(alpha: 0.08) : AppColors.warningBg,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: paymentSettings?.hasPaypal == true ? const Color(0xFF0079C1).withValues(alpha: 0.2) : AppColors.warning.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: paymentSettings?.hasPaypal == true
+                        ? const Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 18, color: Color(0xFF0079C1)),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Direct payout into your connected PayPal account.',
+                                  style: TextStyle(fontSize: 11.5, color: AppColors.slate800, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+                                  SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'PayPal credentials not connected.',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.warning),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(ctx).pop();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const PaymentSettingsScreen()),
+                                  ).then((_) {
+                                    if (context.mounted) {
+                                      context.read<SellerWalletProvider>().fetchWallet();
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  'Connect your PayPal keys in Payment Settings →',
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.brand700, decoration: TextDecoration.underline),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ],
-                onChanged: (val) => setState(() => _selectedMethod = val ?? 'manual_bank'),
-                decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Consumer<SellerWalletProvider>(
-                builder: (_, walletProvider, _) {
-                  return CustomButton(
-                    text: 'Submit Payout Request',
-                    isLoading: walletProvider.isSubmittingPayout,
-                    onPressed: () async {
-                      final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
-                      if (amount <= 0) {
-                        AppSnackBar.warning(context, 'Please enter a valid amount');
-                        return;
-                      }
-                      if (amount > availableBalance) {
-                        AppSnackBar.warning(context, 'Amount exceeds available balance');
-                        return;
-                      }
 
-                      final success = await walletProvider.requestPayout(amount, _selectedMethod);
-                      if (ctx.mounted) Navigator.of(ctx).pop();
-
-                      if (context.mounted) {
-                        if (success) {
-                          AppSnackBar.success(context, 'Payout request submitted!');
-                        } else {
-                          AppSnackBar.error(
-                            context,
-                            walletProvider.errorMessage ?? 'Submission failed',
-                          );
+                const SizedBox(height: AppSpacing.xl),
+                Consumer<SellerWalletProvider>(
+                  builder: (_, prov, _) {
+                    return CustomButton(
+                      text: 'Submit Payout Request',
+                      isLoading: prov.isSubmittingPayout,
+                      onPressed: () async {
+                        final amount = double.tryParse(_amountController.text.trim()) ?? 0.0;
+                        if (amount <= 0) {
+                          AppSnackBar.warning(context, 'Please enter a valid amount');
+                          return;
                         }
-                      }
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-            ],
+                        if (amount > availableBalance) {
+                          AppSnackBar.warning(context, 'Amount exceeds available balance');
+                          return;
+                        }
+
+                        final success = await prov.requestPayout(amount, _selectedMethod);
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+
+                        if (context.mounted) {
+                          if (success) {
+                            AppSnackBar.success(context, 'Payout request submitted successfully!');
+                          } else {
+                            AppSnackBar.error(
+                              context,
+                              prov.errorMessage ?? 'Submission failed',
+                            );
+                          }
+                        }
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+            ),
           ),
         ),
       ),
@@ -156,11 +347,26 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final walletProvider = context.watch<SellerWalletProvider>();
     final balance = walletProvider.balance;
+    final paymentSettings = walletProvider.paymentSettings;
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
       appBar: AppBar(
         title: const Text('Earnings & Wallet'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Payment & Payout Settings',
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PaymentSettingsScreen()),
+              );
+              if (context.mounted) {
+                context.read<SellerWalletProvider>().fetchWallet();
+              }
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () => walletProvider.fetchWallet(),
@@ -271,7 +477,66 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                     ),
                   ),
 
-                  // 2. Tab Bar: Payout Requests / Ledger
+                  // 2. Payout Destination Quick Status Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: InkWell(
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const PaymentSettingsScreen()),
+                        );
+                        if (context.mounted) {
+                          context.read<SellerWalletProvider>().fetchWallet();
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          border: Border.all(color: AppColors.slate200),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.xs + 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.brand50,
+                                borderRadius: BorderRadius.circular(AppRadius.sm),
+                              ),
+                              child: const Icon(Icons.account_balance_outlined, size: 18, color: AppColors.brand600),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Payout & Gateway Settings',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                  ),
+                                  Text(
+                                    paymentSettings?.hasBank == true
+                                        ? 'Bank: ${paymentSettings!.bankName} • Stripe: ${paymentSettings.hasStripe ? "Active" : "Off"}'
+                                        : 'Configure your bank or payout accounts',
+                                    style: const TextStyle(fontSize: 11, color: AppColors.slate500),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: AppColors.slate400),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.md),
+
+                  // 3. Tab Bar: Payout Requests / Ledger
                   TabBar(
                     controller: _tabController,
                     labelColor: AppColors.brand600,
@@ -284,7 +549,7 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                     ],
                   ),
 
-                  // 3. Tab Views
+                  // 4. Tab Views
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,

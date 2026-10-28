@@ -913,15 +913,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         iconColor: AppColors.brand500,
                         label: 'Wallet',
                         caption: 'Earnings & Payouts',
-                        onTap: () {
-                          if (widget.onNavigateTab != null) {
-                            widget.onNavigateTab!(3);
-                          } else {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const WalletScreen()),
-                            );
-                          }
-                        },
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const WalletScreen()),
+                        ),
                       ),
                     ),
                     Container(height: 36, width: 1, color: AppColors.slate200),
@@ -977,24 +971,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Wallet & Payouts',
                 subtitle: 'Available earnings balance, withdrawal requests & statement',
                 iconColor: AppColors.brand500,
-                onTap: () {
-                  if (widget.onNavigateTab != null) {
-                    widget.onNavigateTab!(3);
-                  } else {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const WalletScreen()),
-                    );
-                  }
-                },
-              ),
-              _MenuItem(
-                icon: Icons.stars_rounded,
-                title: 'Listing Credits',
-                subtitle: 'Available listing credits, packages & balance',
-                iconColor: AppColors.brand500,
-                badgeText: '${user?.listingCredits ?? 0} Credits',
-                badgeColor: AppColors.brand500,
-                destination: const SubscriptionPlanScreen(),
+                destination: const WalletScreen(),
               ),
               _MenuItem(
                 icon: Icons.card_membership_outlined,

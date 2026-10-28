@@ -192,6 +192,8 @@ Route::prefix('seller')->group(function () {
 
         // Subscription Plans
         Route::get('/subscriptions', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'subscriptions']);
+        Route::post('/subscriptions/purchase', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'purchaseSubscription']);
+        Route::post('/subscriptions/subscribe', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'purchaseSubscription']);
 
         // Payment Settings
         Route::get('/payment-settings', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'paymentSettings']);

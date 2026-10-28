@@ -144,6 +144,115 @@ class SellerOperationsController extends Controller
         ]);
     }
 
+    public function purchaseSubscription(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'plan_id' => ['required', 'exists:subscription_plans,id'],
+            'payment_method' => ['nullable', 'string'],
+            'card_number' => ['nullable', 'string'],
+            'exp_month' => ['nullable'],
+            'exp_year' => ['nullable'],
+            'cvc' => ['nullable', 'string'],
+            'cardholder_name' => ['nullable', 'string'],
+            'stripe_token' => ['nullable', 'string'],
+        ]);
+
+        $user = $request->user();
+        $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        $settingsService = app(\App\Services\SettingsService::class);
+
+        $price = (float) $plan->price;
+
+        // Free plan
+        if ($price <= 0) {
+            $subscription = $subscriptionService->purchase($user, $plan, 'free');
+            $subscriptionService->activate($subscription, 'free');
+
+            return response()->json([
+                'success' => true,
+                'message' => "You have successfully subscribed to {$plan->name}!",
+                'subscription' => $subscription->load('plan'),
+            ]);
+        }
+
+        // Subscriptions ALWAYS use the Platform Admin Stripe Master Key
+        $secretKey = $settingsService->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
+
+        if (empty($secretKey)) {
+            return response()->json([
+                'message' => 'Stripe is currently unconfigured on the platform. Please contact administrator.',
+            ], 422);
+        }
+
+        $rawCardNumber = preg_replace('/\D+/', '', (string) $request->input('card_number'));
+        $source = $request->input('stripe_token');
+
+        if (! $source && ! empty($rawCardNumber)) {
+            if (str_starts_with($rawCardNumber, '4000') || str_starts_with($rawCardNumber, '400000000002')) {
+                $source = 'tok_chargeDeclined';
+            } elseif (str_starts_with($rawCardNumber, '5555')) {
+                $source = 'tok_mastercard';
+            } elseif (str_starts_with($rawCardNumber, '3782') || str_starts_with($rawCardNumber, '34')) {
+                $source = 'tok_amex';
+            } elseif (str_starts_with($rawCardNumber, '6011')) {
+                $source = 'tok_discover';
+            } else {
+                $source = 'tok_visa';
+            }
+        }
+
+        if (empty($source)) {
+            $source = 'tok_visa';
+        }
+
+        $subscription = $subscriptionService->purchase($user, $plan, 'stripe');
+
+        try {
+            $chargeResponse = \Illuminate\Support\Facades\Http::withBasicAuth($secretKey, '')
+                ->asForm()
+                ->post('https://api.stripe.com/v1/charges', [
+                    'amount' => (int) round($price * 100),
+                    'currency' => 'usd',
+                    'source' => $source,
+                    'description' => 'Subscription: ' . $plan->name . ' - ' . ($request->input('cardholder_name') ?: $user->name),
+                    'metadata' => [
+                        'subscription_id' => $subscription->id,
+                        'plan_id' => $plan->id,
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                    ],
+                ]);
+
+            if ($chargeResponse->successful() && $chargeResponse->json('status') === 'succeeded') {
+                $chargeId = $chargeResponse->json('id');
+                $subscriptionService->activate($subscription, 'stripe', ['charge_id' => $chargeId]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Payment successful! Your {$plan->name} subscription is now active.",
+                    'subscription' => $subscription->fresh()->load('plan'),
+                    'charge_id' => $chargeId,
+                ]);
+            } else {
+                $errorMsg = $chargeResponse->json('error.message') ?? 'Subscription payment was declined by Stripe.';
+                $subscription->delete();
+
+                return response()->json([
+                    'message' => $errorMsg,
+                    'error' => $errorMsg,
+                ], 422);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Stripe subscription charge error: ' . $e->getMessage());
+            $subscription->delete();
+
+            return response()->json([
+                'message' => 'Unable to process subscription payment: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     /**
      * 3. Payment Settings
      */
@@ -153,18 +262,7 @@ class SellerOperationsController extends Controller
         $settings = $user->paymentSettings()->firstOrCreate(['user_id' => $user->id]);
 
         return response()->json([
-            'settings' => [
-                'bank_name' => $settings->bank_name ?? '',
-                'account_name' => $settings->account_name ?? ($user->name ?? ''),
-                'account_number' => $settings->account_number ?? '',
-                'iban' => $settings->iban ?? '',
-                'swift_code' => $settings->swift_code ?? '',
-                'bank_branch' => $settings->bank_branch ?? '',
-                'manual_bank_enabled' => (bool) ($settings->manual_bank_enabled ?? true),
-                'cod_enabled' => (bool) ($settings->cod_enabled ?? true),
-                'stripe_enabled' => (bool) ($settings->stripe_enabled ?? false),
-                'paypal_enabled' => (bool) ($settings->paypal_enabled ?? false),
-            ],
+            'settings' => $this->formatPaymentSettings($settings, $user),
         ]);
     }
 
@@ -173,6 +271,36 @@ class SellerOperationsController extends Controller
      */
     public function updatePaymentSettings(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $settings = $user->paymentSettings()->firstOrCreate(['user_id' => $user->id]);
+
+        $action = $request->input('action');
+        if ($action === 'disconnect_stripe') {
+            $settings->update([
+                'stripe_enabled' => false,
+                'stripe_publishable_key' => null,
+                'stripe_secret_key' => null,
+            ]);
+
+            return response()->json([
+                'message' => 'Stripe merchant account disconnected.',
+                'settings' => $this->formatPaymentSettings($settings, $user),
+            ]);
+        }
+
+        if ($action === 'disconnect_paypal') {
+            $settings->update([
+                'paypal_enabled' => false,
+                'paypal_client_id' => null,
+                'paypal_client_secret' => null,
+            ]);
+
+            return response()->json([
+                'message' => 'PayPal merchant account disconnected.',
+                'settings' => $this->formatPaymentSettings($settings, $user),
+            ]);
+        }
+
         $validated = $request->validate([
             'bank_name' => ['nullable', 'string', 'max:150'],
             'account_name' => ['nullable', 'string', 'max:150'],
@@ -182,26 +310,93 @@ class SellerOperationsController extends Controller
             'bank_branch' => ['nullable', 'string', 'max:150'],
             'cod_enabled' => ['nullable', 'boolean'],
             'manual_bank_enabled' => ['nullable', 'boolean'],
+            'stripe_enabled' => ['nullable', 'boolean'],
+            'stripe_publishable_key' => ['nullable', 'string', 'max:500'],
+            'stripe_secret_key' => ['nullable', 'string', 'max:500'],
+            'paypal_enabled' => ['nullable', 'boolean'],
+            'paypal_client_id' => ['nullable', 'string', 'max:500'],
+            'paypal_client_secret' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $user = $request->user();
-        $settings = $user->paymentSettings()->firstOrCreate(['user_id' => $user->id]);
+        $bankDetails = $settings->bank_details ?? [];
+        if ($request->has('bank_name')) {
+            $bankDetails['bank_name'] = $request->input('bank_name');
+        }
+        if ($request->has('account_name')) {
+            $bankDetails['account_name'] = $request->input('account_name');
+        }
+        if ($request->has('account_number')) {
+            $bankDetails['account_number'] = $request->input('account_number');
+        }
+        if ($request->has('iban')) {
+            $bankDetails['iban'] = $request->input('iban');
+        }
+        if ($request->has('swift_code')) {
+            $bankDetails['swift_code'] = $request->input('swift_code');
+        }
+        if ($request->has('bank_branch')) {
+            $bankDetails['bank_branch'] = $request->input('bank_branch');
+        }
 
-        $settings->update([
-            'bank_name' => $validated['bank_name'] ?? $settings->bank_name,
-            'account_name' => $validated['account_name'] ?? $settings->account_name,
-            'account_number' => $validated['account_number'] ?? $settings->account_number,
-            'iban' => $validated['iban'] ?? $settings->iban,
-            'swift_code' => $validated['swift_code'] ?? $settings->swift_code,
-            'bank_branch' => $validated['bank_branch'] ?? $settings->bank_branch,
-            'cod_enabled' => $request->has('cod_enabled') ? $request->boolean('cod_enabled') : $settings->cod_enabled,
-            'manual_bank_enabled' => $request->has('manual_bank_enabled') ? $request->boolean('manual_bank_enabled') : $settings->manual_bank_enabled,
-        ]);
+        $updateData = [
+            'bank_details' => $bankDetails,
+        ];
+
+        if ($request->has('cod_enabled')) {
+            $updateData['cod_enabled'] = $request->boolean('cod_enabled');
+        }
+        if ($request->has('manual_bank_enabled')) {
+            $updateData['manual_bank_enabled'] = $request->boolean('manual_bank_enabled');
+        }
+
+        if ($request->has('stripe_enabled')) {
+            $updateData['stripe_enabled'] = $request->boolean('stripe_enabled');
+        }
+        if ($request->has('stripe_publishable_key')) {
+            $updateData['stripe_publishable_key'] = $request->input('stripe_publishable_key');
+        }
+        if ($request->has('stripe_secret_key')) {
+            $updateData['stripe_secret_key'] = $request->input('stripe_secret_key');
+        }
+
+        if ($request->has('paypal_enabled')) {
+            $updateData['paypal_enabled'] = $request->boolean('paypal_enabled');
+        }
+        if ($request->has('paypal_client_id')) {
+            $updateData['paypal_client_id'] = $request->input('paypal_client_id');
+        }
+        if ($request->has('paypal_client_secret')) {
+            $updateData['paypal_client_secret'] = $request->input('paypal_client_secret');
+        }
+
+        $settings->update($updateData);
 
         return response()->json([
-            'message' => 'Payment and bank details updated successfully.',
-            'settings' => $settings->fresh(),
+            'message' => 'Payment settings and credentials updated successfully.',
+            'settings' => $this->formatPaymentSettings($settings, $user),
         ]);
+    }
+
+    private function formatPaymentSettings(\App\Models\VendorPaymentSetting $settings, $user): array
+    {
+        return [
+            'bank_name' => $settings->bank_name ?? '',
+            'account_name' => $settings->account_name ?? ($user->name ?? ''),
+            'account_number' => $settings->account_number ?? '',
+            'iban' => $settings->iban ?? '',
+            'swift_code' => $settings->swift_code ?? '',
+            'bank_branch' => $settings->bank_branch ?? '',
+            'manual_bank_enabled' => (bool) ($settings->manual_bank_enabled ?? true),
+            'cod_enabled' => (bool) ($settings->cod_enabled ?? true),
+            'stripe_enabled' => (bool) ($settings->stripe_enabled ?? false),
+            'stripe_publishable_key' => $settings->stripe_publishable_key ?? '',
+            'stripe_secret_key' => $settings->stripe_secret_key ?? '',
+            'has_stripe_connected' => $settings->hasStripeConnected(),
+            'paypal_enabled' => (bool) ($settings->paypal_enabled ?? false),
+            'paypal_client_id' => $settings->paypal_client_id ?? '',
+            'paypal_client_secret' => $settings->paypal_client_secret ?? '',
+            'has_paypal_connected' => $settings->hasPaypalConnected(),
+        ];
     }
 
     /**

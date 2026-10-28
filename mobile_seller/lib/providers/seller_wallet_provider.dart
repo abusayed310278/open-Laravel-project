@@ -10,6 +10,7 @@ class SellerWalletProvider extends ChangeNotifier {
   String? _errorMessage;
 
   WalletBalance? _balance;
+  WalletPaymentSettingsSummary? _paymentSettings;
   List<PayoutMethodItem> _payoutMethods = [];
   List<PayoutRecord> _payouts = [];
   List<TransactionRecord> _transactions = [];
@@ -18,6 +19,7 @@ class SellerWalletProvider extends ChangeNotifier {
   bool get isSubmittingPayout => _isSubmittingPayout;
   String? get errorMessage => _errorMessage;
   WalletBalance? get balance => _balance;
+  WalletPaymentSettingsSummary? get paymentSettings => _paymentSettings;
   List<PayoutMethodItem> get payoutMethods => _payoutMethods;
   List<PayoutRecord> get payouts => _payouts;
   List<TransactionRecord> get transactions => _transactions;
@@ -35,6 +37,10 @@ class SellerWalletProvider extends ChangeNotifier {
       if (response is Map<String, dynamic>) {
         if (response.containsKey('wallet') && response['wallet'] is Map<String, dynamic>) {
           _balance = WalletBalance.fromJson(response['wallet'] as Map<String, dynamic>);
+        }
+
+        if (response.containsKey('payment_settings') && response['payment_settings'] is Map<String, dynamic>) {
+          _paymentSettings = WalletPaymentSettingsSummary.fromJson(response['payment_settings'] as Map<String, dynamic>);
         }
 
         if (response.containsKey('payout_methods') && response['payout_methods'] is List) {
