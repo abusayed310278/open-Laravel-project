@@ -16,7 +16,7 @@ class ApiConfig {
   /// Toggle between live server and local development environment:
   /// - `true`: Connects to live production server ([liveDomain])
   /// - `false`: Connects to local development domain ([devDomain])
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 
   /// When [isProduction] is false:
   /// - `true`: Directly uses [devDomain] (http://open.test) for Windows Desktop, Web, iOS, or DNS-configured Emulators.
@@ -25,7 +25,7 @@ class ApiConfig {
 
   /// Root host/domain URL without trailing slash
   static String get backendHost {
-    if (isProduction) {
+    if (isProduction || kReleaseMode) {
       return liveDomain.replaceAll(RegExp(r'/+$'), '');
     }
     if (kIsWeb) {
