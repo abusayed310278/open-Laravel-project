@@ -115,7 +115,8 @@ class SellerDashboardController extends Controller
             $product = $productsMap->get($item->product_id);
             $thumbnail = null;
             if ($product && $product->images->isNotEmpty()) {
-                $thumbnail = MediaUrl::resolve($product->images->first()->image_path);
+                $primaryImg = $product->images->firstWhere('is_primary', true) ?? $product->images->first();
+                $thumbnail = $primaryImg ? ($primaryImg->url() ?: MediaUrl::resolve($primaryImg->path)) : null;
             }
 
             return [

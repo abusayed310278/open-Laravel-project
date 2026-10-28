@@ -63,7 +63,8 @@ class SellerOrderController extends Controller
             $firstItem = $vendorOrder->items->first();
             $thumbnail = null;
             if ($firstItem?->product?->images?->isNotEmpty()) {
-                $thumbnail = MediaUrl::resolve($firstItem->product->images->first()->image_path);
+                $primaryImg = $firstItem->product->images->firstWhere('is_primary', true) ?? $firstItem->product->images->first();
+                $thumbnail = $primaryImg ? ($primaryImg->url() ?: MediaUrl::resolve($primaryImg->path)) : null;
             }
 
             return [
@@ -160,7 +161,8 @@ class SellerOrderController extends Controller
                 'items' => $vendorOrder->items->map(function ($item) {
                     $thumbnail = null;
                     if ($item->product?->images?->isNotEmpty()) {
-                        $thumbnail = MediaUrl::resolve($item->product->images->first()->image_path);
+                        $primaryImg = $item->product->images->firstWhere('is_primary', true) ?? $item->product->images->first();
+                        $thumbnail = $primaryImg ? ($primaryImg->url() ?: MediaUrl::resolve($primaryImg->path)) : null;
                     }
 
                     return [

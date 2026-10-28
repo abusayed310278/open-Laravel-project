@@ -34,6 +34,11 @@ class ProductImage extends Model
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
+    public function getImagePathAttribute(): ?string
+    {
+        return $this->path;
+    }
+
     public function url(): string
     {
         return \App\Support\MediaUrl::resolve($this->path) ?? asset('assets/images/default.jpg');

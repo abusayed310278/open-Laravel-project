@@ -75,7 +75,7 @@ class SellerProductController extends Controller
 
         $items = $paginator->getCollection()->map(function (Product $product) {
             $primaryImage = $product->images->firstWhere('is_primary', true) ?? $product->images->first();
-            $thumbnail = $primaryImage ? MediaUrl::resolve($primaryImage->image_path) : null;
+            $thumbnail = $primaryImage ? ($primaryImage->url() ?: MediaUrl::resolve($primaryImage->path)) : null;
 
             return [
                 'id' => $product->id,
@@ -180,7 +180,7 @@ class SellerProductController extends Controller
 
         $images = $product->images->map(fn ($img) => [
             'id' => $img->id,
-            'url' => MediaUrl::resolve($img->image_path),
+            'url' => $img->url() ?: MediaUrl::resolve($img->path),
             'is_primary' => (bool) $img->is_primary,
             'sort_order' => $img->sort_order,
         ]);

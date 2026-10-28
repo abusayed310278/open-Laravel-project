@@ -166,6 +166,22 @@ class SellerProductProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateStock(int productId, {required int quantity, double? price}) async {
+    try {
+      final body = <String, dynamic>{'quantity': quantity};
+      if (price != null) {
+        body['price'] = price;
+      }
+      await _apiClient.patch('/inventory/$productId', body: body);
+      await fetchProducts();
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> createProduct({
     required Map<String, String> fields,
     List<http.MultipartFile>? images,

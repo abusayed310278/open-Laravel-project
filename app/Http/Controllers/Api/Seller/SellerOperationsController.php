@@ -15,6 +15,7 @@ use App\Models\WarehouseProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Support\MediaUrl;
 
 class SellerOperationsController extends Controller
 {
@@ -495,7 +496,7 @@ class SellerOperationsController extends Controller
     public function inventory(Request $request): JsonResponse
     {
         $user = $request->user();
-        $query = $user->products();
+        $query = $user->products()->with(['images', 'category']);
 
         if ($search = $request->query('search')) {
             $query->where(function ($q) use ($search) {
@@ -513,16 +514,20 @@ class SellerOperationsController extends Controller
         $items = $query->latest()->get()->map(function ($p) {
             $qty = (int) $p->quantity;
             $stockStatus = $qty <= 0 ? 'out_of_stock' : ($qty <= 5 ? 'low_stock' : 'in_stock');
+            $primaryImage = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
+            $thumbnail = $primaryImage ? ($primaryImage->url() ?: MediaUrl::resolve($primaryImage->path)) : null;
 
             return [
                 'id' => $p->id,
                 'title' => $p->title,
                 'sku' => $p->sku ?? 'N/A',
+                'category_name' => $p->category?->name,
                 'price' => (float) $p->price,
+                'compare_price' => $p->compare_price ? (float) $p->compare_price : null,
                 'quantity' => $qty,
                 'stock_status' => $stockStatus,
                 'status' => $p->status?->value ?? ($p->status ?? 'published'),
-                'thumbnail' => $p->thumbnail ? url(Storage::url($p->thumbnail)) : null,
+                'thumbnail' => $thumbnail,
                 'updated_at' => $p->updated_at?->format('M d, Y'),
             ];
         });
