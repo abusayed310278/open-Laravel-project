@@ -83,6 +83,7 @@ class Product {
     this.reviews = const [],
     this.description = '',
     this.specs = const {},
+    this.status = 'published',
   });
 
   final String id;
@@ -110,6 +111,9 @@ class Product {
   final List<ReviewItem> reviews;
   final String description;
   final Map<String, String> specs;
+  final String status;
+
+  bool get isPublished => status.toLowerCase().trim() == 'published';
 
   String get effectiveConditionLabel {
     if (conditionLabel.isNotEmpty) return conditionLabel;
@@ -528,6 +532,9 @@ class Product {
       reviews: reviewsList,
       description: descStr,
       specs: specsMap,
+      status: json['status']?.toString().toLowerCase().trim() ??
+          json['publication_status']?.toString().toLowerCase().trim() ??
+          'published',
       isVerified: true,
     );
   }

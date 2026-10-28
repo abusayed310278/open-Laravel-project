@@ -67,6 +67,8 @@ class ProductResource extends JsonResource
             'price' => (float) $this->price,
             'compare_price' => $this->compare_price ? (float) $this->compare_price : null,
             'stock' => (int) ($this->quantity ?? 0),
+            'status' => $this->status instanceof \App\Enums\ProductStatus ? $this->status->value : ($this->status ?: 'published'),
+            'publication_status' => $this->publication_status instanceof \App\Enums\ProductPublicationStatus ? $this->publication_status->value : ($this->publication_status ?: 'published'),
             'condition' => $this->condition instanceof \App\Enums\ProductCondition ? $this->condition->value : ($this->condition ?: 'openbox'),
             'condition_label' => $this->condition instanceof \App\Enums\ProductCondition ? $this->condition->label() : ucfirst((string) $this->condition),
             'grade' => $this->grade instanceof \App\Enums\ProductGrade ? $this->grade->value : ($this->grade ?: 'A'),

@@ -39,7 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final productProvider = context.watch<ProductProvider>();
     final liveProducts = productProvider.products;
-    final displayProducts = liveProducts.isNotEmpty ? liveProducts : MockData.products;
+    final allProducts = liveProducts.isNotEmpty ? liveProducts : MockData.products;
+    final displayProducts = allProducts.where((p) => p.isPublished).toList();
 
     final openboxProducts = displayProducts.where((p) => p.isOpenboxCondition).toList();
     final refurbishedProducts = displayProducts.where((p) => p.isRefurbishedCondition).toList();

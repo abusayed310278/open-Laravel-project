@@ -18,6 +18,10 @@ class ProductController extends Controller
             ->with(['category', 'brand', 'user.profile', 'user.businessProfile', 'user.salerProfile'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
+            ->where(function ($q) {
+                $q->where('status', \App\Enums\ProductStatus::Published)
+                  ->orWhere('publication_status', \App\Enums\ProductPublicationStatus::Published);
+            })
             ->when($request->filled('search'), fn ($q) => $q->where('title', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->integer('category_id')))
             ->when($request->filled('brand_id'), fn ($q) => $q->where('brand_id', $request->integer('brand_id')))
