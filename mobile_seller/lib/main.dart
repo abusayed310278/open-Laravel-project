@@ -38,7 +38,7 @@ class OpenboxSellerApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Openbox Seller',
+        title: 'Openbox Buy & Sale',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         home: const SplashScreen(),
