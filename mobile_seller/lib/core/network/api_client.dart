@@ -18,7 +18,7 @@ class ApiException implements Exception {
 }
 
 class ApiClient {
-  static const Duration defaultTimeout = Duration(seconds: 10);
+  static const Duration defaultTimeout = Duration(seconds: 30);
   final http.Client _client;
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
@@ -73,19 +73,19 @@ class ApiClient {
     return headers;
   }
 
-  Future<dynamic> get(String url, {Map<String, dynamic>? queryParams}) async {
+  Future<dynamic> get(String url, {Map<String, dynamic>? queryParams, Duration? timeout}) async {
     final uri = _resolveUri(url, queryParams);
     if (kDebugMode) debugPrint('[ApiClient] GET $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.get(uri, headers: headers).timeout(defaultTimeout);
+      final response = await _client.get(uri, headers: headers).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);
     }
   }
 
-  Future<dynamic> post(String url, {dynamic body}) async {
+  Future<dynamic> post(String url, {dynamic body, Duration? timeout}) async {
     final uri = _resolveUri(url);
     if (kDebugMode) debugPrint('[ApiClient] POST $uri');
     try {
@@ -94,14 +94,14 @@ class ApiClient {
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      ).timeout(defaultTimeout);
+      ).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);
     }
   }
 
-  Future<dynamic> put(String url, {dynamic body}) async {
+  Future<dynamic> put(String url, {dynamic body, Duration? timeout}) async {
     final uri = _resolveUri(url);
     if (kDebugMode) debugPrint('[ApiClient] PUT $uri');
     try {
@@ -110,14 +110,14 @@ class ApiClient {
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      ).timeout(defaultTimeout);
+      ).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);
     }
   }
 
-  Future<dynamic> patch(String url, {dynamic body}) async {
+  Future<dynamic> patch(String url, {dynamic body, Duration? timeout}) async {
     final uri = _resolveUri(url);
     if (kDebugMode) debugPrint('[ApiClient] PATCH $uri');
     try {
@@ -126,19 +126,19 @@ class ApiClient {
         uri,
         headers: headers,
         body: body != null ? jsonEncode(body) : null,
-      ).timeout(defaultTimeout);
+      ).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);
     }
   }
 
-  Future<dynamic> delete(String url) async {
+  Future<dynamic> delete(String url, {Duration? timeout}) async {
     final uri = _resolveUri(url);
     if (kDebugMode) debugPrint('[ApiClient] DELETE $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(uri, headers: headers).timeout(defaultTimeout);
+      final response = await _client.delete(uri, headers: headers).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);

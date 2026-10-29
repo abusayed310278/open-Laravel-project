@@ -414,7 +414,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             : (_selectedAddress?['name'] ?? 'Demo Buyer');
       }
 
-      final response = await _apiClient.post('/checkout', body: body);
+      final response = await _apiClient.post(
+        '/checkout',
+        body: body,
+        timeout: const Duration(seconds: 60),
+      );
 
       if (!mounted) return;
 

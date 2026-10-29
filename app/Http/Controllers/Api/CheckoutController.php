@@ -270,7 +270,8 @@ class CheckoutController extends Controller
                     }
 
                     try {
-                        $chargeResponse = Http::withBasicAuth($secretKey, '')
+                        $chargeResponse = Http::timeout(20)
+                            ->withBasicAuth($secretKey, '')
                             ->asForm()
                             ->post('https://api.stripe.com/v1/charges', [
                                 'amount' => (int) round($order->total * 100),
