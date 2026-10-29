@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/network/social_auth_service.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
+import '../../core/widgets/social_login_button.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import 'forgot_password_screen.dart';
@@ -26,6 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController _emailController;
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isGoogleLoading = false;
+  bool _isSubmittingCredentials = false;
 
   @override
   void initState() {
@@ -43,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSubmittingCredentials = true);
     final authProvider = context.read<SellerAuthProvider>();
     final success = await authProvider.login(
       _emailController.text,
@@ -50,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (!mounted) return;
+    setState(() => _isSubmittingCredentials = false);
 
     if (success) {
       Navigator.of(context).pushReplacement(
@@ -58,6 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       final error = authProvider.errorMessage ?? 'Login failed. Please check credentials.';
       AppSnackBar.error(context, error);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await SocialAuthService.signInWithGoogle(context);
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
     }
   }
 
@@ -73,8 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<SellerAuthProvider>();
-
     return Scaffold(
       backgroundColor: AppColors.slate50,
       resizeToAvoidBottomInset: true,
@@ -196,47 +211,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       CustomButton(
                         text: 'Sign in',
-                        isLoading: authProvider.state == AuthState.loading,
+                        isLoading: _isSubmittingCredentials,
                         onPressed: _handleLogin,
                       ),
-                      // const SizedBox(height: AppSpacing.lg),
-                      // const Row(
-                      //   children: [
-                      //     Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
-                      //     Padding(
-                      //       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                      //       child: Text(
-                      //         'OR CONTINUE WITH',
-                      //         style: TextStyle(
-                      //           fontSize: 11,
-                      //           fontWeight: FontWeight.w700,
-                      //           color: AppColors.slate400,
-                      //           letterSpacing: 0.8,
-                      //         ),
-                      //       ),
-                      //     ),
-                      //     Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
-                      //   ],
-                      // ),
-                      // const SizedBox(height: AppSpacing.lg),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [
-                      //     SocialLoginButton(
-                      //       provider: SocialProvider.google,
-                      //       isIconOnly: true,
-                      //       isLoading: _isGoogleLoading,
-                      //       onPressed: _handleGoogleSignIn,
-                      //     ),
-                      //     const SizedBox(width: AppSpacing.md),
-                      //     SocialLoginButton(
-                      //       provider: SocialProvider.facebook,
-                      //       isIconOnly: true,
-                      //       isLoading: _isFacebookLoading,
-                      //       onPressed: _handleFacebookSignIn,
-                      //     ),
-                      //   ],
-                      // ),
+                      const SizedBox(height: AppSpacing.lg),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                            child: Text(
+                              'OR CONTINUE WITH',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.slate400,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      SocialLoginButton(
+                        provider: SocialProvider.google,
+                        isIconOnly: false,
+                        isLoading: _isGoogleLoading,
+                        onPressed: _handleGoogleSignIn,
+                      ),
                     ],
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/seller_auth_provider.dart';
@@ -10,52 +11,99 @@ import '../../screens/navigation/main_navigation_screen.dart';
 class SocialAuthService {
   SocialAuthService._();
 
-  /// Handle Google Sign-In flow
+  /// Google Web OAuth Client ID used by the backend to verify the returned ID token.
+  static const String serverClientId =
+      '6007104583-m3eldhp5nlf3qf82s3rq996rrgqi8abr.apps.googleusercontent.com';
+
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: const [
+      'email',
+      'profile',
+    ],
+    serverClientId: serverClientId,
+  );
+
+  /// Handle real native Google Sign-In flow
   static Future<void> signInWithGoogle(
     BuildContext context, {
     String? role,
     String? storeName,
     bool isSignUp = false,
   }) async {
-    final account = await _showSocialAccountPicker(
-      context,
-      provider: 'Google',
-      defaultEmail: 'seller.google@example.com',
-      defaultName: 'Google Merchant',
-    );
+    try {
+      // Disconnect/sign-out existing session to prompt account chooser
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {
+        // Safe to ignore if not signed in
+      }
 
-    if (account == null || !context.mounted) return;
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
 
-    final authProvider = context.read<SellerAuthProvider>();
+      // If user dismissed the Google prompt, abort silently
+      if (account == null || !context.mounted) {
+        return;
+      }
 
-    final success = await authProvider.socialLogin(
-      provider: 'google',
-      providerId: 'google_${DateTime.now().millisecondsSinceEpoch}',
-      email: account['email'],
-      name: account['name'],
-      avatar: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
-      role: role ?? 'business',
-      storeName: storeName ?? account['name'],
-    );
+      final GoogleSignInAuthentication auth = await account.authentication;
+      if (!context.mounted) return;
 
-    if (!context.mounted) return;
+      final authProvider = context.read<SellerAuthProvider>();
 
-    if (success) {
-      final name = authProvider.user?.name ?? 'Seller';
-      AppSnackBar.success(
-        context,
-        'Signed in with Google as $name',
-        title: 'Welcome',
+      final tokenToUse = (auth.idToken != null && auth.idToken!.isNotEmpty)
+          ? auth.idToken
+          : auth.accessToken;
+
+      final success = await authProvider.socialLogin(
+        provider: 'google',
+        providerId: account.id,
+        email: account.email,
+        name: account.displayName ?? 'Google User',
+        avatar: account.photoUrl,
+        accessToken: tokenToUse,
+        role: role ?? 'business',
+        storeName: storeName ?? (account.displayName ?? 'My Store'),
       );
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (route) => false,
-      );
-    } else {
-      final error = authProvider.errorMessage ?? 'Google authentication failed.';
-      AppSnackBar.error(context, error, title: 'Sign-in Failed');
+      if (!context.mounted) return;
+
+      if (success) {
+        final name = authProvider.user?.name ?? account.displayName ?? 'Seller';
+        AppSnackBar.success(
+          context,
+          'Signed in with Google as $name',
+          title: 'Welcome',
+        );
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
+        );
+      } else {
+        final error = authProvider.errorMessage ?? 'Google authentication failed.';
+        AppSnackBar.error(context, error, title: 'Sign-in Failed');
+      }
+    } catch (e) {
+      debugPrint('Google Sign-In Error: $e');
+      if (!context.mounted) return;
+
+      String errorMessage = 'Google sign-in could not be completed. Please try again.';
+      final errString = e.toString();
+      if (errString.contains('network_error') || errString.contains('SocketException')) {
+        errorMessage = 'Network error connecting to Google services.';
+      } else if (errString.contains('10') || errString.contains('DEVELOPER_ERROR')) {
+        errorMessage = 'Google OAuth setup mismatch (check SHA-1 fingerprint or Client ID).';
+      }
+
+      AppSnackBar.error(context, errorMessage, title: 'Google Sign-In');
     }
+  }
+
+  /// Sign out from Google session
+  static Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
   }
 
   /// Handle Facebook Sign-In flow
@@ -106,7 +154,7 @@ class SocialAuthService {
     }
   }
 
-  /// Interactive account confirmation dialog
+  /// Interactive account confirmation dialog (used for Facebook or fallback)
   static Future<Map<String, String>?> _showSocialAccountPicker(
     BuildContext context, {
     required String provider,
