@@ -549,6 +549,285 @@
         </section>
     @endif
 
+        @if (feature_enabled('home_pricing') || feature_enabled('home_subscription_plans'))
+        {{-- SELLER & STORE OWNER PRICING PLANS --}}
+        @php
+            $pricingSellerUrl = Route::has('register.saler') ? route('register.saler') : (Route::has('register') ? route('register') : '#');
+            $pricingBusinessUrl = Route::has('register.business') ? route('register.business') : (Route::has('register') ? route('register') : '#');
+
+            $allHomePlans = ($sellerPlans ?? collect())->concat($businessPlans ?? collect());
+            $allPlansBySlug = $allHomePlans->keyBy('slug');
+
+            $pricingCards = [
+                [
+                    'slug' => 'starter',
+                    'kind' => 'Individual Seller',
+                    'kind_type' => 'saler',
+                    'kind_icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+                    'name' => 'Starter',
+                    'tagline' => 'List a single product',
+                    'default_price' => '30 QAR',
+                    'period' => '/ 30 days',
+                    'features' => ['1 active product listing', '30-day listing duration', 'Openbox 40+ Point Inspection', 'Escrow Payout Guarantee'],
+                    'cta' => 'Get Started',
+                    'highlighted' => false,
+                    'ribbon' => null,
+                ],
+                [
+                    'slug' => 'growth',
+                    'kind' => 'Individual Seller',
+                    'kind_type' => 'saler',
+                    'kind_icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+                    'name' => 'Growth',
+                    'tagline' => 'List up to 10 products',
+                    'default_price' => '70 QAR',
+                    'period' => '/ 30 days',
+                    'features' => ['Up to 10 active product listings', '30-day listing duration', 'Priority seller badge', 'Escrow Payout Guarantee'],
+                    'cta' => 'Get Started',
+                    'highlighted' => true,
+                    'ribbon' => 'Most Popular',
+                ],
+                [
+                    'slug' => 'monthly',
+                    'kind' => 'Store Owner',
+                    'kind_type' => 'business',
+                    'kind_icon' => 'M3 9.75L4.5 4.5h15L21 9.75M3 9.75v9A1.25 1.25 0 004.25 20h15.5A1.25 1.25 0 0021 18.75v-9M3 9.75h18M9 20v-6a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 14v6',
+                    'name' => 'Monthly',
+                    'tagline' => 'Full storefront, billed monthly',
+                    'default_price' => '99 QAR',
+                    'period' => '/ month',
+                    'features' => ['Dedicated storefront page', 'Unlimited product listings', 'Custom storefront profile & badge', 'Direct admin payouts'],
+                    'cta' => 'Open Your Store',
+                    'highlighted' => false,
+                    'ribbon' => null,
+                ],
+                [
+                    'slug' => 'yearly',
+                    'kind' => 'Store Owner',
+                    'kind_type' => 'business',
+                    'kind_icon' => 'M3 9.75L4.5 4.5h15L21 9.75M3 9.75v9A1.25 1.25 0 004.25 20h15.5A1.25 1.25 0 0021 18.75v-9M3 9.75h18M9 20v-6a1.5 1.5 0 011.5-1.5h3A1.5 1.5 0 0115 14v6',
+                    'name' => 'Yearly',
+                    'tagline' => 'Full storefront, billed yearly',
+                    'default_price' => '950 QAR',
+                    'period' => '/ year',
+                    'features' => ['Dedicated storefront page', 'Unlimited product listings', '2 months free vs. monthly billing', 'Priority storefront placement & VIP support'],
+                    'cta' => 'Open Your Store',
+                    'highlighted' => true,
+                    'ribbon' => 'Save 20%',
+                ],
+            ];
+        @endphp
+        <section id="pricing" class="py-14 bg-white dark:bg-[#0b0f19]">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                @if (session('status'))
+                    <div class="mb-6 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 px-4 py-3 rounded-2xl text-sm flex items-center justify-between shadow-xs">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                            <span class="font-medium">{{ session('status') }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                @if (isset($errors) && ($errors->has('plan') || $errors->has('payment_method')))
+                    <div class="mb-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-2xl text-sm flex items-center justify-between shadow-xs">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-5 h-5 text-red-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                            <span class="font-medium">{{ $errors->first('plan') ?: $errors->first('payment_method') }}</span>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 mb-4">Simple, Transparent Pricing</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-950 dark:text-white mb-2">Seller &amp; Store Owner Plans</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Choose the plan that fits how you sell. Pay admin directly via activated payment methods.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    @foreach ($pricingCards as $card)
+                        @php
+                            $dbPlan = $allPlansBySlug->get($card['slug']);
+                            $displayPrice = $dbPlan ? ((int) $dbPlan->price . ' QAR') : $card['default_price'];
+                            $displayPeriod = $dbPlan && $dbPlan->billing_cycle->value === 'yearly' ? '/ year' : $card['period'];
+                            $planFeatures = ($dbPlan && !empty($dbPlan->features)) ? $dbPlan->features : $card['features'];
+                        @endphp
+                        <div @class([
+                            'relative bg-white dark:bg-slate-800/90 rounded-2xl p-6 shadow-2xs hover:shadow-md transition-all flex flex-col',
+                            'border border-gray-100 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-400' => ! $card['highlighted'],
+                            'border-2 border-brand-500 shadow-md lg:-translate-y-2' => $card['highlighted'],
+                        ])>
+                            @if ($card['ribbon'])
+                                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-[#102c54] text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">{{ $card['ribbon'] }}</span>
+                            @endif
+
+                            <div class="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-slate-700 mb-4">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $card['kind_icon'] }}" /></svg>
+                                {{ $card['kind'] }}
+                            </div>
+
+                            <h4 class="text-base font-bold text-gray-900 dark:text-white mb-1">{{ $card['name'] }}</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">{{ $card['tagline'] }}</p>
+
+                            <div class="mb-5">
+                                <span class="text-3xl font-black text-gray-950 dark:text-white">{{ $displayPrice }}</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $displayPeriod }}</span>
+                            </div>
+
+                            <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 mb-6 border-t border-gray-50 dark:border-slate-700/60 pt-3 grow">
+                                @foreach ($planFeatures as $feature)
+                                    <li class="flex items-center gap-1.5"><span class="text-brand-600 dark:text-brand-400 font-bold">✓</span> {{ $feature }}</li>
+                                @endforeach
+                            </ul>
+
+                            <div class="mt-auto pt-2">
+                                @guest
+                                    <a href="{{ route('login') }}" @class([
+                                        'block w-full text-center font-semibold text-sm px-6 py-3 rounded-xl transition-all',
+                                        'bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-900 dark:text-white border border-gray-200 dark:border-slate-600 shadow-2xs' => ! $card['highlighted'],
+                                        'brand-btn-primary font-bold shadow-xs' => $card['highlighted'],
+                                    ])>{{ $card['cta'] }} &rarr;</a>
+                                @else
+                                    @php
+                                        $user = auth()->user();
+                                        $isCurrent = $dbPlan && $userActiveSubscription?->plan_id === $dbPlan->id && $userActiveSubscription->isActive();
+                                        $isEligible = $user->isAdmin() || ($card['kind_type'] === 'business' ? $user->isBusiness() : ! $user->isBusiness());
+                                    @endphp
+
+                                    @if ($isCurrent)
+                                        <button type="button" disabled class="w-full text-center font-bold text-xs sm:text-sm py-3 px-4 rounded-xl border border-brand-300 bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:border-brand-700 dark:text-brand-300 cursor-default">
+                                            ✓ Current Active Plan
+                                        </button>
+                                    @elseif ($isEligible && $dbPlan)
+                                        <button type="button" data-modal-open="subscribe-home-modal-{{ $dbPlan->id }}" @class([
+                                            'w-full text-center font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer',
+                                            'bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-900 dark:text-white border border-gray-200 dark:border-slate-600 shadow-2xs' => ! $card['highlighted'],
+                                            'brand-btn-primary font-bold shadow-xs' => $card['highlighted'],
+                                        ])>
+                                            {{ $user->isAdmin() ? 'Test Subscribe (Admin)' : ($card['kind_type'] === 'business' ? 'Open Store & Subscribe' : 'Subscribe to Plan') }}
+                                        </button>
+                                    @elseif ($card['kind_type'] === 'business')
+                                        <button type="button" disabled class="w-full text-center font-semibold text-xs py-3 px-4 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-400 cursor-not-allowed">
+                                            Store Owner Only
+                                        </button>
+                                        <p class="text-[10px] text-center text-gray-400 dark:text-gray-500 mt-1">Available for registered store owner accounts</p>
+                                    @else
+                                        <button type="button" disabled class="w-full text-center font-semibold text-xs py-3 px-4 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-400 cursor-not-allowed">
+                                            Store Owner Account Active
+                                        </button>
+                                        <p class="text-[10px] text-center text-gray-400 dark:text-gray-500 mt-1">Your account uses Store Owner packages</p>
+                                    @endif
+                                @endguest
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- PAYMENT MODALS FOR HOME PRICING --}}
+            @auth
+                @foreach ($allHomePlans as $modalPlan)
+                    <x-modal id="subscribe-home-modal-{{ $modalPlan->id }}" title="Subscribe to {{ $modalPlan->name }}" maxWidth="max-w-lg">
+                        <form method="POST" action="{{ route('subscriptions.purchase', $modalPlan) }}" class="space-y-4 text-left">
+                            @csrf
+
+                            <div class="bg-brand-50/60 dark:bg-slate-800 border border-brand-100 dark:border-slate-700 rounded-xl p-4 flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs text-brand-700 dark:text-brand-400 font-bold uppercase tracking-wider">Plan Summary</p>
+                                    <p class="text-base font-extrabold text-gray-950 dark:text-white mt-0.5">{{ $modalPlan->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Billed {{ strtolower($modalPlan->billing_cycle->label()) }} ({{ $modalPlan->type->value === 'business' ? 'Store Owner' : 'Individual Seller' }})</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-2xl font-black text-gray-950 dark:text-white">{{ (int)$modalPlan->price }} QAR</p>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-slate-800/60 p-3 rounded-lg border border-gray-100 dark:border-slate-700">
+                                🔒 <strong>Admin Payment Routing:</strong> Subscription payments are collected directly by <strong>Openbox Admin</strong> via Admin's configured payment gateways.
+                            </p>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Select Admin Payment Gateway <span class="text-red-500">*</span></label>
+                                @php
+                                    $hasGateways = ($adminPaymentMethods['stripe'] ?? false) || ($adminPaymentMethods['paypal'] ?? false) || ($adminPaymentMethods['manual_bank'] ?? false) || ($adminPaymentMethods['cod'] ?? false);
+                                    $checked = false;
+                                @endphp
+
+                                @if (! $hasGateways)
+                                    <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300">
+                                        No payment gateways are currently enabled by administrator. Please contact support.
+                                    </div>
+                                @else
+                                    <div class="space-y-2">
+                                        @if ($adminPaymentMethods['stripe'] ?? false)
+                                            @php $checked = true; @endphp
+                                            <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-brand-300 bg-white dark:bg-slate-800 cursor-pointer transition">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="stripe" checked class="w-4 h-4 text-brand-500 focus:ring-brand-400">
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">Credit / Debit Card (Stripe)</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400 px-2 py-0.5 rounded">Instant</span>
+                                            </label>
+                                        @endif
+
+                                        @if ($adminPaymentMethods['paypal'] ?? false)
+                                            <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-brand-300 bg-white dark:bg-slate-800 cursor-pointer transition">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="paypal" @checked(! $checked) class="w-4 h-4 text-brand-500 focus:ring-brand-400">
+                                                    @php if (!$checked) $checked = true; @endphp
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">PayPal Express</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400 px-2 py-0.5 rounded">Instant</span>
+                                            </label>
+                                        @endif
+
+                                        @if ($adminPaymentMethods['manual_bank'] ?? false)
+                                            <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-brand-300 bg-white dark:bg-slate-800 cursor-pointer transition">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="manual_bank" @checked(! $checked) class="w-4 h-4 text-brand-500 focus:ring-brand-400" onchange="document.getElementById('home-bank-ref-{{ $modalPlan->id }}').classList.toggle('hidden', !this.checked)">
+                                                    @php if (!$checked) $checked = true; @endphp
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">Direct Bank Transfer to Admin</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/50 dark:text-amber-400 px-2 py-0.5 rounded">Bank Deposit</span>
+                                            </label>
+
+                                            <div id="home-bank-ref-{{ $modalPlan->id }}" class="hidden p-3 bg-amber-50/60 dark:bg-slate-800 rounded-xl border border-amber-200/80 dark:border-amber-700/60 space-y-2 mt-2">
+                                                <p class="text-xs text-amber-900 dark:text-amber-300 font-medium"><strong>Admin Bank Details:</strong></p>
+                                                <p class="text-xs text-amber-800 dark:text-amber-400 whitespace-pre-line font-mono">{{ $adminBankDetails ?? 'Contact Admin for bank details' }}</p>
+                                                <div>
+                                                    <label class="block text-[11px] font-bold text-amber-900 dark:text-amber-300 uppercase mb-1">Deposit Slip / Reference No.</label>
+                                                    <input type="text" name="bank_reference" placeholder="e.g. TRX-98765432" class="w-full bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-lg text-xs p-2 focus:ring-2 focus:ring-brand-400 text-gray-900 dark:text-white">
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($adminPaymentMethods['cod'] ?? false)
+                                            <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-brand-300 bg-white dark:bg-slate-800 cursor-pointer transition">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="radio" name="payment_method" value="cod" @checked(! $checked) class="w-4 h-4 text-brand-500 focus:ring-brand-400">
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">Cash / Direct Admin Settlement</span>
+                                                </div>
+                                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-blue-400 px-2 py-0.5 rounded">Manual</span>
+                                            </label>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-slate-700">
+                                <button type="button" data-modal-close class="whitespace-nowrap px-4 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition cursor-pointer">
+                                    Cancel
+                                </button>
+                                @if ($hasGateways)
+                                    <x-button type="submit" class="whitespace-nowrap px-4 py-2 text-xs font-semibold">Pay Admin &amp; Activate Plan</x-button>
+                                @endif
+                            </div>
+                        </form>
+                    </x-modal>
+                @endforeach
+            @endauth
+        </section>
+    @endif
+
     @if (feature_enabled('home_latest_drops') && !empty($latestProducts))
         {{-- LATEST DROPS --}}
         <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6">

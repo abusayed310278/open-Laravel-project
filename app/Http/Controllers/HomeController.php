@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SubscriptionType;
 use App\Enums\UserRole;
 use App\Models\Banner;
 use App\Models\Category;
@@ -9,6 +10,8 @@ use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
+use App\Services\SettingsService;
+use App\Services\SubscriptionService;
 use App\Support\HomeContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +20,11 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    public function __construct(
+        private readonly SubscriptionService $subscriptions,
+        private readonly SettingsService $settings
+    ) {}
+
     public function index(Request $request): View|RedirectResponse
     {
         if ($request->filled('q')) {
@@ -212,6 +220,12 @@ class HomeController extends Controller
             ]);
         }
 
+        $sellerPlans = $this->subscriptions->plansFor(SubscriptionType::Saler);
+        $businessPlans = $this->subscriptions->plansFor(SubscriptionType::Business);
+        $adminPaymentMethods = $this->subscriptions->adminPaymentMethods();
+        $adminBankDetails = $this->settings->get('bank_details');
+        $userActiveSubscription = auth()->check() ? auth()->user()->activeSubscription()->with('plan')->first() : null;
+
         return view('pages.home', compact(
             'categories',
             'banners',
@@ -227,6 +241,11 @@ class HomeController extends Controller
             'vendors',
             'reviews',
             'comparableProducts',
+            'sellerPlans',
+            'businessPlans',
+            'adminPaymentMethods',
+            'adminBankDetails',
+            'userActiveSubscription',
         ));
     }
 

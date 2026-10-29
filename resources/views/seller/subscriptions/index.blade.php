@@ -206,13 +206,21 @@
                                         </div>
                                     @endif
 
-                                    <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:border-brand-300 bg-white cursor-pointer transition">
-                                        <div class="flex items-center gap-2.5">
-                                            <input type="radio" name="payment_method" value="cod" @checked(!($adminPaymentMethods['stripe'] ?? false) && !($adminPaymentMethods['paypal'] ?? false) && !($adminPaymentMethods['manual_bank'] ?? false)) class="w-4 h-4 text-brand-500 focus:ring-brand-400">
-                                            <span class="text-xs font-bold text-gray-900">Cash / Direct Admin Settlement</span>
+                                    @if ($adminPaymentMethods['cod'] ?? false)
+                                        <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:border-brand-300 bg-white cursor-pointer transition">
+                                            <div class="flex items-center gap-2.5">
+                                                <input type="radio" name="payment_method" value="cod" @checked(!($adminPaymentMethods['stripe'] ?? false) && !($adminPaymentMethods['paypal'] ?? false) && !($adminPaymentMethods['manual_bank'] ?? false)) class="w-4 h-4 text-brand-500 focus:ring-brand-400">
+                                                <span class="text-xs font-bold text-gray-900">Cash / Direct Admin Settlement</span>
+                                            </div>
+                                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Manual</span>
+                                        </label>
+                                    @endif
+
+                                    @if (! (($adminPaymentMethods['stripe'] ?? false) || ($adminPaymentMethods['paypal'] ?? false) || ($adminPaymentMethods['manual_bank'] ?? false) || ($adminPaymentMethods['cod'] ?? false)))
+                                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800">
+                                            No payment methods are currently activated by the administrator. Please contact support.
                                         </div>
-                                        <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Manual</span>
-                                    </label>
+                                    @endif
                                 </div>
                             </div>
 

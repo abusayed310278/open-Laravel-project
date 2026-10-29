@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Enums\BillingCycle;
+use App\Enums\SubscriptionType;
 use App\Models\DashboardMenu;
 use App\Models\FeatureSetting;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\SubscriptionPlan;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -111,10 +114,11 @@ class RbacAndFeatureSettingsSeeder extends Seeder
             ['key' => 'home_mobile_tech', 'title' => 'Mobile & Tech Showcase', 'group' => 'homepage', 'description' => 'Curated mobile phones and technology products grid.', 'is_enabled' => true, 'sort_order' => 8],
             ['key' => 'home_top_vendors', 'title' => 'Top Rated Vendors Grid', 'group' => 'homepage', 'description' => 'Verified store owners and top sellers showcase.', 'is_enabled' => true, 'sort_order' => 9],
             ['key' => 'home_start_selling_cta', 'title' => 'Start Selling Call-To-Action Banner', 'group' => 'homepage', 'description' => 'Banner driving seller registration and store opening.', 'is_enabled' => true, 'sort_order' => 10],
-            ['key' => 'home_latest_drops', 'title' => 'Latest Drops Product Section', 'group' => 'homepage', 'description' => 'Newly published items on the marketplace.', 'is_enabled' => true, 'sort_order' => 11],
-            ['key' => 'home_reviews', 'title' => 'What Our Community Says (Reviews)', 'group' => 'homepage', 'description' => 'Customer feedback and star rating cards.', 'is_enabled' => true, 'sort_order' => 12],
-            ['key' => 'home_popular_searches', 'title' => 'Popular Searches Tag Cloud', 'group' => 'homepage', 'description' => 'SEO keyword tag buttons.', 'is_enabled' => true, 'sort_order' => 13],
-            ['key' => 'home_newsletter', 'title' => 'Stay Updated Newsletter Subscribe', 'group' => 'homepage', 'description' => 'Email subscription newsletter signup form.', 'is_enabled' => true, 'sort_order' => 14],
+            ['key' => 'home_pricing', 'title' => 'Seller & Store Owner Pricing Plans', 'group' => 'homepage', 'description' => 'Individual seller listing fees and store owner subscription plans.', 'is_enabled' => true, 'sort_order' => 11],
+            ['key' => 'home_latest_drops', 'title' => 'Latest Drops Product Section', 'group' => 'homepage', 'description' => 'Newly published items on the marketplace.', 'is_enabled' => true, 'sort_order' => 12],
+            ['key' => 'home_reviews', 'title' => 'What Our Community Says (Reviews)', 'group' => 'homepage', 'description' => 'Customer feedback and star rating cards.', 'is_enabled' => true, 'sort_order' => 13],
+            ['key' => 'home_popular_searches', 'title' => 'Popular Searches Tag Cloud', 'group' => 'homepage', 'description' => 'SEO keyword tag buttons.', 'is_enabled' => true, 'sort_order' => 14],
+            ['key' => 'home_newsletter', 'title' => 'Stay Updated Newsletter Subscribe', 'group' => 'homepage', 'description' => 'Email subscription newsletter signup form.', 'is_enabled' => true, 'sort_order' => 15],
 
             // Product Detail Page Sections
             ['key' => 'product_buy_box', 'title' => 'Price & Buy Box (Add to Cart / Checkout)', 'group' => 'product_page', 'description' => 'Product pricing, stock status, and primary action buttons.', 'is_enabled' => true, 'sort_order' => 1],
@@ -240,6 +244,89 @@ class RbacAndFeatureSettingsSeeder extends Seeder
                     array_merge($m, ['role_slug' => $roleSlug, 'is_enabled' => true])
                 );
             }
+        }
+
+        // 6. Standard Seller & Store Owner Subscription Plans
+        $subscriptionPlans = [
+            [
+                'name' => 'Starter',
+                'slug' => 'starter',
+                'type' => SubscriptionType::Saler,
+                'billing_cycle' => BillingCycle::Monthly,
+                'price' => 30.00,
+                'listing_credits' => 1,
+                'duration_days' => 30,
+                'max_products' => 1,
+                'features' => [
+                    '1 active product listing',
+                    '30-day listing duration',
+                    'Openbox 40+ Point Device Inspection',
+                    'Escrow Payout Guarantee',
+                ],
+                'is_active' => true,
+                'sort_order' => 1,
+            ],
+            [
+                'name' => 'Growth',
+                'slug' => 'growth',
+                'type' => SubscriptionType::Saler,
+                'billing_cycle' => BillingCycle::Monthly,
+                'price' => 70.00,
+                'listing_credits' => 10,
+                'duration_days' => 30,
+                'max_products' => 10,
+                'features' => [
+                    'Up to 10 active product listings',
+                    '30-day listing duration',
+                    'Priority seller placement',
+                    'Escrow Payout Guarantee',
+                ],
+                'is_active' => true,
+                'sort_order' => 2,
+            ],
+            [
+                'name' => 'Monthly',
+                'slug' => 'monthly',
+                'type' => SubscriptionType::Business,
+                'billing_cycle' => BillingCycle::Monthly,
+                'price' => 99.00,
+                'listing_credits' => null,
+                'duration_days' => 30,
+                'max_products' => null,
+                'features' => [
+                    'Dedicated storefront page',
+                    'Unlimited product listings',
+                    'Custom store profile & verified badge',
+                    'Direct admin payouts & order analytics',
+                ],
+                'is_active' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'name' => 'Yearly',
+                'slug' => 'yearly',
+                'type' => SubscriptionType::Business,
+                'billing_cycle' => BillingCycle::Yearly,
+                'price' => 950.00,
+                'listing_credits' => null,
+                'duration_days' => 365,
+                'max_products' => null,
+                'features' => [
+                    'Dedicated storefront page',
+                    'Unlimited product listings',
+                    '2 months free vs. monthly billing',
+                    'Priority storefront placement & VIP support',
+                ],
+                'is_active' => true,
+                'sort_order' => 4,
+            ],
+        ];
+
+        foreach ($subscriptionPlans as $planData) {
+            SubscriptionPlan::updateOrCreate(
+                ['slug' => $planData['slug']],
+                $planData
+            );
         }
     }
 }

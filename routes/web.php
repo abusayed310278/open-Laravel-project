@@ -98,6 +98,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/newsletter', [NewsletterController::class, 'store'])->middleware('throttle:10,1')->name('newsletter.subscribe');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/subscriptions/purchase/{plan}', [SubscriptionController::class, 'store'])->name('subscriptions.purchase');
+    Route::get('/subscriptions/{subscription}/stripe-portal', [SubscriptionController::class, 'stripePortal'])->name('subscriptions.stripe-portal');
+    Route::post('/subscriptions/{subscription}/stripe-confirm', [SubscriptionController::class, 'stripeConfirm'])->name('subscriptions.stripe-confirm');
+    Route::get('/subscriptions/{subscription}/stripe-success', [SubscriptionController::class, 'stripeSuccess'])->name('subscriptions.stripe-success');
+    Route::get('/subscriptions/{subscription}/paypal-portal', [SubscriptionController::class, 'paypalPortal'])->name('subscriptions.paypal-portal');
+    Route::post('/subscriptions/{subscription}/paypal-confirm', [SubscriptionController::class, 'paypalConfirm'])->name('subscriptions.paypal-confirm');
+    Route::get('/subscriptions/{subscription}/bank-portal', [SubscriptionController::class, 'bankPortal'])->name('subscriptions.bank-portal');
+});
 Route::get('/grading-system', GradingSystemController::class)->name('grading-system');
 Route::get('/shop', [ProductPageController::class, 'index'])->name('shop');
 Route::get('/search', [ProductPageController::class, 'index'])->name('search');

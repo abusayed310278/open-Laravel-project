@@ -40,8 +40,8 @@
             </div>
 
             @php
-                $confirmRoute = auth()->user()->isBusiness() ? route('business.subscription.paypal-confirm', $subscription) : route('saler.subscriptions.paypal-confirm', $subscription);
-                $cancelRoute = auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index');
+                $confirmRoute = Route::has('subscriptions.paypal-confirm') ? route('subscriptions.paypal-confirm', $subscription) : (auth()->user()->isBusiness() ? route('business.subscription.paypal-confirm', $subscription) : route('saler.subscriptions.paypal-confirm', $subscription));
+                $cancelRoute = auth()->user()->isAdmin() ? route('admin.subscriptions.plans.index') : (auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index'));
             @endphp
 
             <div class="space-y-4">

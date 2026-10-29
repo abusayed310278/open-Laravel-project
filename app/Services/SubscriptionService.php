@@ -26,6 +26,31 @@ class SubscriptionService
     }
 
     /**
+     * Get the payment methods activated by admin in settings.
+     *
+     * @return array<string, bool>
+     */
+    public function adminPaymentMethods(): array
+    {
+        $settings = app(SettingsService::class);
+
+        $stripeEnabled = $settings->get('stripe_enabled') === '1';
+        $hasStripeKeys = (filled($settings->get('stripe_publishable_key')) && $settings->has('stripe_secret_key'))
+            || (filled(config('services.stripe.key')) && filled(config('services.stripe.secret')));
+
+        $paypalEnabled = $settings->get('paypal_enabled') === '1';
+        $hasPaypalKeys = (filled($settings->get('paypal_client_id')) && $settings->has('paypal_client_secret'))
+            || filled(config('services.paypal.client_id'));
+
+        return [
+            'stripe' => $stripeEnabled && $hasStripeKeys,
+            'paypal' => $paypalEnabled && $hasPaypalKeys,
+            'manual_bank' => filled($settings->get('bank_details')),
+            'cod' => true,
+        ];
+    }
+
+    /**
      * Activates the subscription immediately. There's no live payment
      * gateway wired in yet (that's Phase 14) — once Stripe/PayPal exist,
      * this becomes "create a pending subscription + checkout session" and

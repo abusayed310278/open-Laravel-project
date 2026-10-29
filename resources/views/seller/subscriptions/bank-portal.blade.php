@@ -46,7 +46,7 @@
             </div>
 
             @php
-                $returnRoute = auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index');
+                $returnRoute = auth()->user()->isAdmin() ? route('admin.subscriptions.plans.index') : (auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index'));
             @endphp
 
             <a href="{{ $returnRoute }}" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs py-3 rounded-xl transition-all block text-center">

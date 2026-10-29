@@ -27,16 +27,7 @@ class SubscriptionController extends Controller
         $user = Auth::user();
         $type = $user->isBusiness() ? SubscriptionType::Business : SubscriptionType::Saler;
 
-        $adminPaymentMethods = [
-            'stripe' => $this->settings->get('stripe_enabled') === '1'
-                || (filled($this->settings->get('stripe_publishable_key')) && $this->settings->has('stripe_secret_key'))
-                || (filled(config('services.stripe.key')) && filled(config('services.stripe.secret'))),
-            'paypal' => $this->settings->get('paypal_enabled') === '1'
-                || (filled($this->settings->get('paypal_client_id')) && $this->settings->has('paypal_client_secret'))
-                || filled(config('services.paypal.client_id')),
-            'manual_bank' => filled($this->settings->get('bank_details')),
-            'cod' => true,
-        ];
+        $adminPaymentMethods = $this->subscriptions->adminPaymentMethods();
 
         return view('seller.subscriptions.index', [
             'plans' => $this->subscriptions->plansFor($type),
@@ -50,10 +41,36 @@ class SubscriptionController extends Controller
     public function store(Request $request, SubscriptionPlan $plan): RedirectResponse
     {
         $user = Auth::user();
+
+        // Enforce role-based plan eligibility (Admins can test any plan)
+        if (! $user->isAdmin()) {
+            if ($user->isBusiness() && $plan->type !== SubscriptionType::Business) {
+                return back()->withErrors([
+                    'plan' => 'Store Owners can only subscribe to Store Owner packages.',
+                ]);
+            }
+
+            if (! $user->isBusiness() && $plan->type !== SubscriptionType::Saler) {
+                return back()->withErrors([
+                    'plan' => 'Individual Sellers can only subscribe to Individual Seller packages.',
+                ]);
+            }
+        }
+
+        // Validate admin-activated payment method
+        $activePaymentMethods = $this->subscriptions->adminPaymentMethods();
+        $allowedMethods = array_keys(array_filter($activePaymentMethods));
+
         $validated = $request->validate([
             'payment_method' => ['required', 'string', 'in:stripe,paypal,manual_bank,cod'],
             'bank_reference' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if (! in_array($validated['payment_method'], $allowedMethods, true)) {
+            return back()->withErrors([
+                'payment_method' => 'The selected payment method is currently disabled by the administrator.',
+            ]);
+        }
 
         $subscription = $this->subscriptions->purchase(
             $user,
@@ -62,54 +79,25 @@ class SubscriptionController extends Controller
             ['reference' => $validated['bank_reference'] ?? null]
         );
 
-        $routePrefix = $user->isBusiness() ? 'business.subscription.' : 'saler.subscriptions.';
+        $cancelRoute = $user->isAdmin()
+            ? route('admin.subscriptions.plans.index')
+            : ($user->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index'));
 
         if ($validated['payment_method'] === 'stripe' && $subscription->status === SubscriptionStatus::Pending) {
-            $secretKey = $this->settings->getDecrypted('stripe_secret_key') ?: config('services.stripe.secret');
-
-            if (filled($secretKey)) {
-                try {
-                    $response = Http::withBasicAuth($secretKey, '')
-                        ->asForm()
-                        ->post('https://api.stripe.com/v1/checkout/sessions', [
-                            'payment_method_types' => ['card'],
-                            'line_items' => [
-                                [
-                                    'price_data' => [
-                                        'currency' => 'usd',
-                                        'product_data' => [
-                                            'name' => 'Subscription: ' . $plan->name,
-                                        ],
-                                        'unit_amount' => (int) round((float) $plan->price * 100),
-                                    ],
-                                    'quantity' => 1,
-                                ],
-                            ],
-                            'mode' => 'payment',
-                            'success_url' => route($routePrefix . 'stripe-success', $subscription) . '?session_id={CHECKOUT_SESSION_ID}',
-                            'cancel_url' => route($routePrefix . ($user->isBusiness() ? 'index' : 'index')),
-                        ]);
-
-                    if ($response->successful() && isset($response->json()['url'])) {
-                        return redirect()->away($response->json()['url']);
-                    }
-                } catch (\Throwable $e) {
-                    Log::warning('Stripe API subscription session creation failed: ' . $e->getMessage());
-                }
-            }
-
-            return redirect()->route($routePrefix . 'stripe-portal', $subscription);
+            return redirect()->route('subscriptions.stripe-portal', $subscription);
         }
 
         if ($validated['payment_method'] === 'paypal' && $subscription->status === SubscriptionStatus::Pending) {
-            return redirect()->route($routePrefix . 'paypal-portal', $subscription);
+            return redirect()->route('subscriptions.paypal-portal', $subscription);
         }
 
         if ($validated['payment_method'] === 'manual_bank' && $subscription->status === SubscriptionStatus::Pending) {
-            return redirect()->route($routePrefix . 'bank-portal', $subscription);
+            return redirect()->route('subscriptions.bank-portal', $subscription);
         }
 
-        $indexRoute = $routePrefix . ($user->isBusiness() ? 'index' : 'index');
+        $indexRoute = $user->isAdmin()
+            ? 'admin.subscriptions.plans.index'
+            : ($user->isBusiness() ? 'business.subscription.index' : 'saler.subscriptions.index');
 
         return redirect()->route($indexRoute)->with('status', "Subscription for \"{$plan->name}\" processed.");
     }
@@ -130,7 +118,9 @@ class SubscriptionController extends Controller
 
         $this->subscriptions->activate($subscription, 'stripe');
 
-        $route = Auth::user()->isBusiness() ? 'business.subscription.index' : 'saler.subscriptions.index';
+        $route = Auth::user()->isAdmin()
+            ? 'admin.subscriptions.plans.index'
+            : (Auth::user()->isBusiness() ? 'business.subscription.index' : 'saler.subscriptions.index');
 
         return redirect()->route($route)->with('status', "Payment completed via Stripe! Your \"{$subscription->plan->name}\" subscription is now active.");
     }
@@ -156,7 +146,9 @@ class SubscriptionController extends Controller
 
         $this->subscriptions->activate($subscription, 'paypal');
 
-        $route = Auth::user()->isBusiness() ? 'business.subscription.index' : 'saler.subscriptions.index';
+        $route = Auth::user()->isAdmin()
+            ? 'admin.subscriptions.plans.index'
+            : (Auth::user()->isBusiness() ? 'business.subscription.index' : 'saler.subscriptions.index');
 
         return redirect()->route($route)->with('status', "Payment completed via PayPal! Your \"{$subscription->plan->name}\" subscription is now active.");
     }

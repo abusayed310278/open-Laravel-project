@@ -122,8 +122,8 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen antialiased selection:bg-indigo-500 selection:text-white">
     @php
-        $confirmRoute = auth()->user()->isBusiness() ? route('business.subscription.stripe-confirm', $subscription) : route('saler.subscriptions.stripe-confirm', $subscription);
-        $cancelRoute = auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index');
+        $confirmRoute = Route::has('subscriptions.stripe-confirm') ? route('subscriptions.stripe-confirm', $subscription) : (auth()->user()->isBusiness() ? route('business.subscription.stripe-confirm', $subscription) : route('saler.subscriptions.stripe-confirm', $subscription));
+        $cancelRoute = auth()->user()->isAdmin() ? route('admin.subscriptions.plans.index') : (auth()->user()->isBusiness() ? route('business.subscription.index') : route('saler.subscriptions.index'));
     @endphp
 
     <div class="min-h-screen grid lg:grid-cols-12">
