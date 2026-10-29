@@ -3,12 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/network/social_auth_service.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/custom_button.dart';
 import '../../core/widgets/custom_text_field.dart';
-import '../../core/widgets/social_login_button.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import 'forgot_password_screen.dart';
@@ -201,44 +199,44 @@ class _LoginScreenState extends State<LoginScreen> {
                         isLoading: authProvider.state == AuthState.loading,
                         onPressed: _handleLogin,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      const Row(
-                        children: [
-                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                            child: Text(
-                              'OR CONTINUE WITH',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.slate400,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ),
-                          Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SocialLoginButton(
-                            provider: SocialProvider.google,
-                            isIconOnly: true,
-                            isLoading: authProvider.state == AuthState.loading,
-                            onPressed: () => SocialAuthService.signInWithGoogle(context),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          SocialLoginButton(
-                            provider: SocialProvider.facebook,
-                            isIconOnly: true,
-                            isLoading: authProvider.state == AuthState.loading,
-                            onPressed: () => SocialAuthService.signInWithFacebook(context),
-                          ),
-                        ],
-                      ),
+                      // const SizedBox(height: AppSpacing.lg),
+                      // const Row(
+                      //   children: [
+                      //     Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                      //     Padding(
+                      //       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      //       child: Text(
+                      //         'OR CONTINUE WITH',
+                      //         style: TextStyle(
+                      //           fontSize: 11,
+                      //           fontWeight: FontWeight.w700,
+                      //           color: AppColors.slate400,
+                      //           letterSpacing: 0.8,
+                      //         ),
+                      //       ),
+                      //     ),
+                      //     Expanded(child: Divider(color: AppColors.slate200, thickness: 1)),
+                      //   ],
+                      // ),
+                      // const SizedBox(height: AppSpacing.lg),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     SocialLoginButton(
+                      //       provider: SocialProvider.google,
+                      //       isIconOnly: true,
+                      //       isLoading: _isGoogleLoading,
+                      //       onPressed: _handleGoogleSignIn,
+                      //     ),
+                      //     const SizedBox(width: AppSpacing.md),
+                      //     SocialLoginButton(
+                      //       provider: SocialProvider.facebook,
+                      //       isIconOnly: true,
+                      //       isLoading: _isFacebookLoading,
+                      //       onPressed: _handleFacebookSignIn,
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),

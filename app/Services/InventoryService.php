@@ -58,7 +58,7 @@ class InventoryService
             'quantity' => $quantity,
             'reference_type' => $reference?->getMorphClass(),
             'reference_id' => $reference?->getKey(),
-            'notes' => $notes,
+            'notes' => $notes !== null ? \Illuminate\Support\Str::limit($notes, 250, '...') : null,
             'created_by' => $actor?->id,
             'created_at' => now(),
         ]);

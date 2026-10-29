@@ -63,6 +63,13 @@ class SettingsService
         } catch (Throwable $e) {
             Log::warning("Failed decrypting setting '{$key}': ".$e->getMessage());
 
+            // If ciphertext failed to decrypt (e.g. APP_KEY rotated or DB imported),
+            // never return the raw ciphertext string as it causes authentication failures
+            // in downstream services (Stripe, SMTP, Cloudinary, etc.) and blocks config() fallbacks.
+            if (str_starts_with($value, 'eyJpdiI6')) {
+                return null;
+            }
+
             return $value;
         }
     }

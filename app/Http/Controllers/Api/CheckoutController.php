@@ -207,9 +207,45 @@ class CheckoutController extends Controller
                 $singleSeller = $order->vendorOrders->first()?->seller;
                 $vendorSetting = $singleSeller?->paymentSettings;
                 if ($vendorSetting && $vendorSetting->stripe_enabled && $vendorSetting->hasStripeConnected()) {
-                    $secretKey = $vendorSetting->stripe_secret_key;
-                    $publishableKey = $vendorSetting->stripe_publishable_key;
+                    $vendorSecret = $vendorSetting->stripe_secret_key;
+                    if (filled($vendorSecret) && str_starts_with($vendorSecret, 'eyJpdiI6')) {
+                        try {
+                            $vendorSecret = \Illuminate\Support\Facades\Crypt::decryptString($vendorSecret);
+                        } catch (\Throwable) {
+                            $vendorSecret = null;
+                        }
+                    }
+                    if (filled($vendorSecret) && (str_starts_with($vendorSecret, 'sk_') || str_starts_with($vendorSecret, 'rk_'))) {
+                        $secretKey = $vendorSecret;
+                        $publishableKey = $vendorSetting->stripe_publishable_key;
+                    }
                 }
+            }
+
+            // Ensure secretKey is clean plaintext and decrypt if still encrypted
+            if (filled($secretKey) && str_starts_with($secretKey, 'eyJpdiI6')) {
+                try {
+                    $secretKey = \Illuminate\Support\Facades\Crypt::decryptString($secretKey);
+                } catch (\Throwable) {
+                    $secretKey = config('services.stripe.secret');
+                }
+            }
+
+            // Validate that we have a genuine Stripe secret key (starts with sk_ or rk_)
+            $isStripeConfigured = filled($secretKey)
+                && (str_starts_with($secretKey, 'sk_') || str_starts_with($secretKey, 'rk_'));
+
+            if (! $isStripeConfigured) {
+                try {
+                    $this->checkout->cancelUnconfirmedOrder($order, $user, 'Stripe credentials not configured');
+                } catch (\Throwable $rollbackError) {
+                    Log::warning('Rollback warning during unconfigured stripe check: ' . $rollbackError->getMessage());
+                }
+
+                return response()->json([
+                    'message' => 'Online card payment is currently unavailable. Please choose Cash on Delivery or contact the store.',
+                    'error' => 'Stripe secret key is not configured or invalid.',
+                ], 422);
             }
 
             if (filled($secretKey)) {
@@ -266,17 +302,27 @@ class CheckoutController extends Controller
                             ], 201);
                         } else {
                             $errorMsg = $chargeResponse->json('error.message') ?? 'Card payment was declined by Stripe.';
-                            $this->checkout->cancelUnconfirmedOrder($order, $user, $errorMsg);
+                            $cleanError = \Illuminate\Support\Str::limit($errorMsg, 200, '...');
+                            try {
+                                $this->checkout->cancelUnconfirmedOrder($order, $user, $cleanError);
+                            } catch (\Throwable $cancelErr) {
+                                Log::error('Failed to cancel unconfirmed order: ' . $cancelErr->getMessage());
+                            }
 
                             return response()->json([
-                                'message' => $errorMsg,
-                                'error' => $errorMsg,
+                                'message' => $cleanError,
+                                'error' => $cleanError,
                             ], 422);
                         }
                     } catch (\Throwable $e) {
                         Log::error('Stripe mobile direct charge exception: ' . $e->getMessage());
+                        try {
+                            $this->checkout->cancelUnconfirmedOrder($order, $user, 'Card processing error');
+                        } catch (\Throwable) {}
+
                         return response()->json([
-                            'message' => 'Unable to process card payment: ' . $e->getMessage(),
+                            'message' => 'Unable to process card payment. Please check your card details or try another payment method.',
+                            'error' => $e->getMessage(),
                         ], 500);
                     }
                 }

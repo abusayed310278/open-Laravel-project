@@ -87,18 +87,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       // 1. Fetch available payment methods
       try {
-        final pmResponse = await _apiClient.get('/checkout/payment-methods');
+        final pmBody = <String, dynamic>{};
+        if (widget.items.isNotEmpty) {
+          pmBody['items'] = widget.items.map((it) => {
+            'product_id': it['id'] ?? it['product_id'],
+            'quantity': it['quantity'] ?? 1,
+          }).toList();
+        }
+        final pmResponse = await _apiClient.post('/checkout/payment-methods', body: pmBody);
         if (pmResponse is Map<String, dynamic> && pmResponse['payment_methods'] is List) {
           _paymentMethods = (pmResponse['payment_methods'] as List)
               .map((e) => Map<String, dynamic>.from(e as Map))
               .toList();
         }
       } catch (_) {
-        // Fallback default methods
-        _paymentMethods = [
-          {'id': 'cod', 'name': 'Cash on Delivery', 'enabled': true},
-          {'id': 'stripe', 'name': 'Card (Stripe)', 'enabled': true},
-        ];
+        try {
+          final pmResponse = await _apiClient.get('/checkout/payment-methods');
+          if (pmResponse is Map<String, dynamic> && pmResponse['payment_methods'] is List) {
+            _paymentMethods = (pmResponse['payment_methods'] as List)
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+          }
+        } catch (_) {
+          // Fallback default methods
+          _paymentMethods = [
+            {'id': 'cod', 'name': 'Cash on Delivery', 'enabled': true},
+            {'id': 'stripe', 'name': 'Card (Stripe)', 'enabled': true},
+          ];
+        }
       }
 
       // Ensure cod and stripe are present if list is empty
@@ -107,6 +123,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           {'id': 'cod', 'name': 'Cash on Delivery', 'enabled': true},
           {'id': 'stripe', 'name': 'Card (Stripe)', 'enabled': true},
         ];
+      }
+
+      // Ensure selected payment method is valid for available methods
+      if (_paymentMethods.isNotEmpty) {
+        final hasSelected = _paymentMethods.any((m) => m['id'] == _selectedPaymentMethod);
+        if (!hasSelected) {
+          _selectedPaymentMethod = _paymentMethods.first['id']?.toString() ?? 'cod';
+        }
       }
 
       // 2. Fetch saved addresses
@@ -367,6 +391,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         body['address_id'] = addressId;
       }
 
+      if (widget.items.isNotEmpty) {
+        body['items'] = widget.items.map((it) => {
+          'product_id': it['id'] ?? it['product_id'],
+          'quantity': it['quantity'] ?? 1,
+        }).toList();
+      }
+
       if (_selectedPaymentMethod == 'stripe') {
         final rawCard = _cardNumberController.text.replaceAll(' ', '').trim();
         final expiryParts = _expiryController.text.split('/');
@@ -450,7 +481,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, e.toString());
+        String msg = e.toString()
+            .replaceFirst(RegExp(r'^Exception:\s*'), '')
+            .replaceFirst(RegExp(r'^ApiException:\s*'), '');
+        AppSnackBar.error(context, msg);
       }
     } finally {
       if (mounted) {
@@ -768,29 +802,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildPaymentMethodOptions() {
+    final hasCod = _paymentMethods.any((m) => m['id'] == 'cod');
+    final hasStripe = _paymentMethods.any((m) => m['id'] == 'stripe');
+    final hasManualBank = _paymentMethods.any((m) => m['id'] == 'manual_bank');
+
+    final showCod = hasCod || (!hasStripe && !hasManualBank);
+    final showStripe = hasStripe;
+
     return Column(
       children: [
-        // 1. Cash on Delivery
-        _buildPaymentOptionCard(
-          id: 'cod',
-          title: 'Cash on Delivery (COD)',
-          subtitle: 'Pay with cash upon receipt of order',
-          icon: Icons.payments_outlined,
-          badgeColor: AppColors.success,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-
-        // 2. Stripe Card
-        _buildPaymentOptionCard(
-          id: 'stripe',
-          title: 'Credit / Debit Card',
-          subtitle: 'Visa, Mastercard, AMEX • Powered by Stripe',
-          icon: Icons.credit_card_rounded,
-          badgeColor: const Color(0xFF635BFF),
-        ),
-        if (_selectedPaymentMethod == 'stripe') ...[
-          const SizedBox(height: AppSpacing.md),
-          _buildStripeCardInputSection(),
+        if (showCod) ...[
+          _buildPaymentOptionCard(
+            id: 'cod',
+            title: 'Cash on Delivery (COD)',
+            subtitle: 'Pay with cash upon receipt of order',
+            icon: Icons.payments_outlined,
+            badgeColor: AppColors.success,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
+        if (showStripe) ...[
+          _buildPaymentOptionCard(
+            id: 'stripe',
+            title: 'Credit / Debit Card',
+            subtitle: 'Visa, Mastercard, AMEX • Powered by Stripe',
+            icon: Icons.credit_card_rounded,
+            badgeColor: const Color(0xFF635BFF),
+          ),
+          if (_selectedPaymentMethod == 'stripe') ...[
+            const SizedBox(height: AppSpacing.md),
+            _buildStripeCardInputSection(),
+          ],
+          const SizedBox(height: AppSpacing.sm),
+        ],
+        if (hasManualBank) ...[
+          _buildPaymentOptionCard(
+            id: 'manual_bank',
+            title: 'Manual Bank Transfer',
+            subtitle: 'Direct transfer to seller bank account',
+            icon: Icons.account_balance_outlined,
+            badgeColor: AppColors.brand600,
+          ),
+          const SizedBox(height: AppSpacing.sm),
         ],
       ],
     );

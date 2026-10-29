@@ -36,6 +36,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _agreedToTerms = false;
+  bool _isGoogleLoading = false;
+  bool _isFacebookLoading = false;
 
   // Password strength calculation (0 to 4)
   int _passwordStrength = 0;
@@ -131,6 +133,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else {
       final error = authProvider.errorMessage ?? 'Registration failed. Please try again.';
       AppSnackBar.error(context, error);
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isGoogleLoading = true);
+    await SocialAuthService.signInWithGoogle(context, role: 'customer', isSignUp: true);
+    if (mounted) {
+      setState(() => _isGoogleLoading = false);
+    }
+  }
+
+  Future<void> _handleFacebookSignIn() async {
+    setState(() => _isFacebookLoading = true);
+    await SocialAuthService.signInWithFacebook(context, role: 'customer', isSignUp: true);
+    if (mounted) {
+      setState(() => _isFacebookLoading = false);
     }
   }
 
@@ -513,24 +531,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               provider: SocialProvider.google,
                               isIconOnly: true,
                               isSignUp: true,
-                              isLoading: isLoading,
-                              onPressed: () => SocialAuthService.signInWithGoogle(
-                                context,
-                                role: 'customer',
-                                isSignUp: true,
-                              ),
+                              isLoading: _isGoogleLoading,
+                              onPressed: _handleGoogleSignIn,
                             ),
                             const SizedBox(width: AppSpacing.md),
                             SocialLoginButton(
                               provider: SocialProvider.facebook,
                               isIconOnly: true,
                               isSignUp: true,
-                              isLoading: isLoading,
-                              onPressed: () => SocialAuthService.signInWithFacebook(
-                                context,
-                                role: 'customer',
-                                isSignUp: true,
-                              ),
+                              isLoading: _isFacebookLoading,
+                              onPressed: _handleFacebookSignIn,
                             ),
                           ],
                         ),

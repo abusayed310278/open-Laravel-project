@@ -281,6 +281,7 @@ class CheckoutService
         }
 
         DB::transaction(function () use ($order, $actor, $reason) {
+            $safeReason = \Illuminate\Support\Str::limit($reason, 250, '...');
             $order->loadMissing('vendorOrders.items.product');
 
             foreach ($order->vendorOrders as $vendorOrder) {
@@ -293,7 +294,7 @@ class CheckoutService
                                 InventoryMovementType::Return,
                                 $item,
                                 $actor,
-                                $reason
+                                $safeReason
                             );
                         }
                     }
@@ -303,7 +304,7 @@ class CheckoutService
                         'order_id' => $order->id,
                         'status' => OrderStatus::Cancelled->value,
                         'created_by' => $actor?->id,
-                        'notes' => $reason,
+                        'notes' => $safeReason,
                     ]);
                 }
             }
@@ -312,7 +313,7 @@ class CheckoutService
             $order->statusHistories()->create([
                 'status' => OrderStatus::Cancelled->value,
                 'created_by' => $actor?->id,
-                'notes' => $reason,
+                'notes' => $safeReason,
             ]);
 
             Transaction::where('order_id', $order->id)
