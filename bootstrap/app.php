@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'profile.complete' => EnsureProfileIsComplete::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn (Request $request) => route($request->user()->role->dashboardRoute()));
 

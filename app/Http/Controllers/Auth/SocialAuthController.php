@@ -24,7 +24,15 @@ class SocialAuthController extends Controller
      */
     public function redirectToGoogle(): RedirectResponse
     {
-        return Socialite::driver('google')->redirect();
+        try {
+            return Socialite::driver('google')->redirect();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Google redirect failed: ' . $e->getMessage());
+
+            return redirect()->route('login')->withErrors([
+                'login' => 'Google sign-in is currently unavailable: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     /**
