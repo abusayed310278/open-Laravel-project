@@ -6,7 +6,6 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/section_header.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/models/product.dart';
 import '../../providers/location_provider.dart';
 import '../../providers/product_provider.dart';
@@ -39,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final productProvider = context.watch<ProductProvider>();
     final liveProducts = productProvider.products;
-    final allProducts = liveProducts.isNotEmpty ? liveProducts : MockData.products;
-    final displayProducts = allProducts.where((p) => p.isPublished).toList();
+    final isLoading = productProvider.isLoading && liveProducts.isEmpty;
+    final displayProducts = liveProducts.where((p) => p.isPublished).toList();
 
     final openboxProducts = displayProducts.where((p) => p.isOpenboxCondition).toList();
     final refurbishedProducts = displayProducts.where((p) => p.isRefurbishedCondition).toList();
@@ -128,8 +127,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 
-              // When 'all' is selected: Show dedicated condition carousels followed by full product feed
-              if (_selectedCondition == 'all') ...[
+              if (isLoading)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: AppSpacing.xl),
+                          CircularProgressIndicator(
+                            color: AppColors.brand600,
+                            strokeWidth: 2.5,
+                          ),
+                          SizedBox(height: AppSpacing.lg),
+                          Text(
+                            'Loading products...',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.slate500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else if (_selectedCondition == 'all') ...[
                 // 1. New Section
                 if (newProducts.isNotEmpty) ...[
                   SliverToBoxAdapter(
@@ -240,16 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
               ],
 
-              if (productProvider.isLoading && liveProducts.isEmpty)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.xxl),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                )
-              else if (activeProducts.isEmpty)
+              if (!isLoading && activeProducts.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
@@ -266,15 +282,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           OutlinedButton(
-                            onPressed: () => setState(() => _selectedCondition = 'all'),
-                            child: const Text('View All Products'),
+                            onPressed: () {
+                              setState(() => _selectedCondition = 'all');
+                              context.read<ProductProvider>().fetchProducts();
+                            },
+                            child: const Text('Refresh Products'),
                           ),
                         ],
                       ),
                     ),
                   ),
                 )
-              else
+              else if (!isLoading)
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   sliver: SliverGrid(

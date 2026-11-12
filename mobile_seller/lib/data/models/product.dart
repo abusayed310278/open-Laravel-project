@@ -345,9 +345,7 @@ class Product {
       }
     }
 
-    if (formattedMainImage.isEmpty) {
-      formattedMainImage = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80';
-    }
+    // No dummy fallback - remain empty if no valid image exists
 
     final List<String> galleryList = [];
 

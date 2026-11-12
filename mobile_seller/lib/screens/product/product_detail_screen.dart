@@ -12,7 +12,6 @@ import '../../core/widgets/badges.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/rating_stars.dart';
 import '../../data/mock/app_state.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/models/chat_conversation.dart';
 import '../../data/models/product.dart';
 import '../../data/models/seller.dart';
@@ -107,9 +106,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final product = _detailedProduct ?? widget.product;
-    final seller = product.seller ?? MockData.sellerFor(product.sellerId);
+    final seller = product.seller ??
+        Seller(
+          id: product.sellerId.isNotEmpty ? product.sellerId : '1',
+          name: 'Openbox Seller',
+          type: SellerType.business,
+          city: 'Doha',
+          rating: 4.8,
+          isVerified: true,
+          memberSince: '2026',
+        );
     final gallery = product.gallery.isEmpty ? (product.imageUrl.isNotEmpty ? [product.imageUrl] : <String>[]) : product.gallery;
-    final similar = MockData.products.where((p) => p.categoryId == product.categoryId && p.id != product.id).toList();
+    final liveProducts = context.watch<ProductProvider>().products;
+    final similar = liveProducts.where((p) => p.categoryId == product.categoryId && p.id != product.id).toList();
 
     final shortDesc = product.cleanShortDescription;
 

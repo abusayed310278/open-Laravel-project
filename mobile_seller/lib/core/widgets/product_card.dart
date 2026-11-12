@@ -47,14 +47,35 @@ class ProductCard extends StatelessWidget {
                               0, 0, 1, 0, 0,
                               0, 0, 0, 1, 0,
                             ]),
-                      child: Image.network(
-                        product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
-                          color: AppColors.slate100,
-                          child: const Icon(Icons.image_outlined, color: AppColors.slate400, size: 32),
-                        ),
-                      ),
+                      child: product.imageUrl.isNotEmpty
+                          ? Image.network(
+                              product.imageUrl,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: AppColors.slate100,
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.brand500,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, _, _) => Container(
+                                color: AppColors.slate100,
+                                child: const Icon(Icons.image_outlined, color: AppColors.slate400, size: 32),
+                              ),
+                            )
+                          : Container(
+                              color: AppColors.slate100,
+                              child: const Icon(Icons.image_outlined, color: AppColors.slate400, size: 32),
+                            ),
                     ),
                   ),
                   if (product.isOutOfStock)

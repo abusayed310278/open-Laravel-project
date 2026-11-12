@@ -5,7 +5,6 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/product_card.dart';
 import '../../data/mock/app_state.dart';
-import '../../data/mock/mock_data.dart';
 import '../../data/models/product.dart';
 import '../../providers/product_provider.dart';
 import '../product/product_detail_screen.dart';
@@ -26,11 +25,6 @@ class WishlistScreen extends StatelessWidget {
 
           for (final p in productProvider.products) {
             allProductsMap[p.id] = p;
-          }
-          for (final p in MockData.products) {
-            if (!allProductsMap.containsKey(p.id)) {
-              allProductsMap[p.id] = p;
-            }
           }
 
           final saved = allProductsMap.values
@@ -65,4 +59,3 @@ class WishlistScreen extends StatelessWidget {
     );
   }
 }
-
