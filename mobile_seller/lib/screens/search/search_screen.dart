@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/product_card.dart';
 import '../../data/models/category.dart';
 import '../../data/models/product.dart';
@@ -60,15 +61,17 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ),
-      body: _query.isEmpty
-          ? _SuggestionsView(
-              categories: productProvider.categories,
-              onTap: (v) => setState(() {
-                _controller.text = v;
-                _query = v;
-              }),
-            )
-          : _ResultsView(results: results),
+      body: productProvider.isLoading && productProvider.products.isEmpty
+          ? const LoadingView(message: 'Loading products...')
+          : (_query.isEmpty
+              ? _SuggestionsView(
+                  categories: productProvider.categories,
+                  onTap: (v) => setState(() {
+                    _controller.text = v;
+                    _query = v;
+                  }),
+                )
+              : _ResultsView(results: results)),
     );
   }
 }

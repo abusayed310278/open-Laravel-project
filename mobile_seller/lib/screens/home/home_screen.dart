@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/models/product.dart';
@@ -130,27 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
               if (isLoading)
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(height: AppSpacing.xl),
-                          CircularProgressIndicator(
-                            color: AppColors.brand600,
-                            strokeWidth: 2.5,
-                          ),
-                          SizedBox(height: AppSpacing.lg),
-                          Text(
-                            'Loading products...',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.slate500,
-                            ),
-                          ),
-                        ],
-                      ),
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+                    child: LoadingView(
+                      message: 'Loading products...',
+                      subtitle: 'Fetching latest deals & inventory...',
                     ),
                   ),
                 )
