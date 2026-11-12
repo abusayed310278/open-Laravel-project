@@ -29,11 +29,38 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<({String key, String label})> _conditions = const [
     (key: 'all', label: 'All'),
     (key: 'new', label: 'New'),
-    (key: 'used', label: 'Used'),
-    (key: 'refurbished', label: 'Refurbished'),
     (key: 'openbox', label: 'Openbox'),
+    (key: 'refurbished', label: 'Refurbished'),
+    (key: 'used', label: 'Used'),
     (key: 'out_of_stock', label: 'Out of Stock'),
   ];
+
+  /// Guarantees that a section row contains at least [minCount] products by prioritizing
+  /// the condition's own items first and supplementing from the rest of the published catalog.
+  static List<Product> _padToMinProducts(
+    List<Product> primaryProducts,
+    List<Product> allProducts, {
+    int minCount = 3,
+  }) {
+    if (primaryProducts.isEmpty && allProducts.isEmpty) {
+      return const [];
+    }
+
+    final result = List<Product>.from(primaryProducts);
+    if (result.length >= minCount || allProducts.isEmpty) {
+      return result;
+    }
+
+    final seenIds = result.map((p) => p.id).toSet();
+    for (final p in allProducts) {
+      if (!seenIds.contains(p.id) && p.isPublished) {
+        result.add(p);
+        seenIds.add(p.id);
+        if (result.length >= minCount) break;
+      }
+    }
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +75,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final usedProducts = displayProducts.where((p) => p.isUsedCondition).toList();
     final outOfStockProducts = displayProducts.where((p) => p.isOutOfStock).toList();
 
+    // Priority rows guaranteed to have at least 3 products each
+    final newRow = _padToMinProducts(newProducts, displayProducts, minCount: 3);
+    final openboxRow = _padToMinProducts(openboxProducts, displayProducts, minCount: 3);
+    final refurbishedRow = _padToMinProducts(refurbishedProducts, displayProducts, minCount: 3);
+    final usedRow = _padToMinProducts(usedProducts, displayProducts, minCount: 3);
+
     final List<Product> activeProducts = switch (_selectedCondition) {
-      'openbox' => openboxProducts,
-      'refurbished' => refurbishedProducts,
-      'new' => newProducts,
-      'used' => usedProducts,
+      'new' => newRow,
+      'openbox' => openboxRow,
+      'refurbished' => refurbishedRow,
+      'used' => usedRow,
       'out_of_stock' => outOfStockProducts,
       _ => displayProducts,
     };
@@ -139,75 +172,75 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 )
               else if (_selectedCondition == 'all') ...[
-                // 1. New Section
-                if (newProducts.isNotEmpty) ...[
+                // 1. New Section (At least 3 products guaranteed)
+                if (newRow.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: SectionHeader(
                       title: 'New',
                       actionLabel: 'See all',
                       onAction: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => ProductListScreen(title: 'New Products', products: newProducts),
+                          builder: (_) => ProductListScreen(title: 'New Products', products: newRow),
                         ),
                       ),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-                  SliverToBoxAdapter(child: _HorizontalProducts(products: newProducts)),
+                  SliverToBoxAdapter(child: _HorizontalProducts(products: newRow)),
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
                 ],
 
-                // 2. Used Section
-                if (usedProducts.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: SectionHeader(
-                      title: 'Used',
-                      actionLabel: 'See all',
-                      onAction: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ProductListScreen(title: 'Used Products', products: usedProducts),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-                  SliverToBoxAdapter(child: _HorizontalProducts(products: usedProducts)),
-                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
-                ],
-
-                // 3. Refurbished Section
-                if (refurbishedProducts.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: SectionHeader(
-                      title: 'Refurbished',
-                      actionLabel: 'See all',
-                      onAction: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ProductListScreen(title: 'Refurbished Products', products: refurbishedProducts),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-                  SliverToBoxAdapter(child: _HorizontalProducts(products: refurbishedProducts)),
-                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
-                ],
-
-                // 4. Openbox Section
-                if (openboxProducts.isNotEmpty) ...[
+                // 2. Openbox Section (At least 3 products guaranteed)
+                if (openboxRow.isNotEmpty) ...[
                   SliverToBoxAdapter(
                     child: SectionHeader(
                       title: 'Openbox',
                       actionLabel: 'See all',
                       onAction: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => ProductListScreen(title: 'Openbox Products', products: openboxProducts),
+                          builder: (_) => ProductListScreen(title: 'Openbox Products', products: openboxRow),
                         ),
                       ),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
-                  SliverToBoxAdapter(child: _HorizontalProducts(products: openboxProducts)),
+                  SliverToBoxAdapter(child: _HorizontalProducts(products: openboxRow)),
+                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+                ],
+
+                // 3. Refurbished Section (At least 3 products guaranteed)
+                if (refurbishedRow.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: SectionHeader(
+                      title: 'Refurbished',
+                      actionLabel: 'See all',
+                      onAction: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProductListScreen(title: 'Refurbished Products', products: refurbishedRow),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                  SliverToBoxAdapter(child: _HorizontalProducts(products: refurbishedRow)),
+                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+                ],
+
+                // 4. Used Section (At least 3 products guaranteed)
+                if (usedRow.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: SectionHeader(
+                      title: 'Used',
+                      actionLabel: 'See all',
+                      onAction: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProductListScreen(title: 'Used Products', products: usedRow),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                  SliverToBoxAdapter(child: _HorizontalProducts(products: usedRow)),
                   const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
                 ],
 
@@ -229,9 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           switch (_selectedCondition) {
                             'new' => 'New Products',
-                            'used' => 'Used Products',
-                            'refurbished' => 'Refurbished Products',
                             'openbox' => 'Openbox Products',
+                            'refurbished' => 'Refurbished Products',
+                            'used' => 'Used Products',
                             'out_of_stock' => 'Out of Stock Products',
                             _ => '${_selectedCondition[0].toUpperCase()}${_selectedCondition.substring(1)} Products',
                           },
