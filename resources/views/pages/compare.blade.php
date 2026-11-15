@@ -51,7 +51,7 @@
                                 <th class="p-4 text-left font-normal border-l border-gray-100">
                                     <a href="{{ route('products.show', $product) }}" class="block">
                                         <div class="mb-3 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-gray-50 p-2">
-                                            <img src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="h-full w-full object-contain">
+                                            <img src="{{ $product->primaryImageUrl() }}" alt="{{ $product->title }}" class="h-full w-full object-contain" loading="lazy" decoding="async">
                                         </div>
                                         <span class="line-clamp-2 font-bold text-gray-900 hover:text-brand-600">{{ $product->title }}</span>
                                     </a>

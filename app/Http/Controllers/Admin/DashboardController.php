@@ -15,106 +15,153 @@ use App\Models\User;
 use App\Models\UserVerification;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        $now = now();
-        $startOf30Days = now()->subDays(29)->startOfDay();
-        $startOfPrevious30Days = now()->subDays(59)->startOfDay();
-        $endOfPrevious30Days = now()->subDays(30)->endOfDay();
+        $cachedMetrics = Cache::remember('admin_dashboard_metrics', 300, function () {
+            $now = now();
+            $startOf30Days = now()->subDays(29)->startOfDay();
+            $startOfPrevious30Days = now()->subDays(59)->startOfDay();
+            $endOfPrevious30Days = now()->subDays(30)->endOfDay();
 
-        // 1. Key Metrics
-        $totalRevenue = (float) Order::whereNotIn('status', ['cancelled', 'failed'])->sum('total');
-        $revenueLast30Days = (float) Order::whereNotIn('status', ['cancelled', 'failed'])
-            ->whereBetween('created_at', [$startOf30Days, $now])
-            ->sum('total');
-        $revenuePrev30Days = (float) Order::whereNotIn('status', ['cancelled', 'failed'])
-            ->whereBetween('created_at', [$startOfPrevious30Days, $endOfPrevious30Days])
-            ->sum('total');
-        $revenueChange = $revenuePrev30Days > 0
-            ? round((($revenueLast30Days - $revenuePrev30Days) / $revenuePrev30Days) * 100, 1)
-            : ($revenueLast30Days > 0 ? 100 : 0);
+            // 1. Key Metrics
+            $totalRevenue = (float) Order::whereNotIn('status', ['cancelled', 'failed'])->sum('total');
+            $revenueLast30Days = (float) Order::whereNotIn('status', ['cancelled', 'failed'])
+                ->whereBetween('created_at', [$startOf30Days, $now])
+                ->sum('total');
+            $revenuePrev30Days = (float) Order::whereNotIn('status', ['cancelled', 'failed'])
+                ->whereBetween('created_at', [$startOfPrevious30Days, $endOfPrevious30Days])
+                ->sum('total');
+            $revenueChange = $revenuePrev30Days > 0
+                ? round((($revenueLast30Days - $revenuePrev30Days) / $revenuePrev30Days) * 100, 1)
+                : ($revenueLast30Days > 0 ? 100 : 0);
 
-        $totalOrders = Order::count();
-        $ordersLast30Days = Order::whereBetween('created_at', [$startOf30Days, $now])->count();
-        $ordersPrev30Days = Order::whereBetween('created_at', [$startOfPrevious30Days, $endOfPrevious30Days])->count();
-        $ordersChange = $ordersPrev30Days > 0
-            ? round((($ordersLast30Days - $ordersPrev30Days) / $ordersPrev30Days) * 100, 1)
-            : ($ordersLast30Days > 0 ? 100 : 0);
+            $totalOrders = Order::count();
+            $ordersLast30Days = Order::whereBetween('created_at', [$startOf30Days, $now])->count();
+            $ordersPrev30Days = Order::whereBetween('created_at', [$startOfPrevious30Days, $endOfPrevious30Days])->count();
+            $ordersChange = $ordersPrev30Days > 0
+                ? round((($ordersLast30Days - $ordersPrev30Days) / $ordersPrev30Days) * 100, 1)
+                : ($ordersLast30Days > 0 ? 100 : 0);
 
-        $activeProductsCount = Product::where('status', 'active')->count();
-        $totalProductsCount = Product::count();
+            $activeProductsCount = Product::where('status', 'active')->count();
+            $totalProductsCount = Product::count();
 
-        $pendingKycUsers = UserVerification::whereIn('status', [KycStatus::Submitted, KycStatus::UnderReview])->count();
-        $approvedKycUsers = UserVerification::where('status', KycStatus::Approved)->count();
-        $rejectedKycUsers = UserVerification::where('status', KycStatus::Rejected)->count();
-        $totalKycApplications = UserVerification::count();
-        $pendingProductVerifications = ProductVerification::where('status', 'pending')->count();
-        $totalPendingVerifications = $pendingKycUsers + $pendingProductVerifications;
+            $pendingKycUsers = UserVerification::whereIn('status', [KycStatus::Submitted, KycStatus::UnderReview])->count();
+            $approvedKycUsers = UserVerification::where('status', KycStatus::Approved)->count();
+            $rejectedKycUsers = UserVerification::where('status', KycStatus::Rejected)->count();
+            $totalKycApplications = UserVerification::count();
+            $pendingProductVerifications = ProductVerification::where('status', 'pending')->count();
+            $totalPendingVerifications = $pendingKycUsers + $pendingProductVerifications;
 
-        $totalCommission = (float) CommissionRecord::sum('commission_amount');
-        $totalUsers = User::count();
+            $totalCommission = (float) CommissionRecord::sum('commission_amount');
+            $totalUsers = User::count();
 
-        // 2. Role Counts Breakdown
-        $roleCounts = [
-            'customer' => User::where('role', UserRole::Customer)->count(),
-            'saler' => User::where('role', UserRole::Saler)->count(),
-            'business' => User::where('role', UserRole::Business)->count(),
-            'verifier' => User::where('role', UserRole::Verifier)->count(),
-            'admin' => User::where('role', UserRole::Admin)->count(),
-        ];
+            // 2. Role Counts Breakdown
+            $roleCounts = [
+                'customer' => User::where('role', UserRole::Customer)->count(),
+                'saler' => User::where('role', UserRole::Saler)->count(),
+                'business' => User::where('role', UserRole::Business)->count(),
+                'verifier' => User::where('role', UserRole::Verifier)->count(),
+                'admin' => User::where('role', UserRole::Admin)->count(),
+            ];
 
-        // 3. 30-Day Sales & Orders Chart Data
-        $period = CarbonPeriod::create($startOf30Days, '1 day', $now);
-        $chartLabels = [];
-        $revenueMap = [];
-        $ordersMap = [];
+            // 7. Top Selling Products
+            $topProducts = OrderItem::query()
+                ->select('product_title')
+                ->selectRaw('SUM(quantity) as qty, SUM(total_price) as rev')
+                ->groupBy('product_title')
+                ->orderByDesc('rev')
+                ->limit(5)
+                ->get()
+                ->map(fn ($item) => [
+                    'product_title' => (string) $item->product_title,
+                    'qty' => (int) $item->qty,
+                    'rev' => (float) $item->rev,
+                ])
+                ->all();
 
-        foreach ($period as $date) {
-            $dateKey = $date->format('Y-m-d');
-            $chartLabels[] = $date->format('M j');
-            $revenueMap[$dateKey] = 0.0;
-            $ordersMap[$dateKey] = 0;
-        }
+            return [
+                'metrics' => [
+                    'totalRevenue' => $totalRevenue,
+                    'revenueLast30Days' => $revenueLast30Days,
+                    'revenueChange' => $revenueChange,
+                    'totalOrders' => $totalOrders,
+                    'ordersLast30Days' => $ordersLast30Days,
+                    'ordersChange' => $ordersChange,
+                    'activeProducts' => $activeProductsCount,
+                    'totalProducts' => $totalProductsCount,
+                    'pendingVerifications' => $totalPendingVerifications,
+                    'pendingKycUsers' => $pendingKycUsers,
+                    'approvedKycUsers' => $approvedKycUsers,
+                    'rejectedKycUsers' => $rejectedKycUsers,
+                    'totalKycApplications' => $totalKycApplications,
+                    'pendingProducts' => $pendingProductVerifications,
+                    'totalCommission' => $totalCommission,
+                    'totalUsers' => $totalUsers,
+                ],
+                'roleCounts' => $roleCounts,
+                'topProducts' => $topProducts,
+            ];
+        });
 
-        $dailySalesQuery = Order::query()
-            ->whereNotIn('status', ['cancelled', 'failed'])
-            ->whereBetween('created_at', [$startOf30Days, $now])
-            ->selectRaw('DATE(created_at) as date, SUM(total) as revenue_total, COUNT(*) as orders_count')
-            ->groupBy('date')
-            ->get();
+        // 3. 30-Day Sales & Orders Chart Data + Category Distribution
+        $cachedChartData = Cache::remember('admin_dashboard_chart', 600, function () {
+            $now = now();
+            $startOf30Days = now()->subDays(29)->startOfDay();
 
-        foreach ($dailySalesQuery as $row) {
-            if (isset($revenueMap[$row->date])) {
-                $revenueMap[$row->date] = (float) $row->revenue_total;
-                $ordersMap[$row->date] = (int) $row->orders_count;
+            $period = CarbonPeriod::create($startOf30Days, '1 day', $now);
+            $chartLabels = [];
+            $revenueMap = [];
+            $ordersMap = [];
+
+            foreach ($period as $date) {
+                $dateKey = $date->format('Y-m-d');
+                $chartLabels[] = $date->format('M j');
+                $revenueMap[$dateKey] = 0.0;
+                $ordersMap[$dateKey] = 0;
             }
-        }
 
-        $chartRevenue = array_values($revenueMap);
-        $chartOrders = array_values($ordersMap);
+            $dailySalesQuery = Order::query()
+                ->whereNotIn('status', ['cancelled', 'failed'])
+                ->whereBetween('created_at', [$startOf30Days, $now])
+                ->selectRaw('DATE(created_at) as date, SUM(total) as revenue_total, COUNT(*) as orders_count')
+                ->groupBy('date')
+                ->get();
 
-        // 4. Category Distribution
-        $topCategories = Category::query()
-            ->withCount('products')
-            ->orderByDesc('products_count')
-            ->limit(5)
-            ->get();
+            foreach ($dailySalesQuery as $row) {
+                if (isset($revenueMap[$row->date])) {
+                    $revenueMap[$row->date] = (float) $row->revenue_total;
+                    $ordersMap[$row->date] = (int) $row->orders_count;
+                }
+            }
 
-        $categoryLabels = $topCategories->pluck('name')->all();
-        $categoryData = $topCategories->pluck('products_count')->all();
+            $topCategories = Category::query()
+                ->withCount('products')
+                ->orderByDesc('products_count')
+                ->limit(5)
+                ->get();
 
-        // 5. Recent Orders (Latest 5)
+            return [
+                'chartLabels' => $chartLabels,
+                'chartRevenue' => array_values($revenueMap),
+                'chartOrders' => array_values($ordersMap),
+                'categoryLabels' => $topCategories->pluck('name')->all(),
+                'categoryData' => $topCategories->pluck('products_count')->all(),
+            ];
+        });
+
+        // 5. Recent Orders (Latest 5 - Live dynamic)
         $recentOrders = Order::query()
             ->with(['user.profile'])
             ->latest()
             ->limit(5)
             ->get();
 
-        // 6. Recent Pending KYC / Verifications
+        // 6. Recent Pending KYC / Verifications (Latest 5 - Live dynamic)
         $recentKycList = UserVerification::query()
             ->with(['user.profile'])
             ->whereIn('status', [KycStatus::Submitted, KycStatus::UnderReview])
@@ -122,43 +169,17 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // 7. Top Selling Products
-        $topProducts = OrderItem::query()
-            ->select('product_title')
-            ->selectRaw('SUM(quantity) as qty, SUM(total_price) as rev')
-            ->groupBy('product_title')
-            ->orderByDesc('rev')
-            ->limit(5)
-            ->get();
-
         return view('admin.dashboard', [
-            'metrics' => [
-                'totalRevenue' => $totalRevenue,
-                'revenueLast30Days' => $revenueLast30Days,
-                'revenueChange' => $revenueChange,
-                'totalOrders' => $totalOrders,
-                'ordersLast30Days' => $ordersLast30Days,
-                'ordersChange' => $ordersChange,
-                'activeProducts' => $activeProductsCount,
-                'totalProducts' => $totalProductsCount,
-                'pendingVerifications' => $totalPendingVerifications,
-                'pendingKycUsers' => $pendingKycUsers,
-                'approvedKycUsers' => $approvedKycUsers,
-                'rejectedKycUsers' => $rejectedKycUsers,
-                'totalKycApplications' => $totalKycApplications,
-                'pendingProducts' => $pendingProductVerifications,
-                'totalCommission' => $totalCommission,
-                'totalUsers' => $totalUsers,
-            ],
-            'roleCounts' => $roleCounts,
-            'chartLabels' => $chartLabels,
-            'chartRevenue' => $chartRevenue,
-            'chartOrders' => $chartOrders,
-            'categoryLabels' => $categoryLabels,
-            'categoryData' => $categoryData,
+            'metrics' => $cachedMetrics['metrics'],
+            'roleCounts' => $cachedMetrics['roleCounts'],
+            'chartLabels' => $cachedChartData['chartLabels'],
+            'chartRevenue' => $cachedChartData['chartRevenue'],
+            'chartOrders' => $cachedChartData['chartOrders'],
+            'categoryLabels' => $cachedChartData['categoryLabels'],
+            'categoryData' => $cachedChartData['categoryData'],
             'recentOrders' => $recentOrders,
             'recentKycList' => $recentKycList,
-            'topProducts' => $topProducts,
+            'topProducts' => collect($cachedMetrics['topProducts'])->map(fn ($item) => (object) $item),
         ]);
     }
 }

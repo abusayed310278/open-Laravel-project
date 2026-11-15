@@ -21,10 +21,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
     use HasFactory, HasSlug, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('home_categories_tree');
+            Cache::forget('home_live_products');
+            Cache::forget('home_product_cards');
+            Cache::forget('admin_dashboard_metrics');
+        });
+
+        static::deleted(function () {
+            Cache::forget('home_categories_tree');
+            Cache::forget('home_live_products');
+            Cache::forget('home_product_cards');
+            Cache::forget('admin_dashboard_metrics');
+        });
+    }
 
     protected $fillable = [
         'user_id',

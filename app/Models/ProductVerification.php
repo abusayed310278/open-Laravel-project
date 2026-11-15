@@ -7,9 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class ProductVerification extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('admin_dashboard_metrics'));
+        static::deleted(fn () => Cache::forget('admin_dashboard_metrics'));
+    }
+
     protected $fillable = [
         'product_id',
         'seller_id',

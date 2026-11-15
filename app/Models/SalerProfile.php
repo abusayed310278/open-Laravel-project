@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class SalerProfile extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('home_top_vendors'));
+        static::deleted(fn () => Cache::forget('home_top_vendors'));
+    }
     protected $fillable = [
         'user_id',
         'display_name',

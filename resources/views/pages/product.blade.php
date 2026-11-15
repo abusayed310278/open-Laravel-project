@@ -114,7 +114,7 @@
                             @endif
 
                             {{-- Main Product Image (Hover Zoom & Click to Open Lightbox) --}}
-                            <img id="main-img" src="{{ $galleryImages->first() }}" alt="{{ $product->title }}" class="w-full h-full object-contain p-2 will-change-transform pointer-events-none origin-center transition-all duration-300 ease-out">
+                            <img id="main-img" src="{{ $galleryImages->first() }}" alt="{{ $product->title }}" class="w-full h-full object-contain p-2 will-change-transform pointer-events-none origin-center transition-all duration-300 ease-out" loading="eager" fetchpriority="high" decoding="async">
                         </div>
 
                         {{-- Horizontal Thumbnails below Main Image --}}
@@ -128,7 +128,7 @@
                                         title="View image {{ $index + 1 }}"
                                         aria-label="View image {{ $index + 1 }}"
                                     >
-                                        <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover rounded-lg pointer-events-none">
+                                        <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover rounded-lg pointer-events-none" loading="lazy" decoding="async">
                                     </button>
                                 @endforeach
                             </div>
@@ -224,7 +224,7 @@
                             <a href="{{ $sellerUrl ?? '#' }}" class="flex items-center gap-3 min-w-0">
                                 <div class="w-10 h-10 rounded-full bg-amber-50 border border-gray-200 text-amber-700 font-bold flex items-center justify-center flex-shrink-0 overflow-hidden">
                                     @if (!empty($sellerLogoUrl))
-                                        <img src="{{ $sellerLogoUrl }}" alt="{{ $sellerName }}" class="w-full h-full object-cover">
+                                        <img src="{{ $sellerLogoUrl }}" alt="{{ $sellerName }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                                     @else
                                         <span>{{ Str::upper(Str::substr($sellerName, 0, 1)) }}</span>
                                     @endif
@@ -616,6 +616,8 @@
                     src="{{ $product->primaryImageUrl() }}"
                     alt="{{ $product->title }}"
                     class="w-full h-full object-contain transition-all duration-200 select-none pointer-events-none"
+                    loading="lazy"
+                    decoding="async"
                 />
             </div>
 
@@ -629,7 +631,7 @@
                             class="lightbox-thumb-btn w-10 h-10 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer {{ $index === 0 ? 'border-brand-500 ring-2 ring-brand-500/40 scale-105 opacity-100' : 'border-transparent opacity-60 hover:opacity-100' }}"
                             title="View image {{ $index + 1 }}"
                         >
-                            <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover pointer-events-none">
+                            <img src="{{ $imageUrl }}" alt="Thumbnail {{ $index + 1 }}" class="w-full h-full object-cover pointer-events-none" loading="lazy" decoding="async">
                         </button>
                     @endforeach
                 </div>

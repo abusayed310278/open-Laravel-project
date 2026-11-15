@@ -176,7 +176,7 @@ class ProductController extends Controller
         return view('verifier.products.edit', [
             'product' => $product->load(['images', 'attributeValues']),
             'categories' => Category::query()->active()->with(['attributes.values', 'attributes.group'])->orderBy('name')->get(),
-            'brands' => Brand::query()->active()->orderBy('name')->get(),
+            'brands' => Brand::cachedActive(),
         ]);
     }
 

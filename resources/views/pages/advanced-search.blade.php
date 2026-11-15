@@ -102,7 +102,7 @@
                                 @foreach ($stores as $store)
                                     <a href="{{ $store['url'] }}" class="flex items-center gap-4 rounded-xl border border-gray-200 p-4 transition-colors hover:border-brand-500">
                                         @if ($store['logo'])
-                                            <img src="{{ $store['logo'] }}" alt="" class="h-12 w-12 rounded-full object-cover">
+                                            <img src="{{ $store['logo'] }}" alt="" class="h-12 w-12 rounded-full object-cover" loading="lazy" decoding="async">
                                         @else
                                             <span class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-500">{{ mb_strtoupper(mb_substr($store['name'], 0, 1)) }}</span>
                                         @endif

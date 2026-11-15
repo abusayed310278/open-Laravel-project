@@ -11,9 +11,11 @@ export default defineConfig({
             fonts: [
                 bunny('Inter', {
                     weights: [300, 400, 500, 600, 700],
+                    optimizedFallbacks: false,
                 }),
                 bunny('Montserrat', {
                     weights: [300, 400, 500, 600, 700, 800],
+                    optimizedFallbacks: false,
                 }),
             ],
         }),
@@ -23,5 +25,8 @@ export default defineConfig({
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
+    },
+    build: {
+        chunkSizeWarningLimit: 1000,
     },
 });

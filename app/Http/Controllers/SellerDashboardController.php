@@ -12,6 +12,7 @@ use App\Services\WalletService;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class SellerDashboardController extends Controller
@@ -23,34 +24,46 @@ class SellerDashboardController extends Controller
         $seller = Auth::user();
         $since = now()->subDays(self::CHART_DAYS * 2 - 1)->startOfDay();
 
-        $vendorOrders = VendorOrder::query()
-            ->where('vendor_id', $seller->id)
-            ->where('created_at', '>=', $since)
-            ->get(['created_at', 'total', 'status']);
+        $cachedMetrics = Cache::remember("vendor_dashboard_metrics_{$seller->id}", 300, function () use ($seller, $since) {
+            $vendorOrders = VendorOrder::query()
+                ->where('vendor_id', $seller->id)
+                ->where('created_at', '>=', $since)
+                ->get(['created_at', 'total', 'status']);
 
-        $paidOrders = $vendorOrders->reject(fn ($order) => in_array($order->status, [OrderStatus::Cancelled, OrderStatus::Failed], true));
+            $paidOrders = $vendorOrders->reject(fn ($order) => in_array($order->status, [OrderStatus::Cancelled, OrderStatus::Failed], true));
 
-        $productsCreated = $seller->products()->where('created_at', '>=', $since)->pluck('created_at');
-        $reviews = $seller->reviewsAsSeller()->where('created_at', '>=', $since)->pluck('created_at');
-        $messages = $this->receivedMessages($seller)->where('created_at', '>=', $since)->pluck('created_at');
+            $productsCreated = $seller->products()->where('created_at', '>=', $since)->pluck('created_at');
+            $reviews = $seller->reviewsAsSeller()->where('created_at', '>=', $since)->pluck('created_at');
+
+            return [
+                'ordersCount' => VendorOrder::query()->where('vendor_id', $seller->id)->count(),
+                'revenueTotal' => (float) VendorOrder::query()->where('vendor_id', $seller->id)->whereNotIn('status', [OrderStatus::Cancelled, OrderStatus::Failed])->sum('total'),
+                'productsCount' => $seller->products()->count(),
+                'reviewsCount' => $seller->reviewsAsSeller()->count(),
+                'trends' => [
+                    'revenue' => $this->trendAmount($paidOrders),
+                    'orders' => $this->trend($vendorOrders->pluck('created_at')),
+                    'products' => $this->trend($productsCreated),
+                    'reviews' => $this->trend($reviews),
+                ],
+                'revenueSeries' => $this->sumByDay($paidOrders),
+                'topProducts' => $this->topProducts($seller),
+                'activeListingsCount' => $seller->products()->where('publication_status', \App\Enums\ProductPublicationStatus::Published)->count(),
+            ];
+        });
 
         return view('business.dashboard', [
-            'ordersCount' => VendorOrder::query()->where('vendor_id', $seller->id)->count(),
-            'revenueTotal' => (float) VendorOrder::query()->where('vendor_id', $seller->id)->whereNotIn('status', [OrderStatus::Cancelled, OrderStatus::Failed])->sum('total'),
-            'productsCount' => $seller->products()->count(),
-            'reviewsCount' => $seller->reviewsAsSeller()->count(),
+            'ordersCount' => $cachedMetrics['ordersCount'],
+            'revenueTotal' => $cachedMetrics['revenueTotal'],
+            'productsCount' => $cachedMetrics['productsCount'],
+            'reviewsCount' => $cachedMetrics['reviewsCount'],
             'unreadMessagesCount' => $this->receivedMessages($seller)->whereNull('read_at')->count(),
             'recentOrders' => VendorOrder::query()->where('vendor_id', $seller->id)->with('order.customer')->withCount('items')->latest()->limit(5)->get(),
-            'trends' => [
-                'revenue' => $this->trendAmount($paidOrders),
-                'orders' => $this->trend($vendorOrders->pluck('created_at')),
-                'products' => $this->trend($productsCreated),
-                'reviews' => $this->trend($reviews),
-            ],
-            'revenueSeries' => $this->sumByDay($paidOrders),
-            'topProducts' => $this->topProducts($seller),
+            'trends' => $cachedMetrics['trends'],
+            'revenueSeries' => $cachedMetrics['revenueSeries'],
+            'topProducts' => $cachedMetrics['topProducts'],
             'storeSteps' => $this->storeSteps($seller),
-            'activeListingsCount' => $seller->products()->where('publication_status', \App\Enums\ProductPublicationStatus::Published)->count(),
+            'activeListingsCount' => $cachedMetrics['activeListingsCount'],
             'wallet' => app(WalletService::class)->walletFor($seller),
             'activeSubscription' => $seller->activeSubscription()->with('plan', 'credits')->first(),
             'verification' => $seller->verifications()->latest()->first(),

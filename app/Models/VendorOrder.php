@@ -9,9 +9,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class VendorOrder extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn (VendorOrder $order) => Cache::forget("vendor_dashboard_metrics_{$order->vendor_id}"));
+        static::deleted(fn (VendorOrder $order) => Cache::forget("vendor_dashboard_metrics_{$order->vendor_id}"));
+    }
+
     protected $fillable = [
         'order_id',
         'vendor_id',

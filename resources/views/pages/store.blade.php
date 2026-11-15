@@ -12,7 +12,7 @@
 @endphp
 
     <div class="h-44 sm:h-64 relative overflow-hidden bg-gray-900">
-        <img src="{{ $resolvedCover }}" alt="{{ $storeName }} Cover" class="w-full h-full object-cover">
+        <img src="{{ $resolvedCover }}" alt="{{ $storeName }} Cover" class="w-full h-full object-cover" loading="eager" fetchpriority="high" decoding="async">
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
     </div>
 
@@ -23,6 +23,8 @@
                     <img src="{{ $resolvedLogo }}" 
                          alt="{{ $storeName }}" 
                          class="w-full h-full object-cover rounded-xl"
+                         loading="eager"
+                         decoding="async"
                          onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
                     >
                     <div class="hidden w-full h-full rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white text-3xl sm:text-4xl font-black shadow-inner">

@@ -142,7 +142,7 @@ class ProductPageController extends Controller
         return view('pages.advanced-search', [
             'mode' => $mode,
             'categories' => Category::cachedTree()->sortBy('name')->values(),
-            'brands' => Brand::query()->active()->orderBy('name')->get(),
+            'brands' => Brand::cachedActive(),
             'stores' => $mode === 'stores' && $request->hasAny(['q', 'location']) ? $this->searchStores($request) : null,
         ]);
     }
@@ -229,7 +229,7 @@ class ProductPageController extends Controller
         return view('pages.shop', [
             'products' => $products,
             'categories' => Category::cachedTree()->sortBy('name')->values(),
-            'brands' => Brand::query()->active()->orderBy('name')->get(),
+            'brands' => Brand::cachedActive(),
         ]);
     }
 

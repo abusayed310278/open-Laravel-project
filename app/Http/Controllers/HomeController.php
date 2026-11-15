@@ -16,6 +16,7 @@ use App\Support\HomeContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -31,79 +32,89 @@ class HomeController extends Controller
             return redirect()->route('search', $request->query());
         }
 
-        $liveCategoryCounts = Product::query()
-            ->live()
-            ->selectRaw('category_id, COUNT(*) as count')
-            ->groupBy('category_id')
-            ->pluck('count', 'category_id')
-            ->all();
+        $categoryRows = Cache::remember('home_categories_tree', 1800, function () {
+            $liveCategoryCounts = Product::query()
+                ->live()
+                ->selectRaw('category_id, COUNT(*) as count')
+                ->groupBy('category_id')
+                ->pluck('count', 'category_id')
+                ->all();
 
-        $categories = Category::cachedTree()->take(10)->map(function (Category $cat) use ($liveCategoryCounts) {
-            $descendantIds = array_merge([$cat->id], $cat->descendantIds());
-            $count = 0;
-            foreach ($descendantIds as $id) {
-                $count += $liveCategoryCounts[$id] ?? 0;
-            }
+            $tree = Category::cachedTree()->take(10)->map(function (Category $cat) use ($liveCategoryCounts) {
+                $descendantIds = array_merge([$cat->id], $cat->descendantIds());
+                $count = 0;
+                foreach ($descendantIds as $id) {
+                    $count += $liveCategoryCounts[$id] ?? 0;
+                }
 
-            return [
-                'id' => $cat->id,
-                'name' => $cat->name,
-                'slug' => $cat->slug,
-                'image' => $cat->imageUrl(),
-                'count' => $count,
-                'countLabel' => $count === 1 ? '1 item' : "{$count} items",
-                'is_deals' => false,
-            ];
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'slug' => $cat->slug,
+                    'image' => $cat->imageUrl(),
+                    'count' => $count,
+                    'countLabel' => $count === 1 ? '1 item' : "{$count} items",
+                    'is_deals' => false,
+                ];
+            });
+
+            $dealsCount = Product::query()->live()->whereNotNull('compare_price')->whereColumn('compare_price', '>', 'price')->count();
+            return $tree->push([
+                'id' => 'deals',
+                'name' => 'Deals',
+                'slug' => 'deals',
+                'image' => null,
+                'count' => $dealsCount,
+                'countLabel' => $dealsCount === 1 ? '1 item' : "{$dealsCount} items",
+                'is_deals' => true,
+            ])->values()->all();
         });
-
-        $dealsCount = Product::query()->live()->whereNotNull('compare_price')->whereColumn('compare_price', '>', 'price')->count();
-        $categories = $categories->push([
-            'id' => 'deals',
-            'name' => 'Deals',
-            'slug' => 'deals',
-            'image' => null,
-            'count' => $dealsCount,
-            'countLabel' => $dealsCount === 1 ? '1 item' : "{$dealsCount} items",
-            'is_deals' => true,
-        ]);
+        $categories = collect($categoryRows);
 
         $banners = Banner::query()->live()->position('homepage')->get();
         $heroSlides = HeroSlide::query()->active()->with('product')->get();
 
-        $allLiveProducts = Product::query()
-            ->live()
-            ->with([
-                'brand',
-                'images',
-                'user',
-                'category.attributes',
-                'attributeValues.attribute',
-                'attributeValues.attributeValue',
-            ])
-            ->latest('published_at')
-            ->get();
+        $cachedProductCards = Cache::remember('home_product_cards', 1800, function () {
+            $allLiveProducts = Product::query()
+                ->live()
+                ->with([
+                    'brand',
+                    'images',
+                    'user',
+                    'category.attributes',
+                    'attributeValues.attribute',
+                    'attributeValues.attributeValue',
+                ])
+                ->latest('published_at')
+                ->get();
 
-        $featuredProducts = $this->productCards(
-            $allLiveProducts->sortByDesc('views_count')->take(4)
-        );
+            return [
+                'featuredProducts' => $this->productCards(
+                    $allLiveProducts->sortByDesc('views_count')->take(4)
+                ),
+                'refurbishedDeals' => $this->productCards(
+                    $allLiveProducts->whereIn('condition.value', ['used', 'refurbished'])->take(4)
+                ),
+                'usedProducts' => $this->productCards(
+                    $allLiveProducts->where('condition.value', 'used')->take(4)
+                ),
+                'latestProducts' => $this->productCards(
+                    $allLiveProducts->take(4)
+                ),
+                'comparableProducts' => $this->productCards(
+                    $allLiveProducts->take(16)
+                ),
+                'promoProductIds' => $this->promoProductIds($allLiveProducts),
+            ];
+        });
 
-        $refurbishedDeals = $this->productCards(
-            $allLiveProducts->whereIn('condition.value', ['used', 'refurbished'])->take(4)
-        );
+        $featuredProducts = $cachedProductCards['featuredProducts'];
+        $refurbishedDeals = $cachedProductCards['refurbishedDeals'];
+        $usedProducts = $cachedProductCards['usedProducts'];
+        $latestProducts = $cachedProductCards['latestProducts'];
+        $comparableProducts = $cachedProductCards['comparableProducts'];
+        $promoCards = $this->buildPromoCards($cachedProductCards['promoProductIds']);
 
-        $usedProducts = $this->productCards(
-            $allLiveProducts->where('condition.value', 'used')->take(4)
-        );
-
-        $latestProducts = $this->productCards(
-            $allLiveProducts->take(4)
-        );
-
-        $comparableProducts = $this->productCards(
-            $allLiveProducts->take(16)
-        );
-
-        $promoCards = $this->promoCards($allLiveProducts);
         $whyBuyContent = HomeContent::whyBuy();
         $newsletter = HomeContent::newsletter();
 
@@ -134,59 +145,67 @@ class HomeController extends Controller
             ],
         ];
 
-        $vendors = User::query()
-            ->whereIn('role', [UserRole::Business, UserRole::Saler])
-            ->where(fn ($q) => $q->whereHas('businessProfile', fn ($p) => $p->where('is_store_active', true))
-                ->orWhereHas('salerProfile', fn ($p) => $p->where('is_store_active', true)))
-            ->with(['profile', 'businessProfile', 'salerProfile'])
-            ->withCount('vendorOrders')
-            ->withAvg('approvedReviewsAsSeller', 'rating')
-            ->orderByDesc('vendor_orders_count')
-            ->limit(16)
-            ->get()
-            ->map(function (User $vendor) {
-                $rawAvatar = $vendor->profile?->avatar
-                    ?? $vendor->avatar
-                    ?? $vendor->businessProfile?->logo
-                    ?? $vendor->salerProfile?->profile_photo
-                    ?? $vendor->salerProfile?->logo;
+        $vendorRows = Cache::remember('home_top_vendors', 3600, function () {
+            return User::query()
+                ->whereIn('role', [UserRole::Business, UserRole::Saler])
+                ->where(fn ($q) => $q->whereHas('businessProfile', fn ($p) => $p->where('is_store_active', true))
+                    ->orWhereHas('salerProfile', fn ($p) => $p->where('is_store_active', true)))
+                ->with(['profile', 'businessProfile', 'salerProfile'])
+                ->withCount('vendorOrders')
+                ->withAvg('approvedReviewsAsSeller', 'rating')
+                ->orderByDesc('vendor_orders_count')
+                ->limit(16)
+                ->get()
+                ->map(function (User $vendor) {
+                    $rawAvatar = $vendor->profile?->avatar
+                        ?? $vendor->avatar
+                        ?? $vendor->businessProfile?->logo
+                        ?? $vendor->salerProfile?->profile_photo
+                        ?? $vendor->salerProfile?->logo;
 
-                $storeUrl = '#';
-                if ($vendor->role === UserRole::Business && $vendor->businessProfile?->slug) {
-                    $storeUrl = route('stores.business', $vendor->businessProfile->slug);
-                } elseif ($vendor->role === UserRole::Saler && $vendor->salerProfile?->slug) {
-                    $storeUrl = route('stores.saler', $vendor->salerProfile->slug);
-                }
+                    $storeUrl = '#';
+                    if ($vendor->role === UserRole::Business && $vendor->businessProfile?->slug) {
+                        $storeUrl = route('stores.business', $vendor->businessProfile->slug);
+                    } elseif ($vendor->role === UserRole::Saler && $vendor->salerProfile?->slug) {
+                        $storeUrl = route('stores.saler', $vendor->salerProfile->slug);
+                    }
 
-                $storeName = $vendor->businessProfile?->business_name
-                    ?? $vendor->salerProfile?->display_name
-                    ?? $vendor->name;
+                    $storeName = $vendor->businessProfile?->business_name
+                        ?? $vendor->salerProfile?->display_name
+                        ?? $vendor->name;
 
-                return [
-                    'name' => $storeName,
-                    'avatar' => \App\Support\MediaUrl::resolve($rawAvatar),
-                    'rating' => $vendor->approved_reviews_as_seller_avg_rating ?? 4.9,
-                    'salesCount' => $vendor->vendor_orders_count ?: 120,
-                    'storeUrl' => $storeUrl,
-                ];
-            });
+                    return [
+                        'name' => $storeName,
+                        'avatar' => \App\Support\MediaUrl::resolve($rawAvatar),
+                        'rating' => $vendor->approved_reviews_as_seller_avg_rating ?? 4.9,
+                        'salesCount' => $vendor->vendor_orders_count ?: 120,
+                        'storeUrl' => $storeUrl,
+                    ];
+                })
+                ->values()
+                ->all();
+        });
+        $vendors = collect($vendorRows);
 
+        $reviewRows = Cache::remember(Review::CACHE_KEY, 3600, function () {
+            $approvedReviews = Review::query()
+                ->approved()
+                ->with('reviewer')
+                ->latest()
+                ->limit(25)
+                ->get()
+                ->map(fn (Review $review) => [
+                    'name' => $review->author_name,
+                    'city' => $review->city ?: 'Dhaka',
+                    'rating' => $review->rating ?? 5,
+                    'body' => $review->body,
+                ]);
 
-        $reviews = Review::query()
-            ->approved()
-            ->with('reviewer')
-            ->latest()
-            ->limit(25)
-            ->get()
-            ->map(fn (Review $review) => [
-                'name' => $review->author_name,
-                'city' => $review->city ?: 'Dhaka',
-                'rating' => $review->rating ?? 5,
-                'body' => $review->body,
-            ]);
+            if ($approvedReviews->isNotEmpty()) {
+                return $approvedReviews->values()->all();
+            }
 
-        if ($reviews->isEmpty()) {
-            $reviews = collect([
+            return [
                 [
                     'name' => 'Tanvir Ahmed',
                     'city' => 'Dhaka',
@@ -217,8 +236,9 @@ class HomeController extends Controller
                     'rating' => 5,
                     'body' => 'Fair prices and authentic grading. Customer support guided me patiently through every step.',
                 ],
-            ]);
-        }
+            ];
+        });
+        $reviews = collect($reviewRows);
 
         $sellerPlans = $this->subscriptions->plansFor(SubscriptionType::Saler);
         $businessPlans = $this->subscriptions->plansFor(SubscriptionType::Business);
@@ -250,25 +270,50 @@ class HomeController extends Controller
     }
 
     /**
-     * Promo cards with admin-editable copy; the product is the admin's pick, else auto-selected.
+     * Determine promo product IDs from live products (cached).
      *
      * @param  Collection<int, Product>  $liveProducts
-     * @return array<int, array<string, mixed>>
+     * @return array<int, int|null>
      */
-    private function promoCards(Collection $liveProducts): array
+    private function promoProductIds(Collection $liveProducts): array
     {
         $cards = HomeContent::promoCards();
         $autoSlugs = [1 => 'laptops', 2 => 'smartphones'];
         $used = [];
+        $ids = [];
 
-        foreach ($cards as $number => &$card) {
+        foreach ($cards as $number => $card) {
             $chosen = $card['product_id'] ? $liveProducts->firstWhere('id', $card['product_id']) : null;
             $chosen ??= isset($autoSlugs[$number])
                 ? $this->promoProduct($liveProducts, $autoSlugs[$number])
                 : $liveProducts->first(fn (Product $product) => $this->hasRealImage($product) && ! in_array($product->id, $used, true));
 
-            $card['product'] = $chosen;
-            $used[] = $chosen?->id;
+            $ids[$number] = $chosen?->id;
+            if ($chosen?->id) {
+                $used[] = $chosen->id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Build the promo cards array attaching fresh Product models by their cached IDs.
+     *
+     * @param  array<int, int|null>  $promoProductIds
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildPromoCards(array $promoProductIds): array
+    {
+        $cards = HomeContent::promoCards();
+        $ids = array_filter(array_values($promoProductIds));
+        $products = !empty($ids)
+            ? Product::query()->with('images')->whereIn('id', $ids)->get()->keyBy('id')
+            : collect();
+
+        foreach ($cards as $number => &$card) {
+            $id = $promoProductIds[$number] ?? null;
+            $card['product'] = $id ? $products->get($id) : null;
         }
 
         return $cards;

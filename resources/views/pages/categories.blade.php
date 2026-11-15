@@ -29,7 +29,7 @@
                             <div class="flex items-center gap-3.5 mb-4">
                                 <div class="w-11 h-11 bg-gray-50 group-hover:bg-amber-50 border border-gray-100 group-hover:border-amber-200 rounded-xl flex items-center justify-center text-gray-700 group-hover:text-amber-600 transition-colors shrink-0">
                                     @if ($category->image)
-                                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="w-6 h-6 object-contain" />
+                                        <img src="{{ $category->imageUrl() }}" alt="{{ $category->name }}" class="w-6 h-6 object-contain" loading="lazy" decoding="async" />
                                     @else
                                         <x-category-icon :slug="$category->slug" class="w-6 h-6" />
                                     @endif

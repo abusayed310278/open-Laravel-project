@@ -6,9 +6,21 @@ use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Order extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('admin_dashboard_metrics');
+            Cache::forget('admin_dashboard_chart');
+        });
+        static::deleted(function () {
+            Cache::forget('admin_dashboard_metrics');
+            Cache::forget('admin_dashboard_chart');
+        });
+    }
     protected $fillable = [
         'order_number',
         'customer_id',

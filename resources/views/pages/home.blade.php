@@ -67,14 +67,14 @@
                     <div data-hero-slide style="flex:0 0 100%;min-width:0;height:100%;" class="relative">
                         @if ($slideUrl)
                             <a href="{{ $slideUrl }}" title="{{ $slide->product->title }}" class="block relative w-full h-full group" style="height:100%;">
-                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->product->title }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->product->title }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;" {!! $loop->first ? 'loading="eager" fetchpriority="high"' : 'loading="lazy" decoding="async"' !!}>
                                 @if ($slide->enable_overlay)
                                     @include('pages.partials.hero-slide-overlay', ['slide' => $slide, 'isLink' => true])
                                 @endif
                             </a>
                         @else
                             <div class="relative w-full h-full" style="height:100%;">
-                                <img src="{{ $slide->imageUrl() }}" alt="{{ config('app.name') }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="{{ $slide->imageUrl() }}" alt="{{ config('app.name') }}" class="block w-full h-full" style="width:100%;height:100%;object-fit:cover;" {!! $loop->first ? 'loading="eager" fetchpriority="high"' : 'loading="lazy" decoding="async"' !!}>
                                 @if ($slide->enable_overlay)
                                     @include('pages.partials.hero-slide-overlay', ['slide' => $slide, 'isLink' => false])
                                 @endif
@@ -166,7 +166,7 @@
     @elseif (feature_enabled('home_hero_section') && $heroImageUrl)
         {{-- HERO IMAGE (admin-managed) --}}
         <section class="w-full bg-white dark:bg-[#0b0f19]">
-            <img src="{{ $heroImageUrl }}" alt="{{ config('app.name') }}" class="block w-full h-auto">
+            <img src="{{ $heroImageUrl }}" alt="{{ config('app.name') }}" class="block w-full h-auto" loading="eager" fetchpriority="high" decoding="async">
         </section>
     @elseif (feature_enabled('home_hero_section'))
         {{-- HERO SECTION --}}
@@ -240,7 +240,7 @@
                     <a href="{{ $catUrl }}" class="group bg-white dark:bg-slate-800/90 border border-gray-100 dark:border-slate-700 hover:border-amber-300 dark:hover:border-amber-400 rounded-2xl py-2.5 px-2 sm:py-3 sm:px-2 flex flex-col items-center justify-center text-center shadow-2xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 {{ $isDeals ? 'hover:border-red-300 dark:hover:border-red-400' : '' }}">
                         <div class="mb-1.5 sm:mb-2 flex items-center justify-center transition-colors {{ $isDeals ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400' }}">
                             @if (!empty($catImage))
-                                <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
+                                <img src="{{ $catImage }}" alt="{{ $catName }}" class="w-7 h-7 sm:w-8 sm:h-8 object-contain" loading="lazy" decoding="async" />
                             @else
                                 <x-category-icon :slug="$catSlug" class="w-7 h-7 sm:w-8 sm:h-8" />
                             @endif
@@ -275,9 +275,9 @@
                                 @foreach ($mediaItems as $idx => $item)
                                     <div class="banner-slide absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out {{ $idx === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}" style="width: 100%; height: 100%;" data-slide-index="{{ $idx }}" data-slide-type="{{ $item['type'] }}">
                                         @if ($item['type'] === 'video')
-                                            <video src="{{ $item['url'] }}" playsinline muted class="w-full h-full object-cover block" style="width: 100%; height: 100%; object-fit: cover; display: block;" preload="auto"></video>
+                                            <video src="{{ $item['url'] }}" playsinline muted class="w-full h-full object-cover block" style="width: 100%; height: 100%; object-fit: cover; display: block;" preload="none"></video>
                                         @else
-                                            <img src="{{ $item['url'] }}" alt="{{ $b->title }}" class="w-full h-full object-cover select-none block" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="{{ $idx === 0 ? 'eager' : 'lazy' }}">
+                                            <img src="{{ $item['url'] }}" alt="{{ $b->title }}" class="w-full h-full object-cover select-none block" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="{{ $idx === 0 ? 'eager' : 'lazy' }}" decoding="async">
                                         @endif
                                     </div>
                                 @endforeach
@@ -304,7 +304,7 @@
                             @if ($b->video_url)
                                 <video src="{{ $b->video_url }}" autoplay loop muted playsinline class="block w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" style="width: 100%; height: 100%; object-fit: cover; display: block;"></video>
                             @else
-                                <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.parentElement.style.display='none'">
+                                <img src="{{ $b->image_url }}" alt="{{ $b->title }}" class="block w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'">
                             @endif
                         </a>
                     @endif
@@ -515,6 +515,8 @@
                                     alt="{{ $item['title'] }}"
                                     class="object-contain"
                                     style="width: {{ $item['icon_size'] ?? 24 }}px; height: {{ $item['icon_size'] ?? 24 }}px;"
+                                    loading="lazy"
+                                    decoding="async"
                                 >
                             @else
                                 <svg

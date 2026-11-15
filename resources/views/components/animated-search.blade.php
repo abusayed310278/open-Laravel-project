@@ -550,7 +550,7 @@
                 productsList.innerHTML = products.map(item => `
                     <a href="${item.url}" class="flex items-center gap-3 p-2.5 sm:p-3 hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors group">
                         <div class="w-12 h-12 sm:w-14 sm:h-14 p-1 rounded-lg bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700/60 shrink-0 flex items-center justify-center overflow-hidden">
-                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="max-w-full max-h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform" onerror="this.classList.add('opacity-40')">
+                            <img src="${item.image}" alt="${escapeHtml(item.title)}" class="max-w-full max-h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform" loading="lazy" decoding="async" onerror="this.classList.add('opacity-40')">
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="suggest-prod-title line-clamp-2">

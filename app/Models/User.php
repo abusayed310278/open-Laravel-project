@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 
 #[Fillable(['name', 'email', 'phone', 'password', 'role', 'status', 'google_id', 'facebook_id', 'avatar', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
@@ -26,6 +27,18 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('admin_dashboard_metrics');
+            Cache::forget('home_top_vendors');
+        });
+        static::deleted(function () {
+            Cache::forget('admin_dashboard_metrics');
+            Cache::forget('home_top_vendors');
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

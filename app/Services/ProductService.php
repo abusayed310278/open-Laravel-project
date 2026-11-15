@@ -274,13 +274,6 @@ class ProductService
             }
 
             $extension = $image->guessExtension() ?: $image->getClientOriginalExtension() ?: 'jpg';
-
-            $cutout = app(ImageBackgroundRemover::class)->process($filePath);
-            if ($cutout !== null) {
-                $filePath = $cutout;
-                $extension = 'png';
-            }
-
             $filename = Str::random(40).'.'.$extension;
 
             $disk = config('filesystems.default', 'public');
@@ -289,10 +282,6 @@ class ProductService
             }
 
             $storedPath = Storage::disk($disk)->putFileAs('products', $filePath, $filename);
-
-            if ($cutout !== null) {
-                @unlink($cutout);
-            }
 
             if ($storedPath) {
                 if (in_array($disk, ['cloudinary', 'r2'], true)) {
@@ -309,11 +298,14 @@ class ProductService
                     $setPrimaryInThisBatch = true;
                 }
 
-                $product->images()->create([
+                $productImage = $product->images()->create([
                     'path' => $urlToSave,
                     'sort_order' => $nextSort + $index,
                     'is_primary' => $isPrimary,
                 ]);
+
+                // Dispatch background image processing (studio background removal & WebP optimization)
+                \App\Jobs\ProcessProductImageJob::dispatch($productImage);
             }
         }
 

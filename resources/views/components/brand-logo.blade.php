@@ -21,9 +21,9 @@
 
 <span {{ $attributes->merge(['class' => 'inline-flex items-center gap-2 sm:gap-3']) }}>
     @if (!empty($resolvedLogo))
-        <img src="{{ $resolvedLogo }}" alt="{{ config('app.name', 'OPENBOX') }}" class="{{ $imgClass ?: $customSizeClass }} w-auto object-contain" />
+        <img src="{{ $resolvedLogo }}" alt="{{ config('app.name', 'OPENBOX') }}" class="{{ $imgClass ?: $customSizeClass }} w-auto object-contain" loading="{{ $footer ? 'lazy' : 'eager' }}" fetchpriority="{{ $footer ? 'auto' : 'high' }}" decoding="async" />
     @else
-        <img src="{{ asset('buy-and-sale.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="{{ $imgClass ?: $fallbackSizeClass }} w-auto object-contain" />
+        <img src="{{ asset('buy-and-sale.webp') }}" alt="{{ config('app.name', 'Openbox') }}" class="{{ $imgClass ?: $fallbackSizeClass }} w-auto object-contain" loading="{{ $footer ? 'lazy' : 'eager' }}" fetchpriority="{{ $footer ? 'auto' : 'high' }}" decoding="async" />
     @endif
 </span>
 

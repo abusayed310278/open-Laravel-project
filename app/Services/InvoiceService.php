@@ -41,6 +41,9 @@ class InvoiceService
             ]);
         }
 
+        // Pre-generate and cache PDF in background queue so users never wait on download
+        \App\Jobs\GenerateInvoicePdfJob::dispatch($invoice);
+
         return $invoice;
     }
 

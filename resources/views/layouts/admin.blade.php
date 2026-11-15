@@ -102,9 +102,9 @@
                     $footerIconUrl = \App\Support\MediaUrl::resolve(setting('brand_footer_icon'));
                 @endphp
                 @if (!empty($footerIconUrl))
-                    <img src="{{ $footerIconUrl }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
+                    <img src="{{ $footerIconUrl }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" loading="lazy" decoding="async" />
                 @else
-                    <img src="{{ asset('icon.png') }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" />
+                    <img src="{{ asset('icon.webp') }}" alt="{{ config('app.name', 'Openbox') }}" class="h-6 w-auto max-h-6 object-contain" loading="lazy" decoding="async" />
                 @endif
                 <span class="font-medium text-gray-700">&copy; {{ date('Y') }} {{ config('app.name', 'Openbox') }}. All rights reserved.</span>
             </div>

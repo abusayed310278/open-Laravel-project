@@ -58,10 +58,16 @@ class MediaUrl
         $cdnUrl = config('filesystems.disks.public.cdn_url') ?: (function_exists('setting') ? setting('storage_cdn_url') : null);
         $baseUrl = ! empty($cdnUrl) ? rtrim($cdnUrl, '/') . '/storage/' : rtrim(asset('storage'), '/') . '/';
 
-        // 1. If physical file exists on local disk, serve locally regardless of active default disk
+        // 1. If physical file exists on local disk, check if an optimized WebP version exists for faster delivery
         try {
-            if ($cleanPath && Storage::disk('public')->exists($cleanPath)) {
-                return $baseUrl . $cleanPath;
+            if ($cleanPath) {
+                $webpCandidate = preg_replace('/\.(png|jpe?g)$/i', '.webp', $cleanPath);
+                if ($webpCandidate !== $cleanPath && Storage::disk('public')->exists($webpCandidate)) {
+                    return $baseUrl . $webpCandidate;
+                }
+                if (Storage::disk('public')->exists($cleanPath)) {
+                    return $baseUrl . $cleanPath;
+                }
             }
         } catch (\Throwable) {
             // Ignore storage check exceptions

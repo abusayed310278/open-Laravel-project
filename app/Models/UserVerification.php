@@ -6,9 +6,16 @@ use App\Enums\KycStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class UserVerification extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('admin_dashboard_metrics'));
+        static::deleted(fn () => Cache::forget('admin_dashboard_metrics'));
+    }
+
     protected $fillable = [
         'user_id',
         'status',

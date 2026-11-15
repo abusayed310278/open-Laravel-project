@@ -50,7 +50,7 @@ class ProductController extends Controller
         return view('seller.products.create', [
             'product' => new Product,
             'categories' => Category::query()->active()->with(['attributes.values', 'attributes.group'])->orderBy('name')->get(),
-            'brands' => Brand::query()->active()->orderBy('name')->get(),
+            'brands' => Brand::cachedActive(),
         ]);
     }
 
@@ -76,7 +76,7 @@ class ProductController extends Controller
         return view('seller.products.edit', [
             'product' => $product->load(['images', 'attributeValues']),
             'categories' => Category::query()->active()->with(['attributes.values', 'attributes.group'])->orderBy('name')->get(),
-            'brands' => Brand::query()->active()->orderBy('name')->get(),
+            'brands' => Brand::cachedActive(),
         ]);
     }
 

@@ -9,6 +9,7 @@
                 class="w-full h-full object-cover object-top"
                 style="object-position: top center !important;"
                 loading="lazy"
+                decoding="async"
             >
         @else
             <span class="text-sm font-bold text-gray-800 dark:text-white">
