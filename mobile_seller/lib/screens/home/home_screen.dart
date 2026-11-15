@@ -127,16 +127,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? AppColors.brand600 : AppColors.surface,
+                            color: isSelected ? AppColors.brandYellow : AppColors.surface,
                             borderRadius: BorderRadius.circular(AppRadius.md),
                             border: Border.all(
-                              color: isSelected ? AppColors.brand600 : AppColors.slate200,
+                              color: isSelected ? AppColors.brandYellowDark : AppColors.slate200,
                               width: 1.2,
                             ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: AppColors.brand600.withValues(alpha: 0.25),
+                                      color: AppColors.brandYellow.withValues(alpha: 0.5),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -146,10 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           alignment: Alignment.center,
                           child: Text(
                             item.label,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: isSelected ? Colors.white : AppColors.ink,
+                              color: AppColors.ink,
                             ),
                           ),
                         ),
@@ -370,8 +370,15 @@ class _TopBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
-                    const Icon(Icons.location_on_rounded, size: 18, color: AppColors.brand600),
-                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.all(4.5),
+                      decoration: const BoxDecoration(
+                        color: AppColors.brandYellow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.location_on_rounded, size: 13, color: AppColors.ink),
+                    ),
+                    const SizedBox(width: 6),
                     Flexible(
                       child: Text.rich(
                         TextSpan(

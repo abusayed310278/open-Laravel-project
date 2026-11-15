@@ -31,6 +31,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
   }
 
+  Widget _buildActiveIcon(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.brandYellow,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: AppColors.ink, size: 22),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,36 +63,36 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          selectedItemColor: AppColors.brand600,
+          selectedItemColor: AppColors.ink,
           unselectedItemColor: AppColors.slate400,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
           type: BottomNavigationBarType.fixed,
           elevation: 0,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home_rounded),
+              icon: const Icon(Icons.home_outlined),
+              activeIcon: _buildActiveIcon(Icons.home_rounded),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view_rounded),
+              icon: const Icon(Icons.grid_view_outlined),
+              activeIcon: _buildActiveIcon(Icons.grid_view_rounded),
               label: 'Categories',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined),
-              activeIcon: Icon(Icons.shopping_bag_rounded),
+              icon: const Icon(Icons.shopping_bag_outlined),
+              activeIcon: _buildActiveIcon(Icons.shopping_bag_rounded),
               label: 'Cart',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long_rounded),
+              icon: const Icon(Icons.receipt_long_outlined),
+              activeIcon: _buildActiveIcon(Icons.receipt_long_rounded),
               label: 'Orders',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings_rounded),
+              icon: const Icon(Icons.settings_outlined),
+              activeIcon: _buildActiveIcon(Icons.settings_rounded),
               label: 'Settings',
             ),
           ],

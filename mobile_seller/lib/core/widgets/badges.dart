@@ -153,12 +153,25 @@ class DiscountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.brand600,
+        color: AppColors.brandYellow,
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.brandYellowDark, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Text(
         '$percent%',
-        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+        style: const TextStyle(
+          color: AppColors.ink,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.2,
+        ),
       ),
     );
   }

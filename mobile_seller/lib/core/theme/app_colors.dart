@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 /// Central Brand Color Palette for Openbox Seller App.
 /// Matches the web vendor dashboard and customer mobile app.
 abstract final class AppColors {
+  // Openbox Signature Brand Yellow (#F0EE8A)
+  static const Color brandYellow = Color(0xFFF0EE8A);
+  static const Color brandYellowDark = Color(0xFFDEDC60);
+
   // Brand Amber / Orange
   static const Color brand50 = Color(0xFFFFFBEB);
   static const Color brand100 = Color(0xFFFEF3C7);

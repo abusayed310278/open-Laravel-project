@@ -21,11 +21,28 @@ class SectionHeader extends StatelessWidget {
           if (actionLabel != null)
             GestureDetector(
               onTap: onAction,
-              child: Row(
-                children: [
-                  Text(actionLabel!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.brand700)),
-                  const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.brand700),
-                ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.brandYellow,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: AppColors.brandYellowDark, width: 0.8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      actionLabel!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    const Icon(Icons.chevron_right_rounded, size: 14, color: AppColors.ink),
+                  ],
+                ),
               ),
             ),
         ],
