@@ -68,29 +68,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.brand500,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppLogo(size: 80, borderRadius: 20),
+            const AppLogo(size: 88, borderRadius: 20),
             const SizedBox(height: 20),
             const Text(
-              'Openbox Seller',
+              'Openbox Buy & Sell',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
+                color: AppColors.ink,
                 letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 6),
-            Text(
+            const Text(
               'Vendor & Store Management',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withValues(alpha: 0.85),
+                color: AppColors.slate500,
               ),
             ),
             const SizedBox(height: 36),
@@ -99,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.ink),
               ),
             ),
           ],
