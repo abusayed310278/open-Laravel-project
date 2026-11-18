@@ -6,10 +6,12 @@ class AppLogo extends StatelessWidget {
     super.key,
     this.size = 48.0,
     this.borderRadius = 14.0,
+    this.backgroundColor,
   });
 
   final double size;
   final double borderRadius;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +19,16 @@ class AppLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.brand500,
+        color: backgroundColor ?? Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
       clipBehavior: Clip.antiAlias,
       child: Image.asset(
         'assets/icon/logo.png',
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         errorBuilder: (_, _, _) => Icon(
           Icons.storefront_rounded,
-          color: Colors.white,
+          color: AppColors.ink,
           size: size * 0.55,
         ),
       ),

@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 /// Central Brand Color Palette for Openbox Seller App.
 /// Matches the web vendor dashboard and customer mobile app.
 abstract final class AppColors {
-  // Openbox Signature Brand Yellow (#F0EE8A)
-  static const Color brandYellow = Color(0xFFF0EE8A);
-  static const Color brandYellowDark = Color(0xFFDEDC60);
+  // Openbox Signature Brand Yellow (#E2E66F)
+  static const Color brandYellow = Color(0xFFE2E66F);
+  static const Color brandYellowDark = Color(0xFFC8CC48);
 
-  // Brand Amber / Orange
-  static const Color brand50 = Color(0xFFFFFBEB);
-  static const Color brand100 = Color(0xFFFEF3C7);
-  static const Color brand200 = Color(0xFFFDE68A);
-  static const Color brand300 = Color(0xFFFCD34D);
-  static const Color brand400 = Color(0xFFFBBF24);
-  static const Color brand500 = Color(0xFFF59E0B);
-  static const Color brand600 = Color(0xFFD97706);
-  static const Color brand700 = Color(0xFFB45309);
-  static const Color brand800 = Color(0xFF92400E);
-  static const Color brand900 = Color(0xFF78350F);
+  // Brand Palette centered around #E2E66F
+  static const Color brand50 = Color(0xFFFBFCE8);
+  static const Color brand100 = Color(0xFFF6F8C7);
+  static const Color brand200 = Color(0xFFEEF29E);
+  static const Color brand300 = Color(0xFFE8EB7E);
+  static const Color brand400 = Color(0xFFE5E973);
+  static const Color brand500 = Color(0xFFE2E66F);
+  static const Color brand600 = Color(0xFFCCD147);
+  static const Color brand700 = Color(0xFF8F941A);
+  static const Color brand800 = Color(0xFF6E7212);
+  static const Color brand900 = Color(0xFF4C4F0A);
 
   // Neutrals / Slate
   static const Color ink = Color(0xFF0F172A);

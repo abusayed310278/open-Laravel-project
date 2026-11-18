@@ -466,8 +466,8 @@ class _WalletScreenState extends State<WalletScreen> with SingleTickerProviderSt
                               icon: const Icon(Icons.arrow_upward_rounded, size: 18),
                               label: const Text('Request Payout', style: TextStyle(fontWeight: FontWeight.w700)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.brand500,
-                                foregroundColor: Colors.white,
+                                backgroundColor: AppColors.brandYellow,
+                                foregroundColor: AppColors.ink,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                               ),
                             ),

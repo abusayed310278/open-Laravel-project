@@ -32,7 +32,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         actions: [
           if (_selectedTab == 0)
             IconButton(
-              icon: const Icon(Icons.add_circle, color: AppColors.brand500, size: 28),
+              icon: const Icon(Icons.add_circle, color: AppColors.brandYellowDark, size: 28),
               tooltip: 'Add Listing',
               onPressed: () {
                 Navigator.of(context).push(
@@ -61,24 +61,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
-                          color: _selectedTab == 0 ? AppColors.brand600 : Colors.transparent,
+                          color: _selectedTab == 0 ? AppColors.brandYellow : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 0
-                              ? [BoxShadow(color: AppColors.brand600.withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 2))]
+                              ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))]
                               : null,
                         ),
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.inventory_2_outlined, size: 16, color: _selectedTab == 0 ? Colors.white : AppColors.slate600),
+                            Icon(Icons.inventory_2_outlined, size: 16, color: _selectedTab == 0 ? AppColors.ink : AppColors.slate600),
                             const SizedBox(width: 6),
                             Text(
                               'Product Listings',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: _selectedTab == 0 ? FontWeight.w700 : FontWeight.w600,
-                                color: _selectedTab == 0 ? Colors.white : AppColors.slate600,
+                                color: _selectedTab == 0 ? AppColors.ink : AppColors.slate600,
                               ),
                             ),
                           ],
@@ -92,24 +92,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 9),
                         decoration: BoxDecoration(
-                          color: _selectedTab == 1 ? AppColors.brand600 : Colors.transparent,
+                          color: _selectedTab == 1 ? AppColors.brandYellow : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           boxShadow: _selectedTab == 1
-                              ? [BoxShadow(color: AppColors.brand600.withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 2))]
+                              ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 2))]
                               : null,
                         ),
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.tune_rounded, size: 16, color: _selectedTab == 1 ? Colors.white : AppColors.slate600),
+                            Icon(Icons.tune_rounded, size: 16, color: _selectedTab == 1 ? AppColors.ink : AppColors.slate600),
                             const SizedBox(width: 6),
                             Text(
                               'Manage Inventory',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: _selectedTab == 1 ? FontWeight.w700 : FontWeight.w600,
-                                color: _selectedTab == 1 ? Colors.white : AppColors.slate600,
+                                color: _selectedTab == 1 ? AppColors.ink : AppColors.slate600,
                               ),
                             ),
                           ],

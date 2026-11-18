@@ -188,7 +188,8 @@ class OrderSuccessScreen extends StatelessWidget {
                 // Action Buttons
                 CustomButton(
                   text: 'Continue Shopping',
-                  backgroundColor: AppColors.brand600,
+                  backgroundColor: AppColors.brandYellow,
+                  textColor: AppColors.ink,
                   onPressed: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },

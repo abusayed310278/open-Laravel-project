@@ -257,8 +257,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       Expanded(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.brand500,
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.brandYellow,
+                            foregroundColor: AppColors.ink,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),

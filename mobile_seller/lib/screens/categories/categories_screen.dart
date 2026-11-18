@@ -105,20 +105,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return Icons.grid_view_rounded;
   }
 
-  Color _getCategoryColor(int index) {
-    const palette = [
-      Color(0xFF000080), // Openbox Navy
-      Color(0xFFF59E0B), // Amber Gold
-      Color(0xFF10B981), // Emerald
-      Color(0xFF6366F1), // Indigo
-      Color(0xFFEC4899), // Pink
-      Color(0xFF06B6D4), // Cyan
-      Color(0xFF8B5CF6), // Purple
-      Color(0xFFF97316), // Orange
-    ];
-    return palette[index % palette.length];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -197,7 +183,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brand500,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.ink,
                 ),
               ),
             ],
@@ -230,7 +216,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         itemBuilder: (context, index) {
           final category = _filteredCategories[index];
           final name = category['name']?.toString() ?? 'Category';
-          final color = _getCategoryColor(index);
+          const color = AppColors.brand600;
           final icon = _getCategoryIcon(name);
           final imageUrl = category['image']?.toString();
 

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/api_config.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../providers/location_provider.dart';
+import '../../providers/product_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 
 class _OnboardPage {
@@ -52,6 +55,31 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prefetchHomeData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _prefetchHomeData() {
+    if (!mounted) return;
+    try {
+      final productProvider = context.read<ProductProvider>();
+      final locationProvider = context.read<LocationProvider>();
+      productProvider.fetchProducts();
+      productProvider.fetchCategories();
+      locationProvider.fetchLiveLocation();
+    } catch (_) {}
+  }
 
   Future<void> _finish() async {
     try {
@@ -163,8 +191,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                   ),

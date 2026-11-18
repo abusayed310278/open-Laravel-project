@@ -148,11 +148,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.brand500 : AppColors.surface,
+                    color: isSelected ? AppColors.brandYellow : AppColors.surface,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
                       color: isSelected
-                          ? AppColors.brand500
+                          ? AppColors.brandYellowDark
                           : AppColors.slate200,
                     ),
                   ),
@@ -164,8 +164,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         label,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : AppColors.slate700,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected ? AppColors.ink : AppColors.slate700,
                         ),
                       ),
                       if (count > 0) ...[
@@ -177,7 +177,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.white.withValues(alpha: 0.25)
+                                ? AppColors.ink.withValues(alpha: 0.12)
                                 : AppColors.slate100,
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
@@ -187,7 +187,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: isSelected
-                                  ? Colors.white
+                                  ? AppColors.ink
                                   : AppColors.slate600,
                             ),
                           ),

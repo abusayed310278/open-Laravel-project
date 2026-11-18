@@ -273,7 +273,7 @@ class _CartScreenState extends State<CartScreen> {
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.brand500,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.ink,
                 ),
               ),
             ],
@@ -562,7 +562,8 @@ class _CartScreenState extends State<CartScreen> {
             const SizedBox(height: AppSpacing.md),
             CustomButton(
               text: 'Proceed to Checkout',
-              backgroundColor: const Color(0xFFF59E0B),
+              backgroundColor: AppColors.brandYellow,
+              textColor: AppColors.ink,
               onPressed: _proceedToCheckout,
             ),
           ],

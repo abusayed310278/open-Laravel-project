@@ -476,8 +476,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // Submit Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.brand500,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.brandYellow,
+                      foregroundColor: AppColors.ink,
                       minimumSize: const Size.fromHeight(48),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     ),
@@ -535,7 +535,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           margin: const EdgeInsets.all(AppSpacing.lg),
           padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
-            color: AppColors.brand500,
+            color: AppColors.brandYellow,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: [
               BoxShadow(
@@ -553,7 +553,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.22),
+                      color: Colors.white.withValues(alpha: 0.35),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.ink, width: 1.5),
                     ),
@@ -577,7 +577,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           'Sign in to manage orders, wishlist & merchant store',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.brand900,
+                            color: AppColors.slate700,
                           ),
                         ),
                       ],
@@ -640,10 +640,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
-                    color: AppColors.brand500,
+                    color: AppColors.brandYellow,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.storefront_rounded, color: AppColors.ink, size: 20),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -652,7 +652,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: const [
                       Text(
                         'Become a Seller',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.brand800),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
                       ),
                       SizedBox(height: 2),
                       Text(
@@ -666,7 +666,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const RegisterScreen()),
                   ),
-                  child: const Text('Join', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                  child: const Text('Join', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.ink)),
                 ),
               ],
             ),

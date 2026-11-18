@@ -123,7 +123,7 @@ class _ChatConversationScreenState extends State<ChatConversationScreen> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   IconButton.filled(
-                    style: IconButton.styleFrom(backgroundColor: AppColors.brand500, foregroundColor: Colors.white),
+                    style: IconButton.styleFrom(backgroundColor: AppColors.brandYellow, foregroundColor: AppColors.ink),
                     icon: const Icon(Icons.send_rounded, size: 18),
                     onPressed: _send,
                   ),

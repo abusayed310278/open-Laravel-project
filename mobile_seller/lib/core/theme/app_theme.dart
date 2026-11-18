@@ -12,7 +12,7 @@ abstract final class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.brand500,
         brightness: Brightness.light,
-        primary: AppColors.brand600,
+        primary: AppColors.brandYellowDark,
         secondary: AppColors.brand500,
         surface: AppColors.surface,
         error: AppColors.danger,
@@ -72,7 +72,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.brand500, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.brandYellowDark, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -84,14 +84,14 @@ abstract final class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.brand500,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.ink,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           textStyle: textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             fontSize: 15,
           ),
         ),

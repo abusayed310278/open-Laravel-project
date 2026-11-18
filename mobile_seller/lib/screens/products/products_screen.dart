@@ -493,8 +493,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brand600,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.brandYellow,
+              foregroundColor: AppColors.ink,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
             ),

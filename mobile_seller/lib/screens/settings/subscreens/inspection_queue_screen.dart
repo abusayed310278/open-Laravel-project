@@ -608,8 +608,8 @@ class _InspectionQueueScreenState extends State<InspectionQueueScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.brand500,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.brandYellow,
+        foregroundColor: AppColors.ink,
         icon: const Icon(Icons.add_rounded, size: 20),
         label: const Text('Book Inspection', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
         onPressed: _openBookInspectionModal,
@@ -1336,13 +1336,13 @@ class _BookInspectionBottomSheetState extends State<_BookInspectionBottomSheet> 
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(48),
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                   ),
                   onPressed: _isSubmitting ? null : _submitBooking,
                   child: _isSubmitting
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2))
                       : const Text('Confirm & Book Appointment', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ],

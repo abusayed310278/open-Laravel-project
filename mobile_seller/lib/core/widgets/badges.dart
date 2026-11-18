@@ -87,12 +87,33 @@ class OpenboxBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Pill(
-      color: const Color(0xFFD97706),
-      icon: Icons.inventory_2_outlined,
-      label: 'Openbox',
-      compact: compact,
-      showIcon: showIcon,
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 5 : AppSpacing.sm,
+        vertical: compact ? 1.5 : 3,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.brandYellow,
+        borderRadius: BorderRadius.circular(compact ? 4 : AppSpacing.sm),
+        border: Border.all(color: AppColors.brandYellowDark, width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showIcon) ...[
+            Icon(Icons.inventory_2_outlined, size: compact ? 10 : 12, color: AppColors.ink),
+            SizedBox(width: compact ? 2.5 : 3),
+          ],
+          Text(
+            'Openbox',
+            style: TextStyle(
+              color: AppColors.ink,
+              fontSize: compact ? 9 : 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

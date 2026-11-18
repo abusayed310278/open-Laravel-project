@@ -243,8 +243,8 @@ class _WarehouseDepositScreenState extends State<WarehouseDepositScreen> {
                     ),
             ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.brand500,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.brandYellow,
+        foregroundColor: AppColors.ink,
         icon: const Icon(Icons.add),
         label: const Text('New Deposit', style: TextStyle(fontWeight: FontWeight.w700)),
         onPressed: _showNewDepositModal,

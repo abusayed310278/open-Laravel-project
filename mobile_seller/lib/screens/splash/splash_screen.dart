@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
+import '../../providers/location_provider.dart';
+import '../../providers/product_provider.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../navigation/main_navigation_screen.dart';
 import '../onboarding/onboarding_screen.dart';
@@ -28,6 +30,13 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuthAndNavigate() async {
     final startTime = DateTime.now();
     final authProvider = context.read<SellerAuthProvider>();
+
+    // Preload Home APIs in parallel during splash
+    try {
+      context.read<ProductProvider>().fetchProducts();
+      context.read<ProductProvider>().fetchCategories();
+      context.read<LocationProvider>().fetchLiveLocation();
+    } catch (_) {}
 
     try {
       if (authProvider.state == AuthState.loading || authProvider.state == AuthState.uninitialized) {

@@ -724,8 +724,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     elevation: 0,
                   ),
@@ -893,8 +893,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     elevation: 0,
                   ),
@@ -1023,8 +1023,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: ElevatedButton(
                   onPressed: step.onAction,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     elevation: 0,
                     shape: const StadiumBorder(),
                   ),

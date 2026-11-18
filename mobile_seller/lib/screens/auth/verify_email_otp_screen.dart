@@ -262,7 +262,7 @@ class _VerifyEmailOtpScreenState extends State<VerifyEmailOtpScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: _resendCooldown > 0 ? AppColors.slate400 : const Color(0xFFF59E0B),
+                                  color: _resendCooldown > 0 ? AppColors.slate400 : AppColors.brand700,
                                 ),
                               ),
                             ),
@@ -270,11 +270,12 @@ class _VerifyEmailOtpScreenState extends State<VerifyEmailOtpScreen> {
                         ),
                         const SizedBox(height: AppSpacing.xl),
 
-                        // Verify & Proceed Button with amber color matching screenshot
+                        // Verify & Proceed Button with brand yellow
                         CustomButton(
                           text: 'Verify & Sign In',
                           isLoading: _isLoading,
-                          backgroundColor: const Color(0xFFF59E0B),
+                          backgroundColor: AppColors.brandYellow,
+                          textColor: AppColors.ink,
                           onPressed: _handleVerify,
                         ),
                       ],

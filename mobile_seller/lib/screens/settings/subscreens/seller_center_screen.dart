@@ -1182,8 +1182,8 @@ class _SellerCenterScreenState extends State<SellerCenterScreen> {
                   icon: const Icon(Icons.directions_rounded, size: 16),
                   label: const Text('Get Directions'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.brand500,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.brandYellow,
+                    foregroundColor: AppColors.ink,
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.md)),

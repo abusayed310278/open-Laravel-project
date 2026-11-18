@@ -1099,7 +1099,16 @@ class _BottomActionBar extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: ElevatedButton(onPressed: onBuyNow, child: const Text('Buy Now')),
+                  child: ElevatedButton(
+                    onPressed: onBuyNow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.brandYellow,
+                      foregroundColor: AppColors.ink,
+                      elevation: 0,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                    ),
+                    child: const Text('Buy Now'),
+                  ),
                 ),
               ],
             ),

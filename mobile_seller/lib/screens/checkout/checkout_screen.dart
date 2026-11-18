@@ -218,8 +218,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.brand600,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.brandYellow,
+              foregroundColor: AppColors.ink,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
             ),
             onPressed: () async {
@@ -563,8 +563,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.brand600,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.brandYellow,
+                foregroundColor: AppColors.ink,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
               onPressed: isVerifying
@@ -714,8 +714,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: AppSpacing.md),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.brand600,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.brandYellow,
+                foregroundColor: AppColors.ink,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
               icon: const Icon(Icons.add, size: 18),
