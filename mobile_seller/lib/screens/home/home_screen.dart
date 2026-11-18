@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/app_snackbar.dart';
-import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/product_card.dart';
 import '../../core/widgets/section_header.dart';
 import '../../data/models/product.dart';
@@ -66,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final productProvider = context.watch<ProductProvider>();
     final liveProducts = productProvider.products;
-    final isLoading = productProvider.isLoading && liveProducts.isEmpty;
     final displayProducts = liveProducts.where((p) => p.isPublished).toList();
 
     final openboxProducts = displayProducts.where((p) => p.isOpenboxCondition).toList();
@@ -161,17 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
 
-              if (isLoading)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
-                    child: LoadingView(
-                      message: 'Loading products...',
-                      subtitle: 'Fetching latest deals & inventory...',
-                    ),
-                  ),
-                )
-              else if (_selectedCondition == 'all') ...[
+              if (_selectedCondition == 'all') ...[
                 // 1. New Section (At least 3 products guaranteed)
                 if (newRow.isNotEmpty) ...[
                   SliverToBoxAdapter(
@@ -245,12 +233,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
 
                 // 5. Grid of All Products
-                const SliverToBoxAdapter(
-                  child: SectionHeader(
-                    title: 'All Products',
+                if (displayProducts.isNotEmpty) ...[
+                  const SliverToBoxAdapter(
+                    child: SectionHeader(
+                      title: 'All Products',
+                    ),
                   ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                  const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                ],
               ] else ...[
                 // When a single condition filter is selected
                 SliverToBoxAdapter(
@@ -282,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
               ],
 
-              if (!isLoading && activeProducts.isEmpty)
+              if (!productProvider.isLoading && activeProducts.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
@@ -310,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 )
-              else if (!isLoading)
+              else if (activeProducts.isNotEmpty)
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   sliver: SliverGrid(
