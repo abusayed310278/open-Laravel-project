@@ -1,14 +1,21 @@
 import 'package:flutter/foundation.dart';
 import '../core/network/api_client.dart';
+import '../data/models/customer_order.dart';
 import '../data/models/vendor_order.dart';
+
+enum OrderViewMode { purchases, sales }
 
 class SellerOrderProvider extends ChangeNotifier {
   final ApiClient _apiClient;
 
   bool _isLoading = false;
   bool _isDetailLoading = false;
+  bool _isCustomerLoading = false;
   String? _errorMessage;
 
+  OrderViewMode _viewMode = OrderViewMode.purchases;
+
+  List<CustomerOrder> _customerOrders = [];
   List<VendorOrderSummary> _orders = [];
   Map<String, int> _counts = {};
   String _selectedStatus = 'all';
@@ -16,9 +23,13 @@ class SellerOrderProvider extends ChangeNotifier {
 
   VendorOrderDetail? _selectedOrderDetail;
 
-  bool get isLoading => _isLoading;
+  bool get isLoading => _isLoading || _isCustomerLoading;
   bool get isDetailLoading => _isDetailLoading;
+  bool get isCustomerLoading => _isCustomerLoading;
   String? get errorMessage => _errorMessage;
+
+  OrderViewMode get viewMode => _viewMode;
+  List<CustomerOrder> get customerOrders => _customerOrders;
   List<VendorOrderSummary> get orders => _orders;
   Map<String, int> get counts => _counts;
   String get selectedStatus => _selectedStatus;
@@ -26,6 +37,40 @@ class SellerOrderProvider extends ChangeNotifier {
   VendorOrderDetail? get selectedOrderDetail => _selectedOrderDetail;
 
   SellerOrderProvider({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+
+  void setViewMode(OrderViewMode mode) {
+    if (_viewMode == mode) return;
+    _viewMode = mode;
+    notifyListeners();
+  }
+
+  Future<void> fetchCustomerOrders() async {
+    _isCustomerLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiClient.get('/customer-orders');
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final list = response['data'] as List? ?? [];
+        _customerOrders = list
+            .map((e) => CustomerOrder.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isCustomerLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAll() async {
+    await Future.wait([
+      fetchCustomerOrders(),
+      fetchOrders(),
+    ]);
+  }
 
   Future<void> fetchOrders({String? status, String? search}) async {
     if (status != null) {

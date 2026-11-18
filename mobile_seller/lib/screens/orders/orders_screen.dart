@@ -7,6 +7,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/empty_view.dart';
 import '../../core/widgets/loading_view.dart';
 import '../../core/widgets/status_badge.dart';
+import '../../data/models/customer_order.dart';
 import '../../providers/seller_auth_provider.dart';
 import '../../providers/seller_order_provider.dart';
 import '../auth/login_screen.dart';
@@ -41,7 +42,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && context.read<SellerAuthProvider>().isAuthenticated) {
         _hasFetched = true;
-        context.read<SellerOrderProvider>().fetchOrders();
+        context.read<SellerOrderProvider>().fetchAll();
       }
     });
   }
@@ -60,13 +61,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
     if (isAuthenticated && !_hasFetched && !orderProvider.isLoading) {
       _hasFetched = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.read<SellerOrderProvider>().fetchOrders();
+        if (mounted) context.read<SellerOrderProvider>().fetchAll();
       });
     }
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
-      appBar: AppBar(title: const Text('Orders Management')),
+      appBar: AppBar(title: const Text('Orders')),
       body: isAuthenticated ? _buildBody(orderProvider) : _buildSignInPrompt(),
     );
   }
@@ -85,6 +86,407 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Widget _buildBody(SellerOrderProvider orderProvider) {
+    return Column(
+      children: [
+        // Top Segmented Mode Selector: My Purchases vs Store Sales
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.slate200.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Row(
+            children: [
+              // 1. My Purchases
+              Expanded(
+                child: InkWell(
+                  onTap: () => orderProvider.setViewMode(OrderViewMode.purchases),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.brandYellow : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      boxShadow: orderProvider.viewMode == OrderViewMode.purchases
+                          ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))]
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 15,
+                          color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.ink : AppColors.slate600,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'My Purchases (${orderProvider.customerOrders.length})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.ink : AppColors.slate600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // 2. Store Sales
+              Expanded(
+                child: InkWell(
+                  onTap: () => orderProvider.setViewMode(OrderViewMode.sales),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.brandYellow : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                      boxShadow: orderProvider.viewMode == OrderViewMode.sales
+                          ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))]
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.storefront_outlined,
+                          size: 15,
+                          color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.ink : AppColors.slate600,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Store Sales (${orderProvider.counts['all'] ?? 0})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.ink : AppColors.slate600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Active View: Purchases or Sales
+        Expanded(
+          child: orderProvider.viewMode == OrderViewMode.purchases
+              ? _buildPurchasesView(orderProvider)
+              : _buildSalesView(orderProvider),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPurchasesView(SellerOrderProvider orderProvider) {
+    if (orderProvider.isCustomerLoading && orderProvider.customerOrders.isEmpty) {
+      return const LoadingView(message: 'Loading purchases...');
+    }
+
+    if (orderProvider.customerOrders.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () => orderProvider.fetchCustomerOrders(),
+        color: AppColors.brandYellowDark,
+        child: ListView(
+          children: const [
+            SizedBox(height: 60),
+            EmptyView(
+              icon: Icons.shopping_bag_outlined,
+              title: 'No Purchases Yet',
+              subtitle: 'Items you purchase on Openbox will appear here.',
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => orderProvider.fetchCustomerOrders(),
+      color: AppColors.brandYellowDark,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        itemCount: orderProvider.customerOrders.length,
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+        itemBuilder: (context, index) {
+          final order = orderProvider.customerOrders[index];
+          return _buildCustomerOrderCard(context, order);
+        },
+      ),
+    );
+  }
+
+  Widget _buildCustomerOrderCard(BuildContext context, CustomerOrder order) {
+    return InkWell(
+      onTap: () => _showCustomerOrderDetailSheet(context, order),
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.slate100,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    order.orderNumber,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ),
+                StatusBadge(status: order.status),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: AppColors.brand50,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    border: Border.all(color: AppColors.brand200),
+                  ),
+                  child: const Icon(
+                    Icons.shopping_bag_rounded,
+                    size: 24,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        order.itemSummary,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Sold by: ${order.vendorName}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.slate500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${_currencyFormat.format(order.total)} QAR',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandYellow,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        order.paymentMethod ?? 'COD',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            const Divider(height: 1),
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  order.createdAt != null
+                      ? DateFormat('MMM d, yyyy · h:mm a').format(DateTime.parse(order.createdAt!))
+                      : '',
+                  style: const TextStyle(fontSize: 11, color: AppColors.slate400),
+                ),
+                const Row(
+                  children: [
+                    Text(
+                      'View Details',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.ink),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCustomerOrderDetailSheet(BuildContext context, CustomerOrder order) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.slate300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    order.orderNumber,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  StatusBadge(status: order.status),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Placed on ${order.createdAt != null ? DateFormat('MMMM d, yyyy · h:mm a').format(DateTime.parse(order.createdAt!)) : ''}',
+                style: const TextStyle(fontSize: 12, color: AppColors.slate500),
+              ),
+              const Divider(height: AppSpacing.xl),
+              const Text('Items Ordered', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
+              const SizedBox(height: AppSpacing.sm),
+              ...order.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: AppColors.brandYellow,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${item.quantity}x',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.ink),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.ink),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: AppSpacing.xl),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.ink)),
+                  Text(
+                    '${_currencyFormat.format(order.total)} QAR',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.ink),
+                  ),
+                ],
+              ),
+              if (order.customerName != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Deliver to', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
+                    Text(
+                      '${order.customerName} (${order.customerPhone ?? ''})',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSalesView(SellerOrderProvider orderProvider) {
     return Column(
       children: [
         // 1. Search Bar
