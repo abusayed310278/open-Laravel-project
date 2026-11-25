@@ -67,7 +67,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
-      appBar: AppBar(title: const Text('Orders')),
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.ink,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: AppColors.slate900.withValues(alpha: 0.06),
+        title: const Text(
+          'Orders',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: AppColors.ink,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ),
       body: isAuthenticated ? _buildBody(orderProvider) : _buildSignInPrompt(),
     );
   }
@@ -85,91 +101,84 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
+  // Shared card chrome for both purchase and sale order cards.
+  static BoxDecoration get _cardDecoration => BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.slate200.withValues(alpha: 0.7)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.slate900.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      );
+
+  // Money display with a de-emphasized currency suffix.
+  Widget _buildAmount(double amount, {double fontSize = 14, Color color = AppColors.ink}) {
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: _currencyFormat.format(amount),
+            style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w800, color: color),
+          ),
+          TextSpan(
+            text: ' QAR',
+            style: TextStyle(
+              fontSize: fontSize - 3,
+              fontWeight: FontWeight.w600,
+              color: color.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: AppColors.slate500,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
   Widget _buildBody(SellerOrderProvider orderProvider) {
     return Column(
       children: [
         // Top Segmented Mode Selector: My Purchases vs Store Sales
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          margin: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm),
           padding: const EdgeInsets.all(4),
+          height: 48,
           decoration: BoxDecoration(
-            color: AppColors.slate200.withValues(alpha: 0.6),
+            color: AppColors.slate200.withValues(alpha: 0.55),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Row(
             children: [
-              // 1. My Purchases
               Expanded(
-                child: InkWell(
+                child: _buildModeSegment(
+                  icon: Icons.shopping_bag_outlined,
+                  label: 'My Purchases',
+                  count: orderProvider.customerOrders.length,
+                  isSelected: orderProvider.viewMode == OrderViewMode.purchases,
                   onTap: () => orderProvider.setViewMode(OrderViewMode.purchases),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.brandYellow : Colors.transparent,
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                      boxShadow: orderProvider.viewMode == OrderViewMode.purchases
-                          ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))]
-                          : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 15,
-                          color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.ink : AppColors.slate600,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'My Purchases (${orderProvider.customerOrders.length})',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: orderProvider.viewMode == OrderViewMode.purchases ? AppColors.ink : AppColors.slate600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
-              // 2. Store Sales
               Expanded(
-                child: InkWell(
+                child: _buildModeSegment(
+                  icon: Icons.storefront_outlined,
+                  label: 'Store Sales',
+                  count: orderProvider.counts['all'] ?? 0,
+                  isSelected: orderProvider.viewMode == OrderViewMode.sales,
                   onTap: () => orderProvider.setViewMode(OrderViewMode.sales),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.brandYellow : Colors.transparent,
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                      boxShadow: orderProvider.viewMode == OrderViewMode.sales
-                          ? [BoxShadow(color: AppColors.brandYellow.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 2))]
-                          : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.storefront_outlined,
-                          size: 15,
-                          color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.ink : AppColors.slate600,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Store Sales (${orderProvider.counts['all'] ?? 0})',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: orderProvider.viewMode == OrderViewMode.sales ? AppColors.ink : AppColors.slate600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -183,6 +192,56 @@ class _OrdersScreenState extends State<OrdersScreen> {
               : _buildSalesView(orderProvider),
         ),
       ],
+    );
+  }
+
+  Widget _buildModeSegment({
+    required IconData icon,
+    required String label,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.brandYellow : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandYellowDark.withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: isSelected ? AppColors.ink : AppColors.slate600,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$label ($count)',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? AppColors.ink : AppColors.slate600,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -229,18 +288,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: _cardDecoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -259,7 +307,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       fontFamily: 'monospace',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.ink,
+                      color: AppColors.slate700,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
@@ -268,18 +317,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 46,
-                  height: 46,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: AppColors.brand50,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                     border: Border.all(color: AppColors.brand200),
                   ),
+                  alignment: Alignment.center,
                   child: const Icon(
                     Icons.shopping_bag_rounded,
-                    size: 24,
+                    size: 22,
                     color: AppColors.ink,
                   ),
                 ),
@@ -294,17 +345,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: AppColors.ink,
+                          height: 1.25,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Text(
-                        'Sold by: ${order.vendorName}',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.slate500,
-                        ),
+                        'Sold by ${order.vendorName}',
+                        style: const TextStyle(fontSize: 11.5, color: AppColors.slate500),
                       ),
                     ],
                   ),
@@ -313,17 +362,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${_currencyFormat.format(order.total)} QAR',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
+                    _buildAmount(order.total),
+                    const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppColors.brandYellow,
                         borderRadius: BorderRadius.circular(4),
@@ -331,9 +373,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       child: Text(
                         order.paymentMethod ?? 'COD',
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.ink,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -341,9 +384,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.md),
+            Divider(height: 1, color: AppColors.slate200.withValues(alpha: 0.8)),
             const SizedBox(height: AppSpacing.sm),
-            const Divider(height: 1),
-            const SizedBox(height: AppSpacing.xs),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -351,7 +394,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   order.createdAt != null
                       ? DateFormat('MMM d, yyyy · h:mm a').format(DateTime.parse(order.createdAt!))
                       : '',
-                  style: const TextStyle(fontSize: 11, color: AppColors.slate400),
+                  style: const TextStyle(fontSize: 11.5, color: AppColors.slate400),
                 ),
                 const Row(
                   children: [
@@ -381,105 +424,121 @@ class _OrdersScreenState extends State<OrdersScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.xl),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.slate300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    order.orderNumber,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.ink,
+          top: false,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.slate300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  StatusBadge(status: order.status),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Placed on ${order.createdAt != null ? DateFormat('MMMM d, yyyy · h:mm a').format(DateTime.parse(order.createdAt!)) : ''}',
-                style: const TextStyle(fontSize: 12, color: AppColors.slate500),
-              ),
-              const Divider(height: AppSpacing.xl),
-              const Text('Items Ordered', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
-              const SizedBox(height: AppSpacing.sm),
-              ...order.items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: AppColors.brandYellow,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${item.quantity}x',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.ink),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.ink),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-              const Divider(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.ink)),
-                  Text(
-                    '${_currencyFormat.format(order.total)} QAR',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.ink),
-                  ),
-                ],
-              ),
-              if (order.customerName != null) ...[
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.lg),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Deliver to', style: TextStyle(fontSize: 12, color: AppColors.slate500)),
                     Text(
-                      '${order.customerName} (${order.customerPhone ?? ''})',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink),
+                      order.orderNumber,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                        letterSpacing: 0.2,
+                      ),
                     ),
+                    StatusBadge(status: order.status),
                   ],
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  'Placed on ${order.createdAt != null ? DateFormat('MMMM d, yyyy · h:mm a').format(DateTime.parse(order.createdAt!)) : ''}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.slate500),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                _sectionLabel('Items Ordered'),
+                const SizedBox(height: AppSpacing.sm),
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            color: AppColors.brandYellow,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '${item.quantity}x',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.ink),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: AppColors.ink),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.slate50,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Total Amount',
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink),
+                          ),
+                          _buildAmount(order.total, fontSize: 17),
+                        ],
+                      ),
+                      if (order.customerName != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Divider(height: 1, color: AppColors.slate200.withValues(alpha: 0.8)),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Deliver to', style: TextStyle(fontSize: 12.5, color: AppColors.slate500)),
+                            Text(
+                              '${order.customerName} (${order.customerPhone ?? ''})',
+                              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.ink),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
-              const SizedBox(height: AppSpacing.xl),
-            ],
+            ),
           ),
         ),
       ),
@@ -491,38 +550,39 @@ class _OrdersScreenState extends State<OrdersScreen> {
       children: [
         // 1. Search Bar
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
           child: TextField(
             controller: _searchController,
             onSubmitted: (val) => orderProvider.searchOrders(val),
+            style: const TextStyle(fontSize: 14, color: AppColors.ink),
             decoration: InputDecoration(
               hintText: 'Search #order, customer, product...',
-              prefixIcon: const Icon(
-                Icons.search,
-                size: 20,
-                color: AppColors.slate400,
-              ),
+              hintStyle: const TextStyle(fontSize: 13.5, color: AppColors.slate400),
+              prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.slate400),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: AppColors.slate400,
-                      ),
+                      icon: const Icon(Icons.clear, size: 18, color: AppColors.slate400),
                       onPressed: () {
                         _searchController.clear();
                         orderProvider.searchOrders('');
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              filled: true,
               fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: AppColors.slate200.withValues(alpha: 0.9)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: AppColors.slate200.withValues(alpha: 0.9)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: const BorderSide(color: AppColors.brandYellowDark, width: 1.4),
+              ),
             ),
           ),
         ),
@@ -544,18 +604,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
               return GestureDetector(
                 onTap: () => orderProvider.setStatus(key),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.brandYellow : AppColors.surface,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.brandYellowDark
-                          : AppColors.slate200,
+                      color: isSelected ? AppColors.brandYellowDark : AppColors.slate200,
                     ),
                   ),
                   alignment: Alignment.center,
@@ -573,14 +629,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       if (count > 0) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.ink.withValues(alpha: 0.12)
-                                : AppColors.slate100,
+                            color: isSelected ? AppColors.ink.withValues(alpha: 0.12) : AppColors.slate100,
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
                           child: Text(
@@ -588,9 +639,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
-                              color: isSelected
-                                  ? AppColors.ink
-                                  : AppColors.slate600,
+                              color: isSelected ? AppColors.ink : AppColors.slate600,
                             ),
                           ),
                         ),
@@ -608,7 +657,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => orderProvider.fetchOrders(),
-            color: AppColors.brand500,
+            color: AppColors.brandYellowDark,
             child: orderProvider.isLoading && orderProvider.orders.isEmpty
                 ? const LoadingView(message: 'Loading orders...')
                 : orderProvider.orders.isEmpty
@@ -620,8 +669,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: orderProvider.orders.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppSpacing.md),
+                    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                     itemBuilder: (context, index) {
                       final order = orderProvider.orders[index];
                       return _buildOrderCard(context, order);
@@ -645,18 +693,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        decoration: _cardDecoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -664,10 +701,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.slate100,
                     borderRadius: BorderRadius.circular(4),
@@ -678,7 +712,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       fontFamily: 'monospace',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.ink,
+                      color: AppColors.slate700,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
@@ -687,10 +722,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: AppColors.slate100,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -706,11 +742,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             color: AppColors.slate400,
                           ),
                         )
-                      : const Icon(
-                          Icons.inventory_2,
-                          size: 22,
-                          color: AppColors.slate400,
-                        ),
+                      : const Icon(Icons.inventory_2, size: 22, color: AppColors.slate400),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -725,43 +757,44 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           color: AppColors.ink,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         order.itemSummary,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.slate500,
-                        ),
+                        style: const TextStyle(fontSize: 12, color: AppColors.slate500),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: AppSpacing.sm),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${_currencyFormat.format(order.total)} QAR',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.brand600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
+                    _buildAmount(order.total),
+                    const SizedBox(height: 3),
                     Text(
                       order.createdAt != null
-                          ? DateFormat('MMM d, yyyy')
-                                .format(DateTime.parse(order.createdAt))
+                          ? DateFormat('MMM d, yyyy').format(DateTime.parse(order.createdAt))
                           : '',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.slate400,
-                      ),
+                      style: const TextStyle(fontSize: 11, color: AppColors.slate400),
                     ),
                   ],
                 ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Divider(height: 1, color: AppColors.slate200.withValues(alpha: 0.8)),
+            const SizedBox(height: AppSpacing.sm),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'View Order',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.ink),
+                ),
+                SizedBox(width: 2),
+                Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.ink),
               ],
             ),
           ],
