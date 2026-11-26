@@ -134,6 +134,7 @@ Route::prefix('seller')->group(function () {
         Route::post('/auth/email/verification-notification', [SellerAuthController::class, 'resendEmailOtp']);
         Route::post('/auth/verify-phone/send', [SellerAuthController::class, 'sendPhoneOtp']);
         Route::post('/auth/verify-phone/confirm', [SellerAuthController::class, 'confirmPhoneOtp']);
+        Route::delete('/auth/account', [AuthController::class, 'deleteAccount']);
         Route::post('/onboarding/address', [AddressController::class, 'store']);
 
         // Cart

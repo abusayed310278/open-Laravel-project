@@ -350,11 +350,15 @@ class SellerAuthProvider extends ChangeNotifier {
     _state = AuthState.loading;
     notifyListeners();
 
+    final payload = password != null && password.isNotEmpty ? {'password': password} : null;
+
     try {
-      await _apiClient.delete(
-        '/auth/account',
-        body: password != null && password.isNotEmpty ? {'password': password} : null,
-      );
+      try {
+        await _apiClient.delete('/account', body: payload);
+      } catch (_) {
+        // Fallback to /auth/account if /account is not accepted
+        await _apiClient.delete('/auth/account', body: payload);
+      }
       final storage = await StorageService.getInstance();
       await storage.clearToken();
       _user = null;
