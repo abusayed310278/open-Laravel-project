@@ -1387,14 +1387,16 @@ class _ReportProductSheetState extends State<_ReportProductSheet> {
         if (sellerId.isNotEmpty) {
           try {
             await apiClient.post('/users/$sellerId/block');
-            if (context.mounted) {
+            if (mounted) {
               context.read<ProductProvider>().removeProductsBySeller(sellerId);
             }
           } catch (_) {}
         }
       }
 
-      AppSnackBar.success(context, message);
+      if (mounted) {
+        AppSnackBar.success(context, message);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);

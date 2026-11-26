@@ -272,7 +272,53 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
               ],
 
-              if (!productProvider.isLoading && activeProducts.isEmpty)
+              if (!productProvider.isLoading && productProvider.errorMessage != null && activeProducts.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: const BoxDecoration(
+                              color: AppColors.dangerBg,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.cloud_off_rounded, size: 40, color: AppColors.danger),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const Text(
+                            'Unable to load products',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            productProvider.errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 12, color: AppColors.slate500, height: 1.4),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              context.read<ProductProvider>().fetchProducts();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: const Text('Retry'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.brandYellow,
+                              foregroundColor: AppColors.ink,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else if (!productProvider.isLoading && activeProducts.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.xxxl),
