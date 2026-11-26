@@ -7,11 +7,13 @@ use App\Enums\ProductApprovalStatus;
 use App\Enums\ProductCondition;
 use App\Enums\ProductGrade;
 use App\Enums\ProductPublicationStatus;
+use App\Enums\ProductReportStatus;
 use App\Enums\ProductStatus;
 use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\Attribute;
 use App\Models\Product;
+use App\Models\ProductReport;
 use App\Models\User;
 use App\Notifications\ProductApproved;
 use App\Notifications\ProductRejected;
@@ -328,5 +330,37 @@ class ProductService
             'sort_order' => 0,
             'is_primary' => true,
         ]);
+    }
+
+    public function report(Product $product, User $reporter, string $reason, ?string $details = null): ProductReport
+    {
+        $report = $product->reports()->create([
+            'reporter_id' => $reporter->id,
+            'reason' => $reason,
+            'details' => $details,
+            'status' => ProductReportStatus::Pending,
+        ]);
+
+        ActivityLog::record('product.reported', $product);
+
+        return $report;
+    }
+
+    public function resolveReport(ProductReport $report): ProductReport
+    {
+        $report->update(['status' => ProductReportStatus::Resolved]);
+
+        ActivityLog::record('product.report_resolved', $report);
+
+        return $report;
+    }
+
+    public function dismissReport(ProductReport $report): ProductReport
+    {
+        $report->update(['status' => ProductReportStatus::Dismissed]);
+
+        ActivityLog::record('product.report_dismissed', $report);
+
+        return $report;
     }
 }

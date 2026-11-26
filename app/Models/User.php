@@ -147,6 +147,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Review::class, 'reviewer_id');
     }
 
+    public function productReports(): HasMany
+    {
+        return $this->hasMany(ProductReport::class, 'reporter_id');
+    }
+
     public function reviewsAsSeller(): HasMany
     {
         return $this->hasMany(Review::class, 'reviewable_id')->where('reviewable_type', ReviewableType::Seller);

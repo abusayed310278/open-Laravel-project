@@ -279,6 +279,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const Divider(height: 1),
                     _TrustRow(),
                     const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+                      child: InkWell(
+                        onTap: () => _showReportProductModal(context, product),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.flag_outlined, size: 16, color: AppColors.slate500),
+                              SizedBox(width: 6),
+                              Text(
+                                'Report this product',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.slate600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
                     if (activeTabs.isNotEmpty) ...[
                       DefaultTabController(
                         key: ValueKey('${product.id}_${activeTabs.length}'),
@@ -505,6 +531,12 @@ class _GalleryState extends State<_Gallery> {
                             _share(context, origin);
                           },
                         ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _CircleIconButton(
+                        icon: Icons.flag_outlined,
+                        iconColor: AppColors.slate700,
+                        onTap: () => _showReportProductModal(context, widget.product),
                       ),
                     ],
                   ),
@@ -1152,6 +1184,276 @@ class _InfoChip extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+void _showReportProductModal(BuildContext context, Product product) {
+  final authProvider = context.read<SellerAuthProvider>();
+  if (!authProvider.isAuthenticated) {
+    AppSnackBar.info(context, 'Please sign in to report this product');
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    return;
+  }
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => _ReportProductSheet(product: product),
+  );
+}
+
+class _ReportProductSheet extends StatefulWidget {
+  final Product product;
+  const _ReportProductSheet({required this.product});
+
+  @override
+  State<_ReportProductSheet> createState() => _ReportProductSheetState();
+}
+
+class _ReportProductSheetState extends State<_ReportProductSheet> {
+  final List<String> _reasons = const [
+    'Counterfeit or fake item',
+    'Misleading title, description, or photos',
+    'Prohibited, illegal, or unsafe item',
+    'Defective, damaged, or incorrect condition',
+    'Suspected fraud, scam, or price gouging',
+    'Other violation or issue',
+  ];
+
+  late String _selectedReason;
+  final TextEditingController _detailsController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedReason = _reasons.first;
+  }
+
+  @override
+  void dispose() {
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReport() async {
+    setState(() => _isSubmitting = true);
+    try {
+      final apiClient = ApiClient();
+      final res = await apiClient.post(
+        '/products/${widget.product.id}/report',
+        body: {
+          'reason': _selectedReason,
+          if (_detailsController.text.trim().isNotEmpty)
+            'details': _detailsController.text.trim(),
+        },
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      final message = (res is Map && res['message'] != null)
+          ? res['message'].toString()
+          : 'Thank you for your report. Our team will review this listing.';
+      AppSnackBar.success(context, message);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      AppSnackBar.error(context, e.toString());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      margin: EdgeInsets.only(bottom: bottomInset),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.slate300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.flag_outlined, color: AppColors.danger, size: 20),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Report this product',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        Text(
+                          widget.product.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: AppColors.slate500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 20, color: AppColors.slate400),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Divider(height: 1),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'Reason for report',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              const Text(
+                'Select the issue that best describes this listing violation',
+                style: TextStyle(fontSize: 12, color: AppColors.slate500),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              ..._reasons.map((reason) {
+                final isSelected = _selectedReason == reason;
+                return Material(
+                  color: isSelected ? AppColors.brand50 : Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      color: isSelected ? AppColors.brand400 : AppColors.slate200,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedReason = reason),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                            size: 18,
+                            color: isSelected ? AppColors.brand700 : AppColors.slate400,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              reason,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? AppColors.brand900 : AppColors.slate800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).expand((w) => [w, const SizedBox(height: 6)]),
+              const SizedBox(height: AppSpacing.sm),
+              const Text(
+                'Additional details (optional)',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              TextField(
+                controller: _detailsController,
+                maxLines: 3,
+                maxLength: 1000,
+                decoration: InputDecoration(
+                  hintText: 'Provide additional information to assist our investigation...',
+                  hintStyle: const TextStyle(fontSize: 12, color: AppColors.slate400),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.slate200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.brand500, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitReport,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.danger,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

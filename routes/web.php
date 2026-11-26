@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\ReviewReportController as AdminReviewReportController;
+use App\Http\Controllers\Admin\ProductReportController as AdminProductReportController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SiteManagementController;
@@ -74,6 +75,7 @@ use App\Http\Controllers\ProductPageController;
 use App\Http\Controllers\ProductVerificationController;
 use App\Http\Controllers\RefundRequestController;
 use App\Http\Controllers\ReviewReportController;
+use App\Http\Controllers\ProductReportController;
 use App\Http\Controllers\SellerCustomerController;
 use App\Http\Controllers\SellerDashboardController;
 use App\Http\Controllers\SellerInventoryController;
@@ -155,6 +157,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('orders.confirmation');
 
     Route::post('/products/{product}/reviews', [CustomerReviewController::class, 'storeForProduct'])->middleware('throttle:10,1')->name('products.reviews.store');
+    Route::post('/products/{product}/report', [ProductReportController::class, 'store'])->middleware('throttle:10,1')->name('products.report');
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
 
     Route::post('/products/{product}/chat', [ChatController::class, 'startFromProduct'])->name('chat.start');
@@ -578,6 +581,10 @@ Route::middleware(['auth', 'verified', 'role:'.UserRole::Admin->value])
         Route::get('/review-reports', [AdminReviewReportController::class, 'index'])->name('review-reports.index');
         Route::post('/review-reports/{report}/resolve', [AdminReviewReportController::class, 'resolve'])->name('review-reports.resolve');
         Route::post('/review-reports/{report}/dismiss', [AdminReviewReportController::class, 'dismiss'])->name('review-reports.dismiss');
+
+        Route::get('/product-reports', [AdminProductReportController::class, 'index'])->name('product-reports.index');
+        Route::post('/product-reports/{report}/resolve', [AdminProductReportController::class, 'resolve'])->name('product-reports.resolve');
+        Route::post('/product-reports/{report}/dismiss', [AdminProductReportController::class, 'dismiss'])->name('product-reports.dismiss');
 
         Route::get('/chat', [AdminChatController::class, 'index'])->name('chat.index');
         Route::post('/chat/start-user/{user}', [AdminChatController::class, 'startWithUser'])->name('chat.start-user');

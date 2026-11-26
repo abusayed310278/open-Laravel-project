@@ -175,6 +175,11 @@ class Product extends Model
         return $this->hasMany(Review::class, 'reviewable_id')->where('reviewable_type', ReviewableType::Product);
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ProductReport::class);
+    }
+
     public function approvedReviews(): HasMany
     {
         return $this->reviews()->where('status', ReviewStatus::Approved);

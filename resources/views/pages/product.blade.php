@@ -318,6 +318,22 @@
                         <dt class="text-gray-400">Condition</dt>
                         <dd class="text-gray-800 font-medium">{{ $product->condition->label() }}</dd>
                     </dl>
+
+                    {{-- Report product button --}}
+                    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                        <span>Notice something wrong?</span>
+                        @auth
+                            <button type="button" onclick="openReportModal()" class="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium transition-colors cursor-pointer group">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                <span>Report product</span>
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium transition-colors group">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                <span>Report product</span>
+                            </a>
+                        @endauth
+                    </div>
                 </div>
             </div>
         </div>
@@ -547,6 +563,70 @@
             @endif
         @endif
     </div>
+
+    {{-- Report Product Modal --}}
+    @auth
+    <div id="report-product-modal" class="fixed inset-0 z-[9998] hidden overflow-y-auto" aria-labelledby="report-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/60 transition-opacity backdrop-blur-xs" onclick="closeReportModal()" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6 relative z-10 border border-gray-100">
+                <div class="flex items-start justify-between pb-4 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900" id="report-modal-title">Report this listing</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Tell us what is wrong with this product listing.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeReportModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form method="POST" action="{{ route('products.report', $product) }}" class="mt-4 space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Reason for report <span class="text-red-500">*</span></label>
+                        <select name="reason" required class="w-full text-sm rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500 py-2.5">
+                            <option value="">Select a reason...</option>
+                            <option value="Counterfeit or fake item">Counterfeit or fake item</option>
+                            <option value="Misleading title, description, or photos">Misleading title, description, or photos</option>
+                            <option value="Prohibited, illegal, or unsafe item">Prohibited, illegal, or unsafe item</option>
+                            <option value="Defective, damaged, or incorrect condition">Defective, damaged, or incorrect condition</option>
+                            <option value="Suspected fraud, scam, or price gouging">Suspected fraud, scam, or price gouging</option>
+                            <option value="Other violation or issue">Other violation or issue</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">Details (Optional)</label>
+                        <textarea name="details" rows="3" maxlength="1000" placeholder="Provide any additional details or context that will help our review team..." class="w-full text-sm rounded-lg border-gray-300 focus:border-brand-500 focus:ring-brand-500 placeholder-gray-400"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                        <button type="button" onclick="closeReportModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm cursor-pointer">
+                            Submit Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openReportModal() {
+            document.getElementById('report-product-modal')?.classList.remove('hidden');
+        }
+        function closeReportModal() {
+            document.getElementById('report-product-modal')?.classList.add('hidden');
+        }
+    </script>
+    @endauth
 
     {{-- Product Image Lightbox Modal: Centered Square Size with Side Circular Arrows --}}
     <div
@@ -949,9 +1029,11 @@
             });
         });
 
-        // Toast after submitting a review (success or validation error)
+        // Toast after submitting a review or report
         @if (session('status'))
             window.showToast?.(@json(session('status')), 'success');
+        @elseif (session('error'))
+            window.showToast?.(@json(session('error')), 'error');
         @elseif ($errors->has('rating') || $errors->has('body') || $errors->has('title'))
             window.showToast?.(@json($errors->first('rating') ?: ($errors->first('body') ?: $errors->first('title'))), 'error');
         @endif

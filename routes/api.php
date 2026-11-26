@@ -94,6 +94,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vendor-orders/{vendorOrder}/refund-request', [RefundRequestController::class, 'store']);
     Route::post('/vendor-orders/{vendorOrder}/payment-proof', [CustomerOrderController::class, 'submitPaymentProof']);
     Route::get('/refunds', [RefundRequestController::class, 'index']);
+
+    // Product Report
+    Route::post('/products/{product}/report', [\App\Http\Controllers\Api\ProductReportController::class, 'store'])->middleware('throttle:10,1');
 });
 
 /*
@@ -175,6 +178,7 @@ Route::prefix('seller')->group(function () {
         Route::post('/products/{product}', [SellerProductController::class, 'update']);
         Route::patch('/products/{product}/toggle-publish', [SellerProductController::class, 'togglePublish']);
         Route::delete('/products/{product}', [SellerProductController::class, 'destroy']);
+        Route::post('/products/{product}/report', [\App\Http\Controllers\Api\ProductReportController::class, 'store'])->middleware('throttle:10,1');
 
         // Wallet & Payouts
         Route::get('/wallet', [SellerWalletController::class, 'index']);
