@@ -355,6 +355,98 @@
             </form>
         </div>
     </div>
+
+    {{-- Danger Zone: Account Deletion (for non-admin users) --}}
+    @if (! $user?->isAdmin())
+        <div class="profile-rise bg-white border border-red-100 rounded-2xl p-6 sm:p-7 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete Account
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-1 max-w-xl">
+                        Permanently delete your OpenBox account, active listings, order history, and personal data. This action is irreversible.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onclick="document.getElementById('delete-account-modal').classList.remove('hidden')"
+                    class="self-start sm:self-auto px-4 py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-bold rounded-xl transition-colors cursor-pointer flex-shrink-0"
+                >
+                    Delete Account
+                </button>
+            </div>
+        </div>
+
+        {{-- Delete Confirmation Modal --}}
+        <div id="delete-account-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100 space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-bold text-gray-900">Are you absolutely sure?</h4>
+                        <p class="text-xs text-gray-500">This action cannot be undone.</p>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Once your account is deleted, all of its resources, active listings, orders, wallet records, and profile details will be permanently wiped.
+                </p>
+
+                <form method="POST" action="{{ route('account.profile.destroy') }}" class="space-y-4">
+                    @csrf
+                    @method('DELETE')
+
+                    <div>
+                        <label for="delete_password" class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            Please enter your current password to confirm:
+                        </label>
+                        <input
+                            type="password"
+                            id="delete_password"
+                            name="password"
+                            required
+                            placeholder="Current password"
+                            class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
+                        >
+                        @error('password')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            onclick="document.getElementById('delete-account-modal').classList.add('hidden')"
+                            class="px-4 py-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                        >
+                            Permanently Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @if ($errors->has('password'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.getElementById('delete-account-modal')?.classList.remove('hidden');
+                });
+            </script>
+        @endif
+    @endif
 </div>
 
 <script>

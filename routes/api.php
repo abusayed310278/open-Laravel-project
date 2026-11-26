@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/email/verification-notification', [AuthController::class, 'resendEmailOtp']);
         Route::post('/verify-phone/send', [AuthController::class, 'sendPhoneOtp']);
         Route::post('/verify-phone/confirm', [AuthController::class, 'confirmPhoneOtp']);
+        Route::delete('/account', [AuthController::class, 'deleteAccount']);
     });
 
     Route::prefix('cart')->group(function () {
@@ -185,6 +186,7 @@ Route::prefix('seller')->group(function () {
 
         Route::get('/profile', [SellerProfileController::class, 'show']);
         Route::post('/profile', [SellerProfileController::class, 'update']);
+        Route::delete('/account', [AuthController::class, 'deleteAccount']);
 
         // Verification & KYC Status
         Route::get('/verification', [\App\Http\Controllers\Api\Seller\SellerOperationsController::class, 'verification']);

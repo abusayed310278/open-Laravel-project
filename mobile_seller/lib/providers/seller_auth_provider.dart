@@ -345,6 +345,31 @@ class SellerAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Permanently delete seller account
+  Future<bool> deleteAccount({String? password}) async {
+    _state = AuthState.loading;
+    notifyListeners();
+
+    try {
+      await _apiClient.delete(
+        '/auth/account',
+        body: password != null && password.isNotEmpty ? {'password': password} : null,
+      );
+      final storage = await StorageService.getInstance();
+      await storage.clearToken();
+      _user = null;
+      _state = AuthState.unauthenticated;
+      _errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _state = AuthState.authenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Refresh seller profile data
   Future<void> refreshProfile() async {
     try {

@@ -777,6 +777,7 @@ Route::middleware(['auth', 'verified'])
 Route::middleware('auth')->group(function () {
     Route::get('/account/profile', [CustomerProfileController::class, 'edit'])->name('account.profile.edit');
     Route::patch('/account/profile', [CustomerProfileController::class, 'update'])->name('account.profile.update');
+    Route::delete('/account/profile', [CustomerProfileController::class, 'destroy'])->name('account.profile.destroy');
 });
 
 require __DIR__.'/auth.php';

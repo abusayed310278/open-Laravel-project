@@ -21,15 +21,22 @@ class ApiClient {
 
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
-  Uri _resolveUri(String url) {
+  Uri _resolveUri(String url, [Map<String, dynamic>? queryParams]) {
+    Uri uri;
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      return Uri.parse(url);
+      uri = Uri.parse(url);
+    } else {
+      final base = ApiConfig.baseUrl.endsWith('/')
+          ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
+          : ApiConfig.baseUrl;
+      final path = url.startsWith('/') ? url : '/$url';
+      uri = Uri.parse('$base$path');
     }
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
-        : ApiConfig.baseUrl;
-    final path = url.startsWith('/') ? url : '/$url';
-    return Uri.parse('$base$path');
+
+    if (queryParams != null && queryParams.isNotEmpty) {
+      return uri.replace(queryParameters: queryParams.map((k, v) => MapEntry(k, v.toString())));
+    }
+    return uri;
   }
 
   Future<Map<String, String>> _getHeaders({bool isMultipart = false}) async {
@@ -43,6 +50,8 @@ class ApiClient {
 
     final headers = <String, String>{
       'Accept': 'application/json',
+      'User-Agent': 'Openbox/1.0.0 (Android; com.openboxo.solaiman)',
+      'X-Requested-With': 'XMLHttpRequest',
     };
 
     if (!isMultipart) {
@@ -112,12 +121,16 @@ class ApiClient {
     }
   }
 
-  Future<dynamic> delete(String url) async {
-    final uri = _resolveUri(url);
+  Future<dynamic> delete(String url, {Map<String, dynamic>? queryParams, dynamic body}) async {
+    final uri = _resolveUri(url, queryParams);
     debugPrint('🌐 [API DELETE Request] ➔ $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(uri, headers: headers);
+      final response = await _client.delete(
+        uri,
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      );
       _logResponse('DELETE', uri.toString(), response);
       return _handleResponse(response);
     } catch (e) {
@@ -198,6 +211,11 @@ class ApiClient {
           message = firstVal.first.toString();
         }
       }
+    }
+
+    if (message.contains('Imunify360') || response.body.contains('Imunify360')) {
+      message = 'Server Firewall Block: Access denied by Imunify360 bot-protection.\n'
+          'To fix this: Whitelist your IP in cPanel/Imunify360 or switch to local API mode in api_config.dart (isProduction = false).';
     }
 
     throw ApiException(

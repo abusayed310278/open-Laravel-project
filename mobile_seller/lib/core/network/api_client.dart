@@ -59,7 +59,8 @@ class ApiClient {
 
     final headers = <String, String>{
       'Accept': 'application/json',
-      'Connection': 'close',
+      'User-Agent': 'OpenboxSeller/1.0.0 (Android; com.openbox.seller)',
+      'X-Requested-With': 'XMLHttpRequest',
     };
 
     if (!isMultipart) {
@@ -133,12 +134,16 @@ class ApiClient {
     }
   }
 
-  Future<dynamic> delete(String url, {Duration? timeout}) async {
-    final uri = _resolveUri(url);
+  Future<dynamic> delete(String url, {Map<String, dynamic>? queryParams, dynamic body, Duration? timeout}) async {
+    final uri = _resolveUri(url, queryParams);
     if (kDebugMode) debugPrint('[ApiClient] DELETE $uri');
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(uri, headers: headers).timeout(timeout ?? defaultTimeout);
+      final response = await _client.delete(
+        uri,
+        headers: headers,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(timeout ?? defaultTimeout);
       return _handleResponse(response);
     } catch (e) {
       _handleNetworkError(e, uri);
@@ -204,6 +209,12 @@ class ApiClient {
           }
         }
       }
+    }
+
+    // Friendly firewall detection
+    if (message.contains('Imunify360') || (response.body.contains('Imunify360'))) {
+      message = 'Server Firewall Block: Access denied by Imunify360 bot-protection.\n'
+          'To fix this: Whitelist your IP in cPanel/Imunify360 or switch to local API mode in api_config.dart (isProduction = false).';
     }
 
     throw ApiException(message, statusCode: response.statusCode, errors: errors);

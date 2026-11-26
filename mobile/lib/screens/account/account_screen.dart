@@ -190,12 +190,12 @@ class AccountScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
 
-          // Sign Out Button (Only shown when logged in)
+          // Sign Out & Delete Account Buttons (Only shown when logged in)
           if (isLoggedIn) ...[
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
-                side: const BorderSide(color: AppColors.dangerBg),
+                foregroundColor: AppColors.slate700,
+                side: const BorderSide(color: AppColors.slate300),
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
               ),
               onPressed: () async {
@@ -207,9 +207,92 @@ class AccountScreen extends StatelessWidget {
               icon: const Icon(Icons.logout_rounded, size: 18),
               label: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
+            const SizedBox(height: AppSpacing.md),
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.danger,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              ),
+              onPressed: () => _confirmDeleteAccount(context),
+              icon: const Icon(Icons.delete_forever_rounded, size: 18, color: AppColors.danger),
+              label: const Text('Delete Account', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.danger)),
+            ),
             const SizedBox(height: AppSpacing.xl),
           ],
         ],
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    final passwordController = TextEditingController();
+    bool isDeleting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 24),
+              SizedBox(width: 8),
+              Text('Delete Account', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Are you sure you want to permanently delete your OpenBox account? All your orders, wishlist, profile, and personal data will be completely erased. This action is irreversible.',
+                style: TextStyle(fontSize: 13, color: AppColors.slate500, height: 1.4),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Current Password (optional)',
+                  hintText: 'Enter password to confirm',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+                      final success = await context.read<AuthProvider>().deleteAccount(
+                        password: passwordController.text.trim(),
+                      );
+                      if (ctx.mounted) Navigator.of(ctx).pop();
+                      if (context.mounted) {
+                        if (success) {
+                          AppSnackbar.success(context, 'Your account has been permanently deleted.');
+                        } else {
+                          AppSnackbar.error(context, 'Failed to delete account. Please check your password.');
+                        }
+                      }
+                    },
+              child: isDeleting
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Delete Permanently'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -266,12 +349,13 @@ class _MenuSection extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: 4),
           child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.slate500)),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.slate200),
+        Material(
+          color: AppColors.surface,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
+            side: const BorderSide(color: AppColors.slate200),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             children: List.generate(items.length, (i) {
               final item = items[i];

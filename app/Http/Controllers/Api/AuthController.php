@@ -503,4 +503,34 @@ class AuthController extends Controller
             'user' => new UserResource($user),
         ]);
     }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            return response()->json([
+                'message' => 'Administrator accounts cannot be self-deleted.',
+            ], 403);
+        }
+
+        if ($request->filled('password')) {
+            if (! Hash::check($request->string('password'), $user->password)) {
+                return response()->json([
+                    'message' => 'The provided password does not match your current password.',
+                    'errors' => [
+                        'password' => ['The provided password is incorrect.'],
+                    ],
+                ], 422);
+            }
+        }
+
+        $user->tokens()->delete();
+
+        app(\App\Services\Admin\UserManagementService::class)->deleteUser($user);
+
+        return response()->json([
+            'message' => 'Your account has been permanently deleted.',
+        ]);
+    }
 }

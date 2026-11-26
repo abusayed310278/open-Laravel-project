@@ -106,12 +106,13 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // Links Card
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
+            Material(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.slate200),
+                side: const BorderSide(color: AppColors.slate200),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   ListTile(

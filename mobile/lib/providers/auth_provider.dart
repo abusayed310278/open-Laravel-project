@@ -296,6 +296,29 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Permanently delete account
+  Future<bool> deleteAccount({String? password}) async {
+    _state = AuthState.loading;
+    notifyListeners();
+
+    try {
+      await _apiClient.delete(
+        '/auth/account',
+        body: password != null && password.isNotEmpty ? {'password': password} : null,
+      );
+      final storage = await StorageService.getInstance();
+      await storage.clearToken();
+      _user = null;
+      _state = AuthState.unauthenticated;
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _state = AuthState.authenticated;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> updateLocalProfile({required String name, String? phone, String? avatar}) async {
     if (_user != null) {
       _user = User(

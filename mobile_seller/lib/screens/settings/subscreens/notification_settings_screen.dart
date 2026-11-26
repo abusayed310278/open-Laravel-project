@@ -71,19 +71,21 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Master Switch
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
+            Material(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.slate200),
+                side: const BorderSide(color: AppColors.slate200),
               ),
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Allow Push Notifications',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
-                ),
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'Allow Push Notifications',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink),
+                  ),
                 subtitle: const Text(
                   'Receive instant alerts on this device',
                   style: TextStyle(fontSize: 12, color: AppColors.slate500),
@@ -103,16 +105,18 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+          ),
+          const SizedBox(height: AppSpacing.lg),
 
             // Order & Customer Activity
             _buildSectionHeader('Orders & Customer Activity'),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
+            Material(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.slate200),
+                side: const BorderSide(color: AppColors.slate200),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   _buildToggleTile(
@@ -145,12 +149,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
             // Inventory & Financial
             _buildSectionHeader('Inventory & Settlements'),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
+            Material(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.slate200),
+                side: const BorderSide(color: AppColors.slate200),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   _buildToggleTile(
@@ -183,12 +188,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
             // Reports & Updates
             _buildSectionHeader('Reports & Platform News'),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
+            Material(
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                border: Border.all(color: AppColors.slate200),
+                side: const BorderSide(color: AppColors.slate200),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   _buildToggleTile(

@@ -75,4 +75,26 @@ class CustomerProfileController extends Controller
 
         return back()->with('status', 'Profile updated.');
     }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->isAdmin()) {
+            return back()->with('error', 'Administrator accounts cannot be self-deleted.');
+        }
+
+        Auth::logout();
+
+        app(\App\Services\Admin\UserManagementService::class)->deleteUser($user);
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('status', 'Your account has been permanently deleted.');
+    }
 }

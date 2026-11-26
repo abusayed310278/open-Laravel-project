@@ -455,16 +455,18 @@ class _StoreScreenState extends State<StoreScreen> {
               // 5. Account Actions Card
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
+                child: Material(
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(color: AppColors.slate200.withValues(alpha: 0.8)),
+                    side: BorderSide(color: AppColors.slate200.withValues(alpha: 0.8)),
                   ),
-                  child: Column(
-                    children: [
-                      ListTile(
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Column(
+                      children: [
+                        ListTile(
                         leading: const Icon(Icons.store_outlined, color: AppColors.brand600),
                         title: const Text('Store Settings & Details', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                         trailing: const Icon(Icons.chevron_right, size: 20, color: AppColors.slate400),
@@ -505,11 +507,18 @@ class _StoreScreenState extends State<StoreScreen> {
                         title: const Text('Log Out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.danger)),
                         onTap: () => _confirmLogout(context, authProvider),
                       ),
+                      const Divider(height: 1, color: AppColors.slate100),
+                      ListTile(
+                        leading: const Icon(Icons.delete_forever_rounded, color: AppColors.danger),
+                        title: const Text('Delete Account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                        onTap: () => _confirmDeleteAccount(context, authProvider),
+                      ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxxl),
+            ),
+            const SizedBox(height: AppSpacing.xxxl),
             ],
           ),
         ),
@@ -559,6 +568,81 @@ class _StoreScreenState extends State<StoreScreen> {
             child: const Text('Log Out'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _confirmDeleteAccount(BuildContext context, SellerAuthProvider authProvider) {
+    final passwordController = TextEditingController();
+    bool isDeleting = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+          title: Row(
+            children: const [
+              Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 24),
+              SizedBox(width: 8),
+              Text('Delete Account', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Are you sure you want to permanently delete your account? All store data, inventory listings, order records, and profile details will be permanently removed. This action cannot be undone.',
+                style: TextStyle(fontSize: 13, color: AppColors.slate600, height: 1.4),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Current Password (optional)',
+                  hintText: 'Enter password to confirm',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isDeleting ? null : () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isDeleting
+                  ? null
+                  : () async {
+                      setDialogState(() => isDeleting = true);
+                      final success = await authProvider.deleteAccount(password: passwordController.text.trim());
+                      if (ctx.mounted) Navigator.of(ctx).pop();
+                      if (context.mounted) {
+                        if (success) {
+                          AppSnackBar.success(context, 'Your account has been permanently deleted.');
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        } else {
+                          AppSnackBar.error(context, authProvider.errorMessage ?? 'Could not delete account.');
+                        }
+                      }
+                    },
+              child: isDeleting
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Delete Permanently'),
+            ),
+          ],
+        ),
       ),
     );
   }
