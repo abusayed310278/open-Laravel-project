@@ -97,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Product Report
     Route::post('/products/{product}/report', [\App\Http\Controllers\Api\ProductReportController::class, 'store'])->middleware('throttle:10,1');
+
+    // User Blocking
+    Route::post('/users/{user}/block', [\App\Http\Controllers\UserBlockController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('/users/{user}/unblock', [\App\Http\Controllers\UserBlockController::class, 'destroy'])->middleware('throttle:20,1');
+    Route::delete('/users/{user}/block', [\App\Http\Controllers\UserBlockController::class, 'destroy'])->middleware('throttle:20,1');
+    Route::get('/blocked-users', [\App\Http\Controllers\UserBlockController::class, 'index']);
 });
 
 /*
@@ -179,6 +185,12 @@ Route::prefix('seller')->group(function () {
         Route::patch('/products/{product}/toggle-publish', [SellerProductController::class, 'togglePublish']);
         Route::delete('/products/{product}', [SellerProductController::class, 'destroy']);
         Route::post('/products/{product}/report', [\App\Http\Controllers\Api\ProductReportController::class, 'store'])->middleware('throttle:10,1');
+
+        // User Blocking
+        Route::post('/users/{user}/block', [\App\Http\Controllers\UserBlockController::class, 'store'])->middleware('throttle:20,1');
+        Route::post('/users/{user}/unblock', [\App\Http\Controllers\UserBlockController::class, 'destroy'])->middleware('throttle:20,1');
+        Route::delete('/users/{user}/block', [\App\Http\Controllers\UserBlockController::class, 'destroy'])->middleware('throttle:20,1');
+        Route::get('/blocked-users', [\App\Http\Controllers\UserBlockController::class, 'index']);
 
         // Wallet & Payouts
         Route::get('/wallet', [SellerWalletController::class, 'index']);

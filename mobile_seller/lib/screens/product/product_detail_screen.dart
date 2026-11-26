@@ -281,27 +281,58 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const Divider(height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
-                      child: InkWell(
-                        onTap: () => _showReportProductModal(context, product),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.flag_outlined, size: 16, color: AppColors.slate500),
-                              SizedBox(width: 6),
-                              Text(
-                                'Report this product',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.slate600,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showReportProductModal(context, product),
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.flag_outlined, size: 16, color: AppColors.slate500),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Report listing',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.slate600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
+                          Container(width: 1, height: 16, color: AppColors.slate200),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showBlockSellerDialog(context, product),
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.block_rounded, size: 16, color: AppColors.danger),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Block seller',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.danger,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const Divider(height: 1),
@@ -1190,6 +1221,94 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
+void _showBlockSellerDialog(BuildContext context, Product product) {
+  final authProvider = context.read<SellerAuthProvider>();
+  if (!authProvider.isAuthenticated) {
+    AppSnackBar.info(context, 'Please sign in to block this seller');
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    return;
+  }
+
+  final sellerId = product.sellerId.isNotEmpty ? product.sellerId : (product.seller?.id ?? '');
+  final sellerName = product.seller?.name ?? 'this seller';
+
+  if (sellerId.isEmpty) {
+    AppSnackBar.error(context, 'Seller details unavailable.');
+    return;
+  }
+
+  if (authProvider.user?.id.toString() == sellerId) {
+    AppSnackBar.error(context, 'You cannot block your own store.');
+    return;
+  }
+
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.block_rounded, color: AppColors.danger, size: 18),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'Block Seller?',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        'Are you sure you want to block $sellerName?\n\n'
+        '• All products from this seller will be hidden from your feed and search results.\n'
+        '• You will not be able to message each other.',
+        style: const TextStyle(fontSize: 13, height: 1.45, color: AppColors.slate600),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Cancel', style: TextStyle(color: AppColors.slate600)),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.of(ctx).pop();
+            try {
+              final apiClient = ApiClient();
+              await apiClient.post('/users/$sellerId/block');
+              if (context.mounted) {
+                context.read<ProductProvider>().removeProductsBySeller(sellerId);
+                AppSnackBar.success(context, '$sellerName has been blocked. Their products are hidden from your feed.');
+                Navigator.of(context).pop();
+              }
+            } catch (e) {
+              if (context.mounted) {
+                AppSnackBar.error(context, e.toString());
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.danger,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          child: const Text('Block Seller', style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ),
+  );
+}
+
 void _showReportProductModal(BuildContext context, Product product) {
   final authProvider = context.read<SellerAuthProvider>();
   if (!authProvider.isAuthenticated) {
@@ -1229,6 +1348,7 @@ class _ReportProductSheetState extends State<_ReportProductSheet> {
   late String _selectedReason;
   final TextEditingController _detailsController = TextEditingController();
   bool _isSubmitting = false;
+  bool _alsoBlockSeller = false;
 
   @override
   void initState() {
@@ -1261,6 +1381,19 @@ class _ReportProductSheetState extends State<_ReportProductSheet> {
       final message = (res is Map && res['message'] != null)
           ? res['message'].toString()
           : 'Thank you for your report. Our team will review this listing.';
+
+      if (_alsoBlockSeller) {
+        final sellerId = widget.product.sellerId.isNotEmpty ? widget.product.sellerId : (widget.product.seller?.id ?? '');
+        if (sellerId.isNotEmpty) {
+          try {
+            await apiClient.post('/users/$sellerId/block');
+            if (context.mounted) {
+              context.read<ProductProvider>().removeProductsBySeller(sellerId);
+            }
+          } catch (_) {}
+        }
+      }
+
       AppSnackBar.success(context, message);
     } catch (e) {
       if (!mounted) return;
@@ -1415,6 +1548,26 @@ class _ReportProductSheetState extends State<_ReportProductSheet> {
                     borderSide: const BorderSide(color: AppColors.brand500, width: 1.5),
                   ),
                   contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Material(
+                color: Colors.transparent,
+                child: CheckboxListTile(
+                  value: _alsoBlockSeller,
+                  onChanged: (val) => setState(() => _alsoBlockSeller = val ?? false),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  activeColor: AppColors.danger,
+                  title: const Text(
+                    'Also block this seller',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.ink),
+                  ),
+                  subtitle: const Text(
+                    'Hide all products from this seller and prevent future contact',
+                    style: TextStyle(fontSize: 11, color: AppColors.slate500),
+                  ),
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),

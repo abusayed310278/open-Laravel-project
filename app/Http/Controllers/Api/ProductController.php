@@ -15,6 +15,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         $products = Product::query()
+            ->withoutBlocked()
             ->with(['category', 'brand', 'user.profile', 'user.businessProfile', 'user.salerProfile'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
@@ -37,6 +38,7 @@ class ProductController extends Controller
     public function show(string $slug): JsonResponse
     {
         $product = Product::query()
+            ->withoutBlocked()
             ->with(['category', 'brand', 'user.profile', 'user.businessProfile', 'user.salerProfile', 'reviews.user'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')

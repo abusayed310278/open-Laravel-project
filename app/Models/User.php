@@ -14,6 +14,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -150,6 +151,80 @@ class User extends Authenticatable implements MustVerifyEmail
     public function productReports(): HasMany
     {
         return $this->hasMany(ProductReport::class, 'reporter_id');
+    }
+
+    public function blockedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocker_id', 'blocked_id')->withTimestamps();
+    }
+
+    public function blockedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocked_id', 'blocker_id')->withTimestamps();
+    }
+
+    public function hasBlocked(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : (int) $user;
+
+        return in_array($userId, $this->blockedUserIds(), true);
+    }
+
+    public function isBlockedBy(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : (int) $user;
+
+        return in_array($userId, $this->blockedByUserIds(), true);
+    }
+
+    public function block(User|int $user, ?string $reason = null): UserBlock
+    {
+        $userId = $user instanceof User ? $user->id : (int) $user;
+
+        abort_if($this->id === $userId, 422, 'You cannot block yourself.');
+
+        return UserBlock::firstOrCreate(
+            ['blocker_id' => $this->id, 'blocked_id' => $userId],
+            ['reason' => $reason]
+        );
+    }
+
+    public function unblock(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : (int) $user;
+
+        return (bool) UserBlock::where('blocker_id', $this->id)
+            ->where('blocked_id', $userId)
+            ->delete();
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function blockedUserIds(): array
+    {
+        return once(fn () => $this->blockedUsers()->pluck('users.id')->map(fn ($id) => (int) $id)->toArray());
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function blockedByUserIds(): array
+    {
+        return once(fn () => $this->blockedByUsers()->pluck('users.id')->map(fn ($id) => (int) $id)->toArray());
+    }
+
+    /**
+     * Returns all user IDs that are either blocked by this user or have blocked this user.
+     *
+     * @return array<int>
+     */
+    public function allBlockedAndBlockerIds(): array
+    {
+        return once(fn () => array_values(array_unique(array_merge(
+            $this->blockedUserIds(),
+            $this->blockedByUserIds()
+        ))));
     }
 
     public function reviewsAsSeller(): HasMany

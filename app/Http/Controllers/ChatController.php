@@ -96,6 +96,11 @@ class ChatController extends Controller
     public function startFromProduct(Product $product): RedirectResponse
     {
         $user = Auth::user();
+
+        if ($user->hasBlocked($product->user) || $product->user->hasBlocked($user)) {
+            return back()->with('error', 'You cannot message this seller.');
+        }
+
         $conversation = $this->chat->startOrGetConversation($user, $product->user, $product);
 
         return redirect()->route($this->routePrefixFor($user).'chat.show', $conversation);
@@ -107,6 +112,10 @@ class ChatController extends Controller
 
         if ($currentUser->id === $user->id) {
             return back()->with('error', 'You cannot message your own store.');
+        }
+
+        if ($currentUser->hasBlocked($user) || $user->hasBlocked($currentUser)) {
+            return back()->with('error', 'You cannot message this user.');
         }
 
         if (! $currentUser->isCustomer() && ! $currentUser->isAdmin()) {

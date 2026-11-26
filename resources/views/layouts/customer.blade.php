@@ -44,6 +44,7 @@
                     ['route' => 'account.messages.index', 'label' => 'Messages', 'icon' => $icon['chat'], 'permission' => 'chat.access'],
                     ['route' => 'account.reviews.index', 'label' => 'Reviews', 'icon' => $icon['star'], 'permission' => 'reviews.manage'],
                     ['route' => 'account.support.index', 'label' => 'Support', 'icon' => $icon['support'], 'permission' => 'support.manage'],
+                    ['route' => 'account.blocked-users', 'label' => 'Blocked Users', 'icon' => $icon['shield']],
                 ],
             ],
         ];

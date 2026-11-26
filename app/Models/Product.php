@@ -242,7 +242,30 @@ class Product extends Model
 
     public function scopeLive(Builder $query): Builder
     {
-        return $query->where('publication_status', ProductPublicationStatus::Published);
+        $query->where('publication_status', ProductPublicationStatus::Published);
+
+        if ($user = auth()->user() ?: auth('sanctum')->user()) {
+            $blockedIds = $user->allBlockedAndBlockerIds();
+            if (! empty($blockedIds)) {
+                $query->whereNotIn('products.user_id', $blockedIds);
+            }
+        }
+
+        return $query;
+    }
+
+    public function scopeWithoutBlocked(Builder $query, ?User $user = null): Builder
+    {
+        $targetUser = $user ?? auth()->user() ?? auth('sanctum')->user();
+
+        if ($targetUser) {
+            $blockedIds = $targetUser->allBlockedAndBlockerIds();
+            if (! empty($blockedIds)) {
+                $query->whereNotIn('products.user_id', $blockedIds);
+            }
+        }
+
+        return $query;
     }
 
     public function scopeOwnedBy(Builder $query, User $user): Builder

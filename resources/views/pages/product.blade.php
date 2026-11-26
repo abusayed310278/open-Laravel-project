@@ -13,6 +13,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <x-breadcrumb :items="[$product->category->name => route('categories.show', $product->category), $product->title => null]" class="mb-6" />
 
+        @if ($isSellerBlocked ?? false)
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    <div>
+                        <p class="text-sm font-bold text-red-900">You have blocked this seller ({{ $sellerName }}).</p>
+                        <p class="text-xs text-red-700">Their products are hidden from your search results, feed, and recommendations.</p>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('users.unblock', $product->user) }}" class="shrink-0">
+                    @csrf
+                    <button type="submit" class="px-3.5 py-1.5 text-xs font-bold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors cursor-pointer">
+                        Unblock Seller
+                    </button>
+                </form>
+            </div>
+        @endif
+
         @php
             $galleryImages = ($product->images && $product->images->isNotEmpty())
                 ? $product->images->map(fn($img) => $img->url())->values()
@@ -319,20 +337,44 @@
                         <dd class="text-gray-800 font-medium">{{ $product->condition->label() }}</dd>
                     </dl>
 
-                    {{-- Report product button --}}
-                    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                        <span>Notice something wrong?</span>
-                        @auth
-                            <button type="button" onclick="openReportModal()" class="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium transition-colors cursor-pointer group">
-                                <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                                <span>Report product</span>
-                            </button>
-                        @else
-                            <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 font-medium transition-colors group">
-                                <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
-                                <span>Report product</span>
-                            </a>
-                        @endauth
+                    {{-- Listing actions: Report & Block --}}
+                    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 flex-wrap gap-2">
+                        <span>Listing actions:</span>
+                        <div class="flex items-center gap-3">
+                            @auth
+                                <button type="button" onclick="openReportModal()" class="inline-flex items-center gap-1 text-gray-500 hover:text-red-600 font-medium transition-colors cursor-pointer group">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                    <span>Report</span>
+                                </button>
+                                @if (auth()->id() !== $product->user_id)
+                                    <span class="text-gray-300">|</span>
+                                    @if ($isSellerBlocked ?? false)
+                                        <form method="POST" action="{{ route('users.unblock', $product->user) }}" class="inline">
+                                            @csrf
+                                            <button type="submit" class="inline-flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium transition-colors cursor-pointer">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                                <span>Unblock seller</span>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button type="button" onclick="openBlockModal()" class="inline-flex items-center gap-1 text-gray-500 hover:text-red-600 font-medium transition-colors cursor-pointer group">
+                                            <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            <span>Block seller</span>
+                                        </button>
+                                    @endif
+                                @endif
+                            @else
+                                <a href="{{ route('login') }}" class="inline-flex items-center gap-1 text-gray-500 hover:text-red-600 font-medium transition-colors group">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                    <span>Report</span>
+                                </a>
+                                <span class="text-gray-300">|</span>
+                                <a href="{{ route('login') }}" class="inline-flex items-center gap-1 text-gray-500 hover:text-red-600 font-medium transition-colors group">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                    <span>Block seller</span>
+                                </a>
+                            @endauth
+                        </div>
                     </div>
                 </div>
             </div>
@@ -626,6 +668,63 @@
             document.getElementById('report-product-modal')?.classList.add('hidden');
         }
     </script>
+    @endauth
+
+    {{-- Block Seller Modal --}}
+    @auth
+    @if (auth()->id() !== $product->user_id)
+    <div id="block-user-modal" class="fixed inset-0 z-[9998] hidden overflow-y-auto" aria-labelledby="block-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-900/60 transition-opacity backdrop-blur-xs" onclick="closeBlockModal()" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6 relative z-10 border border-gray-100">
+                <div class="flex items-start justify-between pb-4 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900" id="block-modal-title">Block {{ $sellerName }}?</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Hide their products from your catalog.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form method="POST" action="{{ route('users.block', $product->user) }}" class="mt-4 space-y-4">
+                    @csrf
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Are you sure you want to block <strong>{{ $sellerName }}</strong>?
+                    </p>
+                    <ul class="text-xs text-gray-600 space-y-1.5 list-disc pl-5">
+                        <li>Their listings will be hidden from your search results and home catalog.</li>
+                        <li>You will not be able to message or contact this seller.</li>
+                        <li>You can unblock them at any time in your Account settings.</li>
+                    </ul>
+
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeBlockModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm cursor-pointer">
+                            Block Seller
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openBlockModal() {
+            document.getElementById('block-user-modal')?.classList.remove('hidden');
+        }
+        function closeBlockModal() {
+            document.getElementById('block-user-modal')?.classList.add('hidden');
+        }
+    </script>
+    @endif
     @endauth
 
     {{-- Product Image Lightbox Modal: Centered Square Size with Side Circular Arrows --}}

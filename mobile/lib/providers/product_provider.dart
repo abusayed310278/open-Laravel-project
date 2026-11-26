@@ -20,6 +20,11 @@ class ProductProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  void removeProductsBySeller(String sellerId) {
+    _products.removeWhere((p) => p.sellerId == sellerId || (p.seller != null && p.seller!.id == sellerId));
+    notifyListeners();
+  }
+
   ProductProvider({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient() {
     fetchCategories();
     fetchProducts();

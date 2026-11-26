@@ -90,6 +90,7 @@ use App\Http\Controllers\StorePageController;
 use App\Http\Controllers\StoreSettingsController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\UserBlockController;
 use App\Http\Controllers\VendorPaymentSettingController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\Verifier\AppointmentController as VerifierAppointmentController;
@@ -159,6 +160,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/{product}/reviews', [CustomerReviewController::class, 'storeForProduct'])->middleware('throttle:10,1')->name('products.reviews.store');
     Route::post('/products/{product}/report', [ProductReportController::class, 'store'])->middleware('throttle:10,1')->name('products.report');
     Route::post('/reviews/{review}/report', [ReviewReportController::class, 'store'])->middleware('throttle:20,1')->name('reviews.report');
+    Route::post('/users/{user}/block', [UserBlockController::class, 'store'])->middleware('throttle:20,1')->name('users.block');
+    Route::post('/users/{user}/unblock', [UserBlockController::class, 'destroy'])->middleware('throttle:20,1')->name('users.unblock');
+    Route::get('/account/blocked-users', [UserBlockController::class, 'index'])->name('account.blocked-users');
 
     Route::post('/products/{product}/chat', [ChatController::class, 'startFromProduct'])->name('chat.start');
     Route::match(['GET', 'POST'], '/sellers/{user}/chat', [ChatController::class, 'startFromSeller'])->name('chat.start-seller');

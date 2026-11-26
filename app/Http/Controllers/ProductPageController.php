@@ -336,6 +336,7 @@ class ProductPageController extends Controller
             'sellerRating' => (float) $seller->approvedReviewsAsSeller()->avg('rating'),
             'sellerReviewCount' => $seller->approvedReviewsAsSeller()->count(),
             'sellerUrl' => $sellerUrl,
+            'isSellerBlocked' => auth()->check() ? auth()->user()->hasBlocked($seller) : false,
             'related' => Product::query()
                 ->live()
                 ->where('category_id', $product->category_id)
